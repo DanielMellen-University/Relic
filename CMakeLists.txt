@@ -27,6 +27,11 @@ target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
 
 add_executable(relic src/main.cpp)
 target_link_libraries(relic PRIVATE relic_core)
+if(MSVC)
+  # The tree-walker recurses once per Relic call; the 1 MB Windows default is
+  # too small for the 800-call limit. Match the 8 MB Linux/macOS default.
+  target_link_options(relic PRIVATE /STACK:8388608)
+endif()
 
 enable_testing()
 
