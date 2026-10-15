@@ -6,11 +6,13 @@
 #include "ast/ast.hpp"
 
 #include <ostream>
+#include <string>
 
 namespace relic {
 
 // Runs a whole program. Throws RuntimeError like Interpreter::run.
-void vm_run(const Ast& program, std::ostream& out);
+// path: the file being run; `use` resolves against its folder.
+void vm_run(const Ast& program, std::ostream& out, const std::string& path);
 
 // Backs --bytecode: a listing of the compiled code.
 std::string vm_disassemble(const Ast& program);

@@ -63,7 +63,8 @@ Planned at a coarser level. Each gets its own checklist when M6 is done.
   - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 75 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion`.
   - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `use` in the self-hosted interpreter and a faster runtime (M10).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
-  - Stage 1, VM in the C++ host: **done.** `relic --vm FILE` matches the tree-walker on 77 golden programs (`vm_matches_tree_walker` test) and is 1.4x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). Not yet: `use`/modules and the REPL on the VM, so it is opt-in. Next: VM support for modules, make it the default, then the VM written in Relic.
+  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 88 golden programs (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
+  - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 

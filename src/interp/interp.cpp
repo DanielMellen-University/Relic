@@ -123,6 +123,11 @@ Value op_unary(const Ast& n, const Value& v) {
 Value op_field(const Ast& n, const Value& obj) {
             if (obj.is<std::shared_ptr<Module>>()) {
                 const Module& m = *obj.as<std::shared_ptr<Module>>();
+                if (m.lookup) {
+                    const Value* v = m.lookup(n.text);
+                    if (!v) fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                    return *v;
+                }
                 auto it = m.scope->vars.find(n.text);
                 if (it == m.scope->vars.end())
                     fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
@@ -227,8 +232,6 @@ Interpreter::Interpreter(std::ostream& out)
 
 namespace fs = std::filesystem;
 
-namespace {
-
 // Folder that `use` paths in `file` resolve against.
 std::string folder_of(const std::string& file) {
     if (file.empty() || file == "<repl>") return "";
@@ -251,7 +254,10 @@ std::string key_of(const std::string& file) {
     return ec ? file : k.generic_string();
 }
 
-}  // namespace
+std::string module_path(const std::string& importer, const std::string& use_path) {
+    return use_path.rfind("std/", 0) == 0 ? std_root() + use_path.substr(4) + ".relic"
+                                          : folder_of(importer) + use_path + ".relic";
+}
 
 void Interpreter::set_main_file(const std::string& path) {
     current_file_ = path;
@@ -259,7 +265,7 @@ void Interpreter::set_main_file(const std::string& path) {
     // Register the main file, so a module that uses it back gets this same
     // scope instead of running the file a second time.
     std::string name = fs::path(path).stem().string();
-    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_});
+    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_, {}});
 }
 
 Value Interpreter::load_module(const Ast& use) {
@@ -275,7 +281,7 @@ Value Interpreter::load_module(const Ast& use) {
     ss << in.rdbuf();
 
     std::string name = use.text.substr(use.text.find_last_of('/') + 1);
-    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_)});
+    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_), {}});
     modules_[key] = mod;  // before running, so cycles find it
 
     std::string saved = current_file_;

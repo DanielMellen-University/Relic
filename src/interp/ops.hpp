@@ -22,4 +22,9 @@ List op_loop_items(const Ast& iterable, const Value& src);
 Value op_call_builtin(const Ast& call, const Builtin& b, std::vector<Value>& args);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
 
+// Modules: the file a `use` path names, seen from the importing file, and the
+// key that identifies a file in the module cache.
+std::string module_path(const std::string& importer, const std::string& use_path);
+std::string key_of(const std::string& file);
+
 }  // namespace relic

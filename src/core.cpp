@@ -101,7 +101,7 @@ RunResult run_source_vm(const std::string& path, const std::string& source) {
     std::ostringstream out;
     try {
         auto tree = parse(lex(source));
-        vm_run(*tree, out);
+        vm_run(*tree, out, path);
     } catch (const LexError& e) {
         r.exit_code = 1;
         r.err = diag::format(path, e.line, e.col, e.what());
@@ -110,7 +110,7 @@ RunResult run_source_vm(const std::string& path, const std::string& source) {
         r.err = diag::format(path, e.line, e.col, e.what());
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
     }
     r.out = out.str();
     return r;

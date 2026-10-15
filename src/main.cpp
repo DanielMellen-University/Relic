@@ -15,7 +15,7 @@ static bool stdin_is_terminal() { return isatty(0) != 0; }
 #endif
 
 static void usage() {
-    std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --vm] [file.relic [args...]]\n"
+    std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
                  "       relic            (no file: start the REPL)\n";
 }
 
@@ -30,16 +30,18 @@ int main(int argc, char** argv) {
     }
     bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
     bool ast = argc == 3 && std::string(argv[1]) == "--ast";
+    // The VM is the default engine; --tree runs the tree-walker. --vm is kept as an alias.
+    bool tree = argc >= 3 && std::string(argv[1]) == "--tree";
     bool vm = argc >= 3 && std::string(argv[1]) == "--vm";
     bool bytecode = argc == 3 && std::string(argv[1]) == "--bytecode";
     if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
-    if (argc < 2 || (!tokens && !ast && !vm && !bytecode && std::string(argv[1]).rfind("--", 0) == 0)) {
+    if (argc < 2 || (!tokens && !ast && !vm && !tree && !bytecode && std::string(argv[1]).rfind("--", 0) == 0)) {
         usage();
         return 2;
     }
-    bool flag = tokens || ast || vm || bytecode;
+    bool flag = tokens || ast || vm || tree || bytecode;
     if (!tokens && !ast && !bytecode)
-        for (int i = vm ? 3 : 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
+        for (int i = (vm || tree) ? 3 : 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
     std::string path = argv[flag ? 2 : 1];
     std::ifstream f(path, std::ios::binary);
     if (!f) {
@@ -51,8 +53,8 @@ int main(int argc, char** argv) {
     relic::RunResult r = tokens ? relic::dump_tokens(path, ss.str())
                        : ast  ? relic::dump_tree(path, ss.str())
                        : bytecode ? relic::dump_bytecode(path, ss.str())
-                       : vm   ? relic::run_source_vm(path, ss.str())
-                              : relic::run_source(path, ss.str());
+                       : tree ? relic::run_source(path, ss.str())
+                              : relic::run_source_vm(path, ss.str());
     std::cout << r.out;
     std::cerr << r.err;
     return r.exit_code;

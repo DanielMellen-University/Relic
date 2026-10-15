@@ -2,6 +2,10 @@
 
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
+
+#include <fstream>
 
 #include <memory>
 #include <sstream>
@@ -20,7 +24,7 @@ enum class Op {
     Jump, JumpIfFalse, CheckBool, JumpIfFalseKeep, JumpIfTrueKeep,
     Binary, Unary, Range, Field, Index, SetField, SetIndex,
     List, Map, Interp, Call, Closure, Return, ReturnNone,
-    ForPrep, ForNext, Fail,
+    ForPrep, ForNext, Fail, Use,
 };
 
 const char* op_name(Op o) {
@@ -31,7 +35,7 @@ const char* op_name(Op o) {
         "JUMP", "JUMP_IF_FALSE", "CHECK_BOOL", "JUMP_IF_FALSE_KEEP", "JUMP_IF_TRUE_KEEP",
         "BINARY", "UNARY", "RANGE", "FIELD", "INDEX", "SET_FIELD", "SET_INDEX",
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
-        "FOR_PREP", "FOR_NEXT", "FAIL",
+        "FOR_PREP", "FOR_NEXT", "FAIL", "USE",
     };
     return names[static_cast<int>(o)];
 }
@@ -43,7 +47,10 @@ struct Instr {
     const Ast* at = nullptr;  // where errors point
 };
 
+struct Program;
+
 struct Proto {
+    Program* mod = nullptr;  // module whose globals this code uses
     std::string name;
     const Ast* node = nullptr;
     int nparams = 0;
@@ -59,10 +66,22 @@ struct Scope {
     Scope(int n, std::shared_ptr<Scope> p) : slots(static_cast<size_t>(n)), parent(std::move(p)) {}
 };
 
+// One compiled file: the main program or a module.
 struct Program {
-    std::vector<std::unique_ptr<Proto>> protos;  // protos[0] is the main program
+    std::string file;
+    std::unique_ptr<Ast> tree;  // modules own their tree; the main tree belongs to the caller
+    std::vector<std::unique_ptr<Proto>> protos;  // protos[0] is the file's top level
     std::unordered_map<std::string, int> global_index;
     std::vector<std::string> global_names;
+    std::vector<Value> globals;
+    std::vector<char> defined;
+    std::shared_ptr<Module> value;
+
+    const Value* lookup(const std::string& name) const {
+        auto it = global_index.find(name);
+        if (it == global_index.end() || !defined[it->second]) return nullptr;
+        return &globals[it->second];
+    }
 };
 
 // ---- compiler ----
@@ -76,6 +95,7 @@ public:
             if (s->kind == Node::Let || s->kind == Node::Fun) global(s->text);
         auto p = std::make_unique<Proto>();
         p->name = "<main>";
+        p->mod = &prog_;
         p->node = &program;
         Proto* main = p.get();
         prog_.protos.push_back(std::move(p));
@@ -84,6 +104,8 @@ public:
         for (const auto& s : program.kids) stmt(*s);
         emit(Op::ReturnNone);
         fns_.pop_back();
+        prog_.globals.resize(prog_.global_names.size());
+        prog_.defined.assign(prog_.global_names.size(), 0);
     }
 
 private:
@@ -330,7 +352,8 @@ private:
                 return;
             }
             case Node::Use:
-                emit(Op::Fail, str("'use' is not supported by the VM yet; run without --vm"), 0, &n);
+                emit(Op::Use, str(n.text), 0, &n);
+                declare(n.text.substr(n.text.find_last_of('/') + 1), n);
                 return;
             default:
                 emit(Op::Fail, str(std::string("cannot run a ") + node_name(n.kind) + " here"), 0, &n);
@@ -346,6 +369,7 @@ private:
         auto p = std::make_unique<Proto>();
         p->name = n.text;
         p->node = &n;
+        p->mod = &prog_;
         const Ast& params = *n.kids[0];
         p->nparams = static_cast<int>(params.kids.size());
         Proto* proto = p.get();
@@ -439,18 +463,79 @@ private:
 
 class Machine {
 public:
-    Machine(Program& prog, std::ostream& out)
-        : prog_(prog), host_(out), globals_(prog.global_names.size()),
-          defined_(prog.global_names.size(), 0) {}
+    explicit Machine(std::ostream& out) : host_(out) {}
 
-    void run_main() { run(*prog_.protos[0], nullptr); }
+    void run_main(const Ast& program, const std::string& path) {
+        auto prog = std::make_unique<Program>();
+        prog->file = path;
+        Compiler(*prog).compile_main(program);
+        Program* p = prog.get();
+        if (!path.empty()) {
+            add_value(*p, fs_stem(path));
+            mods_[key_of(path)] = std::move(prog);
+        } else {
+            main_ = std::move(prog);
+        }
+        run(*p->protos[0], nullptr);
+    }
 
 private:
-    Program& prog_;
     Interpreter host_;  // owns the built-ins (print writes to its stream)
-    std::vector<Value> globals_;
-    std::vector<char> defined_;
+    std::unordered_map<std::string, std::unique_ptr<Program>> mods_;  // by resolved path
+    std::unique_ptr<Program> main_;
     int depth_ = 0;
+
+    static std::string fs_stem(const std::string& path) {
+        size_t cut = path.find_last_of("/\\");
+        std::string base = cut == std::string::npos ? path : path.substr(cut + 1);
+        size_t dot = base.rfind('.');
+        return dot == std::string::npos ? base : base.substr(0, dot);
+    }
+
+    static void add_value(Program& p, const std::string& name) {
+        Program* raw = &p;
+        auto m = std::make_shared<Module>();
+        m->name = name;
+        m->file = p.file;
+        m->lookup = [raw](const std::string& n) { return raw->lookup(n); };
+        p.value = m;
+    }
+
+    // Loads (once) the module a `use` names, relative to the file holding the `use`.
+    Value load_module(const Instr& in, const Program& from, const std::string& use_path) {
+        std::string file = module_path(from.file, use_path);
+        std::string key = key_of(file);
+        auto it = mods_.find(key);
+        if (it != mods_.end()) return Value(it->second->value);  // loaded, or loading (a cycle)
+        std::ifstream f(file, std::ios::binary);
+        if (!f) fail_at(*in.at, "cannot find module '" + use_path + "' (no file " + use_path + ".relic)");
+        std::stringstream ss;
+        ss << f.rdbuf();
+        auto prog = std::make_unique<Program>();
+        prog->file = file;
+        try {
+            prog->tree = parse(lex(ss.str()));
+        } catch (const LexError& e) {
+            RuntimeError r(e.line, e.col, e.what());
+            r.file = file;
+            throw r;
+        } catch (const ParseError& e) {
+            RuntimeError r(e.line, e.col, e.what());
+            r.file = file;
+            throw r;
+        }
+        Compiler(*prog).compile_main(*prog->tree);
+        add_value(*prog, use_path.substr(use_path.find_last_of('/') + 1));
+        Program* p = prog.get();
+        mods_[key] = std::move(prog);  // before running, so cycles find it
+        try {
+            run(*p->protos[0], nullptr);
+        } catch (RuntimeError& e) {
+            if (e.file.empty()) e.file = file;
+            throw;
+        }
+        return Value(p->value);
+    }
 
     const Value* builtin(const std::string& name) {
         auto it = host_.builtins()->vars.find(name);
@@ -473,10 +558,23 @@ private:
         for (size_t i = 0; i < args.size(); ++i) scope->slots[i] = std::move(args[i]);
         ++depth_;
         struct Guard { int& d; ~Guard() { --d; } } guard{depth_};
-        return run(p, std::move(scope));
+        if (p.mod == cur_mod_) return run(p, std::move(scope));
+        try {
+            return run(p, std::move(scope));
+        } catch (RuntimeError& e) {
+            if (e.file.empty()) e.file = p.mod->file;
+            throw;
+        }
     }
 
+    const Program* cur_mod_ = nullptr;
+
     Value run(const Proto& p, std::shared_ptr<Scope> sc) {
+        const Program* saved = cur_mod_;
+        cur_mod_ = p.mod;
+        struct Restore { const Program*& c; const Program* old; ~Restore() { c = old; } } restore{cur_mod_, saved};
+        std::vector<Value>& globals_ = p.mod->globals;
+        std::vector<char>& defined_ = p.mod->defined;
         std::vector<Value> st;
         st.reserve(16);
         auto pop = [&]() {
@@ -622,7 +720,7 @@ private:
                     break;
                 }
                 case Op::Closure: {
-                    const Proto& fp = *prog_.protos[in.a];
+                    const Proto& fp = *p.mod->protos[in.a];
                     auto f = std::make_shared<Function>(Function{fp.name, fp.node, nullptr, &fp, sc, std::string()});
                     f->proto = &fp;
                     f->vm_scope = sc;
@@ -652,6 +750,7 @@ private:
                     break;
                 }
                 case Op::Fail: fail_at(*in.at, p.strings[in.a]);
+                case Op::Use: st.push_back(load_module(in, *p.mod, p.strings[in.a])); break;
             }
         }
         return Value();
@@ -660,10 +759,8 @@ private:
 
 }  // namespace
 
-void vm_run(const Ast& program, std::ostream& out) {
-    Program prog;
-    Compiler(prog).compile_main(program);
-    Machine(prog, out).run_main();
+void vm_run(const Ast& program, std::ostream& out, const std::string& path) {
+    Machine(out).run_main(program, path == "<repl>" ? "" : path);
 }
 
 std::string vm_disassemble(const Ast& program) {

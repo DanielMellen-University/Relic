@@ -207,15 +207,16 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 
 ## Bytecode VM (M10)
 
-`relic --vm FILE` compiles the tree to bytecode and runs it on a stack machine (`src/vm/`). `relic --bytecode FILE` prints the compiled code.
+`relic FILE` compiles the tree to bytecode and runs it on a stack machine (`src/vm/`); this is the default engine since M10. `relic --tree FILE` runs the old tree-walker (`--vm` is kept as an alias for the default). `relic --bytecode FILE` prints the compiled code.
 
 - One flat instruction list per function. Jumps for `if`, `while`, `for`, `and`, `or`, `break` and `next`.
 - Names resolve at compile time to a scope slot (hops up the chain, then slot) instead of a name lookup at run time. Top-level names are numbered globals; names not found anywhere fall back to the built-ins.
 - Only blocks that declare names get a scope at run time. Each `for` turn gets its own scope, so closures made in a loop keep their own loop value, same as the tree-walker.
 - Operators, indexing, fields, loops over values and built-in calls share code with the tree-walker (`src/interp/ops.hpp`), so results and error messages match. Number math has a fast path.
+- Modules: each file compiles to its own program with its own numbered globals. `use` loads a file once, caches it by resolved path before running it (so cycles work), and binds a module value whose fields are read live from that file's globals. Errors name the file they happened in, like the tree-walker.
 - The 800-call limit is the same. Each Relic call is one C++ call of the VM loop, so it is cheap on the host stack.
 - Differences from the tree-walker today:
-  - No `use` yet: it stops with an error. The REPL still uses the tree-walker.
+  - The REPL still uses the tree-walker.
   - A function that reads a name its enclosing function declares later in the same block resolves to a global or built-in instead. The tree-walker finds the later name at call time. No golden test does this.
   - Assigning to a built-in's name without `let` (`print = 1`) is an error on the VM.
 - Benchmarks live in `bench/`; `tools/bench.sh build/relic` times both engines and checks they print the same.
@@ -225,7 +226,7 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.
 2. **Parser**: tokens to an AST.
 3. **Interpreter**: walks the AST directly.
-4. **Bytecode VM** (M10, opt-in with `--vm`): compiles the AST to bytecode and runs it on a stack machine.
+4. **Bytecode VM** (M10, the default; `--tree` for the tree-walker): compiles the AST to bytecode and runs it on a stack machine.
 5. **Much later**: native code generation.
 
 The REPL and the file runner share the same pipeline. In the REPL, a line that opens a block waits for an empty line before running. Layout is in [ARCHITECTURE.md](ARCHITECTURE.md).

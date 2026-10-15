@@ -72,7 +72,7 @@ print(box.title, box["version"])
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
-- Faster engine: `relic --vm FILE` runs on the bytecode VM (no modules yet).
+- Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `pop`, `insert`, `remove`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
 

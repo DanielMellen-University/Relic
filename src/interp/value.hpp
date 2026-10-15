@@ -45,7 +45,9 @@ struct Builtin {
 struct Module {
     std::string name;
     std::string file;
-    std::shared_ptr<Env> scope;
+    std::shared_ptr<Env> scope;  // tree-walker modules
+    // VM modules: finds a top-level name, or null if it is not defined yet.
+    std::function<const Value*(const std::string&)> lookup;
 };
 
 struct NoneV {};
