@@ -1,11 +1,12 @@
 # Roadmap
 
-Phases run in order. A phase is done when every box is ticked.
+Phases run in order, with one exception: the memory model and modules from phase 4 come before self-hosting (see [PROJECT_PLAN.md](PROJECT_PLAN.md)). A phase is done when every box is ticked.
 
 ## Phase 1: Host bootstrap
 
 - [ ] Pick the host language (**Default:** C++17, to match MONOLITH 1)
-- [ ] Build setup and CI that runs on every push
+- [ ] Build setup (**Default:** CMake) and CI that runs on every push
+- [ ] `relic` prints `hello` from a golden test (see [BOOTSTRAP.md](BOOTSTRAP.md))
 - [ ] Test runner that runs `.relic` files and compares output
 - [ ] Track every borrowed piece in a list so it can be replaced later
 
@@ -16,7 +17,7 @@ Phases run in order. A phase is done when every box is ticked.
 - [ ] Tree-walk interpreter over the AST
 - [ ] REPL
 - [ ] Numbers, strings, bools, variables
-- [ ] `if`, `while`, functions, lists
+- [ ] Indentation blocks, `if`, `while`, `for`, `fun` functions, lists, maps
 - [ ] Clear error messages with file, line and column
 - [ ] Meets the [1.0 checklist](1.0-CHECKLIST.md)
 
@@ -31,7 +32,7 @@ Phases run in order. A phase is done when every box is ticked.
 
 - [ ] Memory model decided and built (see DESIGN.md)
 - [ ] Modules and imports
-- [ ] Standard library: strings, lists, maps, files, time, math
+- [ ] Standard library: strings, lists, maps (methods beyond literals), files, time, math
 - [ ] Bytecode VM if the tree-walker is too slow
 - [ ] Native code generation explored (stretch)
 

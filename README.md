@@ -21,6 +21,10 @@ Relic is the programming language for MONOLITH 2.
 - [Vision](docs/VISION.md): the goal and the non-goals
 - [Roadmap](docs/ROADMAP.md): phased milestones
 - [Design](docs/DESIGN.md): the shape of the language (draft)
+- [Project plan](docs/PROJECT_PLAN.md): milestones, exit criteria, risks
+- [Architecture](docs/ARCHITECTURE.md): bootstrap host layout
+- [Bootstrap](docs/BOOTSTRAP.md): empty repo to `print("hello")`
+- [Testing](docs/TESTING.md): golden tests and CI
 - [1.0 checklist](docs/1.0-CHECKLIST.md): what a first usable Relic needs
 
 ## Contributing
