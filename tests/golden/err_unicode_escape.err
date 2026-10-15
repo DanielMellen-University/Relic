@@ -1,0 +1,1 @@
+err_unicode_escape.relic:1:12: error: bad unicode escape; write \u{hex}, like \u{e9}

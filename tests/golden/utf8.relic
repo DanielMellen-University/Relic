@@ -1,0 +1,25 @@
+# strings are UTF-8; length, indexes, slices and loops count characters
+let s = "héllo wörld"
+print(s, len(s))
+print(s[1], s[7], s[10])
+print(slice(s, 1, 4))
+let chars = []
+for c in "añ€😀"
+    append(chars, c)
+print(chars, len(chars))
+print(ord("é"), ord("€"), ord("😀"), chr(233), chr(8364), chr(128512))
+print("\u{48}\u{e9}\u{1F600}", len("\u{1F600}"))
+print("é" < "ê", "naïve" == "na\u{ef}ve", "ö" in s)
+print(["ü", {"ключ": "значение"}])
+try
+    print(s[11])
+catch e
+    print(e.message)
+try
+    chr(55296)
+catch e
+    print(e.message)
+try
+    ord("ab")
+catch e
+    print(e.message)

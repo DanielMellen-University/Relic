@@ -52,7 +52,7 @@ void Interpreter::install_builtins() {
 
     add("len", 1, [](std::vector<Value>& a) {
         const Value& v = a[0];
-        if (v.is<std::string>()) return Value(static_cast<long long>(v.as<std::string>().size()));
+        if (v.is<std::string>()) return Value(static_cast<long long>(utf8_len(v.as<std::string>())));
         if (v.is<std::shared_ptr<List>>())
             return Value(static_cast<long long>(v.as<std::shared_ptr<List>>()->size()));
         if (v.is<std::shared_ptr<Map>>())
@@ -110,8 +110,11 @@ void Interpreter::install_builtins() {
         auto clampi = [](long long i, size_t n) { return static_cast<size_t>(i < 0 ? 0 : (static_cast<size_t>(i) > n ? n : i)); };
         if (a[0].is<std::string>()) {
             const std::string& s = a[0].as<std::string>();
-            size_t x = clampi(b, s.size()), y = clampi(e, s.size());
-            return Value(y > x ? s.substr(x, y - x) : std::string());
+            size_t n = utf8_len(s);
+            size_t x = clampi(b, n), y = clampi(e, n);
+            if (y <= x) return Value(std::string());
+            size_t bx = utf8_offset(s, x), by = utf8_offset(s, y);
+            return Value(s.substr(bx, by - bx));
         }
         if (a[0].is<std::shared_ptr<List>>()) {
             const List& l = *a[0].as<std::shared_ptr<List>>();
@@ -124,13 +127,14 @@ void Interpreter::install_builtins() {
     });
     add("ord", 1, [str_arg](std::vector<Value>& a) {
         const std::string& s = str_arg(a[0], "argument");
-        if (s.size() != 1) throw std::string("needs a one-character string");
-        return Value(static_cast<long long>(static_cast<unsigned char>(s[0])));
+        if (s.empty() || utf8_char_size(s, 0) != s.size()) throw std::string("needs a one-character string");
+        return Value(static_cast<long long>(utf8_decode(s, 0)));
     });
     add("chr", 1, [whole_arg](std::vector<Value>& a) {
         long long n = whole_arg(a[0], "argument");
-        if (n < 0 || n > 255) throw std::string("code must be 0 to 255");
-        return Value(std::string(1, static_cast<char>(n)));
+        if (n < 0 || n > 0x10FFFF || (n >= 0xD800 && n <= 0xDFFF))
+            throw std::string("code must be 0 to 1114111 and not 55296 to 57343 (surrogates)");
+        return Value(utf8_encode(static_cast<long>(n)));
     });
     add("num", 1, [str_arg](std::vector<Value>& a) {
         if (is_num(a[0])) return a[0];

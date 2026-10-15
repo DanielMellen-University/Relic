@@ -645,8 +645,8 @@ fun builtin(rt, name, a)
             return bad("argument must be a number, got " + t)
         if not is_whole(a[0])
             return bad("argument must be a whole number")
-        if a[0] < 0 or a[0] > 255
-            return bad("code must be 0 to 255")
+        if a[0] < 0 or a[0] > 1114111 or (a[0] >= 55296 and a[0] <= 57343)
+            return bad("code must be 0 to 1114111 and not 55296 to 57343 (surrogates)")
         return ok(chr(a[0]))
     if name == "num"
         if is_num(t)

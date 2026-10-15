@@ -1,6 +1,8 @@
 #include "lexer/lexer.hpp"
 
 #include <cctype>
+
+#include "interp/value.hpp"
 #include <unordered_map>
 
 namespace relic {
@@ -135,7 +137,8 @@ private:
     }
     char advance() {
         char c = src_[pos_++];
-        if (c == '\n') { last_line_end_col_ = col_; ++line_; col_ = 1; } else { ++col_; }
+        if (c == '\n') { last_line_end_col_ = col_; ++line_; col_ = 1; }
+        else if ((static_cast<unsigned char>(c) & 0xC0) != 0x80) { ++col_; }  // columns count characters
         return c;
     }
     void emit(Tok k, std::string text, int l, int c) { out_.push_back({k, std::move(text), l, c}); }
@@ -226,8 +229,11 @@ private:
                 close('{', '}', l, c);
                 emit(Tok::RBrace, "}", l, c);
                 return;
-            default:
-                error(l, c, std::string("unexpected character '") + ch + "'");
+            default: {
+                std::string whole(1, ch);  // the whole UTF-8 character, not just its first byte
+                while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
+                error(l, c, "unexpected character '" + whole + "'");
+            }
         }
     }
 
@@ -267,6 +273,24 @@ private:
         emit(it == kKeywords.end() ? Tok::Name : it->second, word, l, c);
     }
 
+    // \u{hex}: one character by its code point, 1 to 6 hex digits.
+    std::string unicode_escape(int el, int ec) {
+        const char* msg = "bad unicode escape; write \\u{hex}, like \\u{e9}";
+        if (peek() != '{') error(el, ec, msg);
+        advance();
+        long cp = 0;
+        int digits = 0;
+        while (std::isxdigit(static_cast<unsigned char>(peek()))) {
+            char h = advance();
+            cp = cp * 16 + (std::isdigit(static_cast<unsigned char>(h)) ? h - '0' : (std::tolower(h) - 'a' + 10));
+            if (++digits > 6) error(el, ec, msg);
+        }
+        if (digits == 0 || peek() != '}') error(el, ec, msg);
+        advance();
+        if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) error(el, ec, "unicode escape is not a valid character");
+        return utf8_encode(cp);
+    }
+
     // Reads string text up to the closing quote or the next interpolation.
     // first: true when this segment starts right after the opening quote.
     void string_body(int l, int c, bool first) {
@@ -287,6 +311,7 @@ private:
                     case 't': text += '\t'; break;
                     case '"': text += '"'; break;
                     case '\\': text += '\\'; break;
+                    case 'u': text += unicode_escape(el, ec); break;
                     default: error(el, ec, std::string("unknown escape '\\") + e + "'");
                 }
                 continue;

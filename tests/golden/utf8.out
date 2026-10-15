@@ -1,0 +1,11 @@
+héllo wörld 11
+é ö d
+éll
+["a", "ñ", "€", "😀"] 4
+233 8364 128512 é € 😀
+Hé😀 1
+true true true
+["ü", {"ключ": "значение"}]
+string index 11 is out of range (size 11)
+chr(): code must be 0 to 1114111 and not 55296 to 57343 (surrogates)
+ord(): needs a one-character string

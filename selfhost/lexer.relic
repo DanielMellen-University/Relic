@@ -14,6 +14,40 @@ fun is_digit(c) = c != "" and c >= "0" and c <= "9"
 fun is_alpha(c) = c != "" and ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
 fun is_word(c) = is_alpha(c) or is_digit(c) or c == "_"
 
+let hex_digits = "0123456789abcdef"
+
+fun hex_value(c)
+    let i = 0
+    for h in hex_digits
+        if c == h or c == chr(ord(h) - 32)
+            return i
+        i = i + 1
+    return -1
+
+# \u{hex}: one character by its code point. Gives none after an error.
+fun unicode_escape(st, el, ec)
+    let msg = "bad unicode escape; write \\u{{hex}}, like \\u{{e9}}"
+    if peek(st, 0) != "{{"
+        fail(st, el, ec, msg)
+        return none
+    advance(st)
+    let cp = 0
+    let digits = 0
+    while hex_value(peek(st, 0)) >= 0
+        cp = cp * 16 + hex_value(advance(st))
+        digits = digits + 1
+        if digits > 6
+            fail(st, el, ec, msg)
+            return none
+    if digits == 0 or peek(st, 0) != "}}"
+        fail(st, el, ec, msg)
+        return none
+    advance(st)
+    if cp > 1114111 or (cp >= 55296 and cp <= 57343)
+        fail(st, el, ec, "unicode escape is not a valid character")
+        return none
+    return chr(cp)
+
 fun new_state(src)
     return {src: src, pos: 0, line: 1, col: 1, last_end: 1, indents: [0], brackets: [], interp: [], out: [], err: none}
 
@@ -156,6 +190,11 @@ fun string_body(st, l, c, first)
                 text = text + "\""
             else if e == "\\"
                 text = text + "\\"
+            else if e == "u"
+                let u = unicode_escape(st, el, ec)
+                if u == none
+                    return
+                text = text + u
             else
                 fail(st, el, ec, "unknown escape '\\{e}'")
                 return

@@ -91,4 +91,12 @@ std::string repr(const Value& v);
 
 bool equal(const Value& a, const Value& b);
 
+// UTF-8: strings are bytes, but length, indexes, slices and loops count
+// characters (code points). A byte that is not valid UTF-8 counts as one character.
+size_t utf8_char_size(const std::string& s, size_t pos);  // bytes in the character at pos
+size_t utf8_len(const std::string& s);
+size_t utf8_offset(const std::string& s, size_t index);  // byte offset of character index, or s.size()
+long utf8_decode(const std::string& s, size_t pos);       // code point at pos
+std::string utf8_encode(long cp);
+
 }  // namespace relic

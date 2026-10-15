@@ -200,7 +200,10 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
             }
             if (obj.is<std::string>()) {
                 const std::string& s = obj.as<std::string>();
-                return Value(std::string(1, s[list_slot(*n.kids[1], idx, s.size(), "string index")]));
+                long long i = whole(*n.kids[1], idx, "string index");
+                size_t at = i < 0 ? s.size() : utf8_offset(s, static_cast<size_t>(i));
+                if (at >= s.size()) list_slot(*n.kids[1], idx, utf8_len(s), "string index");  // fails
+                return Value(s.substr(at, utf8_char_size(s, at)));
             }
             if (obj.is<std::shared_ptr<Map>>()) {
                 if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");
@@ -254,7 +257,12 @@ List op_loop_items(const Ast& at, const Value& src) {
     if (src.is<std::shared_ptr<List>>()) {
         items = *src.as<std::shared_ptr<List>>();
     } else if (src.is<std::string>()) {
-        for (char c : src.as<std::string>()) items.emplace_back(std::string(1, c));
+        const std::string& s = src.as<std::string>();
+        for (size_t i = 0; i < s.size();) {
+            size_t n = utf8_char_size(s, i);
+            items.emplace_back(s.substr(i, n));
+            i += n;
+        }
     } else if (src.is<std::shared_ptr<Map>>()) {
         for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
     } else {
@@ -465,16 +473,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             return Flow::Normal;
         case Node::For: {
             Value src = eval(*n.kids[0], env);
-            List items;
-            if (src.is<std::shared_ptr<List>>()) {
-                items = *src.as<std::shared_ptr<List>>();  // copy: changes in the loop do not affect it
-            } else if (src.is<std::string>()) {
-                for (char c : src.as<std::string>()) items.emplace_back(std::string(1, c));
-            } else if (src.is<std::shared_ptr<Map>>()) {
-                for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
-            } else {
-                fail(*n.kids[0], std::string("cannot loop over ") + a_type(src));
-            }
+            List items = op_loop_items(*n.kids[0], src);  // a copy: changes in the loop do not affect it
             for (auto& item : items) {
                 auto scope = std::make_shared<Env>(env);
                 scope->vars[n.text] = item;

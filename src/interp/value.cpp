@@ -3,6 +3,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 
 namespace relic {
 
@@ -99,6 +100,79 @@ std::string repr(const Value& v) {
         case 8: return "<fun " + v.as<std::shared_ptr<Builtin>>()->name + ">";
         default: return "<module " + v.as<std::shared_ptr<Module>>()->name + ">";
     }
+}
+
+size_t utf8_char_size(const std::string& s, size_t pos) {
+    unsigned char c = static_cast<unsigned char>(s[pos]);
+    size_t n = c < 0x80 ? 1 : (c >> 5) == 6 ? 2 : (c >> 4) == 14 ? 3 : (c >> 3) == 30 ? 4 : 1;
+    if (n == 1 || pos + n > s.size()) return 1;
+    for (size_t i = 1; i < n; ++i)
+        if ((static_cast<unsigned char>(s[pos + i]) & 0xC0) != 0x80) return 1;
+    return n;
+}
+
+// Length of the leading run of ASCII bytes, checked 8 bytes at a time.
+static size_t ascii_prefix(const std::string& s, size_t limit) {
+    size_t i = 0;
+    const char* p = s.data();
+    while (i + 8 <= limit) {
+        unsigned long long w;
+        std::memcpy(&w, p + i, 8);
+        if (w & 0x8080808080808080ULL) break;
+        i += 8;
+    }
+    while (i < limit && static_cast<unsigned char>(p[i]) < 0x80) ++i;
+    return i;
+}
+
+size_t utf8_len(const std::string& s) {
+    size_t i = ascii_prefix(s, s.size()), n = i;
+    while (i < s.size()) {
+        i += utf8_char_size(s, i);
+        ++n;
+    }
+    return n;
+}
+
+size_t utf8_offset(const std::string& s, size_t index) {
+    size_t limit = index < s.size() ? index + 1 : s.size();
+    size_t i = ascii_prefix(s, limit);
+    if (i == limit) return index < s.size() ? index : s.size();
+    size_t n = i;
+    while (i < s.size() && n < index) {
+        i += utf8_char_size(s, i);
+        ++n;
+    }
+    return i;
+}
+
+long utf8_decode(const std::string& s, size_t pos) {
+    size_t n = utf8_char_size(s, pos);
+    unsigned char c = static_cast<unsigned char>(s[pos]);
+    if (n == 1) return c;
+    long cp = c & (0x7F >> n);
+    for (size_t i = 1; i < n; ++i) cp = (cp << 6) | (static_cast<unsigned char>(s[pos + i]) & 0x3F);
+    return cp;
+}
+
+std::string utf8_encode(long cp) {
+    std::string out;
+    if (cp < 0x80) {
+        out += static_cast<char>(cp);
+    } else if (cp < 0x800) {
+        out += static_cast<char>(0xC0 | (cp >> 6));
+        out += static_cast<char>(0x80 | (cp & 0x3F));
+    } else if (cp < 0x10000) {
+        out += static_cast<char>(0xE0 | (cp >> 12));
+        out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+        out += static_cast<char>(0x80 | (cp & 0x3F));
+    } else {
+        out += static_cast<char>(0xF0 | (cp >> 18));
+        out += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+        out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+        out += static_cast<char>(0x80 | (cp & 0x3F));
+    }
+    return out;
 }
 
 bool equal(const Value& a, const Value& b) {
