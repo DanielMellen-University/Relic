@@ -17,7 +17,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
-| M11 | Graphics API and desktop shell | M10 | started (SDL2 graphics slice 1) |
+| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 and 2: drawing, input, text, BMP images) |
 | M12 | Apps and IDE | M11 | not started |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
@@ -67,7 +67,8 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 89 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
-  - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. Next: keyboard and mouse input, text.
+  - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
+  - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds. Next: PNG images, desktop shell.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 
 ## Risks

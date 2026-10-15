@@ -1,0 +1,40 @@
+# Move a sprite with the arrow keys, click to drop a square, Escape to quit.
+#   build-sdl/relic examples/input_demo.relic   (run from the repo root)
+use std/graphics
+
+if not graphics.available()
+    print("this relic was built without graphics; rebuild with -DRELIC_SDL=ON")
+else
+    graphics.open(320, 240, "Relic input")
+    let sprite = graphics.load_image("examples/sprite.bmp")
+    let x = 150
+    let y = 110
+    let dots = []
+    let last = "none yet"
+    let running = true
+    while running and not graphics.quit_requested()
+        let k = graphics.next_key()
+        while k != none
+            last = k
+            if k == "escape"
+                running = false
+            k = graphics.next_key()
+        if graphics.key_down("left")
+            x = x - 3
+        if graphics.key_down("right")
+            x = x + 3
+        if graphics.key_down("up")
+            y = y - 3
+        if graphics.key_down("down")
+            y = y + 3
+        if graphics.mouse_down(1)
+            append(dots, [graphics.mouse_x(), graphics.mouse_y()])
+        graphics.clear(20, 20, 30)
+        for d in dots
+            graphics.rect(d[0] - 2, d[1] - 2, 4, 4, 90, 200, 255)
+        graphics.image(sprite, x, y)
+        graphics.text(4, 4, "last key: {last}", 230, 230, 230)
+        graphics.text_scaled(4, 210, "Relic", 2, 220, 120, 40)
+        graphics.present()
+        graphics.wait(16)
+    graphics.close()

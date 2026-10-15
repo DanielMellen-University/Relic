@@ -10,3 +10,20 @@ fun pixel(x, y, r, g, b) = host_gfx_pixel(x, y, r, g, b)
 fun present() = host_gfx_present()       # show what was drawn since the last present
 fun quit_requested() = host_gfx_quit_requested()  # true once the window's close button was hit
 fun wait(ms) = host_gfx_wait(ms)
+
+# Input. Key names are lowercase SDL names: "a", "space", "left", "return", "escape".
+fun key_down(name) = host_gfx_key_down(name)      # true while the key is held
+fun next_key() = host_gfx_next_key()              # next pressed key name, or none
+fun mouse_x() = host_gfx_mouse_x()
+fun mouse_y() = host_gfx_mouse_y()
+fun mouse_down(button) = host_gfx_mouse_down(button)  # 1 left, 2 middle, 3 right
+
+# Text in a built-in 8x12 font (ASCII). Each character is 8 * scale wide.
+fun text(x, y, s, r, g, b) = host_gfx_text(x, y, s, 1, r, g, b)
+fun text_scaled(x, y, s, scale, r, g, b) = host_gfx_text(x, y, s, scale, r, g, b)
+
+# Images: BMP files only for now. load returns an id; open a window first.
+fun load_image(path) = host_gfx_image_load(path)
+fun image(id, x, y) = host_gfx_image(id, x, y)
+fun image_width(id) = host_gfx_image_width(id)
+fun image_height(id) = host_gfx_image_height(id)

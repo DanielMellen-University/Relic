@@ -1,0 +1,15 @@
+# SDL-only smoke test, run headless with SDL_VIDEODRIVER=dummy (ctest gfx_smoke).
+use std/graphics
+graphics.open(64, 48, "smoke")
+graphics.clear(0, 0, 0)
+graphics.text(2, 2, "Hi?\n~", 255, 255, 255)
+graphics.text_scaled(2, 20, "ok", 2, 255, 255, 255)
+let img = graphics.load_image("tiny.bmp")
+print(graphics.image_width(img), graphics.image_height(img))
+graphics.image(img, 10, 10)
+graphics.present()
+print(graphics.next_key())
+print(type(graphics.key_down("space")), type(graphics.mouse_down(1)))
+print(type(graphics.mouse_x()), graphics.quit_requested())
+graphics.close()
+print("done")

@@ -64,6 +64,13 @@ foreach(t ${GOLDEN_TESTS})
       -P ${CMAKE_SOURCE_DIR}/tools/run_golden.cmake)
 endforeach()
 
+if(RELIC_SDL)
+  # Headless SDL smoke test: input, text and image calls run without a display.
+  add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
+  set_tests_properties(gfx_smoke PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nnumber false\ndone")
+endif()
+
 add_test(NAME selfhost_lexer
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_lexers.cmake)

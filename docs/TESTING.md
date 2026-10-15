@@ -60,4 +60,4 @@ The skips are limits of the Relic-written interpreter, listed in DESIGN.md (Self
 
 ## Graphics
 
-The default build has no SDL, so tests only check that `std/graphics` loads (`std_graphics`). With `-DRELIC_SDL=ON`, try `examples/hello_window.relic`; on a machine with no display, `SDL_VIDEODRIVER=dummy` runs it headless.
+The default build has no SDL, so tests only check that `std/graphics` loads (`std_graphics`). With `-DRELIC_SDL=ON`, try `examples/hello_window.relic`; on a machine with no display, `SDL_VIDEODRIVER=dummy` runs it headless. SDL builds also get a `gfx_smoke` ctest (`tests/sdl/`) that runs input, text and image calls headless.

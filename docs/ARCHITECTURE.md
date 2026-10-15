@@ -15,7 +15,7 @@ Relic/
     ast/            AST node types and the --ast dump
     interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations)
     vm/             bytecode compiler and stack VM (the default engine)
-    builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones
+    builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones (font8x12.inc is its generated font)
     diag/           error messages with file, line, column
   std/              standard library, written in Relic
   selfhost/         lexer, parser and interpreter written in Relic
