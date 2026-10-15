@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **M5 done, REPL**. `relic file.relic` runs Relic programs and `relic` on its own opens a REPL. FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. Next up is the 1.0 release (M6). CI runs on every push. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **Relic 1.0** (pending CI and the `v1.0.0` tag). `relic file.relic` runs Relic programs and `relic` on its own opens a REPL. FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)). Next is phase 4 work: memory model and modules (M7).
 
 ## A taste
 
@@ -86,7 +86,7 @@ print(box.title, box["version"])
 
 ```
 $ ./build/relic
-relic 0.0.1. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.0. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42
@@ -130,3 +130,7 @@ hello Daniel
 ## Contributing
 
 Design decisions are still open. Items marked **Default** or **Open** in the docs are proposals, not final calls.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
