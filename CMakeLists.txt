@@ -49,3 +49,7 @@ foreach(t ${GOLDEN_TESTS})
       -DTEST=${t}
       -P ${CMAKE_SOURCE_DIR}/tools/run_golden.cmake)
 endforeach()
+
+add_test(NAME selfhost_lexer
+  COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+    -P ${CMAKE_SOURCE_DIR}/tools/compare_lexers.cmake)

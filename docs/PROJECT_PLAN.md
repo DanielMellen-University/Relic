@@ -58,6 +58,7 @@ Planned at a coarser level. Each gets its own checklist when M6 is done.
 - M7 exit: memory model chosen and written up. Two files can import each other. **Done:** reference counting (DESIGN.md), `use` with cycles, golden tests `use_*` and `err_use_*`.
 - M8 exit: stdlib covers strings, lists, maps, files, time, math, each with tests. **Done:** `std/*.relic`, golden tests `std_*`.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
+  - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test). Next: parser, then interpreter.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.

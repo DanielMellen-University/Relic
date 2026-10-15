@@ -4,9 +4,15 @@
 #include <chrono>
 #include <cmath>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 namespace relic {
+
+std::vector<std::string>& script_args() {
+    static std::vector<std::string> a;
+    return a;
+}
 
 void Interpreter::install_builtins() {
     auto add = [&](const std::string& name, int arity, std::function<Value(std::vector<Value>&)> fn) {
@@ -145,6 +151,18 @@ void Interpreter::install_builtins() {
 
     // Host-only pieces: files, clocks, float math. Named host_* so the
     // borrowed surface is easy to find and replace later.
+    // args(): words after the file name on the command line.
+    add("args", 0, [](std::vector<Value>&) {
+        auto l = std::make_shared<List>();
+        for (const auto& s : script_args()) l->emplace_back(s);
+        return Value(l);
+    });
+    // eprint(a, ...): like print, but to stderr.
+    add("eprint", -1, [](std::vector<Value>& a) {
+        for (size_t i = 0; i < a.size(); ++i) std::cerr << (i ? " " : "") << show(a[i]);
+        std::cerr << "\n";
+        return Value();
+    });
     add("host_read_file", 1, [str_arg](std::vector<Value>& a) {
         std::ifstream f(str_arg(a[0], "path"), std::ios::binary);
         if (!f) throw std::string("cannot open ") + a[0].as<std::string>();

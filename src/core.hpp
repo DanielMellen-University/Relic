@@ -49,4 +49,7 @@ RunResult dump_tree(const std::string& path, const std::string& source);
 
 std::string version_string();
 
+// Words after the file name; read by the args() built-in.
+std::vector<std::string>& script_args();
+
 }  // namespace relic

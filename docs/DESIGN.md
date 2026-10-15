@@ -185,6 +185,16 @@ These are **Default** behaviors the interpreter now follows.
 - `std/math`: `pi`, `e`, `abs`, `min`, `max`, `clamp`, `floor`, `ceil`, `round`, `sqrt`, `pow`, `sin`, `cos`, `exp`, `log`, `is_whole`. Host: floor, sqrt, sin, cos, exp, log, pow.
 - **Open:** UTF-8 aware strings, directory listing, deleting files, dates and time zones, random numbers.
 
+## Self-host (M9)
+
+Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
+
+- `selfhost/lexer.relic`: the lexer. `lex(src)` gives back `{tokens, err}`. Relic has no catchable errors yet, so the first error is stored and lexing stops.
+- `selfhost/tokens.relic`: prints the same dump as `--tokens`. Run it with `relic selfhost/tokens.relic FILE`.
+- The `selfhost_lexer` test runs both lexers over every `.relic` file in the repo and needs identical stdout and stderr.
+- New built-ins for scripts: `args()` (words after the file name) and `eprint(...)` (print to stderr).
+- Watch out: a lone `{` or `}` in a string literal starts or ends interpolation. Write `"{{"` and `"}}"` for literal braces.
+
 ## Architecture
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.

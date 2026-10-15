@@ -1,0 +1,40 @@
+# selfhost/tokens.relic: same output as `relic --tokens FILE`, using the Relic lexer.
+#   relic selfhost/tokens.relic FILE
+use lexer
+use std/files
+
+let quiet = {NEWLINE: true, INDENT: true, DEDENT: true, EOF: true}
+let stringy = {STRING: true, STRING_PART: true, STRING_END: true}
+
+fun quote(s)
+    let q = "\""
+    for c in s
+        if c == "\n"
+            q = q + "\\n"
+        else if c == "\t"
+            q = q + "\\t"
+        else if c == "\""
+            q = q + "\\\""
+        else if c == "\\"
+            q = q + "\\\\"
+        else
+            q = q + c
+    return q + "\""
+
+let argv = args()
+if len(argv) != 1
+    eprint("usage: relic selfhost/tokens.relic FILE")
+else
+    let path = argv[0]
+    let r = lexer.lex(files.read(path))
+    if r.err != none
+        eprint("{path}:{r.err.line}:{r.err.col}: error: {r.err.msg}")
+    else
+        for t in r.tokens
+            let line = "{t.line}:{t.col} {t.kind}"
+            if not (t.kind in quiet)
+                if t.kind in stringy
+                    line = line + " " + quote(t.text)
+                else
+                    line = line + " " + t.text
+            print(line)

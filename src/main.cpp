@@ -15,7 +15,7 @@ static bool stdin_is_terminal() { return isatty(0) != 0; }
 #endif
 
 static void usage() {
-    std::cerr << "usage: relic [--version] [--tokens | --ast] [file.relic]\n"
+    std::cerr << "usage: relic [--version] [--tokens | --ast] [file.relic [args...]]\n"
                  "       relic            (no file: start the REPL)\n";
 }
 
@@ -31,10 +31,12 @@ int main(int argc, char** argv) {
     bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
     bool ast = argc == 3 && std::string(argv[1]) == "--ast";
     if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
-    if (argc != 2 && !tokens && !ast) {
+    if (argc < 2 || (!tokens && !ast && std::string(argv[1]).rfind("--", 0) == 0)) {
         usage();
         return 2;
     }
+    if (!tokens && !ast)
+        for (int i = 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
     std::string path = argv[(tokens || ast) ? 2 : 1];
     std::ifstream f(path, std::ios::binary);
     if (!f) {

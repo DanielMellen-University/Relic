@@ -1,0 +1,291 @@
+# selfhost/lexer.relic: the Relic lexer, written in Relic (M9, stage 1).
+# Mirrors src/lexer/lexer.cpp token for token, including error messages and
+# positions. lex(src) gives back {tokens: [...], err: none} or, on the first
+# error, {tokens: [...], err: {line, col, msg}}.
+# Each token is a map {kind, text, line, col}; kind uses the --tokens names.
+
+let keywords = {"let": "LET", "fun": "FUN", "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "in": "IN", "break": "BREAK", "next": "NEXT", "return": "RETURN", "and": "AND", "or": "OR", "not": "NOT", "true": "TRUE", "false": "FALSE", "none": "NONE", "use": "USE"}
+
+let singles = {"+": "PLUS", "-": "MINUS", "*": "STAR", "/": "SLASH", "%": "PERCENT", ",": "COMMA", ":": "COLON"}
+
+let indent_width = 4
+
+fun is_digit(c) = c != "" and c >= "0" and c <= "9"
+fun is_alpha(c) = c != "" and ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
+fun is_word(c) = is_alpha(c) or is_digit(c) or c == "_"
+
+fun new_state(src)
+    return {src: src, pos: 0, line: 1, col: 1, last_end: 1, indents: [0], brackets: [], interp: [], out: [], err: none}
+
+fun eof(st) = st.pos >= len(st.src)
+
+fun peek(st, ahead)
+    let i = st.pos + ahead
+    if i < len(st.src)
+        return st.src[i]
+    return ""
+
+fun advance(st)
+    let c = st.src[st.pos]
+    st.pos = st.pos + 1
+    if c == "\n"
+        st.last_end = st.col
+        st.line = st.line + 1
+        st.col = 1
+    else
+        st.col = st.col + 1
+    return c
+
+fun emit(st, kind, text, l, c)
+    append(st.out, {kind: kind, text: text, line: l, col: c})
+
+fun fail(st, l, c, msg)
+    if st.err == none
+        st.err = {line: l, col: c, msg: msg}
+
+fun last(xs) = xs[len(xs) - 1]
+
+fun skip_comment(st)
+    while not eof(st) and peek(st, 0) != "\n"
+        advance(st)
+
+# Leading whitespace. Gives false at end of file.
+fun layout(st)
+    while true
+        let width = 0
+        while peek(st, 0) == " " or peek(st, 0) == "\t"
+            if peek(st, 0) == "\t"
+                fail(st, st.line, st.col, "tabs are not allowed; use 4 spaces")
+                return false
+            advance(st)
+            width = width + 1
+        if eof(st)
+            return false
+        let c = peek(st, 0)
+        if c == chr(13) or c == "\n"
+            advance(st)
+            next
+        if c == "#"
+            skip_comment(st)
+            next
+        let top = last(st.indents)
+        if width == top
+            return true
+        if width > top
+            if width != top + indent_width
+                fail(st, st.line, st.col, "indent must be exactly 4 spaces deeper than the line above")
+                return false
+            if len(st.out) == 0
+                fail(st, st.line, st.col, "unexpected indent")
+                return false
+            append(st.indents, width)
+            emit(st, "INDENT", "", st.line, st.col)
+            return true
+        while width < last(st.indents)
+            pop(st.indents)
+            emit(st, "DEDENT", "", st.line, st.col)
+        if width != last(st.indents)
+            fail(st, st.line, st.col, "dedent does not line up with any outer block")
+            return false
+        return true
+
+fun open(st, ch, l, c)
+    if len(st.interp) > 0
+        let top = last(st.interp)
+        top.depth = top.depth + 1
+    append(st.brackets, {ch: ch, line: l, col: c})
+
+fun close(st, want, got, l, c)
+    if len(st.brackets) == 0 or last(st.brackets).ch != want
+        fail(st, l, c, "unmatched '{got}'")
+        return
+    pop(st.brackets)
+    if len(st.interp) > 0 and last(st.interp).depth > 0
+        let top = last(st.interp)
+        top.depth = top.depth - 1
+
+fun number(st, l, c)
+    let start = st.pos
+    while is_digit(peek(st, 0))
+        advance(st)
+    if peek(st, 0) == "." and is_digit(peek(st, 1))
+        advance(st)
+        while is_digit(peek(st, 0))
+            advance(st)
+    if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
+        fail(st, st.line, st.col, "letter right after a number")
+        return
+    emit(st, "NUMBER", slice(st.src, start, st.pos), l, c)
+
+fun name(st, l, c)
+    let start = st.pos
+    while is_word(peek(st, 0))
+        advance(st)
+    let word = slice(st.src, start, st.pos)
+    if word in keywords
+        emit(st, keywords[word], word, l, c)
+    else
+        emit(st, "NAME", word, l, c)
+
+# String text up to the closing quote or the next {. first: right after the quote.
+fun string_body(st, l, c, first)
+    let text = ""
+    while true
+        if eof(st) or peek(st, 0) == "\n"
+            fail(st, l, c, "unterminated string")
+            return
+        let ch = advance(st)
+        if ch == "\""
+            if first
+                emit(st, "STRING", text, l, c)
+            else
+                emit(st, "STRING_END", text, l, c)
+            return
+        if ch == "\\"
+            let el = st.line
+            let ec = st.col - 1
+            if eof(st)
+                fail(st, l, c, "unterminated string")
+                return
+            let e = advance(st)
+            if e == "n"
+                text = text + "\n"
+            else if e == "t"
+                text = text + "\t"
+            else if e == "\""
+                text = text + "\""
+            else if e == "\\"
+                text = text + "\\"
+            else
+                fail(st, el, ec, "unknown escape '\\{e}'")
+                return
+            next
+        if ch == "{{"
+            if peek(st, 0) == "{{"
+                advance(st)
+                text = text + "{{"
+                next
+            emit(st, "STRING_PART", text, l, c)
+            emit(st, "INTERP_START", "{{", st.line, st.col - 1)
+            append(st.interp, {depth: 0, line: l, col: c})
+            return
+        if ch == "}}" and peek(st, 0) == "}}"
+            advance(st)
+            text = text + "}}"
+            next
+        text = text + ch
+
+fun two(st, nxt, yes, no, ty, tn, l, c)
+    if peek(st, 0) == nxt
+        advance(st)
+        emit(st, yes, ty, l, c)
+    else
+        emit(st, no, tn, l, c)
+
+fun token(st)
+    let l = st.line
+    let c = st.col
+    let ch = peek(st, 0)
+    if is_digit(ch)
+        return number(st, l, c)
+    if is_alpha(ch) or ch == "_"
+        return name(st, l, c)
+    if ch == "\""
+        advance(st)
+        return string_body(st, l, c, true)
+    advance(st)
+    if ch in singles
+        emit(st, singles[ch], ch, l, c)
+    else if ch == "="
+        two(st, "=", "EQ_EQ", "ASSIGN", "==", "=", l, c)
+    else if ch == "<"
+        two(st, "=", "LESS_EQ", "LESS", "<=", "<", l, c)
+    else if ch == ">"
+        two(st, "=", "GREATER_EQ", "GREATER", ">=", ">", l, c)
+    else if ch == "."
+        two(st, ".", "DOT_DOT", "DOT", "..", ".", l, c)
+    else if ch == "!"
+        if peek(st, 0) == "="
+            advance(st)
+            emit(st, "BANG_EQ", "!=", l, c)
+        else
+            fail(st, l, c, "unexpected '!'; use 'not' for logic")
+    else if ch == "("
+        open(st, "(", l, c)
+        emit(st, "LPAREN", "(", l, c)
+    else if ch == "["
+        open(st, "[", l, c)
+        emit(st, "LBRACKET", "[", l, c)
+    else if ch == "{{"
+        if len(st.interp) > 0
+            let top = last(st.interp)
+            top.depth = top.depth + 1
+        else
+            open(st, "{{", l, c)
+        emit(st, "LBRACE", "{{", l, c)
+    else if ch == ")"
+        close(st, "(", ")", l, c)
+        if st.err == none
+            emit(st, "RPAREN", ")", l, c)
+    else if ch == "]"
+        close(st, "[", "]", l, c)
+        if st.err == none
+            emit(st, "RBRACKET", "]", l, c)
+    else if ch == "}}"
+        if len(st.interp) > 0
+            let top = last(st.interp)
+            if top.depth == 0
+                pop(st.interp)
+                emit(st, "INTERP_END", "}}", l, c)
+                return string_body(st, st.line, st.col, false)
+            top.depth = top.depth - 1
+            emit(st, "RBRACE", "}}", l, c)
+            return
+        close(st, "{{", "}}", l, c)
+        if st.err == none
+            emit(st, "RBRACE", "}}", l, c)
+    else
+        fail(st, l, c, "unexpected character '{ch}'")
+
+fun lex(src)
+    let st = new_state(src)
+    let at_start = true
+    while st.err == none
+        if at_start and len(st.brackets) == 0
+            if not layout(st)
+                break
+            at_start = false
+        if eof(st)
+            break
+        let c = peek(st, 0)
+        if c == " " or c == chr(13)
+            advance(st)
+        else if c == "\t"
+            fail(st, st.line, st.col, "tabs are not allowed; use 4 spaces")
+        else if c == "#"
+            skip_comment(st)
+        else if c == "\n"
+            if len(st.interp) > 0
+                let t = last(st.interp)
+                fail(st, t.line, t.col, "unterminated string")
+            else
+                advance(st)
+                if len(st.brackets) == 0
+                    emit(st, "NEWLINE", "", st.line - 1, st.last_end)
+                    at_start = true
+        else
+            token(st)
+    if st.err == none and len(st.interp) > 0
+        let t = last(st.interp)
+        fail(st, t.line, t.col, "unterminated string")
+    if st.err == none and len(st.brackets) > 0
+        let b = last(st.brackets)
+        fail(st, b.line, b.col, "unclosed '{b.ch}'")
+    if st.err == none
+        if len(st.out) > 0 and last(st.out).kind != "NEWLINE" and last(st.out).kind != "DEDENT"
+            emit(st, "NEWLINE", "", st.line, st.col)
+        while len(st.indents) > 1
+            pop(st.indents)
+            emit(st, "DEDENT", "", st.line, st.col)
+        emit(st, "EOF", "", st.line, st.col)
+    return {tokens: st.out, err: st.err}
