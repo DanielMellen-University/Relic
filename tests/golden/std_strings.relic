@@ -1,0 +1,9 @@
+use std/strings
+print(strings.upper("Relic 1"), strings.lower("MONO"))
+print(strings.find("hello", "ll"), strings.find("hello", "z"))
+print(strings.contains("abc", "bc"), strings.starts_with("abc", "ab"), strings.ends_with("abc", "bc"))
+print(strings.trim("  hi \n"))
+print(strings.split("a,b,,c", ","))
+print(strings.join([1, 2, 3], "-"))
+print(strings.replace("a.b.c", ".", "/"), strings.repeat("ab", 3))
+print(num("42") + 1, ord("A"), chr(66), slice("hello", 1, 3))

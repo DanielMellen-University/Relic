@@ -1,0 +1,63 @@
+# std/lists: list helpers. pop, insert and remove are built in.
+
+fun map(xs, f)
+    let out = []
+    for x in xs
+        append(out, f(x))
+    return out
+
+fun filter(xs, keep)
+    let out = []
+    for x in xs
+        if keep(x)
+            append(out, x)
+    return out
+
+fun reduce(xs, f, start)
+    let acc = start
+    for x in xs
+        acc = f(acc, x)
+    return acc
+
+fun sum(xs) = reduce(xs, fun_add, 0)
+fun fun_add(a, b) = a + b
+
+fun index_of(xs, item)
+    let i = 0
+    for x in xs
+        if x == item
+            return i
+        i = i + 1
+    return -1
+
+fun reverse(xs)
+    let out = []
+    let i = len(xs) - 1
+    while i >= 0
+        append(out, xs[i])
+        i = i - 1
+    return out
+
+fun copy(xs) = slice(xs, 0, len(xs))
+
+fun sort_by(xs, less)
+    # stable merge sort; returns a new list
+    if len(xs) <= 1
+        return copy(xs)
+    let mid = (len(xs) - len(xs) % 2) / 2
+    let a = sort_by(slice(xs, 0, mid), less)
+    let b = sort_by(slice(xs, mid, len(xs)), less)
+    let out = []
+    let i = 0
+    let j = 0
+    while i < len(a) and j < len(b)
+        if less(b[j], a[i])
+            append(out, b[j])
+            j = j + 1
+        else
+            append(out, a[i])
+            i = i + 1
+    return out + slice(a, i, len(a)) + slice(b, j, len(b))
+
+fun natural(a, b) = a < b
+fun sort(xs) = sort_by(xs, natural)

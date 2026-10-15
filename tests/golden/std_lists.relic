@@ -1,0 +1,12 @@
+use std/lists
+fun dbl(x) = x * 2
+fun odd(x) = x % 2 == 1
+fun big(a, b) = a > b
+let xs = [5, 3, 8, 1]
+print(lists.map(xs, dbl), lists.filter(xs, odd), lists.sum(xs))
+print(lists.sort(xs), lists.sort_by(xs, big), xs)
+print(lists.reverse(xs), lists.index_of(xs, 8), lists.index_of(xs, 9))
+print(pop(xs), xs)
+insert(xs, 0, 9)
+print(remove(xs, 1), xs, slice(xs, 1, 10))
+print(lists.sort(["pear", "apple", "fig"]))

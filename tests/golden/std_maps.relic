@@ -1,0 +1,6 @@
+use std/maps
+let m = {a: 1, b: 2}
+print(maps.values(m), maps.items(m))
+print(maps.get(m, "a", 0), maps.get(m, "z", 0))
+print(maps.merge(m, {b: 3, c: 4}), m)
+print(remove(m, "a"), m, keys(m))

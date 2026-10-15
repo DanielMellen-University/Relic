@@ -1,0 +1,7 @@
+use std/files
+let p = "std_files.tmp"
+files.write(p, "one\n")
+files.append_text(p, "two\n")
+print(files.exists(p), files.exists("no_such_file.tmp"))
+print(files.read(p) == "one\ntwo\n", files.lines(p))
+files.write(p, "")

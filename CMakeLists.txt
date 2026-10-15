@@ -24,6 +24,7 @@ add_library(relic_core STATIC
   src/builtins/builtins.cpp
 )
 target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
+target_compile_definitions(relic_core PRIVATE RELIC_STD_DIR="${CMAKE_SOURCE_DIR}/std/")
 
 add_executable(relic src/main.cpp)
 target_link_libraries(relic PRIVATE relic_core)

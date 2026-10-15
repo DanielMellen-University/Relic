@@ -1,0 +1,28 @@
+# std/maps: map helpers. keys and remove are built in.
+
+fun values(m)
+    let out = []
+    for k in m
+        append(out, m[k])
+    return out
+
+fun items(m)
+    # list of [key, value] pairs, in insertion order
+    let out = []
+    for k in m
+        append(out, [k, m[k]])
+    return out
+
+fun get(m, k, fallback)
+    if k in m
+        return m[k]
+    return fallback
+
+fun merge(a, b)
+    # new map: everything in a, then b on top
+    let out = {}
+    for k in a
+        out[k] = a[k]
+    for k in b
+        out[k] = b[k]
+    return out

@@ -1,0 +1,13 @@
+# std/files: read and write text files. Paths are relative to where relic runs.
+use std/strings
+
+fun read(path) = host_read_file(path)
+fun write(path, text) = host_write_file(path, text, false)
+fun append_text(path, text) = host_write_file(path, text, true)
+fun exists(path) = host_file_exists(path)
+
+fun lines(path)
+    let parts = strings.split(strings.replace(read(path), chr(13) + "\n", "\n"), "\n")
+    if len(parts) > 0 and parts[len(parts) - 1] == ""
+        pop(parts)
+    return parts

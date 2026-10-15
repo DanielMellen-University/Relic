@@ -1,0 +1,5 @@
+# std/time: clocks, in seconds.
+
+fun now() = host_now()       # seconds since 1970-01-01 UTC
+fun clock() = host_clock()   # steady clock for measuring; only differences mean anything
+fun since(start) = host_clock() - start

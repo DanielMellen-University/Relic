@@ -1,6 +1,7 @@
 #include "interp/interp.hpp"
 
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -61,6 +62,15 @@ std::string folder_of(const std::string& file) {
     return cut == std::string::npos ? "" : file.substr(0, cut + 1);
 }
 
+// Where `use std/...` looks: $RELIC_STD if set, else the std/ folder of the
+// source tree this host was built from.
+std::string std_root() {
+    const char* env = std::getenv("RELIC_STD");
+    std::string r = env && *env ? env : RELIC_STD_DIR;
+    if (!r.empty() && r.back() != '/' && r.back() != '\\') r += '/';
+    return r;
+}
+
 std::string key_of(const std::string& file) {
     std::error_code ec;
     fs::path k = fs::weakly_canonical(fs::path(file), ec);
@@ -79,7 +89,8 @@ void Interpreter::set_main_file(const std::string& path) {
 }
 
 Value Interpreter::load_module(const Ast& use) {
-    std::string file = folder_of(current_file_) + use.text + ".relic";
+    std::string file = use.text.rfind("std/", 0) == 0 ? std_root() + use.text.substr(4) + ".relic"
+                                                      : folder_of(current_file_) + use.text + ".relic";
     std::string key = key_of(file);
     auto it = modules_.find(key);
     if (it != modules_.end()) return Value(it->second);  // loaded, or loading (a cycle)

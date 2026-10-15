@@ -1,0 +1,82 @@
+# std/strings: text helpers, written in Relic on top of slice, ord and chr.
+
+fun find(s, sub)
+    # index of the first `sub` in `s`, or -1
+    let n = len(sub)
+    let i = 0
+    while i + n <= len(s)
+        if slice(s, i, i + n) == sub
+            return i
+        i = i + 1
+    return -1
+
+fun contains(s, sub) = find(s, sub) >= 0
+
+fun starts_with(s, pre) = slice(s, 0, len(pre)) == pre
+
+fun ends_with(s, suf) = len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s)) == suf
+
+fun upper(s)
+    let out = ""
+    for c in s
+        let k = ord(c)
+        if k >= 97 and k <= 122
+            out = out + chr(k - 32)
+        else
+            out = out + c
+    return out
+
+fun lower(s)
+    let out = ""
+    for c in s
+        let k = ord(c)
+        if k >= 65 and k <= 90
+            out = out + chr(k + 32)
+        else
+            out = out + c
+    return out
+
+fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
+
+fun trim(s)
+    let a = 0
+    let b = len(s)
+    while a < b and is_space(s[a])
+        a = a + 1
+    while b > a and is_space(s[b - 1])
+        b = b - 1
+    return slice(s, a, b)
+
+fun split(s, sep)
+    # split("a,b", ",") is ["a", "b"]; an empty sep splits into characters
+    let parts = []
+    if sep == ""
+        for c in s
+            append(parts, c)
+        return parts
+    let rest = s
+    let i = find(rest, sep)
+    while i >= 0
+        append(parts, slice(rest, 0, i))
+        rest = slice(rest, i + len(sep), len(rest))
+        i = find(rest, sep)
+    append(parts, rest)
+    return parts
+
+fun join(items, sep)
+    let out = ""
+    let first = true
+    for x in items
+        if not first
+            out = out + sep
+        out = out + str(x)
+        first = false
+    return out
+
+fun replace(s, old, new) = join(split(s, old), new)
+
+fun repeat(s, n)
+    let out = ""
+    for i in 0..n
+        out = out + s
+    return out
