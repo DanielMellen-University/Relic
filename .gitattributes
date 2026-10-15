@@ -1,0 +1,6 @@
+# Keep LF everywhere so golden tests (columns, token dumps) match on Windows.
+* text=auto eol=lf
+*.relic text eol=lf
+*.out text eol=lf
+*.err text eol=lf
+*.args text eol=lf
