@@ -1,0 +1,1 @@
+rt_hint_arg.relic:3:11: error: half() argument 'n' must be int, got string

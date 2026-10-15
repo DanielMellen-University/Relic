@@ -1,0 +1,1 @@
+rt_hint_return.relic:2:5: error: id() must return string, got int

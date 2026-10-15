@@ -13,19 +13,20 @@ enum class Node {
     // statements
     Program,   // kids: statements
     Block,     // kids: statements
-    Let,       // text: name. kids: value
+    Let,       // text: name. kids: value, [Type]
     Assign,    // kids: target (Name, Index or Field), value
     ExprStmt,  // kids: expression
     If,        // kids: cond, then Block, [else: Block or If]
     While,     // kids: cond, Block
     For,       // text: loop name. kids: iterable, Block
-    Fun,       // text: name. kids: Params, body (Block, or one expression for the short form)
-    Params,    // kids: Name nodes
+    Fun,       // text: name. kids: Params, body (Block, or one expression for the short form), [Type]
+    Params,    // kids: Name nodes, each with an optional Type kid
     Return,    // kids: [value]
     Break,
     Next,
-    Use,       // text: module path as written, e.g. "lib/math" or "../util"
+    Use,       // text: module path as written, e.g. "lib/math" or "../util". kids: [Name for `as`]
     Try,       // text: catch name (may be empty). kids: try Block, catch Block
+    Type,      // text: a type hint after `as`: int, float, string, ...
     // expressions
     Number,    // text: digits as written
     String,    // text: decoded value

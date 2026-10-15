@@ -143,6 +143,10 @@ private:
         path += expect(Tok::Name, "a module name after 'use'").text;
         while (match(Tok::Slash)) path += "/" + expect(Tok::Name, "a name after '/'").text;
         auto n = make(Node::Use, kw, path);
+        if (match(Tok::As)) {
+            const Token& name = expect(Tok::Name, "a name after 'as'");
+            n->kids.push_back(make(Node::Name, name, name.text));
+        }
         end_of_line();
         return n;
     }
@@ -150,9 +154,11 @@ private:
     AstPtr let_stmt() {
         const Token& kw = advance();
         const Token& name = expect(Tok::Name, "a name after 'let'");
+        AstPtr hint = type_hint();
         expect(Tok::Assign, "'=' after the name");
         auto n = make(Node::Let, kw, name.text);
         n->kids.push_back(expression());
+        if (hint) n->kids.push_back(std::move(hint));
         end_of_line();
         return n;
     }
@@ -169,17 +175,34 @@ private:
                 for (const auto& seen : params->kids)
                     if (seen->text == p.text) fail(p, "duplicate parameter '" + p.text + "'");
                 params->kids.push_back(make(Node::Name, p, p.text));
+                if (auto hint = type_hint()) params->kids.back()->kids.push_back(std::move(hint));
             } while (match(Tok::Comma));
         }
         expect(Tok::RParen, "')' after the parameters");
         n->kids.push_back(std::move(params));
+        AstPtr hint = type_hint();
         if (match(Tok::Assign)) {  // short form: fun double(x) = x * 2
             n->kids.push_back(expression());
             end_of_line();
         } else {
             n->kids.push_back(block());
         }
+        if (hint) n->kids.push_back(std::move(hint));
         return n;
+    }
+
+    // Optional `as type`. Gives null when there is no `as`.
+    AstPtr type_hint() {
+        if (!at(Tok::As)) return nullptr;
+        advance();
+        const Token& t = peek();
+        if (t.kind != Tok::Name && t.kind != Tok::None) fail_expected("a type name after 'as'");
+        advance();
+        static const char* known[] = {"any", "none", "bool", "int", "float", "number", "string",
+                                      "list", "map", "function", "module"};
+        for (const char* k : known)
+            if (t.text == k) return make(Node::Type, t, t.text);
+        fail(t, "unknown type '" + t.text + "'; use any, none, bool, int, float, number, string, list, map, function or module");
     }
 
     AstPtr if_stmt() {

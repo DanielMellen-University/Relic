@@ -1,0 +1,58 @@
+# `as` type hints, checked while the program runs
+let count as int = 0
+count = count + 1
+print(count)
+
+fun area(w as number, h as number) as number
+    return w * h
+
+fun greet(name as string) as string = "hello " + name
+fun nothing() as none
+    print("side effect")
+
+print(area(3, 4), area(1.5, 2))
+print(greet("Ada"))
+print(nothing())
+
+let anything as any = 1
+anything = "now a string"
+print(anything)
+
+fun check(f)
+    try
+        f()
+    catch e
+        print(e.message)
+
+fun bad_let()
+    let x as string = 5
+check(bad_let)
+fun bad_assign()
+    let y as list = []
+    y = {}
+check(bad_assign)
+fun bad_arg()
+    greet(42)
+check(bad_arg)
+fun bad_return() as int
+    return "no"
+check(bad_return)
+fun falls_off() as int
+    let z = 1
+check(falls_off)
+fun short_bad(x) as float = x
+fun call_short()
+    short_bad(1)
+check(call_short)
+fun param_assign(n as int)
+    n = "text"
+fun call_param()
+    param_assign(1)
+check(call_param)
+
+# a new let without a hint drops it
+fun relet()
+    let v as int = 1
+    let v = "fine"
+    print(v)
+relet()

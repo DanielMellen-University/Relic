@@ -1,0 +1,4 @@
+fun id(x) as string
+    return x
+print(id("a"))
+print(id(1))

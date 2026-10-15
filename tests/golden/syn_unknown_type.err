@@ -1,0 +1,1 @@
+syn_unknown_type.relic:1:10: error: unknown type 'integer'; use any, none, bool, int, float, number, string, list, map, function or module

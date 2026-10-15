@@ -25,6 +25,12 @@ Value op_call_builtin(const Ast& call, const Builtin& b, std::vector<Value>& arg
 struct RuntimeError;
 // The value a `catch name` block sees: {message, line, col}.
 Value op_error_value(const RuntimeError& e);
+// `as` hints: does v fit the type name? op_check_type fails with
+// "<what> <type>, got <actual>" when it does not.
+bool op_type_ok(const std::string& type, const Value& v);
+void op_check_type(const Ast& at, const std::string& type, const Value& v, const std::string& what);
+// The hint of a Let, a Fun (its return) or a parameter Name, or "" if none.
+const std::string& op_hint(const Ast& n);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
 
 // Modules: the file a `use` path names, seen from the importing file, and the

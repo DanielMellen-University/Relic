@@ -1,0 +1,4 @@
+# use ... as gives a module another name
+use modules/mathx as m
+print(m.square(5))
+print(m)

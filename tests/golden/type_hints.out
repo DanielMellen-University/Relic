@@ -1,0 +1,14 @@
+1
+12 3.0
+hello Ada
+side effect
+none
+now a string
+'x' must be string, got int
+'y' must be list, got map
+greet() argument 'name' must be string, got int
+bad_return() must return int, got string
+falls_off() must return int, got none
+short_bad() must return float, got int
+'n' must be int, got string
+fine

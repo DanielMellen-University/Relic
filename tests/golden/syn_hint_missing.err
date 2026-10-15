@@ -1,0 +1,1 @@
+syn_hint_missing.relic:1:10: error: expected a type name after 'as', got '='

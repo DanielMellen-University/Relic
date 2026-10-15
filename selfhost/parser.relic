@@ -151,15 +151,21 @@ fun use_stmt(p)
     while match(p, "SLASH")
         path = path + "/" + expect(p, "NAME", "a name after '/'").text
     let n = node("Use", kw, path)
+    if match(p, "AS")
+        let t = expect(p, "NAME", "a name after 'as'")
+        add(n, node("Name", t, t.text))
     end_of_line(p)
     return n
 
 fun let_stmt(p)
     let kw = advance(p)
     let name = expect(p, "NAME", "a name after 'let'")
+    let hint = type_hint(p)
     expect(p, "ASSIGN", "'=' after the name")
     let n = node("Let", kw, name.text)
     add(n, expression(p))
+    if hint != none
+        add(n, hint)
     end_of_line(p)
     return n
 
@@ -176,16 +182,40 @@ fun fun_stmt(p)
             for seen in params.kids
                 if seen.text == t.text
                     fail(p, t, "duplicate parameter '{t.text}'")
-            add(params, node("Name", t, t.text))
+            let prm = node("Name", t, t.text)
+            let hint = type_hint(p)
+            if hint != none
+                add(prm, hint)
+            add(params, prm)
             more = match(p, "COMMA")
     expect(p, "RPAREN", "')' after the parameters")
     add(n, params)
+    let hint = type_hint(p)
     if match(p, "ASSIGN")
         add(n, expression(p))
         end_of_line(p)
     else
         add(n, block(p))
+    if hint != none
+        add(n, hint)
     return n
+
+let known_types = ["any", "none", "bool", "int", "float", "number", "string", "list", "map", "function", "module"]
+
+# Optional `as type`; none when there is no `as`.
+fun type_hint(p)
+    if not at(p, "AS")
+        return none
+    advance(p)
+    let t = peek(p)
+    if t.kind != "NAME" and t.kind != "NONE"
+        fail_expected(p, "a type name after 'as'")
+        return none
+    advance(p)
+    if not (t.text in known_types)
+        fail(p, t, "unknown type '{t.text}'; use any, none, bool, int, float, number, string, list, map, function or module")
+        return none
+    return node("Type", t, t.text)
 
 fun if_stmt(p)
     let kw = advance(p)

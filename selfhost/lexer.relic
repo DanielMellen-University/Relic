@@ -4,7 +4,7 @@
 # error, {tokens: [...], err: {line, col, msg}}.
 # Each token is a map {kind, text, line, col}; kind uses the --tokens names.
 
-let keywords = {"let": "LET", "fun": "FUN", "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "in": "IN", "break": "BREAK", "next": "NEXT", "return": "RETURN", "and": "AND", "or": "OR", "not": "NOT", "true": "TRUE", "false": "FALSE", "none": "NONE", "use": "USE", "try": "TRY", "catch": "CATCH"}
+let keywords = {"let": "LET", "fun": "FUN", "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "in": "IN", "break": "BREAK", "next": "NEXT", "return": "RETURN", "and": "AND", "or": "OR", "not": "NOT", "true": "TRUE", "false": "FALSE", "none": "NONE", "use": "USE", "try": "TRY", "catch": "CATCH", "as": "AS"}
 
 let singles = {"+": "PLUS", "-": "MINUS", "*": "STAR", "/": "SLASH", "%": "PERCENT", ",": "COMMA", ":": "COLON"}
 

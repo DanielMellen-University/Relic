@@ -23,7 +23,9 @@ struct Env {
     std::unordered_map<std::string, Value> vars;
     std::shared_ptr<Env> parent;
     explicit Env(std::shared_ptr<Env> p = nullptr) : parent(std::move(p)) {}
+    std::unordered_map<std::string, std::string> hints;  // `as` types of names declared here
     Value* find(const std::string& name);
+    Env* find_env(const std::string& name);  // the scope that holds name
 };
 
 // Tree-walk interpreter. Keeps its global scope between run() calls, so the
@@ -60,7 +62,7 @@ private:
     Value eval(const Ast& n, const std::shared_ptr<Env>& env);
     Value binary(const Ast& n, const std::shared_ptr<Env>& env);
     Value call(const Ast& n, const std::shared_ptr<Env>& env);
-    void assign(const Ast& target, Value v, const std::shared_ptr<Env>& env);
+    void assign(const Ast& target, Value v, const std::shared_ptr<Env>& env, const Ast& value_at);
     bool condition(const Ast& n, const std::shared_ptr<Env>& env, const char* what);
     void install_builtins();
 };

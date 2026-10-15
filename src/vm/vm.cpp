@@ -24,7 +24,7 @@ enum class Op {
     Jump, JumpIfFalse, CheckBool, JumpIfFalseKeep, JumpIfTrueKeep,
     Binary, Unary, Range, Field, Index, SetField, SetIndex,
     List, Map, Interp, Call, Closure, Return, ReturnNone,
-    ForPrep, ForNext, Fail, Use, TryBegin, TryEnd,
+    ForPrep, ForNext, Fail, Use, TryBegin, TryEnd, CheckType,
 };
 
 const char* op_name(Op o) {
@@ -35,7 +35,7 @@ const char* op_name(Op o) {
         "JUMP", "JUMP_IF_FALSE", "CHECK_BOOL", "JUMP_IF_FALSE_KEEP", "JUMP_IF_TRUE_KEEP",
         "BINARY", "UNARY", "RANGE", "FIELD", "INDEX", "SET_FIELD", "SET_INDEX",
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
-        "FOR_PREP", "FOR_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END",
+        "FOR_PREP", "FOR_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
     };
     return names[static_cast<int>(o)];
 }
@@ -58,6 +58,7 @@ struct Proto {
     std::vector<Instr> code;
     std::vector<Value> consts;
     std::vector<std::string> strings;  // messages and names
+    std::vector<std::string> param_hints;  // `as` type per parameter, "" for none
 };
 
 struct Scope {
@@ -91,8 +92,10 @@ public:
     explicit Compiler(Program& prog) : prog_(prog) {}
 
     void compile_main(const Ast& program) {
-        for (const auto& s : program.kids)
+        for (const auto& s : program.kids) {
             if (s->kind == Node::Let || s->kind == Node::Fun) global(s->text);
+            if (s->kind == Node::Let && !op_hint(*s).empty()) global_hints_[s->text] = op_hint(*s);
+        }
         auto p = std::make_unique<Proto>();
         p->name = "<main>";
         p->mod = &prog_;
@@ -111,6 +114,7 @@ public:
 private:
     struct CScope {
         std::unordered_map<std::string, int> names;
+        std::unordered_map<std::string, std::string> hints;  // `as` types
         int count = 0;
         size_t enter_ip = 0;     // ENTER_SCOPE to patch with the slot count
         bool fn_scope = false;   // a function's own scope: its Proto holds the count
@@ -131,6 +135,7 @@ private:
     };
 
     Program& prog_;
+    std::unordered_map<std::string, std::string> global_hints_;
     std::vector<CScope> scopes_;
     std::vector<FnState> fns_;
 
@@ -237,10 +242,18 @@ private:
 
     void stmt(const Ast& n) {
         switch (n.kind) {
-            case Node::Let:
+            case Node::Let: {
                 expr(*n.kids[0]);
+                const std::string& hint = op_hint(n);
+                if (!hint.empty())
+                    emit(Op::CheckType, str(hint), str("'" + n.text + "' must be"), n.kids[0].get());
+                if (!scopes_.empty()) {
+                    if (hint.empty()) scopes_.back().hints.erase(n.text);
+                    else scopes_.back().hints[n.text] = hint;
+                }
                 declare(n.text, n);
                 return;
+            }
             case Node::Fun: {
                 // Declare first so the body can call itself.
                 emit(Op::None);
@@ -257,7 +270,12 @@ private:
                 expr(*n.kids[1]);
                 if (t.kind == Node::Name) {
                     int hops, slot;
-                    if (resolve(t.text, hops, slot)) emit(Op::Store, hops, slot, &t);
+                    bool local = resolve(t.text, hops, slot);
+                    const auto& hints = local ? scopes_[scopes_.size() - 1 - hops].hints : global_hints_;
+                    auto h = hints.find(t.text);
+                    if (h != hints.end())
+                        emit(Op::CheckType, str(h->second), str("'" + t.text + "' must be"), n.kids[1].get());
+                    if (local) emit(Op::Store, hops, slot, &t);
                     else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
                 } else if (t.kind == Node::Field) {
                     expr(*t.kids[0]);
@@ -330,6 +348,7 @@ private:
                     emit(Op::Fail, str("'return' outside a function"), 0, &n);
                     return;
                 }
+                check_return(n);
                 emit(Op::Return);
                 return;
             case Node::Break:
@@ -377,11 +396,17 @@ private:
             }
             case Node::Use:
                 emit(Op::Use, str(n.text), 0, &n);
-                declare(n.text.substr(n.text.find_last_of('/') + 1), n);
+                declare(n.kids.empty() ? n.text.substr(n.text.find_last_of('/') + 1) : n.kids[0]->text, n);
                 return;
             default:
                 emit(Op::Fail, str(std::string("cannot run a ") + node_name(n.kind) + " here"), 0, &n);
         }
+    }
+
+    // Checks the value on the stack against the current function's `as` return type.
+    void check_return(const Ast& at) {
+        const std::string& hint = op_hint(*cur().node);
+        if (!hint.empty()) emit(Op::CheckType, str(hint), str(cur().name + "() must return"), &at);
     }
 
     int global_or_new(const std::string& name) {
@@ -403,15 +428,26 @@ private:
         fns_.push_back({proto, scopes_.size(), {}});
         CScope s;
         s.fn_scope = true;
-        for (const auto& prm : params.kids) s.names[prm->text] = s.count++;
+        for (const auto& prm : params.kids) {
+            s.names[prm->text] = s.count++;
+            proto->param_hints.push_back(prm->kids.empty() ? "" : prm->kids[0]->text);
+            if (!prm->kids.empty()) s.hints[prm->text] = prm->kids[0]->text;
+        }
         proto->nslots = s.count;
         scopes_.push_back(std::move(s));
         const Ast& body = *n.kids[1];
         if (body.kind == Node::Block) {
             for (const auto& st : body.kids) stmt(*st);
-            emit(Op::ReturnNone);
+            if (op_hint(n).empty()) {
+                emit(Op::ReturnNone);
+            } else {
+                emit(Op::None);
+                check_return(n);
+                emit(Op::Return);
+            }
         } else {
             expr(body);
+            check_return(body);
             emit(Op::Return);
         }
         scopes_.pop_back();
@@ -584,6 +620,9 @@ private:
             fail_at(*in.at, op_arity_message(f.name, static_cast<size_t>(p.nparams), args.size()));
         if (depth_ >= kMaxCallDepth)
             fail_at(*in.at, "too much recursion (more than " + std::to_string(kMaxCallDepth) + " calls deep)");
+        for (size_t i = 0; i < args.size(); ++i)
+            if (!p.param_hints[i].empty())
+                op_check_type(*in.at, p.param_hints[i], args[i], f.name + "() argument '" + p.node->kids[0]->kids[i]->text + "' must be");
         auto scope = std::make_shared<Scope>(p.nslots, std::static_pointer_cast<Scope>(f.vm_scope));
         for (size_t i = 0; i < args.size(); ++i) scope->slots[i] = std::move(args[i]);
         ++depth_;
@@ -796,6 +835,7 @@ private:
                 case Op::Use: st.push_back(load_module(in, *p.mod, p.strings[in.a])); break;
                 case Op::TryBegin: handlers.push_back({static_cast<size_t>(in.a), st.size(), sc}); break;
                 case Op::TryEnd: handlers.pop_back(); break;
+                case Op::CheckType: op_check_type(*in.at, p.strings[in.a], st.back(), p.strings[in.b]); break;
             }
         }
         return Value();

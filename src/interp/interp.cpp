@@ -13,6 +13,12 @@
 
 namespace relic {
 
+Env* Env::find_env(const std::string& name) {
+    for (Env* e = this; e; e = e->parent.get())
+        if (e->vars.count(name)) return e;
+    return nullptr;
+}
+
 Value* Env::find(const std::string& name) {
     for (Env* e = this; e; e = e->parent.get()) {
         auto it = e->vars.find(name);
@@ -255,6 +261,23 @@ List op_loop_items(const Ast& at, const Value& src) {
     return items;
 }
 
+bool op_type_ok(const std::string& t, const Value& v) {
+    if (t == "any") return true;
+    if (t == "number") return is_num(v);
+    return t == type_name(v);
+}
+
+void op_check_type(const Ast& at, const std::string& t, const Value& v, const std::string& what) {
+    if (!op_type_ok(t, v)) fail(at, what + " " + t + ", got " + type_name(v));
+}
+
+const std::string& op_hint(const Ast& n) {
+    static const std::string none;
+    size_t i = n.kind == Node::Let ? 1 : n.kind == Node::Fun ? 2 : 0;
+    if (n.kids.size() > i && n.kids[i]->kind == Node::Type) return n.kids[i]->text;
+    return none;
+}
+
 std::string op_arity_message(const std::string& name, size_t want, size_t got) {
     return name + "() takes " + std::to_string(want) + " argument" + (want == 1 ? "" : "s") +
            ", got " + std::to_string(got);
@@ -398,11 +421,20 @@ bool Interpreter::condition(const Ast& n, const std::shared_ptr<Env>& env, const
 
 Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& env) {
     switch (n.kind) {
-        case Node::Let:
-            env->vars[n.text] = eval(*n.kids[0], env);
+        case Node::Let: {
+            Value v = eval(*n.kids[0], env);
+            const std::string& hint = op_hint(n);
+            if (!hint.empty()) {
+                op_check_type(*n.kids[0], hint, v, "'" + n.text + "' must be");
+                env->hints[n.text] = hint;
+            } else if (!env->hints.empty()) {
+                env->hints.erase(n.text);
+            }
+            env->vars[n.text] = std::move(v);
             return Flow::Normal;
+        }
         case Node::Assign:
-            assign(*n.kids[0], eval(*n.kids[1], env), env);
+            assign(*n.kids[0], eval(*n.kids[1], env), env, *n.kids[1]);
             return Flow::Normal;
         case Node::ExprStmt:
             eval(*n.kids[0], env);
@@ -456,7 +488,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             return Flow::Return;
         case Node::Use: {
             Value m = load_module(n);
-            env->vars[m.as<std::shared_ptr<Module>>()->name] = m;
+            env->vars[n.kids.empty() ? m.as<std::shared_ptr<Module>>()->name : n.kids[0]->text] = m;
             return Flow::Normal;
         }
         case Node::Try: {
@@ -481,11 +513,15 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
     }
 }
 
-void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>& env) {
+void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>& env, const Ast& value_at) {
     if (target.kind == Node::Name) {
-        Value* slot = env->find(target.text);
-        if (!slot) fail(target, "'" + target.text + "' is not declared; use 'let " + target.text + " = ...'");
-        *slot = std::move(v);
+        Env* e = env->find_env(target.text);
+        if (!e) fail(target, "'" + target.text + "' is not declared; use 'let " + target.text + " = ...'");
+        if (!e->hints.empty()) {
+            auto h = e->hints.find(target.text);
+            if (h != e->hints.end()) op_check_type(value_at, h->second, v, "'" + target.text + "' must be");
+        }
+        e->vars[target.text] = std::move(v);
         return;
     }
     Value obj = eval(*target.kids[0], env);
@@ -574,7 +610,16 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     if (depth_ >= kMaxDepth) fail(n, "too much recursion (more than " + std::to_string(kMaxDepth) + " calls deep)");
 
     auto scope = std::make_shared<Env>(f.closure);
-    for (size_t i = 0; i < args.size(); ++i) scope->vars[params.kids[i]->text] = args[i];
+    for (size_t i = 0; i < args.size(); ++i) {
+        const Ast& prm = *params.kids[i];
+        if (!prm.kids.empty()) {
+            op_check_type(n, prm.kids[0]->text, args[i], f.name + "() argument '" + prm.text + "' must be");
+            scope->hints[prm.text] = prm.kids[0]->text;
+        }
+        scope->vars[prm.text] = args[i];
+    }
+    const std::string& ret_hint = op_hint(*f.node);
+    const std::string ret_what = f.name + "() must return";
 
     const Ast& body = *f.node->kids[1];
     ++depth_;
@@ -584,18 +629,24 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     struct Restore { std::string& cur; std::string old; ~Restore() { cur = old; } } restore{current_file_, saved};
     Flow fl;
     try {
-        if (body.kind != Node::Block) return eval(body, scope);  // short form: fun f(x) = expr
+        if (body.kind != Node::Block) {  // short form: fun f(x) = expr
+            Value r = eval(body, scope);
+            if (!ret_hint.empty()) op_check_type(body, ret_hint, r, ret_what);
+            return r;
+        }
         fl = exec_block(body, scope);
+        if (fl == Flow::Break) fail(*flow_node_, "'break' outside a loop");
+        if (fl == Flow::Next) fail(*flow_node_, "'next' outside a loop");
+        if (fl == Flow::Return) {
+            Value r = std::move(ret_);
+            ret_ = Value();
+            if (!ret_hint.empty()) op_check_type(*flow_node_, ret_hint, r, ret_what);
+            return r;
+        }
+        if (!ret_hint.empty()) op_check_type(*f.node, ret_hint, Value(), ret_what);
     } catch (RuntimeError& e) {
         if (e.file.empty() && f.file != saved) e.file = f.file;
         throw;
-    }
-    if (fl == Flow::Break) fail(*flow_node_, "'break' outside a loop");
-    if (fl == Flow::Next) fail(*flow_node_, "'next' outside a loop");
-    if (fl == Flow::Return) {
-        Value r = std::move(ret_);
-        ret_ = Value();
-        return r;
     }
     return Value();
 }

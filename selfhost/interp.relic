@@ -15,7 +15,26 @@ use tokens_fmt
 let tag = chr(1)
 let max_depth = 800
 
-fun new_env(parent) = {vars: {}, parent: parent}
+fun new_env(parent) = {vars: {}, parent: parent, hints: {}}
+
+# ---- `as` hints ----
+
+fun type_ok(t, v)
+    if t == "any"
+        return true
+    if t == "number"
+        return is_num(type_of(v))
+    return t == type_of(v)
+
+fun check_type(rt, at, t, v, what)
+    if rt.err == none and not type_ok(t, v)
+        fail(rt, at, what + " " + t + ", got " + type_of(v))
+
+# The hint of a Let (kid 1) or a Fun (kid 2), or "".
+fun hint_of(n, i)
+    if len(n.kids) > i and n.kids[i].kind == "Type"
+        return n.kids[i].text
+    return ""
 
 fun find(env, name)
     let e = env
@@ -184,13 +203,19 @@ fun exec(rt, n, env)
     let k = n.kind
     if k == "Let"
         let v = eval(rt, n.kids[0], env)
+        let hint = hint_of(n, 1)
+        if hint != ""
+            check_type(rt, n.kids[0], hint, v, "'{n.text}' must be")
+            env.hints[n.text] = hint
+        else if n.text in env.hints
+            remove(env.hints, n.text)
         if rt.err == none
             env.vars[n.text] = v
         return "normal"
     if k == "Assign"
         let v = eval(rt, n.kids[1], env)
         if rt.err == none
-            assign(rt, n.kids[0], v, env)
+            assign(rt, n.kids[0], v, env, n.kids[1])
         return "normal"
     if k == "ExprStmt"
         eval(rt, n.kids[0], env)
@@ -274,11 +299,15 @@ fun exec(rt, n, env)
     fail(rt, n, "cannot run a " + k + " here")
     return "normal"
 
-fun assign(rt, target, v, env)
+fun assign(rt, target, v, env, value_at)
     if target.kind == "Name"
         let e = find(env, target.text)
         if e == none
             return fail(rt, target, "'{target.text}' is not declared; use 'let {target.text} = ...'")
+        if target.text in e.hints
+            check_type(rt, value_at, e.hints[target.text], v, "'{target.text}' must be")
+            if rt.err != none
+                return
         e.vars[target.text] = v
         return
     let obj = eval(rt, target.kids[0], env)
@@ -510,12 +539,22 @@ fun call(rt, n, env)
         return fail(rt, n, "too much recursion (more than {max_depth} calls deep)")
     let scope = new_env(f.closure)
     for i in 0..len(argv)
-        scope.vars[params[i].text] = argv[i]
+        let prm = params[i]
+        if len(prm.kids) > 0
+            check_type(rt, n, prm.kids[0].text, argv[i], "{f.name}() argument '{prm.text}' must be")
+            if rt.err != none
+                return none
+            scope.hints[prm.text] = prm.kids[0].text
+        scope.vars[prm.text] = argv[i]
     let body = f.node.kids[1]
+    let ret_hint = hint_of(f.node, 2)
+    let ret_what = "{f.name}() must return"
     rt.depth = rt.depth + 1
     let result = none
     if body.kind != "Block"
         result = eval(rt, body, scope)
+        if ret_hint != ""
+            check_type(rt, body, ret_hint, result, ret_what)
     else
         let fl = exec_block(rt, body, scope)
         if fl == "break"
@@ -525,6 +564,10 @@ fun call(rt, n, env)
         else if fl == "return"
             result = rt.ret
             rt.ret = none
+            if ret_hint != ""
+                check_type(rt, rt.flow_node, ret_hint, result, ret_what)
+        else if ret_hint != "" and fl == "normal"
+            check_type(rt, f.node, ret_hint, none, ret_what)
     rt.depth = rt.depth - 1
     return result
 

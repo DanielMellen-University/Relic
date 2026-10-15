@@ -10,7 +10,7 @@ enum class Tok {
     StringPart, InterpStart, InterpEnd, StringEnd,
     // keywords
     Let, Fun, If, Else, While, For, In, Break, Next, Return,
-    And, Or, Not, True, False, None, Use, Try, Catch,
+    And, Or, Not, True, False, None, Use, Try, Catch, As,
     // operators and punctuation
     Plus, Minus, Star, Slash, Percent,
     EqEq, BangEq, Less, LessEq, Greater, GreaterEq,

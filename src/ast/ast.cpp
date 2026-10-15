@@ -19,6 +19,7 @@ const char* node_name(Node k) {
         case Node::Next: return "Next";
         case Node::Use: return "Use";
         case Node::Try: return "Try";
+        case Node::Type: return "Type";
         case Node::Number: return "Number";
         case Node::String: return "String";
         case Node::Interp: return "Interp";
