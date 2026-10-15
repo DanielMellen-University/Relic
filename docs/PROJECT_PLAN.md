@@ -1,12 +1,12 @@
 # Project plan
 
-This plan turns the [roadmap](ROADMAP.md) into milestones you can work through in order. Week counts assume part-time work and are estimates, not deadlines.
+This plan turns the [roadmap](ROADMAP.md) into milestones you can work through in order. The table shows where each one stands.
 
 ## Milestone map
 
-| # | Milestone | Depends on | Estimate |
+| # | Milestone | Depends on | Status |
 |---|---|---|---|
-| M0 | Repo and docs | none | done (draft) |
+| M0 | Repo and docs | none | done |
 | M1 | Host skeleton: build, CI, test runner | M0 | done |
 | M2 | Lexer | M1 | done |
 | M3 | Parser and AST | M2 | done |
@@ -17,8 +17,8 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
-| M11 | Graphics API and desktop shell | M10 | started (SDL2 graphics slice); 6+ weeks |
-| M12 | Apps and IDE | M11 | ongoing |
+| M11 | Graphics API and desktop shell | M10 | started (SDL2 graphics slice 1) |
+| M12 | Apps and IDE | M11 | not started |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
 
@@ -52,18 +52,19 @@ Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 
 
 ### M6: Relic 1.0
 - Exit: every box in [1.0-CHECKLIST.md](1.0-CHECKLIST.md) ticked, CI green, tag `v1.0.0`.
+- Status: tagged `v1.0.0` with CI green on all three OSes. **Open:** a person still needs to write FizzBuzz from the README.
 
 ### M7 to M12
-Planned at a coarser level. Each gets its own checklist when M6 is done.
+Planned at a coarser level than M1 to M6. Status under each exit line.
 - M7 exit: memory model chosen and written up. Two files can import each other. **Done:** reference counting (DESIGN.md), `use` with cycles, golden tests `use_*` and `err_use_*`.
 - M8 exit: stdlib covers strings, lists, maps, files, time, math, each with tests. **Done:** `std/*.relic`, golden tests `std_*`.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 75 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion`.
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 76 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion`.
   - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `use` in the self-hosted interpreter and a faster runtime (M10).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
-  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 88 golden programs (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
+  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 89 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. Next: keyboard and mouse input, text.
@@ -74,19 +75,21 @@ Planned at a coarser level. Each gets its own checklist when M6 is done.
 | Risk | Effect | Plan |
 |---|---|---|
 | Syntax keeps changing | Rework in parser and tests | Freeze 1.0 syntax before M3 |
-| Memory model picked late | Rewrite of runtime | Decide in M7, before stdlib |
-| Self-host too large | Stall at phase 3 | Port one stage at a time, lexer first |
-| Tree-walker too slow for desktop | Laggy shell | VM (M10) comes before shell (M11) |
+| Memory model picked late | Rewrite of runtime | Decided in M7: reference counting |
+| Self-host too large | Stall at phase 3 | Ported one stage at a time; all three stages done |
+| Self-hosted side too slow or missing `use` | Host never retired | Add `use` to `selfhost/interp.relic`, then a VM in Relic |
+| Tree-walker too slow for desktop | Laggy shell | Host VM done and default; more speed work before the shell |
 | Borrowed pieces creep in | Breaks the domestic goal | Keep the borrowed list in BOOTSTRAP.md current |
 
 ## Decisions needed
 
-These are **Open** and block the milestone shown.
+Struck-through rows are decided. The rest are **Open** and block the milestone shown.
 
 | Decision | Blocks |
 |---|---|
 | ~~Final 1.0 syntax~~ frozen in M3; colons, `++` and `const` stay out of 1.0 | done |
-| Number types | M3 |
+| Number types: one 64-bit float for 1.0; separate int later? | later, no milestone yet |
+| Catchable errors | M12 (apps need them) |
 | ~~License~~ MIT, chosen by Daniel | done |
 | ~~Memory model~~ reference counting by default, cycle collector at M10 | done |
 | ~~Module system shape~~ `use path/name`, one file one module | done |

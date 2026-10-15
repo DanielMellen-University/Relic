@@ -1,6 +1,6 @@
-# Architecture (bootstrap host)
+# Architecture (host)
 
-How the phase 1 C++17 host is laid out. Everything here is **Default** unless marked **Open**.
+How the C++17 host is laid out today. Everything here is **Default** unless marked **Open**.
 
 ## Folders
 
@@ -8,18 +8,23 @@ How the phase 1 C++17 host is laid out. Everything here is **Default** unless ma
 Relic/
   CMakeLists.txt
   src/
-    main.cpp        entry point: picks REPL or file runner
+    main.cpp        command line: picks REPL, file runner or a debug dump
+    core.*          Session (REPL and tree-walk runner), VM runner, dumps
     lexer/          source text to tokens, INDENT/DEDENT
     parser/         tokens to AST
-    ast/            AST node types
-    interp/         tree-walk interpreter, values, environments
-    builtins/       print and other built-in functions
+    ast/            AST node types and the --ast dump
+    interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations)
+    vm/             bytecode compiler and stack VM (the default engine)
+    builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones
     diag/           error messages with file, line, column
+  std/              standard library, written in Relic
+  selfhost/         lexer, parser and interpreter written in Relic
+  examples/         small programs, such as hello_window.relic
+  bench/            benchmark programs for tools/bench.sh
   tests/
-    golden/         .relic programs with expected output
-    unit/           C++ tests for lexer and parser
-  tools/
-    run_golden.*    golden test runner
+    golden/         .relic programs with expected output (helpers in modules/)
+    unit/           C++ tests
+  tools/            golden runner, comparison scripts, bench.sh
   docs/
 ```
 
@@ -27,33 +32,38 @@ Relic/
 
 | Target | What it is |
 |---|---|
-| `relic_core` | static library: lexer, parser, AST, interpreter |
+| `relic_core` | static library: lexer, parser, AST, tree-walker, VM, built-ins |
 | `relic` | the command line program, links `relic_core` |
 | `relic_tests` | unit tests, links `relic_core` |
 
-Keeping the core in a library means the REPL, the file runner, tests and the future IDE all use the same code.
+Options: `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time.
 
 ## Pipeline
 
 ```
-source text -> lexer -> tokens -> parser -> AST -> interpreter -> output
+source -> lexer -> tokens -> parser -> AST -> compiler -> bytecode -> VM   (default)
+                                          \-> tree-walk interpreter         (--tree, REPL)
 ```
 
-- **File runner:** reads the whole file, runs the pipeline once.
-- **REPL:** runs the pipeline on each line or block through the same `Session` class as the file runner (`src/core.cpp`). It keeps one global environment alive between inputs, so variables and functions persist.
-- Errors from any stage go through `diag/` so both modes report them the same way.
+- **File runner:** `relic FILE` compiles the whole file and runs it on the VM. `relic --tree FILE` uses the tree-walker.
+- **REPL:** runs each line or block on the tree-walker through the `Session` class (`src/core.cpp`), keeping globals alive between inputs.
+- **Shared operations:** math, comparisons, indexing, fields, loops and built-in calls live in `src/interp/ops.hpp`, so both engines give the same results and errors.
+- **Modules:** both engines load each file once, cache it by resolved path before running it, and read module names live. See DESIGN.md.
+- Errors from any stage go through `diag/` and name the file they happened in.
 
 ## Values
 
-One `Value` type covering number, string, bool, none, list, map and function. **Open:** how values are freed. Phase 1 uses host smart pointers. The real model is chosen in M7.
+One `Value` type: none, bool, number, string, list, map, function, built-in, module. Memory is reference counted with host smart pointers (see DESIGN.md, Memory model). Cycles leak for now.
 
 ## Debug flags
 
 - `--tokens` prints the token stream
 - `--ast` prints the tree
+- `--bytecode` prints the compiled code
+- `--tree` runs on the tree-walker
 - `--version`
 
-## Later
+## Next
 
-- Phase 3: each stage is rewritten in Relic, one at a time, and must pass the same golden tests.
-- Phase 4: a bytecode compiler and VM slot in after the AST, so the pipeline becomes `AST -> bytecode -> VM`.
+- **Open:** a VM written in Relic, so the self-hosted side has a fast engine.
+- **Open:** dropping the C++ host for language logic once the Relic side can run itself, including `use`.

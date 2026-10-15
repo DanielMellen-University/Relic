@@ -4,12 +4,12 @@
 |---|---|
 | [VISION.md](VISION.md) | Why Relic exists, goals, non-goals |
 | [ROADMAP.md](ROADMAP.md) | Phases 1 to 6 with tickable outcomes |
-| [DESIGN.md](DESIGN.md) | Language shape, interpreter plan, open questions |
-| [PROJECT_PLAN.md](PROJECT_PLAN.md) | Milestones M0 to M12, dependencies, exit criteria, risks |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Host folders, build targets, shared pipeline |
+| [DESIGN.md](DESIGN.md) | Language rules, modules, std, memory model, self-host, VM, graphics, open questions |
+| [PROJECT_PLAN.md](PROJECT_PLAN.md) | Milestones M0 to M12 with status, exit criteria, risks, decisions |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Host folders, build targets, the two engines |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | Steps to the first `print("hello")`, borrowed pieces list |
-| [TESTING.md](TESTING.md) | Golden tests, unit tests, CI |
-| [1.0-CHECKLIST.md](1.0-CHECKLIST.md) | First milestone: a toy Relic you can use |
+| [TESTING.md](TESTING.md) | Golden tests, comparison tests, benchmarks, CI |
+| [1.0-CHECKLIST.md](1.0-CHECKLIST.md) | What 1.0 needed (released as `v1.0.0`) |
 
 Tags used across the docs:
 

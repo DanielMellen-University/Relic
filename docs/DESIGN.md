@@ -1,6 +1,6 @@
-# Design (draft)
+# Design
 
-Everything here is a proposal. **Default** marks a choice made to keep moving. **Open** marks a question that needs Daniel's call.
+The language as it works today, plus open questions. **Default** marks a choice made to keep moving; it is built and tested but can still change. **Open** marks a question that needs Daniel's call.
 
 ## Voice
 
@@ -194,7 +194,7 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 - `selfhost/parser.relic`: the parser. `parse(tokens)` gives back `{tree, err}`; nodes are maps `{kind, text, line, col, kids}`. After the first error every step sees an `ERR` token, so the parse winds down without error checks at each call.
 - `selfhost/ast.relic`: prints the same tree as `--ast`. `selfhost/tokens_fmt.relic` holds the shared string quoting.
 - `selfhost/interp.relic`: the tree-walk interpreter, with the 1.0 built-ins and the M8 primitives. Functions are maps tagged with the key `chr(1)`. `selfhost/run.relic FILE` runs a program like `relic FILE`.
-- The `selfhost_interp` test runs 75 golden programs on both and needs identical stdout and stderr.
+- The `selfhost_interp` test runs 76 golden programs on both and needs identical stdout and stderr.
 - Limits of the self-hosted interpreter today:
   - No `use`, so no modules and no `std/`. `host_*` built-ins are not exposed either.
   - Every Relic call inside it costs several host calls, so the host's 800-call limit stops deep recursion (around 100 levels) before its own 800 limit. `rt_recursion` is skipped for that reason.
@@ -236,11 +236,11 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.
 2. **Parser**: tokens to an AST.
-3. **Interpreter**: walks the AST directly.
+3. **Tree-walk interpreter**: walks the AST directly. Used by the REPL and `--tree`.
 4. **Bytecode VM** (M10, the default; `--tree` for the tree-walker): compiles the AST to bytecode and runs it on a stack machine.
 5. **Much later**: native code generation.
 
-The REPL and the file runner share the same pipeline. In the REPL, a line that opens a block waits for an empty line before running. Layout is in [ARCHITECTURE.md](ARCHITECTURE.md).
+The REPL and the file runner share the same pipeline. In the REPL, a line that opens a block waits for an empty line before running. The REPL still runs on the tree-walker. Layout is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Syntax freeze
 

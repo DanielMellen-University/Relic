@@ -14,15 +14,16 @@ Build a language, and then a whole desktop, from scratch. Relic is the base laye
 
 ## Borrowed today, replaced later
 
-| Piece | Phase 1 | Target |
+| Piece | Today | Target |
 |---|---|---|
-| Interpreter host | C/C++ | Relic (self-hosted) |
-| Standard library | Thin C/C++ wrappers | Relic |
+| Interpreter host | C++17 host runs everything; lexer, parser and interpreter also exist in Relic (`selfhost/`) | Relic runs itself |
+| Standard library | Relic code in `std/` on top of a few `host_*` built-ins (files, clocks, float math) | Relic all the way down |
+| Graphics | SDL2, optional build | Relic drawing layer |
 | Desktop shell | MONOLITH 1 (C++) | Relic |
 
 ## Non-goals
 
 - Our own CPU, kernel, GPU driver or network stack.
 - Compatibility with any existing language.
-- Speed before correctness. Performance work waits until the language is stable.
+- Speed before correctness. The bytecode VM had to match the tree-walker on every test before it became the default.
 - Putting Relic or its IDE into the MONOLITH 1.0 repo.

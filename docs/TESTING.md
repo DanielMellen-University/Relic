@@ -7,7 +7,7 @@ Each test is a pair of files in `tests/golden/`:
 - `name.relic`: the program
 - `name.out`: the exact expected output
 
-The runner executes `relic name.relic`, captures stdout, and compares it byte for byte with `name.out`. Any difference fails the test and prints a diff.
+The runner executes `relic name.relic` (the VM), captures stdout, and compares it byte for byte with `name.out`. Any difference fails the test and prints a diff.
 
 ### Error tests
 
@@ -37,8 +37,27 @@ C++ tests in `tests/unit/` for the lexer and parser, where checking tokens or tr
 ## CI
 
 - Build, then run unit tests, then golden tests, on every push.
+- CI runs on Ubuntu, macOS and Windows, without SDL.
 - A red CI blocks merges to main.
+- To save Actions minutes, batch work into few pushes and run the tests locally first.
 
-## Self-host check (phase 3)
+## Comparison tests
 
-The same golden folder runs against both the C++ host and the Relic-written version. Both must pass before the host stage is retired.
+Extra ctest cases check that different engines agree, byte for byte, on stdout and stderr:
+
+| Test | Compares | Files |
+|---|---|---|
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file |
+| `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion` |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` |
+
+The skips are limits of the Relic-written interpreter, listed in DESIGN.md (Self-host).
+
+## Benchmarks
+
+`tools/bench.sh build/relic` times each `bench/*.relic` on the tree-walker and the VM and checks both print the same. It is local only, not part of CI. Use a Release build.
+
+## Graphics
+
+The default build has no SDL, so tests only check that `std/graphics` loads (`std_graphics`). With `-DRELIC_SDL=ON`, try `examples/hello_window.relic`; on a machine with no display, `SDL_VIDEODRIVER=dummy` runs it headless.

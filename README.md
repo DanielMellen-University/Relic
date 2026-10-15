@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **Relic 1.0** (pending CI and the `v1.0.0` tag). `relic file.relic` runs Relic programs and `relic` on its own opens a REPL. FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)). Next is phase 4 work: memory model and modules (M7).
+> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11, first slice). The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
 
 ## A taste
 
@@ -81,11 +81,15 @@ print(box.title, box["version"])
 
 | Command | Does |
 |---|---|
-| `relic file.relic` | runs a program |
-| `relic` | opens the REPL |
+| `relic file.relic [args...]` | runs a program on the bytecode VM; `args()` returns the extra words |
+| `relic --tree file.relic` | runs it on the tree-walk interpreter instead |
+| `relic` | opens the REPL (runs on the tree-walker) |
 | `relic --tokens file.relic` | prints the tokens |
 | `relic --ast file.relic` | prints the syntax tree |
+| `relic --bytecode file.relic` | prints the compiled bytecode |
 | `relic --version` | prints the version |
+
+`--vm` is still accepted and means the same as the default.
 
 ### REPL
 
@@ -113,7 +117,7 @@ hello Daniel
 
 - A small, readable language built from scratch for MONOLITH 2.
 - The long-term goal is a stack where nothing is borrowed. Relic, its runtime, its standard library, the desktop shell and the apps are all written in-house.
-- Phase 1 uses a temporary C/C++ host to bootstrap the first interpreter. That host is a scaffold and gets replaced once Relic can build itself.
+- A C++17 host runs Relic today. It is a scaffold: the lexer, parser and interpreter already exist in Relic too (`selfhost/`), but they still run on the host. The host goes away once Relic can run itself.
 
 ## How it relates to MONOLITH
 
@@ -125,16 +129,16 @@ hello Daniel
 
 - [Vision](docs/VISION.md): the goal and the non-goals
 - [Roadmap](docs/ROADMAP.md): phased milestones
-- [Design](docs/DESIGN.md): the shape of the language (draft)
-- [Project plan](docs/PROJECT_PLAN.md): milestones, exit criteria, risks
-- [Architecture](docs/ARCHITECTURE.md): bootstrap host layout
-- [Bootstrap](docs/BOOTSTRAP.md): empty repo to `print("hello")`
-- [Testing](docs/TESTING.md): golden tests and CI
-- [1.0 checklist](docs/1.0-CHECKLIST.md): what a first usable Relic needs
+- [Design](docs/DESIGN.md): the language, runtime rules, modules, std, self-host, VM, graphics
+- [Project plan](docs/PROJECT_PLAN.md): milestones, status, risks, decisions
+- [Architecture](docs/ARCHITECTURE.md): host layout, build targets, engines
+- [Bootstrap](docs/BOOTSTRAP.md): how the host started, borrowed pieces list
+- [Testing](docs/TESTING.md): golden tests, comparison tests, CI
+- [1.0 checklist](docs/1.0-CHECKLIST.md): what 1.0 needed, and the one open check
 
 ## Contributing
 
-Design decisions are still open. Items marked **Default** or **Open** in the docs are proposals, not final calls.
+Items marked **Default** in the docs are choices made to keep moving and can still change. Items marked **Open** need a decision. Run `ctest --test-dir build` before pushing; every change keeps the tests green.
 
 ## License
 

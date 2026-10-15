@@ -1,6 +1,6 @@
 # Bootstrap: empty repo to `print("hello")`
 
-Steps for the phase 1 host. This is a plan, not code.
+How the host was started. Kept as a record; all steps are done.
 
 ## Tools
 
@@ -10,7 +10,7 @@ Steps for the phase 1 host. This is a plan, not code.
 
 ## Status
 
-All 7 steps are done (M1 to M4). `relic file.relic` runs programs, `tests/golden/hello.relic` prints `hello`, `relic --tokens` prints tokens and `relic --ast` prints the tree.
+All 7 steps are done (M1 to M4), and the host has grown well past them: see [ARCHITECTURE.md](ARCHITECTURE.md). `tests/golden/hello.relic` still prints `hello`.
 
 ## Steps
 
@@ -30,7 +30,9 @@ Track everything Relic relies on that we did not write. Each row needs a planned
 
 | Piece | Used for | Replace in |
 |---|---|---|
-| C++ compiler and stdlib | host interpreter | phase 3 (self-host) |
+| C++ compiler and stdlib | host interpreter and VM | phase 3 (self-host); Relic versions of lexer, parser and interpreter exist in `selfhost/` |
+| `host_*` built-ins | files, clocks, float math under `std/` | phase 4 and later |
+| SDL2 (optional) | graphics, `-DRELIC_SDL=ON` | phase 5 (Relic drawing layer) |
 | CMake | build | **Open** (Relic build tool later) |
-| CMake script mode | golden test runner (`tools/run_golden.cmake`) | phase 3 (runner in Relic) |
+| CMake script mode | golden runner and comparison scripts in `tools/` | **Open** (runner in Relic) |
 | GitHub Actions | CI on Linux, macOS, Windows | not planned |
