@@ -23,8 +23,21 @@ add_library(relic_core STATIC
   src/interp/interp.cpp
   src/builtins/builtins.cpp
   src/vm/vm.cpp
+  src/builtins/graphics.cpp
 )
 target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
+# Graphics (M11): SDL2 is optional. Off by default so CI builds without it.
+option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics)" OFF)
+if(RELIC_SDL)
+  find_package(SDL2 REQUIRED)
+  target_compile_definitions(relic_core PRIVATE RELIC_HAVE_SDL)
+  if(TARGET SDL2::SDL2)
+    target_link_libraries(relic_core PUBLIC SDL2::SDL2)
+  else()
+    target_include_directories(relic_core PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(relic_core PUBLIC ${SDL2_LIBRARIES})
+  endif()
+endif()
 target_compile_definitions(relic_core PRIVATE RELIC_STD_DIR="${CMAKE_SOURCE_DIR}/std/")
 
 add_executable(relic src/main.cpp)

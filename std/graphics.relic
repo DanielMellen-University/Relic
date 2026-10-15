@@ -1,0 +1,12 @@
+# std/graphics: one window to draw in (M11). Backed by SDL2 in the host for now;
+# build with cmake -DRELIC_SDL=ON. Colors are 0 to 255 per channel.
+
+fun available() = host_gfx_available()   # false when the host was built without SDL
+fun open(width, height, title) = host_gfx_open(width, height, title)
+fun close() = host_gfx_close()
+fun clear(r, g, b) = host_gfx_clear(r, g, b)
+fun rect(x, y, w, h, r, g, b) = host_gfx_rect(x, y, w, h, r, g, b)
+fun pixel(x, y, r, g, b) = host_gfx_pixel(x, y, r, g, b)
+fun present() = host_gfx_present()       # show what was drawn since the last present
+fun quit_requested() = host_gfx_quit_requested()  # true once the window's close button was hit
+fun wait(ms) = host_gfx_wait(ms)

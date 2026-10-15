@@ -12,12 +12,12 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M3 | Parser and AST | M2 | done |
 | M4 | Tree-walk interpreter | M3 | done |
 | M5 | REPL and file runner | M4 | done |
-| M6 | Relic 1.0 release | M5 | done once CI is green and `v1.0.0` is tagged |
-| M7 | Memory model and modules | M6 | 2 to 3 weeks |
-| M8 | Standard library core | M7 | 3 weeks |
-| M9 | Self-host | M8 | 4 to 6 weeks |
-| M10 | Bytecode VM | M9 | 3 weeks |
-| M11 | Graphics API and desktop shell | M10 | 6+ weeks |
+| M6 | Relic 1.0 release | M5 | done (`v1.0.0`; human FizzBuzz check still open) |
+| M7 | Memory model and modules | M6 | done |
+| M8 | Standard library core | M7 | done |
+| M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
+| M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
+| M11 | Graphics API and desktop shell | M10 | started (SDL2 graphics slice); 6+ weeks |
 | M12 | Apps and IDE | M11 | ongoing |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
@@ -66,6 +66,7 @@ Planned at a coarser level. Each gets its own checklist when M6 is done.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 88 golden programs (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
+  - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. Next: keyboard and mouse input, text.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 
 ## Risks
@@ -89,4 +90,4 @@ These are **Open** and block the milestone shown.
 | ~~License~~ MIT, chosen by Daniel | done |
 | ~~Memory model~~ reference counting by default, cycle collector at M10 | done |
 | ~~Module system shape~~ `use path/name`, one file one module | done |
-| Graphics backend for phase 5 | M11 |
+| ~~Graphics backend for phase 5~~ SDL2 by default (matches MONOLITH 1), optional build | done |

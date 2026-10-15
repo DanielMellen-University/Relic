@@ -1,0 +1,22 @@
+# Opens a window for about two seconds and draws a few shapes.
+#   cmake -S . -B build-sdl -DRELIC_SDL=ON && cmake --build build-sdl
+#   build-sdl/relic examples/hello_window.relic
+use std/graphics
+use std/time
+
+if not graphics.available()
+    print("this relic was built without graphics; rebuild with -DRELIC_SDL=ON")
+else
+    graphics.open(320, 240, "Relic")
+    let start = time.clock()
+    let frame = 0
+    while time.since(start) < 2 and not graphics.quit_requested()
+        graphics.clear(20, 20, 30)
+        graphics.rect(40 + frame % 200, 80, 60, 60, 220, 120, 40)
+        for x in 0..320
+            graphics.pixel(x, 200, 90, 200, 255)
+        graphics.present()
+        graphics.wait(16)
+        frame = frame + 1
+    graphics.close()
+    print("drew {frame} frames")

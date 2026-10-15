@@ -6,7 +6,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 - [x] Pick the host language (**Default:** C++17, to match MONOLITH 1)
 - [x] Build setup (**Default:** CMake) and CI that runs on every push
-- [ ] `relic` prints `hello` from a golden test (see [BOOTSTRAP.md](BOOTSTRAP.md))
+- [x] `relic` prints `hello` from a golden test (`tests/golden/hello.relic`) (see [BOOTSTRAP.md](BOOTSTRAP.md))
 - [x] Test runner that runs `.relic` files and compares output
 - [x] Track every borrowed piece in a list so it can be replaced later
 
@@ -19,30 +19,26 @@ Phases run in order, with one exception: the memory model and modules from phase
 - [x] Numbers, strings, bools, variables
 - [x] Indentation blocks, `if`, `while`, `for`, `fun` functions, lists, maps
 - [x] Clear error messages with file, line and column
-- [ ] Meets the [1.0 checklist](1.0-CHECKLIST.md)
+- [x] Meets the [1.0 checklist](1.0-CHECKLIST.md); tagged `v1.0.0`. **Open:** the human FizzBuzz-from-the-README check
 
 ## Phase 3: Self-host
 
-- [ ] Lexer rewritten in Relic
-- [ ] Parser rewritten in Relic
-- [ ] Interpreter or bytecode VM rewritten in Relic
-- [ ] Relic builds and runs itself without the C/C++ host for language logic
-
-## Phase 3 status
-
-- [x] Lexer, parser and tree-walk interpreter written in Relic (`selfhost/`, M9). Limits in DESIGN.md.
+- [x] Lexer rewritten in Relic (`selfhost/lexer.relic`, matches `--tokens` on every file)
+- [x] Parser rewritten in Relic (`selfhost/parser.relic`, matches `--ast` on every file)
+- [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; no `use` yet, see DESIGN.md)
+- [ ] Relic builds and runs itself without the C/C++ host for language logic (still runs on the host; needs `use` in the self-hosted interpreter and a Relic-written VM)
 
 ## Phase 4: Runtime and standard library
 
 - [x] Memory model decided: reference counting, cycle collector later (see DESIGN.md)
 - [x] Modules and imports: `use path/name`, cycles allowed
 - [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8)
-- [ ] Bytecode VM if the tree-walker is too slow
+- [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. **Open:** VM written in Relic
 - [ ] Native code generation explored (stretch)
 
 ## Phase 5: Desktop shell in Relic
 
-- [ ] Windowing and drawing API for Relic programs
+- [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics`, optional build, M11)
 - [ ] Window manager, taskbar and Start menu rewritten in Relic
 - [ ] Virtual filesystem reachable from Relic
 

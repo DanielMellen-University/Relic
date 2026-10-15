@@ -1,5 +1,6 @@
 // Built-in functions for Relic 1.0: print, len, append, str, keys, type.
 #include "interp/interp.hpp"
+#include "builtins/graphics.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -201,6 +202,8 @@ void Interpreter::install_builtins() {
     add("host_pow", 2, [num_arg](std::vector<Value>& a) {
         return Value(std::pow(num_arg(a[0], "base"), num_arg(a[1], "power")));
     });
+
+    add_graphics_builtins(add);
 }
 
 }  // namespace relic

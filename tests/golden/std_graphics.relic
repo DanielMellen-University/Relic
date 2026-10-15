@@ -1,0 +1,3 @@
+# std/graphics loads with or without SDL; available() is a bool either way
+use std/graphics
+print(type(graphics.available()))

@@ -221,6 +221,17 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
   - Assigning to a built-in's name without `let` (`print = 1`) is an error on the VM.
 - Benchmarks live in `bench/`; `tools/bench.sh build/relic` times both engines and checks they print the same.
 
+## Graphics (M11)
+
+**Default:** SDL2 is the graphics backend, the same as MONOLITH 1. It is a borrowed piece, listed like the C++ host, to be replaced once Relic has its own drawing layer.
+
+- Optional at build time: `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2 dev files, e.g. `apt install libsdl2-dev`, `brew install sdl2`, or vcpkg `sdl2` on Windows). The default build and CI have no SDL.
+- `use std/graphics` gives `available()`, `open(w, h, title)`, `close()`, `clear(r, g, b)`, `rect(x, y, w, h, r, g, b)`, `pixel(x, y, r, g, b)`, `present()`, `quit_requested()` and `wait(ms)`. One window at a time; colors are 0 to 255.
+- Without SDL, `available()` is `false` and every other call stops with a message saying how to rebuild.
+- Host side: `host_gfx_*` built-ins in `src/builtins/graphics.cpp`.
+- Try it: `build-sdl/relic examples/hello_window.relic` opens a window for about two seconds.
+- **Open:** keyboard and mouse input, text drawing, images, more than one window.
+
 ## Architecture
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.

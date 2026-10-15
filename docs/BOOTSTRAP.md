@@ -6,7 +6,7 @@ Steps for the phase 1 host. This is a plan, not code.
 
 - C++17 compiler (GCC, Clang or MSVC)
 - CMake 3.16 or newer
-- No other libraries. **Default:** the C++ standard library is the only borrowed dependency.
+- No other libraries. **Default:** the C++ standard library is the only borrowed dependency in the default build. SDL2 is an optional borrowed dependency for graphics (`-DRELIC_SDL=ON`, M11).
 
 ## Status
 
