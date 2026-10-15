@@ -1,0 +1,7 @@
+# too much recursion is catchable too
+fun forever(n) = forever(n + 1)
+try
+    forever(0)
+catch e
+    print(e.message)
+print("still running")

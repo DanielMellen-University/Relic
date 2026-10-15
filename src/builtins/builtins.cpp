@@ -54,6 +54,12 @@ void Interpreter::install_builtins() {
         return Value(l);
     });
 
+    // fail(message): raises an error that `try` / `catch` can catch.
+    add("fail", 1, [](std::vector<Value>& a) -> Value {
+        if (!a[0].is<std::string>()) throw std::string("fail(): message must be a string, got ") + type_name(a[0]);
+        throw a[0].as<std::string>();
+    });
+
     add("type", 1, [](std::vector<Value>& a) { return Value(std::string(type_name(a[0]))); });
     // ---- M8 primitives. The std/ modules are written in Relic on top of these. ----
     auto num_arg = [](const Value& v, const char* what) {

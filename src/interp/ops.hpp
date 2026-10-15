@@ -20,6 +20,9 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
 bool op_condition(const Ast& n, const Value& v, const char* what);
 List op_loop_items(const Ast& iterable, const Value& src);
 Value op_call_builtin(const Ast& call, const Builtin& b, std::vector<Value>& args);
+struct RuntimeError;
+// The value a `catch name` block sees: {message, line, col}.
+Value op_error_value(const RuntimeError& e);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
 
 // Modules: the file a `use` path names, seen from the importing file, and the

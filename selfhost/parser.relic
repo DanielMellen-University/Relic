@@ -89,6 +89,10 @@ fun statement(p)
         return for_stmt(p)
     if k == "USE"
         return use_stmt(p)
+    if k == "TRY"
+        return try_stmt(p)
+    if k == "CATCH"
+        fail(p, t, "'catch' without a matching 'try'")
     if k == "RETURN"
         advance(p)
         let n = node("Return", t, "")
@@ -121,6 +125,20 @@ fun block(p)
         add(b, statement(p))
     match(p, "DEDENT")
     return b
+
+fun try_stmt(p)
+    let kw = advance(p)
+    let body = block(p)
+    if not at(p, "CATCH")
+        fail_expected(p, "'catch' after the 'try' block")
+    advance(p)
+    let name = ""
+    if at(p, "NAME")
+        name = advance(p).text
+    let n = node("Try", kw, name)
+    add(n, body)
+    add(n, block(p))
+    return n
 
 fun use_stmt(p)
     let kw = advance(p)

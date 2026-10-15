@@ -1,0 +1,1 @@
+syn_try_without_catch.relic:3:1: error: expected 'catch' after the 'try' block, got name 'print'

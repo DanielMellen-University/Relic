@@ -28,7 +28,7 @@ fun find(env, name)
 fun new_runtime()
     let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none}
     let builtins = new_env(none)
-    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
+    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
         let v = {name: b[0], arity: b[1]}
         v[tag] = "builtin"
         builtins.vars[b[0]] = v
@@ -239,6 +239,18 @@ fun exec(rt, n, env)
             rt.ret = eval(rt, n.kids[0], env)
         rt.flow_node = n
         return "return"
+    if k == "Try"
+        let depth = rt.depth
+        let f = exec_block(rt, n.kids[0], new_env(env))
+        if rt.err == none
+            return f
+        let e = rt.err
+        rt.err = none
+        rt.depth = depth
+        let scope = new_env(env)
+        if n.text != ""
+            scope.vars[n.text] = {message: e.msg, line: e.line, col: e.col}
+        return exec_block(rt, n.kids[1], scope)
     if k == "Break"
         rt.flow_node = n
         return "break"
@@ -462,6 +474,8 @@ fun call(rt, n, env)
             return fail(rt, n, "{callee.name}() takes {callee.arity} argument{plural(callee.arity)}, got {len(argv)}")
         let r = builtin(rt, callee.name, argv)
         if r.err != none
+            if callee.name == "fail"
+                return fail(rt, n, r.err)
             return fail(rt, n, callee.name + "(): " + r.err)
         return r.value
     let f = callee
@@ -527,6 +541,10 @@ fun builtin(rt, name, a)
         return ok(keys(a[0]))
     if name == "type"
         return ok(t)
+    if name == "fail"
+        if t != "string"
+            return bad("fail(): message must be a string, got " + t)
+        return bad(a[0])
     if name == "args"
         return ok([])
     if name == "slice"

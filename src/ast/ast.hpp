@@ -25,6 +25,7 @@ enum class Node {
     Break,
     Next,
     Use,       // text: module path as written, e.g. "lib/math" or "../util"
+    Try,       // text: catch name (may be empty). kids: try Block, catch Block
     // expressions
     Number,    // text: digits as written
     String,    // text: decoded value

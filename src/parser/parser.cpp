@@ -88,6 +88,8 @@ private:
             case Tok::While: return while_stmt();
             case Tok::For: return for_stmt();
             case Tok::Use: return use_stmt();
+            case Tok::Try: return try_stmt();
+            case Tok::Catch: fail(t, "'catch' without a matching 'try'");
             case Tok::Return: {
                 advance();
                 auto n = make(Node::Return, t);
@@ -113,6 +115,20 @@ private:
         while (!at(Tok::Dedent) && !at(Tok::Eof)) b->kids.push_back(statement());
         match(Tok::Dedent);
         return b;
+    }
+
+    // try <block> catch [name] <block>
+    AstPtr try_stmt() {
+        const Token& kw = advance();
+        auto body = block();
+        if (!at(Tok::Catch)) fail_expected("'catch' after the 'try' block");
+        advance();
+        std::string name;
+        if (at(Tok::Name)) name = advance().text;
+        auto n = make(Node::Try, kw, name);
+        n->kids.push_back(std::move(body));
+        n->kids.push_back(block());
+        return n;
     }
 
     // use name, use dir/name, use ../dir/name

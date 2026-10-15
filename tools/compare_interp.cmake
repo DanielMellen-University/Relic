@@ -5,12 +5,13 @@
 #   repl_*         typed into the REPL, not run as files
 #   use_*, std_*, err_use_*  modules: the self-hosted interpreter has no `use` yet
 #   rt_recursion   the host's 800-call limit is reached by the interpreter itself first
+#   try_recursion  same reason
 file(GLOB files ${SRC}/tests/golden/*.relic)
 set(bad 0)
 set(total 0)
 foreach(f ${files})
   get_filename_component(n ${f} NAME_WE)
-  if(n MATCHES "^(repl_|use_|std_|err_use_)" OR n STREQUAL "rt_recursion")
+  if(n MATCHES "^(repl_|use_|std_|err_use_)" OR n STREQUAL "rt_recursion" OR n STREQUAL "try_recursion")
     continue()
   endif()
   math(EXPR total "${total}+1")

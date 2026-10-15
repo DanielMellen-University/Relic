@@ -221,8 +221,17 @@ Value op_call_builtin(const Ast& n, const Builtin& b, std::vector<Value>& args) 
     try {
         return b.fn(args);
     } catch (const std::string& msg) {
+        if (b.name == "fail") fail(n, msg);  // fail("msg") raises the message as written
         fail(n, b.name + "(): " + msg);
     }
+}
+
+Value op_error_value(const RuntimeError& e) {
+    auto m = std::make_shared<Map>();
+    m->set("message", Value(std::string(e.what())));
+    m->set("line", Value(static_cast<double>(e.line)));
+    m->set("col", Value(static_cast<double>(e.col)));
+    return Value(m);
 }
 
 Interpreter::Interpreter(std::ostream& out)
@@ -405,6 +414,17 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             env->vars[m.as<std::shared_ptr<Module>>()->name] = m;
             return Flow::Normal;
         }
+        case Node::Try: {
+            int saved_depth = depth_;
+            try {
+                return exec_block(*n.kids[0], std::make_shared<Env>(env));
+            } catch (RuntimeError& e) {
+                depth_ = saved_depth;
+                auto scope = std::make_shared<Env>(env);
+                if (!n.text.empty()) scope->vars[n.text] = op_error_value(e);
+                return exec_block(*n.kids[1], scope);
+            }
+        }
         case Node::Break:
             flow_node_ = &n;
             return Flow::Break;
@@ -496,17 +516,8 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     std::vector<Value> args;
     for (size_t i = 1; i < n.kids.size(); ++i) args.push_back(eval(*n.kids[i], env));
 
-    if (callee.is<std::shared_ptr<Builtin>>()) {
-        const Builtin& b = *callee.as<std::shared_ptr<Builtin>>();
-        if (b.arity >= 0 && static_cast<int>(args.size()) != b.arity)
-            fail(n, b.name + "() takes " + std::to_string(b.arity) + " argument" +
-                        (b.arity == 1 ? "" : "s") + ", got " + std::to_string(args.size()));
-        try {
-            return b.fn(args);
-        } catch (const std::string& msg) {
-            fail(n, b.name + "(): " + msg);
-        }
-    }
+    if (callee.is<std::shared_ptr<Builtin>>())
+        return op_call_builtin(n, *callee.as<std::shared_ptr<Builtin>>(), args);
     if (!callee.is<std::shared_ptr<Function>>())
         fail(n, std::string("cannot call a ") + type_name(callee));
 

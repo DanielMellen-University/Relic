@@ -1,0 +1,80 @@
+# catchable errors: try / catch
+try
+    let x = 1 / 0
+    print("not reached")
+catch err
+    print("caught: {err.message} at {err.line}:{err.col}")
+
+fun check(age)
+    if age < 0
+        fail("age cannot be negative")
+    return age
+
+try
+    print(check(5))
+    print(check(-1))
+catch e
+    print(e.message)
+
+# catch without a name
+try
+    let m = {}
+    print(m.nope)
+catch
+    print("no key")
+
+# errors from deep calls unwind back to the try
+fun down(n)
+    if n == 0
+        fail("bottom")
+    return down(n - 1)
+
+try
+    down(50)
+catch e
+    print("from depth:", e.message)
+
+# try inside loops: break, next and return pass through
+fun first_bad(xs)
+    for x in xs
+        try
+            if x == 3
+                return x
+            if x == 1
+                next
+            print("ok", x)
+        catch e
+            print("never")
+    return none
+
+print(first_bad([0, 1, 2, 3, 4]))
+
+let i = 0
+while true
+    try
+        i = i + 1
+        if i == 3
+            break
+        fail("turn {i}")
+    catch e
+        print(e.message)
+print("i is", i)
+
+# nested try, rethrow from catch
+try
+    try
+        fail("inner")
+    catch e
+        fail("outer from " + e.message)
+catch e
+    print(e.message)
+
+# state set before the error stays
+let log = []
+try
+    append(log, "a")
+    append(log, 1 + "b")
+    append(log, "c")
+catch e
+    print(log, e.message)
+print("done")

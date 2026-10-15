@@ -24,7 +24,7 @@ enum class Op {
     Jump, JumpIfFalse, CheckBool, JumpIfFalseKeep, JumpIfTrueKeep,
     Binary, Unary, Range, Field, Index, SetField, SetIndex,
     List, Map, Interp, Call, Closure, Return, ReturnNone,
-    ForPrep, ForNext, Fail, Use,
+    ForPrep, ForNext, Fail, Use, TryBegin, TryEnd,
 };
 
 const char* op_name(Op o) {
@@ -35,7 +35,7 @@ const char* op_name(Op o) {
         "JUMP", "JUMP_IF_FALSE", "CHECK_BOOL", "JUMP_IF_FALSE_KEEP", "JUMP_IF_TRUE_KEEP",
         "BINARY", "UNARY", "RANGE", "FIELD", "INDEX", "SET_FIELD", "SET_INDEX",
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
-        "FOR_PREP", "FOR_NEXT", "FAIL", "USE",
+        "FOR_PREP", "FOR_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END",
     };
     return names[static_cast<int>(o)];
 }
@@ -121,11 +121,13 @@ private:
         size_t continue_ip;
         std::vector<size_t> breaks;
         std::vector<size_t> nexts;  // jumps patched to continue_ip when known
+        int try_depth = 0;          // open `try` blocks outside the loop
     };
     struct FnState {
         Proto* proto;
         size_t scope_base;       // scopes_ index where this function's scopes start
         std::vector<Loop> loops;
+        int try_depth = 0;       // open `try` blocks in this function
     };
 
     Program& prog_;
@@ -291,7 +293,7 @@ private:
                 size_t top = here();
                 expr(*n.kids[0]);
                 size_t jf = emit(Op::JumpIfFalse, 0, str("'while' condition"), n.kids[0].get());
-                fns_.back().loops.push_back({scopes_.size(), 0, top, {}, {}});
+                fns_.back().loops.push_back({scopes_.size(), 0, top, {}, {}, fns_.back().try_depth});
                 block(*n.kids[1], true);
                 emit(Op::Jump, static_cast<int>(top));
                 Loop loop = std::move(fns_.back().loops.back());
@@ -306,7 +308,7 @@ private:
                 emit(Op::ForPrep, 0, 0, n.kids[0].get());
                 size_t top = here();
                 size_t fn = emit(Op::ForNext);
-                fns_.back().loops.push_back({scopes_.size(), 2, top, {}, {}});
+                fns_.back().loops.push_back({scopes_.size(), 2, top, {}, {}, fns_.back().try_depth});
                 // Each turn gets a scope holding the loop name and the body's names.
                 open_scope();
                 declare(n.text, n);
@@ -339,6 +341,7 @@ private:
                     return;
                 }
                 Loop& loop = loops.back();
+                for (int i = loop.try_depth; i < fns_.back().try_depth; ++i) emit(Op::TryEnd);
                 if (is_break) {
                     unwind_to(loop, true);
                     loop.breaks.push_back(emit(Op::Jump));
@@ -349,6 +352,27 @@ private:
                     if (extra) emit(Op::ExitScope, static_cast<int>(extra));
                     loop.nexts.push_back(emit(Op::Jump));
                 }
+                return;
+            }
+            case Node::Try: {
+                size_t begin = emit(Op::TryBegin, 0, 0, &n);
+                ++fns_.back().try_depth;
+                block(*n.kids[0], true);
+                --fns_.back().try_depth;
+                emit(Op::TryEnd);
+                size_t jend = emit(Op::Jump);
+                patch(begin, here());
+                // The error value is on the stack; the catch block gets its own scope.
+                if (n.text.empty()) {
+                    emit(Op::Pop);
+                    block(*n.kids[1], true);
+                } else {
+                    open_scope();
+                    declare(n.text, n);
+                    for (const auto& s : n.kids[1]->kids) stmt(*s);
+                    close_scope();
+                }
+                patch(jend, here());
                 return;
             }
             case Node::Use:
@@ -584,6 +608,10 @@ private:
         };
         size_t ip = 0;
         const size_t n = p.code.size();
+        struct Handler { size_t ip; size_t stack; std::shared_ptr<Scope> scope; };
+        std::vector<Handler> handlers;
+        for (;;) {
+        try {
         while (ip < n) {
             const Instr& in = p.code[ip++];
             switch (in.op) {
@@ -751,9 +779,21 @@ private:
                 }
                 case Op::Fail: fail_at(*in.at, p.strings[in.a]);
                 case Op::Use: st.push_back(load_module(in, *p.mod, p.strings[in.a])); break;
+                case Op::TryBegin: handlers.push_back({static_cast<size_t>(in.a), st.size(), sc}); break;
+                case Op::TryEnd: handlers.pop_back(); break;
             }
         }
         return Value();
+        } catch (RuntimeError& e) {
+            if (handlers.empty()) throw;
+            Handler h = std::move(handlers.back());
+            handlers.pop_back();
+            st.resize(h.stack);
+            sc = std::move(h.scope);
+            st.push_back(op_error_value(e));
+            ip = h.ip;
+        }
+        }
     }
 };
 
