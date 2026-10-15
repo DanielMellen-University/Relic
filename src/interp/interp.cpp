@@ -174,6 +174,8 @@ Value op_unary(const Ast& n, const Value& v) {
 Value op_field(const Ast& n, const Value& obj) {
             if (obj.is<std::shared_ptr<Module>>()) {
                 const Module& m = *obj.as<std::shared_ptr<Module>>();
+                if (!n.text.empty() && n.text[0] == '_')
+                    fail(n, "'" + n.text + "' is private to module '" + m.name + "'");
                 if (m.lookup) {
                     const Value* v = m.lookup(n.text);
                     if (!v) fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");

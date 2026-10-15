@@ -1,0 +1,13 @@
+use modules/secret
+print(secret.next_id(), secret.next_id())
+try
+    print(secret._count)
+catch e
+    print(e.message)
+try
+    secret._bump()
+catch e
+    print(e.message)
+# maps are not modules: a leading _ is a normal key there
+let m = {_hidden: 1}
+print(m._hidden)

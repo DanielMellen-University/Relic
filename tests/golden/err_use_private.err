@@ -1,0 +1,1 @@
+err_use_private.relic:2:13: error: '_count' is private to module 'secret'
