@@ -4,6 +4,8 @@
 #include "parser/parser.hpp"
 #include "interp/interp.hpp"
 
+#include <istream>
+#include <ostream>
 #include <sstream>
 #include "version.hpp"
 
@@ -66,27 +68,103 @@ RunResult dump_tree(const std::string& path, const std::string& source) {
     return r;
 }
 
-RunResult run_source(const std::string& path, const std::string& source) {
+Session::Session(std::ostream& out) : out_(out), interp_(std::make_unique<Interpreter>(out)) {}
+Session::~Session() = default;
+
+RunResult Session::run(const std::string& path, const std::string& source, bool echo) {
     RunResult r;
     try {
-        auto prog = parse(lex(source));
-        std::ostringstream out;
-        Interpreter interp(out);
-        try {
-            interp.run(*prog);
-        } catch (const RuntimeError& e) {
-            r.exit_code = 1;
-            r.err = diag::format(path, e.line, e.col, e.what());
-        }
-        r.out = out.str();
+        trees_.push_back(parse(lex(source)));
+        Value last;
+        interp_->run(*trees_.back(), echo ? &last : nullptr);
+        if (echo && !last.is<NoneV>()) out_ << repr(last) << "\n";
     } catch (const LexError& e) {
         r.exit_code = 1;
         r.err = diag::format(path, e.line, e.col, e.what());
     } catch (const ParseError& e) {
         r.exit_code = 1;
         r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const RuntimeError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
     }
     return r;
+}
+
+RunResult run_source(const std::string& path, const std::string& source) {
+    std::ostringstream out;
+    Session session(out);
+    RunResult r = session.run(path, source);
+    r.out = out.str();
+    return r;
+}
+
+namespace {
+
+// A line opens a block when it starts with a block keyword, except the
+// one-line `fun f(x) = expr` form.
+bool opens_block(const std::string& line) {
+    try {
+        auto t = lex(line);
+        Tok k = t.front().kind;
+        if (k == Tok::If || k == Tok::While || k == Tok::For || k == Tok::Else) return true;
+        if (k == Tok::Fun) {
+            int depth = 0;
+            for (const auto& tok : t) {
+                if (tok.kind == Tok::LParen) ++depth;
+                if (tok.kind == Tok::RParen) --depth;
+                if (tok.kind == Tok::Assign && depth == 0) return false;
+            }
+            return true;
+        }
+    } catch (const LexError&) {
+    }
+    return false;
+}
+
+// True when the text has an open bracket that a later line could close.
+bool unclosed(const std::string& text) {
+    try {
+        lex(text);
+    } catch (const LexError& e) {
+        return std::string(e.what()).rfind("unclosed", 0) == 0;
+    }
+    return false;
+}
+
+}  // namespace
+
+int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactive) {
+    Session session(out);
+    if (interactive)
+        out << version_string() << ". Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n";
+    std::string chunk;
+    bool block = false;
+    std::string line;
+    while (true) {
+        if (interactive) out << (chunk.empty() ? "> " : "... ") << std::flush;
+        if (!std::getline(in, line)) break;
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (chunk.empty()) {
+            if (line == ":quit") break;
+            if (line.find_first_not_of(' ') == std::string::npos) continue;
+            block = opens_block(line);
+        }
+        bool blank = line.find_first_not_of(' ') == std::string::npos;
+        chunk += line + "\n";
+        if (block ? !blank : unclosed(chunk)) continue;
+        RunResult r = session.run("<repl>", chunk, true);
+        out << std::flush;
+        err << r.err << std::flush;
+        chunk.clear();
+        block = false;
+    }
+    if (!chunk.empty()) {  // input ended in the middle of a block
+        RunResult r = session.run("<repl>", chunk, true);
+        err << r.err;
+    }
+    if (interactive) out << "\n";
+    return 0;
 }
 
 }  // namespace relic

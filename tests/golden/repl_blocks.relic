@@ -1,0 +1,21 @@
+fun sq(n) = n * n
+fun add(a, b)
+    return a + b
+
+add(sq(3), 1)
+let m = {a: [1,
+    2]}
+m
+"hi {m.a}"
+for i in 0..3
+    print(i)
+
+if len(m.a) > 5
+    print("big")
+else
+    print("small")
+
+print(none)
+none
+:quit
+print("never")

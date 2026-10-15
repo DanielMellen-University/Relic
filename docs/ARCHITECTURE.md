@@ -40,7 +40,7 @@ source text -> lexer -> tokens -> parser -> AST -> interpreter -> output
 ```
 
 - **File runner:** reads the whole file, runs the pipeline once.
-- **REPL:** runs the pipeline on each line or block. It keeps one global environment alive between inputs, so variables and functions persist.
+- **REPL:** runs the pipeline on each line or block through the same `Session` class as the file runner (`src/core.cpp`). It keeps one global environment alive between inputs, so variables and functions persist.
 - Errors from any stage go through `diag/` so both modes report them the same way.
 
 ## Values

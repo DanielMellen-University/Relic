@@ -15,7 +15,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 - [x] Lexer: turns source into tokens
 - [x] Parser: turns tokens into an AST
 - [x] Tree-walk interpreter over the AST
-- [ ] REPL
+- [x] REPL
 - [x] Numbers, strings, bools, variables
 - [x] Indentation blocks, `if`, `while`, `for`, `fun` functions, lists, maps
 - [x] Clear error messages with file, line and column

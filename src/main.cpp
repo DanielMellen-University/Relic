@@ -1,12 +1,22 @@
 #include "core.hpp"
 
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
+#ifdef _WIN32
+#include <io.h>
+static bool stdin_is_terminal() { return _isatty(_fileno(stdin)) != 0; }
+#else
+#include <unistd.h>
+static bool stdin_is_terminal() { return isatty(0) != 0; }
+#endif
+
 static void usage() {
-    std::cerr << "usage: relic [--version] [--tokens | --ast] [file.relic]\n";
+    std::cerr << "usage: relic [--version] [--tokens | --ast] [file.relic]\n"
+                 "       relic            (no file: start the REPL)\n";
 }
 
 int main(int argc, char** argv) {
@@ -20,8 +30,8 @@ int main(int argc, char** argv) {
     }
     bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
     bool ast = argc == 3 && std::string(argv[1]) == "--ast";
+    if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
     if (argc != 2 && !tokens && !ast) {
-        // REPL arrives in M5.
         usage();
         return 2;
     }

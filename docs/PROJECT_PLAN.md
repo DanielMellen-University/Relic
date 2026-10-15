@@ -11,7 +11,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M2 | Lexer | M1 | done |
 | M3 | Parser and AST | M2 | done |
 | M4 | Tree-walk interpreter | M3 | done |
-| M5 | REPL and file runner | M4 | 1 week |
+| M5 | REPL and file runner | M4 | done |
 | M6 | Relic 1.0 release | M5 | 1 week |
 | M7 | Memory model and modules | M6 | 2 to 3 weeks |
 | M8 | Standard library core | M7 | 3 weeks |

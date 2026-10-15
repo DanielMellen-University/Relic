@@ -30,7 +30,9 @@ struct Env {
 class Interpreter {
 public:
     explicit Interpreter(std::ostream& out);
-    void run(const Ast& program);  // throws RuntimeError
+    // Runs every statement. If `last` is set and the final statement is a bare
+    // expression, its value is stored there (the REPL echoes it).
+    void run(const Ast& program, Value* last = nullptr);  // throws RuntimeError
 
 private:
     enum class Flow { Normal, Break, Next, Return };

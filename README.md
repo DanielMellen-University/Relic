@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **M4 done, interpreter**. `relic file.relic` runs Relic programs: FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. `--tokens` and `--ast` print the tokens and the tree. Next up is the REPL (M5). CI runs on every push. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **M5 done, REPL**. `relic file.relic` runs Relic programs and `relic` on its own opens a REPL. FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. Next up is the 1.0 release (M6). CI runs on every push. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
 
 ## A taste
 
@@ -24,6 +24,38 @@ cmake --build build
 ./build/relic --version
 ctest --test-dir build --output-on-failure
 ```
+
+## Use
+
+| Command | Does |
+|---|---|
+| `relic file.relic` | runs a program |
+| `relic` | opens the REPL |
+| `relic --tokens file.relic` | prints the tokens |
+| `relic --ast file.relic` | prints the syntax tree |
+| `relic --version` | prints the version |
+
+### REPL
+
+```
+$ ./build/relic
+relic 0.0.1. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+> let x = 6
+> x * 7
+42
+> fun greet(who)
+...     print("hello {who}")
+...
+> greet("Daniel")
+hello Daniel
+```
+
+- Variables and functions stay defined until you leave.
+- A bare expression prints its value. `none` is not printed.
+- A line starting with `fun`, `if`, `while`, `for` or `else` opens a block. Type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` form runs right away.
+- An open `(`, `[` or `{` keeps reading lines until it closes.
+- An error prints `<repl>:line:col: error: ...` and the REPL keeps going. Line numbers count from the start of that input.
+- Piped input works too: `relic < script.relic` runs it line by line, without prompts.
 
 ## What Relic is
 

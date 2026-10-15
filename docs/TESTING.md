@@ -28,7 +28,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Each `tests/golden/*.relic` file becomes its own ctest case, run by `tools/run_golden.cmake`. In `.err` files, paths are written relative to `tests/golden/`. An optional `name.args` file holds flags passed before the file, such as `--tokens`.
+Each `tests/golden/*.relic` file becomes its own ctest case, run by `tools/run_golden.cmake`. In `.err` files, paths are written relative to `tests/golden/`. An optional `name.args` file holds flags passed before the file, such as `--tokens`. Files named `repl_*.relic` are typed into `relic` on stdin instead; stdout must match `.out` and stderr must match `.err` (each empty if the file is missing).
 
 ## Unit tests
 

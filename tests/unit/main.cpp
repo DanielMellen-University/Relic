@@ -5,6 +5,7 @@
 #include "parser/parser.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -208,8 +209,25 @@ static void test_interp() {
     CHECK(run("append(1, 2)") == "error: append(): first argument must be a list, got number\n");
 }
 
+static void test_repl() {
+    std::istringstream in("let x = 1\nx = x + 1\nnope\nx\nfun f()\n    return x * 10\n\nf()\n[1,\n2]\n");
+    std::ostringstream out, err;
+    CHECK(relic::repl(in, out, err, false) == 0);
+    CHECK(out.str() == "2\n20\n[1, 2]\n");
+    CHECK(err.str() == "<repl>:1:1: error: 'nope' is not defined\n");
+
+    // a session keeps globals across runs, like the REPL does
+    std::ostringstream o2;
+    relic::Session s(o2);
+    CHECK(s.run("a", "let n = 5").exit_code == 0);
+    CHECK(s.run("a", "fun g() = n + 1").exit_code == 0);
+    CHECK(s.run("a", "print(g())").exit_code == 0);
+    CHECK(o2.str() == "6\n");
+}
+
 int main() {
     test_parser();
+    test_repl();
     test_interp();
     test_core();
     test_basic_tokens();

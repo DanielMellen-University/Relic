@@ -44,9 +44,14 @@ Interpreter::Interpreter(std::ostream& out)
     install_builtins();
 }
 
-void Interpreter::run(const Ast& program) {
-    for (const auto& s : program.kids) {
-        Flow f = exec(*s, globals_);
+void Interpreter::run(const Ast& program, Value* last) {
+    for (size_t i = 0; i < program.kids.size(); ++i) {
+        const Ast& s = *program.kids[i];
+        if (last && i + 1 == program.kids.size() && s.kind == Node::ExprStmt) {
+            *last = eval(*s.kids[0], globals_);
+            return;
+        }
+        Flow f = exec(s, globals_);
         if (f == Flow::Return) fail(*flow_node_, "'return' outside a function");
         if (f == Flow::Break) fail(*flow_node_, "'break' outside a loop");
         if (f == Flow::Next) fail(*flow_node_, "'next' outside a loop");
