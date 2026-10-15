@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Times every bench/*.relic on the tree-walker and on the VM (--vm) and checks
+# both print the same thing. Not run in CI; usage: tools/bench.sh [path/to/relic]
+set -euo pipefail
+RELIC=${1:-build/relic}
+cd "$(dirname "$0")/.."
+printf "%-12s %10s %10s %8s\n" bench tree-walk vm speedup
+for f in bench/*.relic; do
+  t0=$(date +%s.%N); a=$("$RELIC" "$f"); t1=$(date +%s.%N)
+  b=$("$RELIC" --vm "$f"); t2=$(date +%s.%N)
+  [ "$a" = "$b" ] || { echo "output differs on $f"; exit 1; }
+  awk -v n="$(basename "$f" .relic)" -v t0="$t0" -v t1="$t1" -v t2="$t2" \
+    'BEGIN { x = t1 - t0; y = t2 - t1; printf "%-12s %9.3fs %9.3fs %7.2fx\n", n, x, y, x / y }'
+done

@@ -3,6 +3,7 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "interp/interp.hpp"
+#include "vm/vm.hpp"
 
 #include <istream>
 #include <ostream>
@@ -91,6 +92,40 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
         r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
+    }
+    return r;
+}
+
+RunResult run_source_vm(const std::string& path, const std::string& source) {
+    RunResult r;
+    std::ostringstream out;
+    try {
+        auto tree = parse(lex(source));
+        vm_run(*tree, out);
+    } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const ParseError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const RuntimeError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    }
+    r.out = out.str();
+    return r;
+}
+
+RunResult dump_bytecode(const std::string& path, const std::string& source) {
+    RunResult r;
+    try {
+        r.out = vm_disassemble(*parse(lex(source)));
+    } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const ParseError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
     }
     return r;
 }

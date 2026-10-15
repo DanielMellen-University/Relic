@@ -1,0 +1,25 @@
+# Bytecode VM check (M10): `relic --vm FILE` must give the same stdout and
+# stderr as `relic FILE` for every golden program, except:
+#   repl_*                     typed into the REPL, not run as files
+#   use_*, std_*, err_use_*    modules: the VM has no `use` yet
+file(GLOB files ${SRC}/tests/golden/*.relic)
+set(bad 0)
+set(total 0)
+foreach(f ${files})
+  get_filename_component(n ${f} NAME_WE)
+  if(n MATCHES "^(repl_|use_|std_|err_use_)")
+    continue()
+  endif()
+  math(EXPR total "${total}+1")
+  get_filename_component(dir ${f} DIRECTORY)
+  execute_process(COMMAND ${RELIC} ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err)
+  execute_process(COMMAND ${RELIC} --vm ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err)
+  if(NOT a_out STREQUAL b_out OR NOT a_err STREQUAL b_err)
+    message("mismatch: ${n}\n--- tree-walker\n${a_out}${a_err}--- vm\n${b_out}${b_err}")
+    math(EXPR bad "${bad}+1")
+  endif()
+endforeach()
+if(bad GREATER 0)
+  message(FATAL_ERROR "${bad} of ${total} programs differ")
+endif()
+message("all ${total} programs match")

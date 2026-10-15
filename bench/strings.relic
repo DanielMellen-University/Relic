@@ -1,0 +1,13 @@
+# string building and maps
+let counts = {}
+let words = ["relic", "monolith", "vm", "byte", "code"]
+for i in 0..100000
+    let w = words[i % 5]
+    if w in counts
+        counts[w] = counts[w] + 1
+    else
+        counts[w] = 1
+let s = ""
+for k in counts
+    s = s + "{k}={counts[k]} "
+print(s)

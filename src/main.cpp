@@ -15,7 +15,7 @@ static bool stdin_is_terminal() { return isatty(0) != 0; }
 #endif
 
 static void usage() {
-    std::cerr << "usage: relic [--version] [--tokens | --ast] [file.relic [args...]]\n"
+    std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --vm] [file.relic [args...]]\n"
                  "       relic            (no file: start the REPL)\n";
 }
 
@@ -30,14 +30,17 @@ int main(int argc, char** argv) {
     }
     bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
     bool ast = argc == 3 && std::string(argv[1]) == "--ast";
+    bool vm = argc >= 3 && std::string(argv[1]) == "--vm";
+    bool bytecode = argc == 3 && std::string(argv[1]) == "--bytecode";
     if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
-    if (argc < 2 || (!tokens && !ast && std::string(argv[1]).rfind("--", 0) == 0)) {
+    if (argc < 2 || (!tokens && !ast && !vm && !bytecode && std::string(argv[1]).rfind("--", 0) == 0)) {
         usage();
         return 2;
     }
-    if (!tokens && !ast)
-        for (int i = 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
-    std::string path = argv[(tokens || ast) ? 2 : 1];
+    bool flag = tokens || ast || vm || bytecode;
+    if (!tokens && !ast && !bytecode)
+        for (int i = vm ? 3 : 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
+    std::string path = argv[flag ? 2 : 1];
     std::ifstream f(path, std::ios::binary);
     if (!f) {
         std::cerr << "relic: cannot open " << path << "\n";
@@ -47,6 +50,8 @@ int main(int argc, char** argv) {
     ss << f.rdbuf();
     relic::RunResult r = tokens ? relic::dump_tokens(path, ss.str())
                        : ast  ? relic::dump_tree(path, ss.str())
+                       : bytecode ? relic::dump_bytecode(path, ss.str())
+                       : vm   ? relic::run_source_vm(path, ss.str())
                               : relic::run_source(path, ss.str());
     std::cout << r.out;
     std::cerr << r.err;

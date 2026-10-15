@@ -205,12 +205,27 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 - New built-ins for scripts: `args()` (words after the file name) and `eprint(...)` (print to stderr).
 - Watch out: a lone `{` or `}` in a string literal starts or ends interpolation. Write `"{{"` and `"}}"` for literal braces.
 
+## Bytecode VM (M10)
+
+`relic --vm FILE` compiles the tree to bytecode and runs it on a stack machine (`src/vm/`). `relic --bytecode FILE` prints the compiled code.
+
+- One flat instruction list per function. Jumps for `if`, `while`, `for`, `and`, `or`, `break` and `next`.
+- Names resolve at compile time to a scope slot (hops up the chain, then slot) instead of a name lookup at run time. Top-level names are numbered globals; names not found anywhere fall back to the built-ins.
+- Only blocks that declare names get a scope at run time. Each `for` turn gets its own scope, so closures made in a loop keep their own loop value, same as the tree-walker.
+- Operators, indexing, fields, loops over values and built-in calls share code with the tree-walker (`src/interp/ops.hpp`), so results and error messages match. Number math has a fast path.
+- The 800-call limit is the same. Each Relic call is one C++ call of the VM loop, so it is cheap on the host stack.
+- Differences from the tree-walker today:
+  - No `use` yet: it stops with an error. The REPL still uses the tree-walker.
+  - A function that reads a name its enclosing function declares later in the same block resolves to a global or built-in instead. The tree-walker finds the later name at call time. No golden test does this.
+  - Assigning to a built-in's name without `let` (`print = 1`) is an error on the VM.
+- Benchmarks live in `bench/`; `tools/bench.sh build/relic` times both engines and checks they print the same.
+
 ## Architecture
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.
 2. **Parser**: tokens to an AST.
 3. **Interpreter**: walks the AST directly.
-4. **Later**: compile the AST to bytecode for a VM.
+4. **Bytecode VM** (M10, opt-in with `--vm`): compiles the AST to bytecode and runs it on a stack machine.
 5. **Much later**: native code generation.
 
 The REPL and the file runner share the same pipeline. In the REPL, a line that opens a block waits for an empty line before running. Layout is in [ARCHITECTURE.md](ARCHITECTURE.md).

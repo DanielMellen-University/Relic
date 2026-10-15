@@ -1,0 +1,61 @@
+# scoping, closures and loop control: run on both the tree-walker and the VM
+let x = 1
+if true
+    x = 2
+    let x = 10
+    x = x + 1
+    print("inner", x)
+print("outer", x)
+
+fun counter()
+    let n = 0
+    fun step()
+        n = n + 1
+        return n
+    return step
+let c = counter()
+c()
+print(c(), c())
+
+let fs = []
+for i in 0..3
+    let j = i * 10
+    fun get() = j + i
+    append(fs, get)
+for f in fs
+    print(f())
+
+let total = 0
+for i in 0..10
+    if i == 2
+        next
+    let sq = i * i
+    for k in [1, 2, 3]
+        if k == 2
+            break
+        total = total + sq + k
+    if i == 6
+        break
+print(total)
+
+let w = 0
+while w < 5
+    w = w + 1
+    let t = w
+    if t == 2
+        next
+    if t == 4
+        break
+    print("w", t)
+
+fun even(n)
+    if n == 0
+        return true
+    return odd(n - 1)
+fun odd(n)
+    if n == 0
+        return false
+    return even(n - 1)
+print(even(10), odd(7))
+print(true and false, false or true, not false)
+print("{x} and {c()}")

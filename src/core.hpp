@@ -41,6 +41,12 @@ RunResult run_source(const std::string& path, const std::string& source);
 // Returns the exit code.
 int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactive);
 
+// Runs a file on the bytecode VM (--vm). Same output and errors as run_source.
+RunResult run_source_vm(const std::string& path, const std::string& source);
+
+// Backs --bytecode: the compiled code listing.
+RunResult dump_bytecode(const std::string& path, const std::string& source);
+
 // Backs the --tokens flag: one token per line as "line:col KIND text".
 RunResult dump_tokens(const std::string& path, const std::string& source);
 

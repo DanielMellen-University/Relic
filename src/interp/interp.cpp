@@ -1,4 +1,5 @@
 #include "interp/interp.hpp"
+#include "interp/ops.hpp"
 
 #include <cmath>
 #include <cstdlib>
@@ -45,6 +46,179 @@ size_t list_slot(const Ast& at, const Value& idx, size_t size, const char* what 
 }
 
 }  // namespace
+
+Value op_binary(const Ast& n, const Value& a, const Value& b) {
+    const std::string& op = n.text;
+    auto mismatch = [&](const char* verb) -> Value {
+        fail(n, std::string("cannot ") + verb + " a " + type_name(a) + " and a " + type_name(b));
+    };
+    if (op == "==") return Value(equal(a, b));
+    if (op == "!=") return Value(!equal(a, b));
+    if (op == "in") {
+        if (b.is<std::shared_ptr<List>>()) {
+            for (const auto& x : *b.as<std::shared_ptr<List>>())
+                if (equal(a, x)) return Value(true);
+            return Value(false);
+        }
+        if (b.is<std::shared_ptr<Map>>()) {
+            if (!a.is<std::string>()) fail(n, "map keys must be strings");
+            return Value(b.as<std::shared_ptr<Map>>()->has(a.as<std::string>()));
+        }
+        if (b.is<std::string>()) {
+            if (!a.is<std::string>()) fail(n, "can only look for a string inside a string");
+            return Value(b.as<std::string>().find(a.as<std::string>()) != std::string::npos);
+        }
+        fail(n, std::string("cannot look inside a ") + type_name(b));
+    }
+    if (op == "+") {
+        if (a.is<double>() && b.is<double>()) return Value(a.as<double>() + b.as<double>());
+        if (a.is<std::string>() && b.is<std::string>())
+            return Value(a.as<std::string>() + b.as<std::string>());
+        if (a.is<std::shared_ptr<List>>() && b.is<std::shared_ptr<List>>()) {
+            auto l = std::make_shared<List>(*a.as<std::shared_ptr<List>>());
+            for (const auto& x : *b.as<std::shared_ptr<List>>()) l->push_back(x);
+            return Value(l);
+        }
+        return mismatch("add");
+    }
+    if (op == "<" || op == "<=" || op == ">" || op == ">=") {
+        int c;
+        if (a.is<double>() && b.is<double>()) {
+            double x = a.as<double>(), y = b.as<double>();
+            c = x < y ? -1 : (x > y ? 1 : 0);
+        } else if (a.is<std::string>() && b.is<std::string>()) {
+            c = a.as<std::string>().compare(b.as<std::string>());
+        } else {
+            return mismatch("compare");
+        }
+        if (op == "<") return Value(c < 0);
+        if (op == "<=") return Value(c <= 0);
+        if (op == ">") return Value(c > 0);
+        return Value(c >= 0);
+    }
+    if (!a.is<double>() || !b.is<double>()) {
+        if (op == "-") return mismatch("subtract");
+        if (op == "*") return mismatch("multiply");
+        return mismatch("divide");
+    }
+    double x = a.as<double>(), y = b.as<double>();
+    if (op == "-") return Value(x - y);
+    if (op == "*") return Value(x * y);
+    if (y == 0) fail(n, "division by zero");
+    if (op == "/") return Value(x / y);
+    double r = std::fmod(x, y);
+    if (r != 0 && ((r < 0) != (y < 0))) r += y;  // result takes the sign of the divisor
+    return Value(r);
+}
+
+Value op_unary(const Ast& n, const Value& v) {
+    if (n.text == "-") {
+        if (!v.is<double>()) fail(n, std::string("cannot negate a ") + type_name(v));
+        return Value(-v.as<double>());
+    }
+    if (!v.is<bool>()) fail(n, std::string("'not' needs true or false, got ") + type_name(v));
+    return Value(!v.as<bool>());
+}
+
+Value op_field(const Ast& n, const Value& obj) {
+            if (obj.is<std::shared_ptr<Module>>()) {
+                const Module& m = *obj.as<std::shared_ptr<Module>>();
+                auto it = m.scope->vars.find(n.text);
+                if (it == m.scope->vars.end())
+                    fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                return it->second;
+            }
+            if (!obj.is<std::shared_ptr<Map>>())
+                fail(n, std::string("cannot read a field of a ") + type_name(obj));
+            const Map& m = *obj.as<std::shared_ptr<Map>>();
+            if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'");
+            return m.items.at(n.text);
+}
+
+Value op_index(const Ast& n, const Value& obj, const Value& idx) {
+            if (obj.is<std::shared_ptr<List>>()) {
+                const List& l = *obj.as<std::shared_ptr<List>>();
+                return l[list_slot(*n.kids[1], idx, l.size())];
+            }
+            if (obj.is<std::string>()) {
+                const std::string& s = obj.as<std::string>();
+                return Value(std::string(1, s[list_slot(*n.kids[1], idx, s.size(), "string index")]));
+            }
+            if (obj.is<std::shared_ptr<Map>>()) {
+                if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");
+                const Map& m = *obj.as<std::shared_ptr<Map>>();
+                const std::string& k = idx.as<std::string>();
+                if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'");
+                return m.items.at(k);
+            }
+            fail(n, std::string("cannot index a ") + type_name(obj));
+}
+
+void op_set_field(const Ast& target, const Value& obj, Value v) {
+    if (obj.is<std::shared_ptr<Module>>())
+        fail(target, "cannot change a module's names from outside; give it a function that does it");
+    if (!obj.is<std::shared_ptr<Map>>())
+        fail(target, std::string("cannot set a field on a ") + type_name(obj));
+    obj.as<std::shared_ptr<Map>>()->set(target.text, std::move(v));
+}
+
+void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v) {
+    if (obj.is<std::shared_ptr<List>>()) {
+        List& l = *obj.as<std::shared_ptr<List>>();
+        l[list_slot(*target.kids[1], idx, l.size())] = std::move(v);
+    } else if (obj.is<std::shared_ptr<Map>>()) {
+        if (!idx.is<std::string>()) fail(*target.kids[1], "map keys must be strings");
+        obj.as<std::shared_ptr<Map>>()->set(idx.as<std::string>(), std::move(v));
+    } else {
+        fail(target, std::string("cannot set an index on a ") + type_name(obj));
+    }
+}
+
+[[noreturn]] void fail_at(const Ast& at, const std::string& msg) { fail(at, msg); }
+
+Value op_range(const Ast& n, const Value& av, const Value& bv) {
+    long long a = whole(*n.kids[0], av, "range start");
+    long long b = whole(*n.kids[1], bv, "range end");
+    if (b - a > 10000000) fail(n, "range is too large");
+    auto l = std::make_shared<List>();
+    for (long long i = a; i < b; ++i) l->emplace_back(static_cast<double>(i));
+    return Value(l);
+}
+
+bool op_condition(const Ast& n, const Value& v, const char* what) {
+    if (!v.is<bool>())
+        fail(n, std::string(what) + " must be true or false, got " + type_name(v));
+    return v.as<bool>();
+}
+
+List op_loop_items(const Ast& at, const Value& src) {
+    List items;
+    if (src.is<std::shared_ptr<List>>()) {
+        items = *src.as<std::shared_ptr<List>>();
+    } else if (src.is<std::string>()) {
+        for (char c : src.as<std::string>()) items.emplace_back(std::string(1, c));
+    } else if (src.is<std::shared_ptr<Map>>()) {
+        for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
+    } else {
+        fail(at, std::string("cannot loop over a ") + type_name(src));
+    }
+    return items;
+}
+
+std::string op_arity_message(const std::string& name, size_t want, size_t got) {
+    return name + "() takes " + std::to_string(want) + " argument" + (want == 1 ? "" : "s") +
+           ", got " + std::to_string(got);
+}
+
+Value op_call_builtin(const Ast& n, const Builtin& b, std::vector<Value>& args) {
+    if (b.arity >= 0 && static_cast<int>(args.size()) != b.arity)
+        fail(n, op_arity_message(b.name, static_cast<size_t>(b.arity), args.size()));
+    try {
+        return b.fn(args);
+    } catch (const std::string& msg) {
+        fail(n, b.name + "(): " + msg);
+    }
+}
 
 Interpreter::Interpreter(std::ostream& out)
     : out_(out), builtins_(std::make_shared<Env>()), globals_(std::make_shared<Env>(builtins_)) {
@@ -174,7 +348,8 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             eval(*n.kids[0], env);
             return Flow::Normal;
         case Node::Fun: {
-            auto f = std::make_shared<Function>(Function{n.text, &n, env, current_file_});
+            auto f = std::make_shared<Function>(Function{n.text, &n, env, nullptr, nullptr, std::string()});
+            f->file = current_file_;
             env->vars[n.text] = Value(f);
             return Flow::Normal;
         }
@@ -243,24 +418,9 @@ void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>&
         return;
     }
     Value obj = eval(*target.kids[0], env);
-    if (target.kind == Node::Field) {
-        if (obj.is<std::shared_ptr<Module>>())
-            fail(target, "cannot change a module's names from outside; give it a function that does it");
-        if (!obj.is<std::shared_ptr<Map>>())
-            fail(target, std::string("cannot set a field on a ") + type_name(obj));
-        obj.as<std::shared_ptr<Map>>()->set(target.text, std::move(v));
-        return;
-    }
+    if (target.kind == Node::Field) return op_set_field(target, obj, std::move(v));
     Value idx = eval(*target.kids[1], env);
-    if (obj.is<std::shared_ptr<List>>()) {
-        List& l = *obj.as<std::shared_ptr<List>>();
-        l[list_slot(*target.kids[1], idx, l.size())] = std::move(v);
-    } else if (obj.is<std::shared_ptr<Map>>()) {
-        if (!idx.is<std::string>()) fail(*target.kids[1], "map keys must be strings");
-        obj.as<std::shared_ptr<Map>>()->set(idx.as<std::string>(), std::move(v));
-    } else {
-        fail(target, std::string("cannot set an index on a ") + type_name(obj));
-    }
+    op_set_index(target, obj, idx, std::move(v));
 }
 
 Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
@@ -298,51 +458,14 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
             for (long long i = a; i < b; ++i) l->emplace_back(static_cast<double>(i));
             return Value(l);
         }
-        case Node::Unary: {
-            Value v = eval(*n.kids[0], env);
-            if (n.text == "-") {
-                if (!v.is<double>()) fail(n, std::string("cannot negate a ") + type_name(v));
-                return Value(-v.as<double>());
-            }
-            if (!v.is<bool>()) fail(n, std::string("'not' needs true or false, got ") + type_name(v));
-            return Value(!v.as<bool>());
-        }
+        case Node::Unary: return op_unary(n, eval(*n.kids[0], env));
         case Node::Binary: return binary(n, env);
         case Node::Call: return call(n, env);
-        case Node::Field: {
-            Value obj = eval(*n.kids[0], env);
-            if (obj.is<std::shared_ptr<Module>>()) {
-                const Module& m = *obj.as<std::shared_ptr<Module>>();
-                auto it = m.scope->vars.find(n.text);
-                if (it == m.scope->vars.end())
-                    fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
-                return it->second;
-            }
-            if (!obj.is<std::shared_ptr<Map>>())
-                fail(n, std::string("cannot read a field of a ") + type_name(obj));
-            const Map& m = *obj.as<std::shared_ptr<Map>>();
-            if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'");
-            return m.items.at(n.text);
-        }
+        case Node::Field: return op_field(n, eval(*n.kids[0], env));
         case Node::Index: {
             Value obj = eval(*n.kids[0], env);
             Value idx = eval(*n.kids[1], env);
-            if (obj.is<std::shared_ptr<List>>()) {
-                const List& l = *obj.as<std::shared_ptr<List>>();
-                return l[list_slot(*n.kids[1], idx, l.size())];
-            }
-            if (obj.is<std::string>()) {
-                const std::string& s = obj.as<std::string>();
-                return Value(std::string(1, s[list_slot(*n.kids[1], idx, s.size(), "string index")]));
-            }
-            if (obj.is<std::shared_ptr<Map>>()) {
-                if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");
-                const Map& m = *obj.as<std::shared_ptr<Map>>();
-                const std::string& k = idx.as<std::string>();
-                if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'");
-                return m.items.at(k);
-            }
-            fail(n, std::string("cannot index a ") + type_name(obj));
+            return op_index(n, obj, idx);
         }
         default:
             fail(n, std::string("cannot evaluate a ") + node_name(n.kind));
@@ -359,66 +482,7 @@ Value Interpreter::binary(const Ast& n, const std::shared_ptr<Env>& env) {
     }
     Value a = eval(*n.kids[0], env);
     Value b = eval(*n.kids[1], env);
-    auto mismatch = [&](const char* verb) -> Value {
-        fail(n, std::string("cannot ") + verb + " a " + type_name(a) + " and a " + type_name(b));
-    };
-    if (op == "==") return Value(equal(a, b));
-    if (op == "!=") return Value(!equal(a, b));
-    if (op == "in") {
-        if (b.is<std::shared_ptr<List>>()) {
-            for (const auto& x : *b.as<std::shared_ptr<List>>())
-                if (equal(a, x)) return Value(true);
-            return Value(false);
-        }
-        if (b.is<std::shared_ptr<Map>>()) {
-            if (!a.is<std::string>()) fail(n, "map keys must be strings");
-            return Value(b.as<std::shared_ptr<Map>>()->has(a.as<std::string>()));
-        }
-        if (b.is<std::string>()) {
-            if (!a.is<std::string>()) fail(n, "can only look for a string inside a string");
-            return Value(b.as<std::string>().find(a.as<std::string>()) != std::string::npos);
-        }
-        fail(n, std::string("cannot look inside a ") + type_name(b));
-    }
-    if (op == "+") {
-        if (a.is<double>() && b.is<double>()) return Value(a.as<double>() + b.as<double>());
-        if (a.is<std::string>() && b.is<std::string>())
-            return Value(a.as<std::string>() + b.as<std::string>());
-        if (a.is<std::shared_ptr<List>>() && b.is<std::shared_ptr<List>>()) {
-            auto l = std::make_shared<List>(*a.as<std::shared_ptr<List>>());
-            for (const auto& x : *b.as<std::shared_ptr<List>>()) l->push_back(x);
-            return Value(l);
-        }
-        return mismatch("add");
-    }
-    if (op == "<" || op == "<=" || op == ">" || op == ">=") {
-        int c;
-        if (a.is<double>() && b.is<double>()) {
-            double x = a.as<double>(), y = b.as<double>();
-            c = x < y ? -1 : (x > y ? 1 : 0);
-        } else if (a.is<std::string>() && b.is<std::string>()) {
-            c = a.as<std::string>().compare(b.as<std::string>());
-        } else {
-            return mismatch("compare");
-        }
-        if (op == "<") return Value(c < 0);
-        if (op == "<=") return Value(c <= 0);
-        if (op == ">") return Value(c > 0);
-        return Value(c >= 0);
-    }
-    if (!a.is<double>() || !b.is<double>()) {
-        if (op == "-") return mismatch("subtract");
-        if (op == "*") return mismatch("multiply");
-        return mismatch("divide");
-    }
-    double x = a.as<double>(), y = b.as<double>();
-    if (op == "-") return Value(x - y);
-    if (op == "*") return Value(x * y);
-    if (y == 0) fail(n, "division by zero");
-    if (op == "/") return Value(x / y);
-    double r = std::fmod(x, y);
-    if (r != 0 && ((r < 0) != (y < 0))) r += y;  // result takes the sign of the divisor
-    return Value(r);
+    return op_binary(n, a, b);
 }
 
 Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {

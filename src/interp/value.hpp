@@ -27,6 +27,9 @@ struct Function {
     std::string name;
     const Ast* node;  // the Fun node; the tree outlives the program run
     std::shared_ptr<Env> closure;
+    // Set for functions made by the bytecode VM: its Proto and captured Scope.
+    const void* proto = nullptr;
+    std::shared_ptr<void> vm_scope;
     std::string file;  // file the function was written in, for error locations
 };
 

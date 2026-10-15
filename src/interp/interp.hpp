@@ -38,6 +38,8 @@ public:
     // The file being run. `use` paths resolve against its folder; "<repl>"
     // or empty means the current directory.
     void set_main_file(const std::string& path);
+    // Built-in functions, shared with the bytecode VM.
+    const std::shared_ptr<Env>& builtins() const { return builtins_; }
 
 private:
     enum class Flow { Normal, Break, Next, Return };

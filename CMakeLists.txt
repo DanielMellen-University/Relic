@@ -22,6 +22,7 @@ add_library(relic_core STATIC
   src/interp/value.cpp
   src/interp/interp.cpp
   src/builtins/builtins.cpp
+  src/vm/vm.cpp
 )
 target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
 target_compile_definitions(relic_core PRIVATE RELIC_STD_DIR="${CMAKE_SOURCE_DIR}/std/")
@@ -61,3 +62,7 @@ add_test(NAME selfhost_parser
 add_test(NAME selfhost_interp
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_interp.cmake)
+
+add_test(NAME vm_matches_tree_walker
+  COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+    -P ${CMAKE_SOURCE_DIR}/tools/compare_vm.cmake)

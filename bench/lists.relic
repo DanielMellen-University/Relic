@@ -1,0 +1,12 @@
+# list building, indexing and a bubble sort
+let xs = []
+for i in 0..600
+    append(xs, (i * 7919) % 600)
+let n = len(xs)
+for a in 0..n
+    for b in 0..n - a - 1
+        if xs[b] > xs[b + 1]
+            let t = xs[b]
+            xs[b] = xs[b + 1]
+            xs[b + 1] = t
+print(xs[0], xs[n - 1])
