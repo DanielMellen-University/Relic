@@ -1,1 +1,1 @@
-rt_loop_type.relic:1:10: error: cannot loop over a number
+rt_loop_type.relic:1:10: error: cannot loop over an int

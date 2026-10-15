@@ -1,1 +1,1 @@
-rt_call_number.relic:2:2: error: cannot call a number
+rt_call_number.relic:2:2: error: cannot call an int

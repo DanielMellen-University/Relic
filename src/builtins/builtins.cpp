@@ -3,6 +3,8 @@
 #include "builtins/graphics.hpp"
 
 #include <chrono>
+#include <cerrno>
+#include <cctype>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -13,6 +15,27 @@ namespace relic {
 std::vector<std::string>& script_args() {
     static std::vector<std::string> a;
     return a;
+}
+
+// Text to a number: digits (with an optional sign) give an int, anything with
+// a point or an exponent gives a float.
+static Value parse_num(const std::string& s) {
+    auto bad = [&]() { return std::string("not a number: \"") + s + "\""; };
+    if (s.empty() || std::isspace(static_cast<unsigned char>(s[0]))) throw bad();
+    size_t i = (s[0] == '-' || s[0] == '+') ? 1 : 0;
+    bool digits = i < s.size();
+    for (size_t j = i; j < s.size(); ++j)
+        if (!std::isdigit(static_cast<unsigned char>(s[j]))) digits = false;
+    if (digits) {
+        errno = 0;
+        long long v = std::strtoll(s.c_str(), nullptr, 10);
+        if (errno != ERANGE) return Value(v);
+    }
+    size_t used = 0;
+    double d = 0;
+    try { d = std::stod(s, &used); } catch (...) { used = 0; }
+    if (used != s.size()) throw bad();
+    return Value(d);
 }
 
 void Interpreter::install_builtins() {
@@ -29,12 +52,12 @@ void Interpreter::install_builtins() {
 
     add("len", 1, [](std::vector<Value>& a) {
         const Value& v = a[0];
-        if (v.is<std::string>()) return Value(static_cast<double>(v.as<std::string>().size()));
+        if (v.is<std::string>()) return Value(static_cast<long long>(v.as<std::string>().size()));
         if (v.is<std::shared_ptr<List>>())
-            return Value(static_cast<double>(v.as<std::shared_ptr<List>>()->size()));
+            return Value(static_cast<long long>(v.as<std::shared_ptr<List>>()->size()));
         if (v.is<std::shared_ptr<Map>>())
-            return Value(static_cast<double>(v.as<std::shared_ptr<Map>>()->keys.size()));
-        throw std::string("cannot get the length of a ") + type_name(v);
+            return Value(static_cast<long long>(v.as<std::shared_ptr<Map>>()->keys.size()));
+        throw std::string("cannot get the length of ") + a_type(v);
     });
 
     add("append", 2, [](std::vector<Value>& a) {
@@ -63,10 +86,11 @@ void Interpreter::install_builtins() {
     add("type", 1, [](std::vector<Value>& a) { return Value(std::string(type_name(a[0]))); });
     // ---- M8 primitives. The std/ modules are written in Relic on top of these. ----
     auto num_arg = [](const Value& v, const char* what) {
-        if (!v.is<double>()) throw std::string(what) + " must be a number, got " + type_name(v);
-        return v.as<double>();
+        if (!is_num(v)) throw std::string(what) + " must be a number, got " + type_name(v);
+        return to_num(v);
     };
     auto whole_arg = [num_arg](const Value& v, const char* what) {
+        if (v.is<long long>()) return v.as<long long>();
         double d = num_arg(v, what);
         if (d != std::floor(d)) throw std::string(what) + " must be a whole number";
         return static_cast<long long>(d);
@@ -96,12 +120,12 @@ void Interpreter::install_builtins() {
             for (size_t i = x; i < y; ++i) r->push_back(l[i]);
             return Value(r);
         }
-        throw std::string("cannot slice a ") + type_name(a[0]);
+        throw std::string("cannot slice ") + a_type(a[0]);
     });
     add("ord", 1, [str_arg](std::vector<Value>& a) {
         const std::string& s = str_arg(a[0], "argument");
         if (s.size() != 1) throw std::string("needs a one-character string");
-        return Value(static_cast<double>(static_cast<unsigned char>(s[0])));
+        return Value(static_cast<long long>(static_cast<unsigned char>(s[0])));
     });
     add("chr", 1, [whole_arg](std::vector<Value>& a) {
         long long n = whole_arg(a[0], "argument");
@@ -109,14 +133,25 @@ void Interpreter::install_builtins() {
         return Value(std::string(1, static_cast<char>(n)));
     });
     add("num", 1, [str_arg](std::vector<Value>& a) {
-        if (a[0].is<double>()) return a[0];
-        const std::string& s = str_arg(a[0], "argument");
-        size_t used = 0;
-        double d = 0;
-        try { d = std::stod(s, &used); } catch (...) { used = 0; }
-        if (s.empty() || used != s.size() || std::isspace(static_cast<unsigned char>(s[0])))
-            throw std::string("not a number: \"") + s + "\"";
-        return Value(d);
+        if (is_num(a[0])) return a[0];
+        return parse_num(str_arg(a[0], "argument"));
+    });
+    // int(x): a number cut toward zero, or a string of digits. float(x): a float.
+    add("int", 1, [](std::vector<Value>& a) -> Value {
+        Value v = a[0];
+        if (v.is<std::string>()) v = parse_num(v.as<std::string>());
+        if (v.is<long long>()) return v;
+        if (!v.is<double>()) throw std::string("cannot turn ") + a_type(v) + " into an int";
+        double d = std::trunc(v.as<double>());
+        if (std::isnan(d) || d >= 9.2233720368547758e18 || d < -9.2233720368547758e18)
+            throw std::string("number is out of the int range");
+        return Value(static_cast<long long>(d));
+    });
+    add("float", 1, [](std::vector<Value>& a) -> Value {
+        Value v = a[0];
+        if (v.is<std::string>()) v = parse_num(v.as<std::string>());
+        if (!is_num(v)) throw std::string("cannot turn ") + a_type(v) + " into a float";
+        return Value(to_num(v));
     });
     add("pop", 1, [list_arg](std::vector<Value>& a) {
         List& l = list_arg(a[0]);
@@ -153,7 +188,7 @@ void Interpreter::install_builtins() {
                 if (m.keys[i] == k) { m.keys.erase(m.keys.begin() + i); break; }
             return v;
         }
-        throw std::string("cannot remove from a ") + type_name(a[0]);
+        throw std::string("cannot remove from ") + a_type(a[0]);
     });
 
     // Host-only pieces: files, clocks, float math. Named host_* so the

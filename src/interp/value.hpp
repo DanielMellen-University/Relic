@@ -53,13 +53,15 @@ struct Module {
 struct NoneV {};
 
 struct Value {
-    std::variant<NoneV, bool, double, std::string, std::shared_ptr<List>, std::shared_ptr<Map>,
+    std::variant<NoneV, bool, double, long long, std::string, std::shared_ptr<List>, std::shared_ptr<Map>,
                  std::shared_ptr<Function>, std::shared_ptr<Builtin>, std::shared_ptr<Module>>
         v;
 
     Value() : v(NoneV{}) {}
     Value(bool b) : v(b) {}
     Value(double d) : v(d) {}
+    Value(long long i) : v(i) {}
+    Value(int i) : v(static_cast<long long>(i)) {}
     Value(std::string s) : v(std::move(s)) {}
     Value(std::shared_ptr<List> l) : v(std::move(l)) {}
     Value(std::shared_ptr<Map> m) : v(std::move(m)) {}
@@ -71,8 +73,16 @@ struct Value {
     template <class T> const T& as() const { return std::get<T>(v); }
 };
 
-// Type name as shown in errors and by type(): none, bool, number, string, list, map, function, module.
+// Type name as shown in errors and by type(): none, bool, int, float, string, list, map, function, module.
 const char* type_name(const Value& v);
+// The type name with "a" or "an" in front, for error messages: "an int", "a list".
+std::string a_type(const Value& v);
+
+// Numbers: int (64-bit) or float (64-bit).
+inline bool is_num(const Value& v) { return v.is<double>() || v.is<long long>(); }
+inline double to_num(const Value& v) {
+    return v.is<long long>() ? static_cast<double>(v.as<long long>()) : v.as<double>();
+}
 
 // show: how print writes a value. repr: how a value looks inside a list or map
 // (strings get quotes).

@@ -28,7 +28,7 @@ fun find(env, name)
 fun new_runtime()
     let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none}
     let builtins = new_env(none)
-    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
+    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
         let v = {name: b[0], arity: b[1]}
         v[tag] = "builtin"
         builtins.vars[b[0]] = v
@@ -41,6 +41,15 @@ fun fail(rt, at, msg)
     return none
 
 # ---- values ----
+
+fun is_num(t) = t == "int" or t == "float"
+
+# Type name with "a" or "an" in front, for error messages.
+fun a_type(v)
+    let t = type_of(v)
+    if t == "int"
+        return "an int"
+    return "a " + t
 
 fun type_of(v)
     let t = type(v)
@@ -93,6 +102,8 @@ fun repr(v)
 
 fun equal(a, b)
     let ta = type_of(a)
+    if is_num(ta) and is_num(type(b))
+        return a == b
     if ta != type_of(b)
         return false
     if ta == "list"
@@ -121,7 +132,7 @@ fun is_whole(d) = d % 1 == 0
 
 # Number to whole-number index, or an error (gives none).
 fun whole(rt, at, v, what)
-    if type(v) != "number"
+    if not is_num(type(v))
         return fail(rt, at, what + " must be a number, got " + type_of(v))
     if not is_whole(v) or v > 9000000000000000 or v < -9000000000000000
         return fail(rt, at, what + " must be a whole number")
@@ -221,7 +232,7 @@ fun exec(rt, n, env)
         else if t == "map"
             items = keys(src)
         else
-            fail(rt, n.kids[0], "cannot loop over a " + t)
+            fail(rt, n.kids[0], "cannot loop over " + a_type(src))
             return "normal"
         for item in items
             let scope = new_env(env)
@@ -276,7 +287,7 @@ fun assign(rt, target, v, env)
     let t = type_of(obj)
     if target.kind == "Field"
         if t != "map"
-            return fail(rt, target, "cannot set a field on a " + t)
+            return fail(rt, target, "cannot set a field on " + a_type(obj))
         obj[target.text] = v
         return
     let idx = eval(rt, target.kids[1], env)
@@ -291,7 +302,7 @@ fun assign(rt, target, v, env)
             return fail(rt, target.kids[1], "map keys must be strings")
         obj[idx] = v
     else
-        fail(rt, target, "cannot set an index on a " + t)
+        fail(rt, target, "cannot set an index on " + a_type(obj))
 
 # ---- expressions ----
 
@@ -342,9 +353,11 @@ fun eval(rt, n, env)
         if rt.err != none
             return none
         if n.text == "-"
-            if type(v) != "number"
-                return fail(rt, n, "cannot negate a " + type_of(v))
-            return -v
+            if not is_num(type(v))
+                return fail(rt, n, "cannot negate " + a_type(v))
+            if type(v) == "float"
+                return -v
+            return math(rt, n, "-", 0, v)
         if type(v) != "bool"
             return fail(rt, n, "'not' needs true or false, got " + type_of(v))
         return not v
@@ -357,7 +370,7 @@ fun eval(rt, n, env)
         if rt.err != none
             return none
         if type_of(obj) != "map"
-            return fail(rt, n, "cannot read a field of a " + type_of(obj))
+            return fail(rt, n, "cannot read a field of " + a_type(obj))
         if not (n.text in obj)
             return fail(rt, n, "map has no key '{n.text}'")
         return obj[n.text]
@@ -383,10 +396,10 @@ fun eval(rt, n, env)
             if not (idx in obj)
                 return fail(rt, n.kids[1], "map has no key '{idx}'")
             return obj[idx]
-        return fail(rt, n, "cannot index a " + t)
+        return fail(rt, n, "cannot index " + a_type(obj))
     return fail(rt, n, "cannot evaluate a " + k)
 
-fun mismatch(rt, n, verb, a, b) = fail(rt, n, "cannot " + verb + " a " + type_of(a) + " and a " + type_of(b))
+fun mismatch(rt, n, verb, a, b) = fail(rt, n, "cannot " + verb + " " + a_type(a) + " and " + a_type(b))
 
 fun binary(rt, n, env)
     let op = n.text
@@ -424,13 +437,15 @@ fun binary(rt, n, env)
             if ta != "string"
                 return fail(rt, n, "can only look for a string inside a string")
             return a in b
-        return fail(rt, n, "cannot look inside a " + tb)
+        return fail(rt, n, "cannot look inside " + a_type(b))
     if op == "+"
-        if (ta == "number" and tb == "number") or (ta == "string" and tb == "string") or (ta == "list" and tb == "list")
+        if is_num(ta) and is_num(tb)
+            return math(rt, n, op, a, b)
+        if (ta == "string" and tb == "string") or (ta == "list" and tb == "list")
             return a + b
         return mismatch(rt, n, "add", a, b)
     if op == "<" or op == "<=" or op == ">" or op == ">="
-        if not ((ta == "number" and tb == "number") or (ta == "string" and tb == "string"))
+        if not ((is_num(ta) and is_num(tb)) or (ta == "string" and tb == "string"))
             return mismatch(rt, n, "compare", a, b)
         if op == "<"
             return a < b
@@ -439,21 +454,30 @@ fun binary(rt, n, env)
         if op == ">"
             return a > b
         return a >= b
-    if ta != "number" or tb != "number"
+    if not is_num(ta) or not is_num(tb)
         if op == "-"
             return mismatch(rt, n, "subtract", a, b)
         if op == "*"
             return mismatch(rt, n, "multiply", a, b)
         return mismatch(rt, n, "divide", a, b)
-    if op == "-"
-        return a - b
-    if op == "*"
-        return a * b
-    if b == 0
+    if b == 0 and (op == "/" or op == "%")
         return fail(rt, n, "division by zero")
-    if op == "/"
-        return a / b
-    return a % b
+    return math(rt, n, op, a, b)
+
+# Number math runs on the host; an int overflow there becomes this program's error.
+fun math(rt, n, op, a, b)
+    try
+        if op == "+"
+            return a + b
+        if op == "-"
+            return a - b
+        if op == "*"
+            return a * b
+        if op == "/"
+            return a / b
+        return a % b
+    catch e
+        return fail(rt, n, e.message)
 
 fun plural(n)
     if n == 1
@@ -468,7 +492,7 @@ fun call(rt, n, env)
     if rt.err != none
         return none
     if type_of(callee) != "function"
-        return fail(rt, n, "cannot call a " + type_of(callee))
+        return fail(rt, n, "cannot call " + a_type(callee))
     if callee[tag] == "builtin"
         if callee.arity >= 0 and len(argv) != callee.arity
             return fail(rt, n, "{callee.name}() takes {callee.arity} argument{plural(callee.arity)}, got {len(argv)}")
@@ -527,7 +551,7 @@ fun builtin(rt, name, a)
     if name == "len"
         if t == "string" or t == "list" or t == "map"
             return ok(len(a[0]))
-        return bad("cannot get the length of a " + t)
+        return bad("cannot get the length of " + a_type(a[0]))
     if name == "append"
         if t != "list"
             return bad("first argument must be a list, got " + t)
@@ -541,6 +565,14 @@ fun builtin(rt, name, a)
         return ok(keys(a[0]))
     if name == "type"
         return ok(t)
+    if name == "int" or name == "float"
+        # The host does the work; its message comes back without the "int(): " part.
+        try
+            if name == "int"
+                return ok(int(a[0]))
+            return ok(float(a[0]))
+        catch e
+            return bad(slice(e.message, len(name) + 4, len(e.message)))
     if name == "fail"
         if t != "string"
             return bad("fail(): message must be a string, got " + t)
@@ -552,12 +584,12 @@ fun builtin(rt, name, a)
             let what = "start"
             if i == 2
                 what = "end"
-            if type(a[i]) != "number"
+            if not is_num(type(a[i]))
                 return bad(what + " must be a number, got " + type_of(a[i]))
             if not is_whole(a[i])
                 return bad(what + " must be a whole number")
         if t != "string" and t != "list"
-            return bad("cannot slice a " + t)
+            return bad("cannot slice " + a_type(a[0]))
         return ok(slice(a[0], a[1], a[2]))
     if name == "ord"
         if t != "string"
@@ -566,7 +598,7 @@ fun builtin(rt, name, a)
             return bad("needs a one-character string")
         return ok(ord(a[0]))
     if name == "chr"
-        if t != "number"
+        if not is_num(t)
             return bad("argument must be a number, got " + t)
         if not is_whole(a[0])
             return bad("argument must be a whole number")
@@ -574,7 +606,7 @@ fun builtin(rt, name, a)
             return bad("code must be 0 to 255")
         return ok(chr(a[0]))
     if name == "num"
-        if t == "number"
+        if is_num(t)
             return ok(a[0])
         if t != "string"
             return bad("argument must be a string, got " + t)
@@ -588,7 +620,7 @@ fun builtin(rt, name, a)
     if name == "insert"
         if t != "list"
             return bad("first argument must be a list, got " + t)
-        if type(a[1]) != "number"
+        if not is_num(type(a[1]))
             return bad("index must be a number, got " + type_of(a[1]))
         if not is_whole(a[1])
             return bad("index must be a whole number")
@@ -598,7 +630,7 @@ fun builtin(rt, name, a)
         return ok(none)
     # remove
     if t == "list"
-        if type(a[1]) != "number"
+        if not is_num(type(a[1]))
             return bad("index must be a number, got " + type_of(a[1]))
         if not is_whole(a[1])
             return bad("index must be a whole number")
@@ -611,7 +643,7 @@ fun builtin(rt, name, a)
         if not (a[1] in a[0])
             return bad("map has no key '{a[1]}'")
         return ok(remove(a[0], a[1]))
-    return bad("cannot remove from a " + t)
+    return bad("cannot remove from " + a_type(a[0]))
 
 # num() on a string: digits with an optional fraction and sign. Narrower than
 # the host's strtod (no exponents, inf or nan); see DESIGN.md.

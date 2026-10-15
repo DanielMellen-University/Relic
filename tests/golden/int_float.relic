@@ -1,0 +1,33 @@
+# int and float are separate number types
+print(type(3), type(3.0), type(7 / 2), type(6 / 2))
+print(7 / 2, 6 / 2, 7 % 3, -7 % 3, 2 * 3, 2 * 3.0)
+print(1 + 2, 1 + 2.5, 10 - 0.5)
+print(1 == 1.0, 2 < 2.5, 3 >= 3.0)
+print(int(3.9), int(-3.9), int("42"), int("-7"))
+print(float(2), float("2.5"), float("3"))
+print(num("12"), type(num("12")), num("1.5"), type(num("1.5")))
+print(len("abc"), type(len("abc")))
+for i in 0..3
+    print(i, type(i))
+let xs = [10, 20, 30]
+print(xs[1], xs[1.0])
+print(0.1 + 0.2, 1500.0, 100000000000000000000.0)
+print(str(5), str(5.0), "{2.0} and {2}")
+print([1, 2.0, 3.5])
+print(9223372036854775807)
+try
+    print(9223372036854775807 + 1)
+catch e
+    print(e.message)
+try
+    print(int("3.5"))
+catch e
+    print(e.message)
+try
+    int([1])
+catch e
+    print(e.message)
+try
+    print(-(0 - 9223372036854775807 - 1))
+catch e
+    print(e.message)

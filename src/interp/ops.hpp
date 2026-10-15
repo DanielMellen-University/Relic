@@ -11,6 +11,8 @@ constexpr int kMaxCallDepth = 800;
 
 [[noreturn]] void fail_at(const Ast& at, const std::string& msg);
 Value op_binary(const Ast& n, const Value& a, const Value& b);  // not and/or
+Value op_math(const Ast& n, const Value& a, const Value& b);  // + - * / % on numbers
+Value op_number(const Ast& n);  // a Number literal: int, or float if it has a point
 Value op_unary(const Ast& n, const Value& v);
 Value op_range(const Ast& n, const Value& a, const Value& b);
 Value op_field(const Ast& n, const Value& obj);

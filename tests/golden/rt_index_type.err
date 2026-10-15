@@ -1,1 +1,1 @@
-rt_index_type.relic:2:8: error: cannot index a number
+rt_index_type.relic:2:8: error: cannot index an int

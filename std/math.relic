@@ -19,13 +19,14 @@ fun max(a, b)
     return a
 
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
-fun floor(x) = host_floor(x)
-fun ceil(x) = -host_floor(-x)
-fun round(x) = host_floor(x + 0.5)
+# floor, ceil and round give an int.
+fun floor(x) = int(host_floor(x))
+fun ceil(x) = -int(host_floor(-x))
+fun round(x) = int(host_floor(x + 0.5))
 fun sqrt(x) = host_sqrt(x)
 fun pow(x, y) = host_pow(x, y)
 fun sin(x) = host_sin(x)
 fun cos(x) = host_cos(x)
 fun exp(x) = host_exp(x)
 fun log(x) = host_log(x)
-fun is_whole(x) = x == host_floor(x)
+fun is_whole(x) = type(x) == "int" or x == host_floor(x)

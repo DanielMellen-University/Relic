@@ -10,5 +10,5 @@ turn 1
 turn 2
 i is 3
 outer from inner
-["a"] cannot add a number and a string
+["a"] cannot add an int and a string
 done

@@ -1,1 +1,1 @@
-rt_fail_type.relic:1:5: error: fail(): message must be a string, got number
+rt_fail_type.relic:1:5: error: fail(): message must be a string, got int

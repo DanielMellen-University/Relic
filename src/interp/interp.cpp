@@ -1,6 +1,7 @@
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
 
+#include <cerrno>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
@@ -30,6 +31,7 @@ constexpr int kMaxDepth = 800;
 
 // Turns a number into a whole-number index, or fails.
 long long whole(const Ast& at, const Value& v, const char* what) {
+    if (v.is<long long>()) return v.as<long long>();
     if (!v.is<double>()) fail(at, std::string(what) + " must be a number, got " + type_name(v));
     double d = v.as<double>();
     if (d != std::floor(d) || std::fabs(d) > 9e15)
@@ -50,7 +52,7 @@ size_t list_slot(const Ast& at, const Value& idx, size_t size, const char* what 
 Value op_binary(const Ast& n, const Value& a, const Value& b) {
     const std::string& op = n.text;
     auto mismatch = [&](const char* verb) -> Value {
-        fail(n, std::string("cannot ") + verb + " a " + type_name(a) + " and a " + type_name(b));
+        fail(n, std::string("cannot ") + verb + " " + a_type(a) + " and " + a_type(b));
     };
     if (op == "==") return Value(equal(a, b));
     if (op == "!=") return Value(!equal(a, b));
@@ -68,10 +70,10 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
             if (!a.is<std::string>()) fail(n, "can only look for a string inside a string");
             return Value(b.as<std::string>().find(a.as<std::string>()) != std::string::npos);
         }
-        fail(n, std::string("cannot look inside a ") + type_name(b));
+        fail(n, std::string("cannot look inside ") + a_type(b));
     }
     if (op == "+") {
-        if (a.is<double>() && b.is<double>()) return Value(a.as<double>() + b.as<double>());
+        if (is_num(a) && is_num(b)) return op_math(n, a, b);
         if (a.is<std::string>() && b.is<std::string>())
             return Value(a.as<std::string>() + b.as<std::string>());
         if (a.is<std::shared_ptr<List>>() && b.is<std::shared_ptr<List>>()) {
@@ -83,8 +85,11 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
     }
     if (op == "<" || op == "<=" || op == ">" || op == ">=") {
         int c;
-        if (a.is<double>() && b.is<double>()) {
-            double x = a.as<double>(), y = b.as<double>();
+        if (a.is<long long>() && b.is<long long>()) {
+            long long x = a.as<long long>(), y = b.as<long long>();
+            c = x < y ? -1 : (x > y ? 1 : 0);
+        } else if (is_num(a) && is_num(b)) {
+            double x = to_num(a), y = to_num(b);
             c = x < y ? -1 : (x > y ? 1 : 0);
         } else if (a.is<std::string>() && b.is<std::string>()) {
             c = a.as<std::string>().compare(b.as<std::string>());
@@ -96,24 +101,64 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
         if (op == ">") return Value(c > 0);
         return Value(c >= 0);
     }
-    if (!a.is<double>() || !b.is<double>()) {
+    if (!is_num(a) || !is_num(b)) {
         if (op == "-") return mismatch("subtract");
         if (op == "*") return mismatch("multiply");
         return mismatch("divide");
     }
-    double x = a.as<double>(), y = b.as<double>();
-    if (op == "-") return Value(x - y);
-    if (op == "*") return Value(x * y);
+    return op_math(n, a, b);
+}
+
+// + - * / % on two numbers. int with int stays int (except /, which always
+// gives a float); anything with a float gives a float.
+Value op_math(const Ast& n, const Value& a, const Value& b) {
+    const char o = n.text[0];
+    if (a.is<long long>() && b.is<long long>()) {
+        long long x = a.as<long long>(), y = b.as<long long>(), r = 0;
+        switch (o) {
+            case '+': if (__builtin_add_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '-': if (__builtin_sub_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '*': if (__builtin_mul_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '/':
+                if (y == 0) fail(n, "division by zero");
+                return Value(static_cast<double>(x) / static_cast<double>(y));
+            default:
+                if (y == 0) fail(n, "division by zero");
+                if (y == -1) return Value(0);
+                r = x % y;
+                if (r != 0 && ((r < 0) != (y < 0))) r += y;  // result takes the sign of the divisor
+                return Value(r);
+        }
+    }
+    double x = to_num(a), y = to_num(b);
+    switch (o) {
+        case '+': return Value(x + y);
+        case '-': return Value(x - y);
+        case '*': return Value(x * y);
+    }
     if (y == 0) fail(n, "division by zero");
-    if (op == "/") return Value(x / y);
+    if (o == '/') return Value(x / y);
     double r = std::fmod(x, y);
-    if (r != 0 && ((r < 0) != (y < 0))) r += y;  // result takes the sign of the divisor
+    if (r != 0 && ((r < 0) != (y < 0))) r += y;
     return Value(r);
+}
+
+Value op_number(const Ast& n) {
+    if (n.text.find('.') != std::string::npos) return Value(std::stod(n.text));
+    errno = 0;
+    long long i = std::strtoll(n.text.c_str(), nullptr, 10);
+    if (errno == ERANGE) fail(n, "int is too large (the limit is 9223372036854775807)");
+    return Value(i);
 }
 
 Value op_unary(const Ast& n, const Value& v) {
     if (n.text == "-") {
-        if (!v.is<double>()) fail(n, std::string("cannot negate a ") + type_name(v));
+        if (v.is<long long>()) {
+            long long r;
+            if (__builtin_sub_overflow(0LL, v.as<long long>(), &r)) fail(n, "int overflow");
+            return Value(r);
+        }
+        if (!v.is<double>()) fail(n, std::string("cannot negate ") + a_type(v));
         return Value(-v.as<double>());
     }
     if (!v.is<bool>()) fail(n, std::string("'not' needs true or false, got ") + type_name(v));
@@ -134,7 +179,7 @@ Value op_field(const Ast& n, const Value& obj) {
                 return it->second;
             }
             if (!obj.is<std::shared_ptr<Map>>())
-                fail(n, std::string("cannot read a field of a ") + type_name(obj));
+                fail(n, std::string("cannot read a field of ") + a_type(obj));
             const Map& m = *obj.as<std::shared_ptr<Map>>();
             if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'");
             return m.items.at(n.text);
@@ -156,14 +201,14 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
                 if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'");
                 return m.items.at(k);
             }
-            fail(n, std::string("cannot index a ") + type_name(obj));
+            fail(n, std::string("cannot index ") + a_type(obj));
 }
 
 void op_set_field(const Ast& target, const Value& obj, Value v) {
     if (obj.is<std::shared_ptr<Module>>())
         fail(target, "cannot change a module's names from outside; give it a function that does it");
     if (!obj.is<std::shared_ptr<Map>>())
-        fail(target, std::string("cannot set a field on a ") + type_name(obj));
+        fail(target, std::string("cannot set a field on ") + a_type(obj));
     obj.as<std::shared_ptr<Map>>()->set(target.text, std::move(v));
 }
 
@@ -175,7 +220,7 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
         if (!idx.is<std::string>()) fail(*target.kids[1], "map keys must be strings");
         obj.as<std::shared_ptr<Map>>()->set(idx.as<std::string>(), std::move(v));
     } else {
-        fail(target, std::string("cannot set an index on a ") + type_name(obj));
+        fail(target, std::string("cannot set an index on ") + a_type(obj));
     }
 }
 
@@ -186,7 +231,7 @@ Value op_range(const Ast& n, const Value& av, const Value& bv) {
     long long b = whole(*n.kids[1], bv, "range end");
     if (b - a > 10000000) fail(n, "range is too large");
     auto l = std::make_shared<List>();
-    for (long long i = a; i < b; ++i) l->emplace_back(static_cast<double>(i));
+    for (long long i = a; i < b; ++i) l->emplace_back(static_cast<long long>(i));
     return Value(l);
 }
 
@@ -205,7 +250,7 @@ List op_loop_items(const Ast& at, const Value& src) {
     } else if (src.is<std::shared_ptr<Map>>()) {
         for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
     } else {
-        fail(at, std::string("cannot loop over a ") + type_name(src));
+        fail(at, std::string("cannot loop over ") + a_type(src));
     }
     return items;
 }
@@ -229,8 +274,8 @@ Value op_call_builtin(const Ast& n, const Builtin& b, std::vector<Value>& args) 
 Value op_error_value(const RuntimeError& e) {
     auto m = std::make_shared<Map>();
     m->set("message", Value(std::string(e.what())));
-    m->set("line", Value(static_cast<double>(e.line)));
-    m->set("col", Value(static_cast<double>(e.col)));
+    m->set("line", Value(static_cast<long long>(e.line)));
+    m->set("col", Value(static_cast<long long>(e.col)));
     return Value(m);
 }
 
@@ -394,7 +439,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             } else if (src.is<std::shared_ptr<Map>>()) {
                 for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
             } else {
-                fail(*n.kids[0], std::string("cannot loop over a ") + type_name(src));
+                fail(*n.kids[0], std::string("cannot loop over ") + a_type(src));
             }
             for (auto& item : items) {
                 auto scope = std::make_shared<Env>(env);
@@ -451,7 +496,7 @@ void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>&
 
 Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
     switch (n.kind) {
-        case Node::Number: return Value(std::stod(n.text));
+        case Node::Number: return op_number(n);
         case Node::String: return Value(n.text);
         case Node::True: return Value(true);
         case Node::False: return Value(false);
@@ -481,7 +526,7 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
             long long b = whole(*n.kids[1], eval(*n.kids[1], env), "range end");
             if (b - a > 10000000) fail(n, "range is too large");
             auto l = std::make_shared<List>();
-            for (long long i = a; i < b; ++i) l->emplace_back(static_cast<double>(i));
+            for (long long i = a; i < b; ++i) l->emplace_back(static_cast<long long>(i));
             return Value(l);
         }
         case Node::Unary: return op_unary(n, eval(*n.kids[0], env));
@@ -519,7 +564,7 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     if (callee.is<std::shared_ptr<Builtin>>())
         return op_call_builtin(n, *callee.as<std::shared_ptr<Builtin>>(), args);
     if (!callee.is<std::shared_ptr<Function>>())
-        fail(n, std::string("cannot call a ") + type_name(callee));
+        fail(n, std::string("cannot call ") + a_type(callee));
 
     const Function& f = *callee.as<std::shared_ptr<Function>>();
     const Ast& params = *f.node->kids[0];

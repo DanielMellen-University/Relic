@@ -1,1 +1,1 @@
-modules/broken.relic:1:17: error: cannot add a number and a string
+modules/broken.relic:1:17: error: cannot add an int and a string

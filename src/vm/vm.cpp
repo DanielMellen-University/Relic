@@ -421,7 +421,13 @@ private:
 
     void expr(const Ast& n) {
         switch (n.kind) {
-            case Node::Number: emit(Op::Const, constant(Value(std::stod(n.text)))); return;
+            case Node::Number:
+                try {
+                    emit(Op::Const, constant(op_number(n)));
+                } catch (const RuntimeError& e) {
+                    emit(Op::Fail, str(e.what()), 0, &n);
+                }
+                return;
             case Node::String: emit(Op::Const, constant(Value(n.text))); return;
             case Node::True: emit(Op::True); return;
             case Node::False: emit(Op::False); return;
@@ -570,7 +576,7 @@ private:
         if (callee.is<std::shared_ptr<Builtin>>())
             return op_call_builtin(*in.at, *callee.as<std::shared_ptr<Builtin>>(), args);
         if (!callee.is<std::shared_ptr<Function>>())
-            fail_at(*in.at, std::string("cannot call a ") + type_name(callee));
+            fail_at(*in.at, std::string("cannot call ") + a_type(callee));
         const Function& f = *callee.as<std::shared_ptr<Function>>();
         if (!f.proto) fail_at(*in.at, "cannot call a function made outside the VM");
         const Proto& p = *static_cast<const Proto*>(f.proto);
@@ -676,7 +682,16 @@ private:
                     Value b = pop();
                     Value& a = st.back();
                     // Fast path for number math, the hot case in loops.
-                    if (a.is<double>() && b.is<double>()) {
+                    if (a.is<long long>() && b.is<long long>()) {
+                        const std::string& o = in.at->text;
+                        long long x = a.as<long long>(), y = b.as<long long>(), r;
+                        if (o.size() == 1) {
+                            if (o[0] == '+' && !__builtin_add_overflow(x, y, &r)) { a = Value(r); break; }
+                            if (o[0] == '-' && !__builtin_sub_overflow(x, y, &r)) { a = Value(r); break; }
+                            if (o[0] == '<') { a = Value(x < y); break; }
+                            if (o[0] == '>') { a = Value(x > y); break; }
+                        }
+                    } else if (a.is<double>() && b.is<double>()) {
                         const std::string& o = in.at->text;
                         double x = a.as<double>(), y = b.as<double>();
                         if (o.size() == 1) {

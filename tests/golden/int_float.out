@@ -1,0 +1,20 @@
+int float float float
+3.5 3.0 1 2 6 6.0
+3 3.5 9.5
+true true true
+3 -3 42 -7
+2.0 2.5 3.0
+12 int 1.5 float
+3 int
+0 int
+1 int
+2 int
+20 20
+0.3 1500.0 1e+20
+5 5.0 2.0 and 2
+[1, 2.0, 3.5]
+9223372036854775807
+int overflow
+3
+int(): cannot turn a list into an int
+int overflow

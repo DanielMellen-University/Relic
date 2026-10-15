@@ -44,7 +44,7 @@ fun sort_by(xs, less)
     # stable merge sort; returns a new list
     if len(xs) <= 1
         return copy(xs)
-    let mid = (len(xs) - len(xs) % 2) / 2
+    let mid = int(len(xs) / 2)
     let a = sort_by(slice(xs, 0, mid), less)
     let b = sort_by(slice(xs, mid, len(xs)), less)
     let out = []

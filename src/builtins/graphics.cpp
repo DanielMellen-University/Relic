@@ -19,8 +19,8 @@ namespace relic {
 namespace {
 
 double num(const Value& v, const char* what) {
-    if (!v.is<double>()) throw std::string(what) + " must be a number, got " + type_name(v);
-    return v.as<double>();
+    if (!is_num(v)) throw std::string(what) + " must be a number, got " + type_name(v);
+    return to_num(v);
 }
 
 int whole(const Value& v, const char* what) {
@@ -177,14 +177,14 @@ void add_graphics_builtins(const AddBuiltin& add) {
         pump();
         int x = 0;
         SDL_GetMouseState(&x, nullptr);
-        return Value(static_cast<double>(x));
+        return Value(static_cast<long long>(x));
     });
     add("host_gfx_mouse_y", 0, [](std::vector<Value>&) {
         need_window();
         pump();
         int y = 0;
         SDL_GetMouseState(nullptr, &y);
-        return Value(static_cast<double>(y));
+        return Value(static_cast<long long>(y));
     });
     add("host_gfx_mouse_down", 1, [](std::vector<Value>& a) {
         need_window();
@@ -227,7 +227,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         if (!t) throw std::string("cannot use image ") + path + ": " + SDL_GetError();
         g_images.push_back(t);
         g_sizes.push_back({w, h});
-        return Value(static_cast<double>(g_images.size() - 1));
+        return Value(static_cast<long long>(g_images.size() - 1));
     });
     add("host_gfx_image", 3, [](std::vector<Value>& a) {
         SDL_Renderer* r = need_window();
@@ -238,11 +238,11 @@ void add_graphics_builtins(const AddBuiltin& add) {
     });
     add("host_gfx_image_width", 1, [](std::vector<Value>& a) {
         need_window();
-        return Value(static_cast<double>(g_sizes[image_id(a[0])].first));
+        return Value(static_cast<long long>(g_sizes[image_id(a[0])].first));
     });
     add("host_gfx_image_height", 1, [](std::vector<Value>& a) {
         need_window();
-        return Value(static_cast<double>(g_sizes[image_id(a[0])].second));
+        return Value(static_cast<long long>(g_sizes[image_id(a[0])].second));
     });
     add("host_gfx_wait", 1, [](std::vector<Value>& a) {
         int ms = whole(a[0], "milliseconds");

@@ -1,1 +1,1 @@
-rt_not_bool.relic:1:7: error: 'not' needs true or false, got number
+rt_not_bool.relic:1:7: error: 'not' needs true or false, got int

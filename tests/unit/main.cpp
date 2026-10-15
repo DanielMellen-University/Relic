@@ -201,12 +201,12 @@ static void test_interp() {
     CHECK(run("print(\"{1 + 1}x\")") == "2x\n");
     CHECK(run("print(len([1, 2]), len({}), len(\"\"))") == "2 0 0\n");
     CHECK(run("print(1 and true)") ==
-          "error: 'and' operand must be true or false, got number\n");
-    CHECK(run("print(\"a\" * 2)") == "error: cannot multiply a string and a number\n");
+          "error: 'and' operand must be true or false, got int\n");
+    CHECK(run("print(\"a\" * 2)") == "error: cannot multiply a string and an int\n");
     CHECK(run("let xs = [1]\nprint(xs[0.5])") == "error: list index must be a whole number\n");
     CHECK(run("next") == "error: 'next' outside a loop\n");
     CHECK(run("len(1, 2)") == "error: len() takes 1 argument, got 2\n");
-    CHECK(run("append(1, 2)") == "error: append(): first argument must be a list, got number\n");
+    CHECK(run("append(1, 2)") == "error: append(): first argument must be a list, got int\n");
 }
 
 static void test_repl() {
