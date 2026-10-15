@@ -30,7 +30,8 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 ## Phase 4: Runtime and standard library
 
-- [x] Memory model decided: reference counting, cycle collector later (see DESIGN.md)
+- [x] Memory model: reference counting plus a cycle collector (see DESIGN.md)
+- [x] Language feature complete: `try` / `catch`, int and float, `as` hints, private `_` names, UTF-8 strings
 - [x] Modules and imports: `use path/name`, cycles allowed
 - [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8)
 - [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. **Open:** VM written in Relic

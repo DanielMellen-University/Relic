@@ -69,7 +69,7 @@ if(RELIC_SDL)
   # Headless SDL smoke test: input, text and image calls run without a display.
   add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
   set_tests_properties(gfx_smoke PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-    PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nnumber false\ndone")
+    PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nint false\ndone")
 endif()
 
 add_test(NAME selfhost_lexer

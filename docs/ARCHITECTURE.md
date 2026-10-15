@@ -13,7 +13,7 @@ Relic/
     lexer/          source text to tokens, INDENT/DEDENT
     parser/         tokens to AST
     ast/            AST node types and the --ast dump
-    interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations)
+    interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations), gc.cpp (cycle collector)
     vm/             bytecode compiler and stack VM (the default engine)
     builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones (font8x12.inc is its generated font)
     diag/           error messages with file, line, column
@@ -53,7 +53,7 @@ source -> lexer -> tokens -> parser -> AST -> compiler -> bytecode -> VM   (defa
 
 ## Values
 
-One `Value` type: none, bool, number, string, list, map, function, built-in, module. Memory is reference counted with host smart pointers (see DESIGN.md, Memory model). Cycles leak for now.
+One `Value` type: none, bool, int, float, string, list, map, function, built-in, module. Memory is reference counted with host smart pointers, and `src/interp/gc.cpp` collects cycles (see DESIGN.md, Memory model).
 
 ## Debug flags
 

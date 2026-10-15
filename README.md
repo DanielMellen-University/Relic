@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP images). The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP images). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
 
 ## A taste
 
@@ -66,16 +66,32 @@ print(box.title, box["version"])
 ```
 
 - Math: `+ - * / %`. `%` is the remainder: `10 % 3` is `1`.
+- Numbers: `3` is an `int`, `3.5` is a `float`. `/` always gives a float (`6 / 2` is `3.0`); `int(x)` cuts it back.
 - Compare: `== != < <= > >=`. Logic: `and or not`. Membership: `x in list`.
-- Values: numbers, strings, `true`, `false`, `none`, lists and maps.
+- Values: ints, floats, strings, `true`, `false`, `none`, lists and maps. Strings are UTF-8: `len("héllo")` is `5`.
 - Conditions must be `true` or `false`. `if 1` is an error.
 - The sample above is checked by the `readme_sample` golden test.
-- Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Two files can use each other.
+- Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
 - Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`.
 - Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
-- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `pop`, `insert`, `remove`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
+- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `fail`, `gc`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
+
+### Errors and type hints
+
+```
+fun half(n as int) as float = n / 2
+
+try
+    print(half(4))
+    print(half("4"))
+catch err
+    print("caught: {err.message}")
+```
+
+- `try` / `catch err` catches any runtime error; `err` is `{message, line, col}`. `fail("why")` raises one.
+- `as` hints on `let`, parameters and returns are checked while the program runs.
 
 ## Use
 

@@ -13,7 +13,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M4 | Tree-walk interpreter | M3 | done |
 | M5 | REPL and file runner | M4 | done |
 | M6 | Relic 1.0 release | M5 | done (`v1.0.0`; human FizzBuzz check still open) |
-| M7 | Memory model and modules | M6 | done |
+| M7 | Memory model and modules | M6 | done (cycle collector added later) |
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
@@ -61,14 +61,15 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 76 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion`.
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 91 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`), `rt_recursion`, `try_recursion` and `gc_cycles`.
   - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `use` in the self-hosted interpreter and a faster runtime (M10).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
-  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 89 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
+  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 109 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
   - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds. Next: PNG images, desktop shell.
+- Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 
 ## Risks
@@ -89,9 +90,12 @@ Struck-through rows are decided. The rest are **Open** and block the milestone s
 | Decision | Blocks |
 |---|---|
 | ~~Final 1.0 syntax~~ frozen in M3; colons, `++` and `const` stay out of 1.0 | done |
-| Number types: one 64-bit float for 1.0; separate int later? | later, no milestone yet |
-| Catchable errors | M12 (apps need them) |
+| ~~Number types~~ separate 64-bit `int` and `float` | done |
+| ~~Catchable errors~~ `try` / `catch err`, `fail(message)` | done |
+| ~~Type hints~~ optional `as` hints, checked at run time | done |
+| ~~Private names~~ leading `_` in a module | done |
+| ~~Strings~~ UTF-8, counted by character | done |
 | ~~License~~ MIT, chosen by Daniel | done |
-| ~~Memory model~~ reference counting by default, cycle collector at M10 | done |
+| ~~Memory model~~ reference counting plus a cycle collector | done |
 | ~~Module system shape~~ `use path/name`, one file one module | done |
 | ~~Graphics backend for phase 5~~ SDL2 by default (matches MONOLITH 1), optional build | done |
