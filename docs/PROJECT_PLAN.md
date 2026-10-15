@@ -55,7 +55,7 @@ Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 
 
 ### M7 to M12
 Planned at a coarser level. Each gets its own checklist when M6 is done.
-- M7 exit: memory model chosen and written up. Two files can import each other.
+- M7 exit: memory model chosen and written up. Two files can import each other. **Done:** reference counting (DESIGN.md), `use` with cycles, golden tests `use_*` and `err_use_*`.
 - M8 exit: stdlib covers strings, lists, maps, files, time, math, each with tests.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
@@ -81,6 +81,6 @@ These are **Open** and block the milestone shown.
 | ~~Final 1.0 syntax~~ frozen in M3; colons, `++` and `const` stay out of 1.0 | done |
 | Number types | M3 |
 | ~~License~~ MIT, chosen by Daniel | done |
-| Memory model | M7 |
-| Module system shape | M7 |
+| ~~Memory model~~ reference counting by default, cycle collector at M10 | done |
+| ~~Module system shape~~ `use path/name`, one file one module | done |
 | Graphics backend for phase 5 | M11 |

@@ -70,6 +70,7 @@ print(box.title, box["version"])
 - Values: numbers, strings, `true`, `false`, `none`, lists and maps.
 - Conditions must be `true` or `false`. `if 1` is an error.
 - The sample above is checked by the `readme_sample` golden test.
+- Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Two files can use each other.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`. The full rules are in [DESIGN.md](docs/DESIGN.md).
 
 ## Use

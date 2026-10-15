@@ -89,11 +89,35 @@ print(box.title)
 
 ## Modules
 
-**Open.** Planned for phase 4. Proposal: one file is one module, loaded with `use path/name`.
+**Default (M7, built).** One file is one module.
+
+```
+use lib/mathx          # loads lib/mathx.relic, binds the name mathx
+use ../shared/util     # paths can climb with ../
+print(mathx.square(4))
+```
+
+- `use a/b/name` loads `a/b/name.relic`, relative to the folder of the file that holds the `use`. Inside the REPL it is relative to the current directory.
+- The last part of the path becomes the name in the current scope. There is no `as` rename yet (**Open**).
+- A module runs once. Using it again, from anywhere, gives the same module.
+- Every top-level `let` and `fun` in the module is reachable as `name.thing`. There is no private marker yet (**Open**: maybe a leading `_`).
+- Names are read live. Two modules can use each other: the second `use` in a cycle gets the module that is still loading, and its names appear as they are defined. Calling across the cycle inside functions always works. Reading a name at the top level before the other file has defined it is an error: `module 'x' has no 'y' (yet)`.
+- A module can use the main file back. It gets the main file's own scope; the main file does not run twice.
+- Modules are values of type `module`. They print as `<module name>`. You cannot assign `mod.x = ...` from outside.
+- Every module sees the built-ins, but not the main file's globals.
+- Errors point at the file they happened in, so a mistake inside `lib/mathx.relic` reports `lib/mathx.relic:line:col`.
+- `use` is now a keyword, so it can no longer be a variable name.
 
 ## Memory model
 
-**Open.** Options: reference counting, a tracing garbage collector, or arenas. Phase 1 relies on the host. Decide in M7.
+**Default (M7).** Reference counting, using the host's `std::shared_ptr` for now.
+
+- Numbers, bools, `none` and strings are plain values and copy on assignment.
+- Lists, maps, functions and modules are shared by reference. A value is freed the moment its last reference goes away, so freeing is predictable and there are no pauses.
+- Known gap: cycles leak. A list that holds itself, or a closure stored in the scope it captures, is never freed. That is fine for scripts and the toy programs of phase 2.
+- Why this and not a tracing GC: it is what the C++ host does for free, it is easy to reason about, and it keeps the runtime small while the language settles. Arenas stay an option for the VM.
+- Plan: when Relic hosts itself (M9) and gets a VM (M10), Relic implements its own reference counts instead of borrowing `shared_ptr`, and adds a cycle collector that runs only over containers. That keeps the domestic goal: nothing borrowed in the end.
+- **Open:** whether the self-hosted runtime switches to a full tracing collector instead. Decide at M10 with benchmarks.
 
 ## Errors
 

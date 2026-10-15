@@ -30,8 +30,8 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 ## Phase 4: Runtime and standard library
 
-- [ ] Memory model decided and built (see DESIGN.md)
-- [ ] Modules and imports
+- [x] Memory model decided: reference counting, cycle collector later (see DESIGN.md)
+- [x] Modules and imports: `use path/name`, cycles allowed
 - [ ] Standard library: strings, lists, maps (methods beyond literals), files, time, math
 - [ ] Bytecode VM if the tree-walker is too slow
 - [ ] Native code generation explored (stretch)
