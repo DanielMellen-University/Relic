@@ -127,9 +127,9 @@ Value op_math(const Ast& n, const Value& a, const Value& b) {
     if (a.is<long long>() && b.is<long long>()) {
         long long x = a.as<long long>(), y = b.as<long long>(), r = 0;
         switch (o) {
-            case '+': if (__builtin_add_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
-            case '-': if (__builtin_sub_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
-            case '*': if (__builtin_mul_overflow(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '+': if (add_overflows(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '-': if (sub_overflows(x, y, &r)) fail(n, "int overflow"); return Value(r);
+            case '*': if (mul_overflows(x, y, &r)) fail(n, "int overflow"); return Value(r);
             case '/':
                 if (y == 0) fail(n, "division by zero");
                 return Value(static_cast<double>(x) / static_cast<double>(y));
@@ -166,7 +166,7 @@ Value op_unary(const Ast& n, const Value& v) {
     if (n.text == "-") {
         if (v.is<long long>()) {
             long long r;
-            if (__builtin_sub_overflow(0LL, v.as<long long>(), &r)) fail(n, "int overflow");
+            if (sub_overflows(0LL, v.as<long long>(), &r)) fail(n, "int overflow");
             return Value(r);
         }
         if (!v.is<double>()) fail(n, std::string("cannot negate ") + a_type(v));

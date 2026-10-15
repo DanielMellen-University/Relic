@@ -1,0 +1,17 @@
+# int math reports overflow instead of wrapping
+let big = 9223372036854775807
+let small = 0 - big - 1
+for pair in [[big, 1], [small, -1], [big, -1], [small, 1]]
+    try
+        print(pair[0] + pair[1])
+    catch e
+        print("add", e.message)
+    try
+        print(pair[0] - pair[1])
+    catch e
+        print("sub", e.message)
+for pair in [[big, 2], [small, -1], [small, 1], [3037000499, 3037000499], [3037000500, 3037000500], [-3037000500, 3037000500], [small, 0]]
+    try
+        print(pair[0] * pair[1])
+    catch e
+        print("mul", e.message)

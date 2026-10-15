@@ -1,0 +1,15 @@
+add int overflow
+9223372036854775806
+add int overflow
+-9223372036854775807
+9223372036854775806
+sub int overflow
+-9223372036854775807
+sub int overflow
+mul int overflow
+mul int overflow
+-9223372036854775808
+9223372030926249001
+mul int overflow
+mul int overflow
+0

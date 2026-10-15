@@ -738,8 +738,8 @@ private:
                         const std::string& o = in.at->text;
                         long long x = a.as<long long>(), y = b.as<long long>(), r;
                         if (o.size() == 1) {
-                            if (o[0] == '+' && !__builtin_add_overflow(x, y, &r)) { a = Value(r); break; }
-                            if (o[0] == '-' && !__builtin_sub_overflow(x, y, &r)) { a = Value(r); break; }
+                            if (o[0] == '+' && !add_overflows(x, y, &r)) { a = Value(r); break; }
+                            if (o[0] == '-' && !sub_overflows(x, y, &r)) { a = Value(r); break; }
                             if (o[0] == '<') { a = Value(x < y); break; }
                             if (o[0] == '>') { a = Value(x > y); break; }
                         }

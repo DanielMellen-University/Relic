@@ -2,6 +2,7 @@
 #include "ast/ast.hpp"
 #include "interp/gc.hpp"
 
+#include <climits>
 #include <functional>
 #include <memory>
 #include <string>
@@ -96,6 +97,26 @@ std::string a_type(const Value& v);
 
 // Numbers: int (64-bit) or float (64-bit).
 inline bool is_num(const Value& v) { return v.is<double>() || v.is<long long>(); }
+// Int math that reports overflow instead of wrapping. Portable (no compiler builtins).
+inline bool add_overflows(long long x, long long y, long long* r) {
+    if ((y > 0 && x > LLONG_MAX - y) || (y < 0 && x < LLONG_MIN - y)) return true;
+    *r = x + y;
+    return false;
+}
+inline bool sub_overflows(long long x, long long y, long long* r) {
+    if ((y < 0 && x > LLONG_MAX + y) || (y > 0 && x < LLONG_MIN + y)) return true;
+    *r = x - y;
+    return false;
+}
+inline bool mul_overflows(long long x, long long y, long long* r) {
+    if (x != 0 && y != 0) {
+        if (x > 0 ? (y > 0 ? x > LLONG_MAX / y : y < LLONG_MIN / x)
+                  : (y > 0 ? x < LLONG_MIN / y : y < LLONG_MAX / x))
+            return true;
+    }
+    *r = x * y;
+    return false;
+}
 inline double to_num(const Value& v) {
     return v.is<long long>() ? static_cast<double>(v.as<long long>()) : v.as<double>();
 }
