@@ -118,7 +118,31 @@ The REPL and the file runner share the same pipeline. In the REPL, a line that o
 
 ## Syntax freeze
 
-The 1.0 syntax must be locked before parser work starts (milestone M3). Until then, everything in this file can change.
+**Frozen for 1.0 (M3, Oct 2026).** Every **Default** in this file is now the 1.0 syntax, and the parser follows it. Items still marked **Open** stay out of 1.0 unless Daniel picks them. Changing a frozen item means updating this file, the parser and the golden tests together.
+
+## Parser notes (M3)
+
+Precedence, lowest first:
+
+| Level | Operators |
+|---|---|
+| 1 | `or` |
+| 2 | `and` |
+| 3 | `not` |
+| 4 | `== != < <= > >= in` (no chaining: `a < b < c` is an error) |
+| 5 | `..` |
+| 6 | `+ -` |
+| 7 | `* / %` |
+| 8 | unary `-` |
+| 9 | calls `f(x)`, index `a[i]`, field `a.b` |
+
+- Math operators group left: `1 - 2 - 3` is `(1 - 2) - 3`.
+- `else if` chains are stored as an `If` inside the `else` slot.
+- Lists, maps and call arguments allow a trailing comma.
+- Map keys are names or strings, and a key can appear only once per literal.
+- Only a name, an index or a field can be assigned to.
+- `return` is accepted anywhere by the parser. Using it outside a function becomes a runtime error in M4.
+- `relic --ast file.relic` prints the tree.
 
 ## Grammar
 

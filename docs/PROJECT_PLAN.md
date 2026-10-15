@@ -9,7 +9,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M0 | Repo and docs | none | done (draft) |
 | M1 | Host skeleton: build, CI, test runner | M0 | done |
 | M2 | Lexer | M1 | done |
-| M3 | Parser and AST | M2 | 2 weeks |
+| M3 | Parser and AST | M2 | done |
 | M4 | Tree-walk interpreter | M3 | 2 weeks |
 | M5 | REPL and file runner | M4 | 1 week |
 | M6 | Relic 1.0 release | M5 | 1 week |
@@ -78,7 +78,7 @@ These are **Open** and block the milestone shown.
 
 | Decision | Blocks |
 |---|---|
-| Final 1.0 syntax (colons after block lines, `++` for strings, `const`) | M3 |
+| ~~Final 1.0 syntax~~ frozen in M3; colons, `++` and `const` stay out of 1.0 | done |
 | Number types | M3 |
 | License | M6 |
 | Memory model | M7 |

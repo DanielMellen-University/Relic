@@ -1,0 +1,1 @@
+syn_chained_compare.relic:1:16: error: comparisons cannot be chained; use 'and'

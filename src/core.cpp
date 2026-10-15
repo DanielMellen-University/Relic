@@ -1,6 +1,7 @@
 #include "core.hpp"
 #include "diag/diag.hpp"
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 #include "version.hpp"
 
 namespace relic {
@@ -48,16 +49,33 @@ RunResult dump_tokens(const std::string& path, const std::string& source) {
     return r;
 }
 
+RunResult dump_tree(const std::string& path, const std::string& source) {
+    RunResult r;
+    try {
+        r.out = dump_ast(*parse(lex(source)));
+    } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const ParseError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    }
+    return r;
+}
+
 RunResult run_source(const std::string& path, const std::string& source) {
     RunResult r;
     try {
-        auto tokens = lex(source);
-        if (tokens.front().kind != Tok::Eof) {
+        auto prog = parse(lex(source));
+        if (!prog->kids.empty()) {
             r.exit_code = 1;
-            r.err = diag::format(path, tokens.front().line, tokens.front().col,
+            r.err = diag::format(path, prog->kids.front()->line, prog->kids.front()->col,
                                  "not implemented yet: the interpreter arrives in M4");
         }
     } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const ParseError& e) {
         r.exit_code = 1;
         r.err = diag::format(path, e.line, e.col, e.what());
     }

@@ -13,7 +13,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 ## Phase 2: Language core
 
 - [x] Lexer: turns source into tokens
-- [ ] Parser: turns tokens into an AST
+- [x] Parser: turns tokens into an AST
 - [ ] Tree-walk interpreter over the AST
 - [ ] REPL
 - [ ] Numbers, strings, bools, variables

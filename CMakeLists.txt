@@ -17,6 +17,8 @@ add_library(relic_core STATIC
   src/core.cpp
   src/diag/diag.cpp
   src/lexer/lexer.cpp
+  src/ast/ast.cpp
+  src/parser/parser.cpp
 )
 target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
 

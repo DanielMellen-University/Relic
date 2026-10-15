@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **M2 done, lexer**. The C++17 host builds, `relic --version` works, and `relic --tokens file.relic` prints the tokens of any Relic file. It cannot run Relic code yet. CI is written but not enabled on GitHub yet.
+> Status: **M3 done, parser**. The C++17 host builds and CI runs on every push. `relic --tokens file.relic` prints tokens and `relic --ast file.relic` prints the syntax tree, with `file:line:col` errors for bad input. It cannot run Relic code yet; the interpreter is M4. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
 
 ## Build
 

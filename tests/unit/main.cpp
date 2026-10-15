@@ -2,6 +2,7 @@
 #include "core.hpp"
 #include "diag/diag.hpp"
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 #include <iostream>
 #include <string>
@@ -113,7 +114,72 @@ static void test_layout() {
     CHECK(lex_error("a ! b") == "1:3 unexpected '!'; use 'not' for logic");
 }
 
+// Parses and returns the tree dump with the "Program" line removed.
+static std::string tree(const std::string& src) {
+    std::string out = relic::dump_ast(*relic::parse(relic::lex(src)));
+    return out.substr(out.find('\n') + 1);
+}
+
+static std::string parse_error(const std::string& src) {
+    try {
+        relic::parse(relic::lex(src));
+    } catch (const relic::ParseError& e) {
+        return std::to_string(e.line) + ":" + std::to_string(e.col) + " " + e.what();
+    }
+    return "";
+}
+
+static void test_parser() {
+    // precedence: * before +, + before comparison, comparison before and/or
+    CHECK(tree("1 + 2 * 3") ==
+          "  ExprStmt\n    Binary +\n      Number 1\n      Binary *\n        Number 2\n"
+          "        Number 3\n");
+    CHECK(tree("a or b and c") ==
+          "  ExprStmt\n    Binary or\n      Name a\n      Binary and\n        Name b\n"
+          "        Name c\n");
+    CHECK(tree("not a == b") ==
+          "  ExprStmt\n    Unary not\n      Binary ==\n        Name a\n        Name b\n");
+    CHECK(tree("1 - 2 - 3") ==
+          "  ExprStmt\n    Binary -\n      Binary -\n        Number 1\n        Number 2\n"
+          "      Number 3\n");
+    CHECK(tree("(1 + 2) * 3").find("Binary *\n      Binary +") != std::string::npos);
+    CHECK(tree("a.b[0](x)") ==
+          "  ExprStmt\n    Call\n      Index\n        Field b\n          Name a\n"
+          "        Number 0\n      Name x\n");
+    CHECK(tree("0..n + 1") ==
+          "  ExprStmt\n    Range\n      Number 0\n      Binary +\n        Name n\n"
+          "        Number 1\n");
+    // trailing commas and wrapped literals
+    CHECK(tree("[1,\n 2,\n]") == "  ExprStmt\n    List\n      Number 1\n      Number 2\n");
+    CHECK(tree("{}") == "  ExprStmt\n    Map\n");
+    CHECK(tree("f()") == "  ExprStmt\n    Call\n      Name f\n");
+    // statements
+    CHECK(tree("fun f() = 1") == "  Fun f\n    Params\n    Number 1\n");
+    CHECK(tree("if a\n    b\nelse if c\n    d\nelse\n    e") ==
+          "  If\n    Name a\n    Block\n      ExprStmt\n        Name b\n    If\n      Name c\n"
+          "      Block\n        ExprStmt\n          Name d\n      Block\n        ExprStmt\n"
+          "          Name e\n");
+    CHECK(tree("return") == "  Return\n");
+    CHECK(tree("\"a{x}{y}b\"") ==
+          "  ExprStmt\n    Interp\n      String \"a\"\n      Name x\n      Name y\n"
+          "      String \"b\"\n");
+    // errors
+    CHECK(parse_error("if a\nb") == "2:1 expected an indented block, got name 'b'");
+    CHECK(parse_error("if a") == "1:5 expected an indented block, got end of file");
+    CHECK(parse_error("else\n    a") == "1:1 'else' without a matching 'if'");
+    CHECK(parse_error("a < b < c") == "1:7 comparisons cannot be chained; use 'and'");
+    CHECK(parse_error("1 = 2") == "1:3 can only assign to a name, an index or a field");
+    CHECK(parse_error("f(1 2)") == "1:5 expected ')' after the arguments, got number 2");
+    CHECK(parse_error("let = 1") == "1:5 expected a name after 'let', got '='");
+    CHECK(parse_error("let x = ") == "1:9 expected an expression, got end of line");
+    CHECK(parse_error("{1: 2}") == "1:2 expected a map key (a name or a string), got number 1");
+    CHECK(parse_error("fun f(a, a)\n    a") == "1:10 duplicate parameter 'a'");
+    CHECK(parse_error("for 1 in x\n    a") == "1:5 expected a loop name after 'for', got number 1");
+    CHECK(parse_error("for i x\n    a") == "1:7 expected 'in' after the loop name, got name 'x'");
+}
+
 int main() {
+    test_parser();
     test_core();
     test_basic_tokens();
     test_numbers();

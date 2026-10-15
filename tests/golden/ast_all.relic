@@ -1,0 +1,27 @@
+# greet everyone on the list
+let names = ["Ada", "Linus", "Grace"]
+
+fun greet(who)
+    print("hello {who}")
+
+fun double(x) = x * 2
+
+for name in names
+    if name == "Linus"
+        next
+    else if name in ["Ada"]
+        greet(name)
+    else
+        print("{name} has {len(name)} letters")
+
+let box = {title: "MONOLITH", "version": 2}
+box.title = "M2"
+names[0] = -double(1 + 2) % 3
+let i = 0
+while not i >= 10 and true or false
+    i = i + 1
+    if i == 5
+        break
+for n in 0..len(names)
+    print(n)
+return none

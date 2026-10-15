@@ -1,0 +1,110 @@
+Program
+  Let names
+    List
+      String "Ada"
+      String "Linus"
+      String "Grace"
+  Fun greet
+    Params
+      Name who
+    Block
+      ExprStmt
+        Call
+          Name print
+          Interp
+            String "hello "
+            Name who
+  Fun double
+    Params
+      Name x
+    Binary *
+      Name x
+      Number 2
+  For name
+    Name names
+    Block
+      If
+        Binary ==
+          Name name
+          String "Linus"
+        Block
+          Next
+        If
+          Binary in
+            Name name
+            List
+              String "Ada"
+          Block
+            ExprStmt
+              Call
+                Name greet
+                Name name
+          Block
+            ExprStmt
+              Call
+                Name print
+                Interp
+                  Name name
+                  String " has "
+                  Call
+                    Name len
+                    Name name
+                  String " letters"
+  Let box
+    Map
+      Pair title
+        String "MONOLITH"
+      Pair version
+        Number 2
+  Assign
+    Field title
+      Name box
+    String "M2"
+  Assign
+    Index
+      Name names
+      Number 0
+    Binary %
+      Unary -
+        Call
+          Name double
+          Binary +
+            Number 1
+            Number 2
+      Number 3
+  Let i
+    Number 0
+  While
+    Binary or
+      Binary and
+        Unary not
+          Binary >=
+            Name i
+            Number 10
+        True
+      False
+    Block
+      Assign
+        Name i
+        Binary +
+          Name i
+          Number 1
+      If
+        Binary ==
+          Name i
+          Number 5
+        Block
+          Break
+  For n
+    Range
+      Number 0
+      Call
+        Name len
+        Name names
+    Block
+      ExprStmt
+        Call
+          Name print
+          Name n
+  Return
+    None
