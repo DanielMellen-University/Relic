@@ -1,0 +1,24 @@
+# selfhost/run.relic: runs a Relic file with the lexer, parser and interpreter
+# written in Relic. Same output and errors as `relic FILE`.
+#   relic selfhost/run.relic FILE
+use lexer
+use parser
+use interp
+use std/files
+
+let argv = args()
+if len(argv) != 1
+    eprint("usage: relic selfhost/run.relic FILE")
+else
+    let path = argv[0]
+    let lexed = lexer.lex(files.read(path))
+    let err = lexed.err
+    if err == none
+        let parsed = parser.parse(lexed.tokens)
+        err = parsed.err
+        if err == none
+            let rt = interp.new_runtime()
+            interp.run(rt, parsed.tree)
+            err = rt.err
+    if err != none
+        eprint("{path}:{err.line}:{err.col}: error: {err.msg}")

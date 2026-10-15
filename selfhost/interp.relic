@@ -1,0 +1,615 @@
+# selfhost/interp.relic: the Relic tree-walk interpreter, written in Relic (M9, stage 3).
+# Mirrors src/interp/interp.cpp and src/builtins/builtins.cpp: same results,
+# same output, same runtime errors and positions.
+#
+# Values are host values (numbers, strings, bools, none, lists, maps). Functions
+# and built-ins are maps tagged with the key chr(1), which Relic source cannot
+# write by accident, so type() and printing can tell them apart from user maps.
+#
+# Relic has no catchable errors: the first error is stored in rt.err, every
+# step after that is a no-op, and loops stop, so output after an error never
+# happens. Known limits are listed in docs/DESIGN.md (Self-host).
+use lexer
+use tokens_fmt
+
+let tag = chr(1)
+let max_depth = 800
+
+fun new_env(parent) = {vars: {}, parent: parent}
+
+fun find(env, name)
+    let e = env
+    while e != none
+        if name in e.vars
+            return e
+        e = e.parent
+    return none
+
+fun new_runtime()
+    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none}
+    let builtins = new_env(none)
+    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
+        let v = {name: b[0], arity: b[1]}
+        v[tag] = "builtin"
+        builtins.vars[b[0]] = v
+    rt.globals = new_env(builtins)
+    return rt
+
+fun fail(rt, at, msg)
+    if rt.err == none
+        rt.err = {line: at.line, col: at.col, msg: msg}
+    return none
+
+# ---- values ----
+
+fun type_of(v)
+    let t = type(v)
+    if t == "map" and tag in v
+        return "function"
+    return t
+
+fun is_plain_name(s)
+    if s == "" or not (lexer.is_alpha(s[0]) or s[0] == "_")
+        return false
+    for c in s
+        if not lexer.is_word(c)
+            return false
+    return true
+
+fun show(v)
+    if type(v) == "string"
+        return v
+    return repr(v)
+
+fun repr(v)
+    let t = type_of(v)
+    if t == "string"
+        return tokens_fmt.quote(v)
+    if t == "list"
+        let s = "["
+        let first = true
+        for x in v
+            if not first
+                s = s + ", "
+            s = s + repr(x)
+            first = false
+        return s + "]"
+    if t == "map"
+        let s = "{{"
+        let first = true
+        for k in v
+            if not first
+                s = s + ", "
+            if is_plain_name(k)
+                s = s + k
+            else
+                s = s + tokens_fmt.quote(k)
+            s = s + ": " + repr(v[k])
+            first = false
+        return s + "}}"
+    if t == "function"
+        return "<fun " + v.name + ">"
+    return str(v)
+
+fun equal(a, b)
+    let ta = type_of(a)
+    if ta != type_of(b)
+        return false
+    if ta == "list"
+        if len(a) != len(b)
+            return false
+        for i in 0..len(a)
+            if not equal(a[i], b[i])
+                return false
+        return true
+    if ta == "map"
+        if len(a) != len(b)
+            return false
+        for k in a
+            if not (k in b) or not equal(a[k], b[k])
+                return false
+        return true
+    if ta == "function"
+        if a[tag] != b[tag]
+            return false
+        if a[tag] == "builtin"
+            return a.name == b.name
+        return a.id == b.id
+    return a == b
+
+fun is_whole(d) = d % 1 == 0
+
+# Number to whole-number index, or an error (gives none).
+fun whole(rt, at, v, what)
+    if type(v) != "number"
+        return fail(rt, at, what + " must be a number, got " + type_of(v))
+    if not is_whole(v) or v > 9000000000000000 or v < -9000000000000000
+        return fail(rt, at, what + " must be a whole number")
+    return v
+
+fun slot(rt, at, idx, size, what)
+    let i = whole(rt, at, idx, what)
+    if i == none
+        return none
+    if i < 0 or i >= size
+        return fail(rt, at, "{what} {i} is out of range (size {size})")
+    return i
+
+# ---- statements ----
+
+fun run(rt, program)
+    for s in program.kids
+        if rt.err != none
+            return
+        let f = exec(rt, s, rt.globals)
+        if rt.err != none
+            return
+        if f == "return"
+            fail(rt, rt.flow_node, "'return' outside a function")
+        else if f == "break"
+            fail(rt, rt.flow_node, "'break' outside a loop")
+        else if f == "next"
+            fail(rt, rt.flow_node, "'next' outside a loop")
+
+fun exec_block(rt, block, env)
+    for s in block.kids
+        let f = exec(rt, s, env)
+        if rt.err != none
+            return "error"
+        if f != "normal"
+            return f
+    return "normal"
+
+fun condition(rt, n, env, what)
+    let v = eval(rt, n, env)
+    if rt.err != none
+        return false
+    if type(v) != "bool"
+        fail(rt, n, what + " must be true or false, got " + type_of(v))
+        return false
+    return v
+
+fun exec(rt, n, env)
+    let k = n.kind
+    if k == "Let"
+        let v = eval(rt, n.kids[0], env)
+        if rt.err == none
+            env.vars[n.text] = v
+        return "normal"
+    if k == "Assign"
+        let v = eval(rt, n.kids[1], env)
+        if rt.err == none
+            assign(rt, n.kids[0], v, env)
+        return "normal"
+    if k == "ExprStmt"
+        eval(rt, n.kids[0], env)
+        return "normal"
+    if k == "Fun"
+        rt.next_id = rt.next_id + 1
+        let f = {name: n.text, node: n, closure: env, id: rt.next_id}
+        f[tag] = "fun"
+        env.vars[n.text] = f
+        return "normal"
+    if k == "If"
+        if condition(rt, n.kids[0], env, "'if' condition")
+            return exec_block(rt, n.kids[1], new_env(env))
+        if rt.err == none and len(n.kids) > 2
+            let alt = n.kids[2]
+            if alt.kind == "If"
+                return exec(rt, alt, env)
+            return exec_block(rt, alt, new_env(env))
+        return "normal"
+    if k == "While"
+        while condition(rt, n.kids[0], env, "'while' condition")
+            let f = exec_block(rt, n.kids[1], new_env(env))
+            if f == "break" or f == "error"
+                break
+            if f == "return"
+                return f
+        return "normal"
+    if k == "For"
+        let src = eval(rt, n.kids[0], env)
+        if rt.err != none
+            return "normal"
+        let t = type_of(src)
+        let items = []
+        if t == "list"
+            items = slice(src, 0, len(src))
+        else if t == "string"
+            for c in src
+                append(items, c)
+        else if t == "map"
+            items = keys(src)
+        else
+            fail(rt, n.kids[0], "cannot loop over a " + t)
+            return "normal"
+        for item in items
+            let scope = new_env(env)
+            scope.vars[n.text] = item
+            let f = exec_block(rt, n.kids[1], scope)
+            if f == "break" or f == "error"
+                break
+            if f == "return"
+                return f
+        return "normal"
+    if k == "Return"
+        if len(n.kids) == 0
+            rt.ret = none
+        else
+            rt.ret = eval(rt, n.kids[0], env)
+        rt.flow_node = n
+        return "return"
+    if k == "Break"
+        rt.flow_node = n
+        return "break"
+    if k == "Next"
+        rt.flow_node = n
+        return "next"
+    if k == "Use"
+        fail(rt, n, "'use' is not supported by the self-hosted interpreter yet")
+        return "normal"
+    fail(rt, n, "cannot run a " + k + " here")
+    return "normal"
+
+fun assign(rt, target, v, env)
+    if target.kind == "Name"
+        let e = find(env, target.text)
+        if e == none
+            return fail(rt, target, "'{target.text}' is not declared; use 'let {target.text} = ...'")
+        e.vars[target.text] = v
+        return
+    let obj = eval(rt, target.kids[0], env)
+    if rt.err != none
+        return
+    let t = type_of(obj)
+    if target.kind == "Field"
+        if t != "map"
+            return fail(rt, target, "cannot set a field on a " + t)
+        obj[target.text] = v
+        return
+    let idx = eval(rt, target.kids[1], env)
+    if rt.err != none
+        return
+    if t == "list"
+        let i = slot(rt, target.kids[1], idx, len(obj), "list index")
+        if i != none
+            obj[i] = v
+    else if t == "map"
+        if type(idx) != "string"
+            return fail(rt, target.kids[1], "map keys must be strings")
+        obj[idx] = v
+    else
+        fail(rt, target, "cannot set an index on a " + t)
+
+# ---- expressions ----
+
+fun eval(rt, n, env)
+    if rt.err != none
+        return none
+    let k = n.kind
+    if k == "Number"
+        return num(n.text)
+    if k == "String"
+        return n.text
+    if k == "True"
+        return true
+    if k == "False"
+        return false
+    if k == "None"
+        return none
+    if k == "Name"
+        let e = find(env, n.text)
+        if e == none
+            return fail(rt, n, "'{n.text}' is not defined")
+        return e.vars[n.text]
+    if k == "Interp"
+        let s = ""
+        for part in n.kids
+            s = s + show(eval(rt, part, env))
+        return s
+    if k == "List"
+        let l = []
+        for x in n.kids
+            append(l, eval(rt, x, env))
+        return l
+    if k == "Map"
+        let m = {}
+        for p in n.kids
+            m[p.text] = eval(rt, p.kids[0], env)
+        return m
+    if k == "Range"
+        let a = whole(rt, n.kids[0], eval(rt, n.kids[0], env), "range start")
+        let b = whole(rt, n.kids[1], eval(rt, n.kids[1], env), "range end")
+        if rt.err != none
+            return none
+        if b - a > 10000000
+            return fail(rt, n, "range is too large")
+        return a..b
+    if k == "Unary"
+        let v = eval(rt, n.kids[0], env)
+        if rt.err != none
+            return none
+        if n.text == "-"
+            if type(v) != "number"
+                return fail(rt, n, "cannot negate a " + type_of(v))
+            return -v
+        if type(v) != "bool"
+            return fail(rt, n, "'not' needs true or false, got " + type_of(v))
+        return not v
+    if k == "Binary"
+        return binary(rt, n, env)
+    if k == "Call"
+        return call(rt, n, env)
+    if k == "Field"
+        let obj = eval(rt, n.kids[0], env)
+        if rt.err != none
+            return none
+        if type_of(obj) != "map"
+            return fail(rt, n, "cannot read a field of a " + type_of(obj))
+        if not (n.text in obj)
+            return fail(rt, n, "map has no key '{n.text}'")
+        return obj[n.text]
+    if k == "Index"
+        let obj = eval(rt, n.kids[0], env)
+        let idx = eval(rt, n.kids[1], env)
+        if rt.err != none
+            return none
+        let t = type_of(obj)
+        if t == "list"
+            let i = slot(rt, n.kids[1], idx, len(obj), "list index")
+            if i == none
+                return none
+            return obj[i]
+        if t == "string"
+            let i = slot(rt, n.kids[1], idx, len(obj), "string index")
+            if i == none
+                return none
+            return obj[i]
+        if t == "map"
+            if type(idx) != "string"
+                return fail(rt, n.kids[1], "map keys must be strings")
+            if not (idx in obj)
+                return fail(rt, n.kids[1], "map has no key '{idx}'")
+            return obj[idx]
+        return fail(rt, n, "cannot index a " + t)
+    return fail(rt, n, "cannot evaluate a " + k)
+
+fun mismatch(rt, n, verb, a, b) = fail(rt, n, "cannot " + verb + " a " + type_of(a) + " and a " + type_of(b))
+
+fun binary(rt, n, env)
+    let op = n.text
+    if op == "and" or op == "or"
+        let what = "'" + op + "' operand"
+        let left = condition(rt, n.kids[0], env, what)
+        if rt.err != none
+            return none
+        if op == "and" and not left
+            return false
+        if op == "or" and left
+            return true
+        return condition(rt, n.kids[1], env, what)
+    let a = eval(rt, n.kids[0], env)
+    let b = eval(rt, n.kids[1], env)
+    if rt.err != none
+        return none
+    let ta = type_of(a)
+    let tb = type_of(b)
+    if op == "=="
+        return equal(a, b)
+    if op == "!="
+        return not equal(a, b)
+    if op == "in"
+        if tb == "list"
+            for x in b
+                if equal(a, x)
+                    return true
+            return false
+        if tb == "map"
+            if ta != "string"
+                return fail(rt, n, "map keys must be strings")
+            return a in b
+        if tb == "string"
+            if ta != "string"
+                return fail(rt, n, "can only look for a string inside a string")
+            return a in b
+        return fail(rt, n, "cannot look inside a " + tb)
+    if op == "+"
+        if (ta == "number" and tb == "number") or (ta == "string" and tb == "string") or (ta == "list" and tb == "list")
+            return a + b
+        return mismatch(rt, n, "add", a, b)
+    if op == "<" or op == "<=" or op == ">" or op == ">="
+        if not ((ta == "number" and tb == "number") or (ta == "string" and tb == "string"))
+            return mismatch(rt, n, "compare", a, b)
+        if op == "<"
+            return a < b
+        if op == "<="
+            return a <= b
+        if op == ">"
+            return a > b
+        return a >= b
+    if ta != "number" or tb != "number"
+        if op == "-"
+            return mismatch(rt, n, "subtract", a, b)
+        if op == "*"
+            return mismatch(rt, n, "multiply", a, b)
+        return mismatch(rt, n, "divide", a, b)
+    if op == "-"
+        return a - b
+    if op == "*"
+        return a * b
+    if b == 0
+        return fail(rt, n, "division by zero")
+    if op == "/"
+        return a / b
+    return a % b
+
+fun plural(n)
+    if n == 1
+        return ""
+    return "s"
+
+fun call(rt, n, env)
+    let callee = eval(rt, n.kids[0], env)
+    let argv = []
+    for i in 1..len(n.kids)
+        append(argv, eval(rt, n.kids[i], env))
+    if rt.err != none
+        return none
+    if type_of(callee) != "function"
+        return fail(rt, n, "cannot call a " + type_of(callee))
+    if callee[tag] == "builtin"
+        if callee.arity >= 0 and len(argv) != callee.arity
+            return fail(rt, n, "{callee.name}() takes {callee.arity} argument{plural(callee.arity)}, got {len(argv)}")
+        let r = builtin(rt, callee.name, argv)
+        if r.err != none
+            return fail(rt, n, callee.name + "(): " + r.err)
+        return r.value
+    let f = callee
+    let params = f.node.kids[0].kids
+    if len(argv) != len(params)
+        return fail(rt, n, "{f.name}() takes {len(params)} argument{plural(len(params))}, got {len(argv)}")
+    if rt.depth >= max_depth
+        return fail(rt, n, "too much recursion (more than {max_depth} calls deep)")
+    let scope = new_env(f.closure)
+    for i in 0..len(argv)
+        scope.vars[params[i].text] = argv[i]
+    let body = f.node.kids[1]
+    rt.depth = rt.depth + 1
+    let result = none
+    if body.kind != "Block"
+        result = eval(rt, body, scope)
+    else
+        let fl = exec_block(rt, body, scope)
+        if fl == "break"
+            fail(rt, rt.flow_node, "'break' outside a loop")
+        else if fl == "next"
+            fail(rt, rt.flow_node, "'next' outside a loop")
+        else if fl == "return"
+            result = rt.ret
+            rt.ret = none
+    rt.depth = rt.depth - 1
+    return result
+
+# ---- built-ins: {value, err}, err is the message without the name ----
+
+fun ok(v) = {value: v, err: none}
+fun bad(msg) = {value: none, err: msg}
+
+fun builtin(rt, name, a)
+    if name == "print" or name == "eprint"
+        let s = ""
+        for i in 0..len(a)
+            if i > 0
+                s = s + " "
+            s = s + show(a[i])
+        if name == "print"
+            print(s)
+        else
+            eprint(s)
+        return ok(none)
+    let t = ""
+    if len(a) > 0
+        t = type_of(a[0])
+    if name == "len"
+        if t == "string" or t == "list" or t == "map"
+            return ok(len(a[0]))
+        return bad("cannot get the length of a " + t)
+    if name == "append"
+        if t != "list"
+            return bad("first argument must be a list, got " + t)
+        append(a[0], a[1])
+        return ok(none)
+    if name == "str"
+        return ok(show(a[0]))
+    if name == "keys"
+        if t != "map"
+            return bad("argument must be a map, got " + t)
+        return ok(keys(a[0]))
+    if name == "type"
+        return ok(t)
+    if name == "args"
+        return ok([])
+    if name == "slice"
+        for i in [1, 2]
+            let what = "start"
+            if i == 2
+                what = "end"
+            if type(a[i]) != "number"
+                return bad(what + " must be a number, got " + type_of(a[i]))
+            if not is_whole(a[i])
+                return bad(what + " must be a whole number")
+        if t != "string" and t != "list"
+            return bad("cannot slice a " + t)
+        return ok(slice(a[0], a[1], a[2]))
+    if name == "ord"
+        if t != "string"
+            return bad("argument must be a string, got " + t)
+        if len(a[0]) != 1
+            return bad("needs a one-character string")
+        return ok(ord(a[0]))
+    if name == "chr"
+        if t != "number"
+            return bad("argument must be a number, got " + t)
+        if not is_whole(a[0])
+            return bad("argument must be a whole number")
+        if a[0] < 0 or a[0] > 255
+            return bad("code must be 0 to 255")
+        return ok(chr(a[0]))
+    if name == "num"
+        if t == "number"
+            return ok(a[0])
+        if t != "string"
+            return bad("argument must be a string, got " + t)
+        return parse_number(a[0])
+    if name == "pop"
+        if t != "list"
+            return bad("first argument must be a list, got " + t)
+        if len(a[0]) == 0
+            return bad("list is empty")
+        return ok(pop(a[0]))
+    if name == "insert"
+        if t != "list"
+            return bad("first argument must be a list, got " + t)
+        if type(a[1]) != "number"
+            return bad("index must be a number, got " + type_of(a[1]))
+        if not is_whole(a[1])
+            return bad("index must be a whole number")
+        if a[1] < 0 or a[1] > len(a[0])
+            return bad("index {a[1]} is out of range")
+        insert(a[0], a[1], a[2])
+        return ok(none)
+    # remove
+    if t == "list"
+        if type(a[1]) != "number"
+            return bad("index must be a number, got " + type_of(a[1]))
+        if not is_whole(a[1])
+            return bad("index must be a whole number")
+        if a[1] < 0 or a[1] >= len(a[0])
+            return bad("index {a[1]} is out of range")
+        return ok(remove(a[0], a[1]))
+    if t == "map"
+        if type(a[1]) != "string"
+            return bad("map keys must be strings")
+        if not (a[1] in a[0])
+            return bad("map has no key '{a[1]}'")
+        return ok(remove(a[0], a[1]))
+    return bad("cannot remove from a " + t)
+
+# num() on a string: digits with an optional fraction and sign. Narrower than
+# the host's strtod (no exponents, inf or nan); see DESIGN.md.
+fun parse_number(s)
+    let i = 0
+    if i < len(s) and (s[i] == "-" or s[i] == "+")
+        i = i + 1
+    let digits = 0
+    while i < len(s) and lexer.is_digit(s[i])
+        i = i + 1
+        digits = digits + 1
+    if i < len(s) and s[i] == "."
+        i = i + 1
+        while i < len(s) and lexer.is_digit(s[i])
+            i = i + 1
+            digits = digits + 1
+    if digits == 0 or i != len(s)
+        return bad("not a number: \"" + s + "\"")
+    return ok(num(s))

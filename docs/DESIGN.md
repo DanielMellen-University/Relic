@@ -193,6 +193,13 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 - `selfhost/tokens.relic`: prints the same dump as `--tokens`. Run it with `relic selfhost/tokens.relic FILE`.
 - `selfhost/parser.relic`: the parser. `parse(tokens)` gives back `{tree, err}`; nodes are maps `{kind, text, line, col, kids}`. After the first error every step sees an `ERR` token, so the parse winds down without error checks at each call.
 - `selfhost/ast.relic`: prints the same tree as `--ast`. `selfhost/tokens_fmt.relic` holds the shared string quoting.
+- `selfhost/interp.relic`: the tree-walk interpreter, with the 1.0 built-ins and the M8 primitives. Functions are maps tagged with the key `chr(1)`. `selfhost/run.relic FILE` runs a program like `relic FILE`.
+- The `selfhost_interp` test runs 75 golden programs on both and needs identical stdout and stderr.
+- Limits of the self-hosted interpreter today:
+  - No `use`, so no modules and no `std/`. `host_*` built-ins are not exposed either.
+  - Every Relic call inside it costs several host calls, so the host's 800-call limit stops deep recursion (around 100 levels) before its own 800 limit. `rt_recursion` is skipped for that reason.
+  - `args()` gives an empty list. `num()` on strings takes digits, a sign and a fraction only (no exponents).
+  - It is far slower than the host. Speed is M10's job.
 - The `selfhost_parser` test does the same comparison against `--ast`.
 - The `selfhost_lexer` test runs both lexers over every `.relic` file in the repo and needs identical stdout and stderr.
 - New built-ins for scripts: `args()` (words after the file name) and `eprint(...)` (print to stderr).

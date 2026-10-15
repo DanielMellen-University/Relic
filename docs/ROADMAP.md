@@ -28,6 +28,10 @@ Phases run in order, with one exception: the memory model and modules from phase
 - [ ] Interpreter or bytecode VM rewritten in Relic
 - [ ] Relic builds and runs itself without the C/C++ host for language logic
 
+## Phase 3 status
+
+- [x] Lexer, parser and tree-walk interpreter written in Relic (`selfhost/`, M9). Limits in DESIGN.md.
+
 ## Phase 4: Runtime and standard library
 
 - [x] Memory model decided: reference counting, cycle collector later (see DESIGN.md)

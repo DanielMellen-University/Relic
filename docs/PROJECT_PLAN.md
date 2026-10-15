@@ -59,7 +59,9 @@ Planned at a coarser level. Each gets its own checklist when M6 is done.
 - M8 exit: stdlib covers strings, lists, maps, files, time, math, each with tests. **Done:** `std/*.relic`, golden tests `std_*`.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
-  - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test). Next: interpreter.
+  - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 75 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`) and `rt_recursion`.
+  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `use` in the self-hosted interpreter and a faster runtime (M10).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.

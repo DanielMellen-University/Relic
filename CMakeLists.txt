@@ -57,3 +57,7 @@ add_test(NAME selfhost_lexer
 add_test(NAME selfhost_parser
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_parsers.cmake)
+
+add_test(NAME selfhost_interp
+  COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+    -P ${CMAKE_SOURCE_DIR}/tools/compare_interp.cmake)
