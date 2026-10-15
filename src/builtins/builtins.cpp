@@ -83,6 +83,9 @@ void Interpreter::install_builtins() {
         throw a[0].as<std::string>();
     });
 
+    // gc(): runs the cycle collector now and gives how many containers it freed.
+    add("gc", 0, [](std::vector<Value>&) { return Value(static_cast<long long>(gc_collect())); });
+
     add("type", 1, [](std::vector<Value>& a) { return Value(std::string(type_name(a[0]))); });
     // ---- M8 primitives. The std/ modules are written in Relic on top of these. ----
     auto num_arg = [](const Value& v, const char* what) {

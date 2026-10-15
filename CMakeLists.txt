@@ -20,6 +20,7 @@ add_library(relic_core STATIC
   src/ast/ast.cpp
   src/parser/parser.cpp
   src/interp/value.cpp
+  src/interp/gc.cpp
   src/interp/interp.cpp
   src/builtins/builtins.cpp
   src/vm/vm.cpp

@@ -1,5 +1,6 @@
 #pragma once
 #include "ast/ast.hpp"
+#include "interp/gc.hpp"
 
 #include <functional>
 #include <memory>
@@ -13,23 +14,38 @@ namespace relic {
 struct Value;
 struct Env;
 
-using List = std::vector<Value>;
+struct List : std::vector<Value>, GcObj {
+    using std::vector<Value>::vector;
+    List() = default;
+    List(const List&) = default;
+    List(List&&) = default;
+    List& operator=(const List&) = default;
+    List& operator=(List&&) = default;
+    void trace(std::vector<GcObj*>& out) const override;
+    void clear_refs() override;
+};
 
 // Map that keeps insertion order, so printing and `for k in map` are stable.
-struct Map {
+struct Map : GcObj {
     std::vector<std::string> keys;
     std::unordered_map<std::string, Value> items;
     bool has(const std::string& k) const;
     void set(const std::string& k, Value v);
+    void trace(std::vector<GcObj*>& out) const override;
+    void clear_refs() override;
 };
 
-struct Function {
+struct Function : GcObj {
+    Function(std::string n, const Ast* nd, std::shared_ptr<Env> c, const void* p, std::shared_ptr<GcObj> s, std::string f)
+        : name(std::move(n)), node(nd), closure(std::move(c)), proto(p), vm_scope(std::move(s)), file(std::move(f)) {}
+    void trace(std::vector<GcObj*>& out) const override;
+    void clear_refs() override;
     std::string name;
     const Ast* node;  // the Fun node; the tree outlives the program run
     std::shared_ptr<Env> closure;
     // Set for functions made by the bytecode VM: its Proto and captured Scope.
     const void* proto = nullptr;
-    std::shared_ptr<void> vm_scope;
+    std::shared_ptr<GcObj> vm_scope;
     std::string file;  // file the function was written in, for error locations
 };
 
@@ -90,6 +106,9 @@ std::string show(const Value& v);
 std::string repr(const Value& v);
 
 bool equal(const Value& a, const Value& b);
+
+// Pushes the container a value holds, if any (for the cycle collector).
+void trace_value(const Value& v, std::vector<GcObj*>& out);
 
 // UTF-8: strings are bytes, but length, indexes, slices and loops count
 // characters (code points). A byte that is not valid UTF-8 counts as one character.

@@ -19,6 +19,11 @@ Env* Env::find_env(const std::string& name) {
     return nullptr;
 }
 
+void Function::trace(std::vector<GcObj*>& out) const {
+    if (closure) out.push_back(closure.get());
+    if (vm_scope) out.push_back(vm_scope.get());
+}
+
 Value* Env::find(const std::string& name) {
     for (Env* e = this; e; e = e->parent.get()) {
         auto it = e->vars.find(name);
@@ -450,7 +455,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             eval(*n.kids[0], env);
             return Flow::Normal;
         case Node::Fun: {
-            auto f = std::make_shared<Function>(Function{n.text, &n, env, nullptr, nullptr, std::string()});
+            auto f = std::make_shared<Function>(n.text, &n, env, nullptr, nullptr, std::string());
             f->file = current_file_;
             env->vars[n.text] = Value(f);
             return Flow::Normal;
@@ -466,6 +471,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             return Flow::Normal;
         case Node::While:
             while (condition(*n.kids[0], env, "'while' condition")) {
+                gc_maybe();
                 Flow f = exec_block(*n.kids[1], std::make_shared<Env>(env));
                 if (f == Flow::Break) break;
                 if (f == Flow::Return) return f;
@@ -475,6 +481,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             Value src = eval(*n.kids[0], env);
             List items = op_loop_items(*n.kids[0], src);  // a copy: changes in the loop do not affect it
             for (auto& item : items) {
+                gc_maybe();
                 auto scope = std::make_shared<Env>(env);
                 scope->vars[n.text] = item;
                 Flow f = exec_block(*n.kids[1], scope);
@@ -608,6 +615,7 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     if (args.size() != params.kids.size())
         fail(n, f.name + "() takes " + std::to_string(params.kids.size()) + " argument" +
                     (params.kids.size() == 1 ? "" : "s") + ", got " + std::to_string(args.size()));
+    gc_maybe();
     if (depth_ >= kMaxDepth) fail(n, "too much recursion (more than " + std::to_string(kMaxDepth) + " calls deep)");
 
     auto scope = std::make_shared<Env>(f.closure);

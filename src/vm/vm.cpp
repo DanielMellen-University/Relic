@@ -61,10 +61,19 @@ struct Proto {
     std::vector<std::string> param_hints;  // `as` type per parameter, "" for none
 };
 
-struct Scope {
+struct Scope : GcObj {
     std::vector<Value> slots;
     std::shared_ptr<Scope> parent;
     Scope(int n, std::shared_ptr<Scope> p) : slots(static_cast<size_t>(n)), parent(std::move(p)) {}
+    void trace(std::vector<GcObj*>& out) const override {
+        for (const Value& v : slots) trace_value(v, out);
+        if (parent) out.push_back(parent.get());
+    }
+    void clear_refs() override {
+        std::vector<Value> gone;
+        gone.swap(slots);
+        auto p = std::move(parent);
+    }
 };
 
 // One compiled file: the main program or a module.
@@ -618,6 +627,7 @@ private:
         const Proto& p = *static_cast<const Proto*>(f.proto);
         if (args.size() != static_cast<size_t>(p.nparams))
             fail_at(*in.at, op_arity_message(f.name, static_cast<size_t>(p.nparams), args.size()));
+        gc_maybe();
         if (depth_ >= kMaxCallDepth)
             fail_at(*in.at, "too much recursion (more than " + std::to_string(kMaxCallDepth) + " calls deep)");
         for (size_t i = 0; i < args.size(); ++i)
@@ -705,7 +715,10 @@ private:
                 case Op::ExitScope:
                     for (int i = 0; i < in.a; ++i) sc = sc->parent;
                     break;
-                case Op::Jump: ip = static_cast<size_t>(in.a); break;
+                case Op::Jump:
+                    if (static_cast<size_t>(in.a) < ip) gc_maybe();  // a loop turn
+                    ip = static_cast<size_t>(in.a);
+                    break;
                 case Op::JumpIfFalse:
                     if (!op_condition(*in.at, st.back(), p.strings[in.b].c_str())) ip = static_cast<size_t>(in.a);
                     st.pop_back();
@@ -803,7 +816,7 @@ private:
                 }
                 case Op::Closure: {
                     const Proto& fp = *p.mod->protos[in.a];
-                    auto f = std::make_shared<Function>(Function{fp.name, fp.node, nullptr, &fp, sc, std::string()});
+                    auto f = std::make_shared<Function>(fp.name, fp.node, nullptr, &fp, sc, std::string());
                     f->proto = &fp;
                     f->vm_scope = sc;
                     st.emplace_back(f);

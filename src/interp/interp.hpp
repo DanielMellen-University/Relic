@@ -19,10 +19,19 @@ struct RuntimeError : std::runtime_error {
     std::string file;  // set when the error happened in another file than the one being run
 };
 
-struct Env {
+struct Env : GcObj {
     std::unordered_map<std::string, Value> vars;
     std::shared_ptr<Env> parent;
     explicit Env(std::shared_ptr<Env> p = nullptr) : parent(std::move(p)) {}
+    void trace(std::vector<GcObj*>& out) const override {
+        for (const auto& kv : vars) trace_value(kv.second, out);
+        if (parent) out.push_back(parent.get());
+    }
+    void clear_refs() override {
+        std::unordered_map<std::string, Value> gone;
+        gone.swap(vars);
+        auto p = std::move(parent);
+    }
     std::unordered_map<std::string, std::string> hints;  // `as` types of names declared here
     Value* find(const std::string& name);
     Env* find_env(const std::string& name);  // the scope that holds name

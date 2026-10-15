@@ -1,0 +1,40 @@
+# the cycle collector frees containers that only point at each other
+print(gc() >= 0)
+
+fun make_cycles(n)
+    for i in 0..n
+        let a = []
+        let b = {other: a}
+        append(a, b)
+
+make_cycles(1000)
+print(gc() >= 2000)
+print(gc())
+
+# a closure stored in the scope it captures is a cycle too
+fun counter()
+    let state = {n: 0}
+    fun bump()
+        state.n = state.n + 1
+        return state.n
+    state.bump = bump
+    return bump
+
+let c = counter()
+print(c(), c(), c())
+gc()
+print(c())
+
+# values still in use survive a collection
+let keep = []
+append(keep, keep)
+let m = {self: none}
+m.self = m
+gc()
+print(len(keep), len(keep[0]), m.self.self == m)
+
+# collection also runs on its own: this loop makes far more cycles than the
+# threshold, so most are gone before the last gc()
+make_cycles(200000)
+print(gc() < 400000)
+print("done")

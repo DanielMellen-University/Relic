@@ -7,6 +7,34 @@
 
 namespace relic {
 
+void trace_value(const Value& v, std::vector<GcObj*>& out) {
+    if (v.is<std::shared_ptr<List>>()) out.push_back(v.as<std::shared_ptr<List>>().get());
+    else if (v.is<std::shared_ptr<Map>>()) out.push_back(v.as<std::shared_ptr<Map>>().get());
+    else if (v.is<std::shared_ptr<Function>>()) out.push_back(v.as<std::shared_ptr<Function>>().get());
+}
+
+void List::trace(std::vector<GcObj*>& out) const {
+    for (const Value& v : *this) trace_value(v, out);
+}
+void List::clear_refs() {
+    std::vector<Value> gone;
+    gone.swap(*this);
+}
+
+void Map::trace(std::vector<GcObj*>& out) const {
+    for (const auto& kv : items) trace_value(kv.second, out);
+}
+void Map::clear_refs() {
+    std::unordered_map<std::string, Value> gone;
+    gone.swap(items);
+    keys.clear();
+}
+
+void Function::clear_refs() {
+    auto c = std::move(closure);
+    auto s = std::move(vm_scope);
+}
+
 bool Map::has(const std::string& k) const { return items.count(k) != 0; }
 
 void Map::set(const std::string& k, Value v) {
@@ -188,6 +216,7 @@ bool equal(const Value& a, const Value& b) {
         case 5: {
             const List& x = *a.as<std::shared_ptr<List>>();
             const List& y = *b.as<std::shared_ptr<List>>();
+            if (&x == &y) return true;  // same list (also stops a list that holds itself)
             if (x.size() != y.size()) return false;
             for (size_t i = 0; i < x.size(); ++i)
                 if (!equal(x[i], y[i])) return false;
@@ -196,6 +225,7 @@ bool equal(const Value& a, const Value& b) {
         case 6: {
             const Map& x = *a.as<std::shared_ptr<Map>>();
             const Map& y = *b.as<std::shared_ptr<Map>>();
+            if (&x == &y) return true;
             if (x.keys.size() != y.keys.size()) return false;
             for (const auto& k : x.keys)
                 if (!y.has(k) || !equal(x.items.at(k), y.items.at(k))) return false;
