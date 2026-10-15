@@ -1,25 +1,11 @@
 # selfhost/tokens.relic: same output as `relic --tokens FILE`, using the Relic lexer.
 #   relic selfhost/tokens.relic FILE
 use lexer
+use tokens_fmt
 use std/files
 
 let quiet = {NEWLINE: true, INDENT: true, DEDENT: true, EOF: true}
 let stringy = {STRING: true, STRING_PART: true, STRING_END: true}
-
-fun quote(s)
-    let q = "\""
-    for c in s
-        if c == "\n"
-            q = q + "\\n"
-        else if c == "\t"
-            q = q + "\\t"
-        else if c == "\""
-            q = q + "\\\""
-        else if c == "\\"
-            q = q + "\\\\"
-        else
-            q = q + c
-    return q + "\""
 
 let argv = args()
 if len(argv) != 1
@@ -34,7 +20,7 @@ else
             let line = "{t.line}:{t.col} {t.kind}"
             if not (t.kind in quiet)
                 if t.kind in stringy
-                    line = line + " " + quote(t.text)
+                    line = line + " " + tokens_fmt.quote(t.text)
                 else
                     line = line + " " + t.text
             print(line)

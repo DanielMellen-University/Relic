@@ -1,0 +1,384 @@
+# selfhost/parser.relic: the Relic parser, written in Relic (M9, stage 2).
+# Mirrors src/parser/parser.cpp: same tree shape, same errors and positions.
+# parse(tokens) gives back {tree, err}. A node is {kind, text, line, col, kids}.
+#
+# Relic has no catchable errors, so the first error is recorded and from then
+# on the parser sees an ERR token at every step. Every loop stops on it, so the
+# parse winds down without checks at each call.
+
+fun node(kind, at, text)
+    return {kind: kind, text: text, line: at.line, col: at.col, kids: []}
+
+fun add(n, kid)
+    append(n.kids, kid)
+    return n
+
+fun new_parser(tokens) = {toks: tokens, pos: 0, err: none, dead: {kind: "ERR", text: "", line: 0, col: 0}}
+
+fun peek(p)
+    if p.err != none
+        return p.dead
+    return p.toks[p.pos]
+
+fun at(p, kind) = peek(p).kind == kind
+
+fun advance(p)
+    let t = peek(p)
+    if p.err == none and p.pos < len(p.toks) - 1
+        p.pos = p.pos + 1
+    return t
+
+fun match(p, kind)
+    if not at(p, kind)
+        return false
+    advance(p)
+    return true
+
+fun fail(p, t, msg)
+    if p.err == none
+        p.err = {line: t.line, col: t.col, msg: msg}
+
+fun describe(t)
+    let k = t.kind
+    if k == "NEWLINE"
+        return "end of line"
+    if k == "INDENT"
+        return "an indented block"
+    if k == "DEDENT"
+        return "end of block"
+    if k == "EOF"
+        return "end of file"
+    if k == "NUMBER"
+        return "number " + t.text
+    if k == "STRING" or k == "STRING_PART"
+        return "a string"
+    if k == "NAME"
+        return "name '{t.text}'"
+    return "'{t.text}'"
+
+fun fail_expected(p, what)
+    fail(p, peek(p), "expected " + what + ", got " + describe(peek(p)))
+
+fun expect(p, kind, what)
+    if not at(p, kind)
+        fail_expected(p, what)
+    return advance(p)
+
+fun end_of_line(p) = expect(p, "NEWLINE", "end of line")
+
+# ---- statements ----
+
+fun program(p)
+    let prog = node("Program", peek(p), "")
+    while not at(p, "EOF") and p.err == none
+        add(prog, statement(p))
+    return prog
+
+fun statement(p)
+    let t = peek(p)
+    let k = t.kind
+    if k == "LET"
+        return let_stmt(p)
+    if k == "FUN"
+        return fun_stmt(p)
+    if k == "IF"
+        return if_stmt(p)
+    if k == "WHILE"
+        return while_stmt(p)
+    if k == "FOR"
+        return for_stmt(p)
+    if k == "USE"
+        return use_stmt(p)
+    if k == "RETURN"
+        advance(p)
+        let n = node("Return", t, "")
+        if not at(p, "NEWLINE")
+            add(n, expression(p))
+        end_of_line(p)
+        return n
+    if k == "BREAK" or k == "NEXT"
+        advance(p)
+        end_of_line(p)
+        if k == "BREAK"
+            return node("Break", t, "")
+        return node("Next", t, "")
+    if k == "ELSE"
+        fail(p, t, "'else' without a matching 'if'")
+    if k == "INDENT"
+        fail(p, t, "unexpected indent")
+    return expr_stmt(p)
+
+fun block(p)
+    let start = peek(p)
+    if not at(p, "NEWLINE")
+        fail_expected(p, "end of line before the block")
+    advance(p)
+    if not at(p, "INDENT")
+        fail_expected(p, "an indented block")
+    advance(p)
+    let b = node("Block", start, "")
+    while not at(p, "DEDENT") and not at(p, "EOF") and p.err == none
+        add(b, statement(p))
+    match(p, "DEDENT")
+    return b
+
+fun use_stmt(p)
+    let kw = advance(p)
+    let path = ""
+    while at(p, "DOT_DOT")
+        advance(p)
+        expect(p, "SLASH", "'/' after '..'")
+        path = path + "../"
+    path = path + expect(p, "NAME", "a module name after 'use'").text
+    while match(p, "SLASH")
+        path = path + "/" + expect(p, "NAME", "a name after '/'").text
+    let n = node("Use", kw, path)
+    end_of_line(p)
+    return n
+
+fun let_stmt(p)
+    let kw = advance(p)
+    let name = expect(p, "NAME", "a name after 'let'")
+    expect(p, "ASSIGN", "'=' after the name")
+    let n = node("Let", kw, name.text)
+    add(n, expression(p))
+    end_of_line(p)
+    return n
+
+fun fun_stmt(p)
+    let kw = advance(p)
+    let name = expect(p, "NAME", "a function name after 'fun'")
+    let n = node("Fun", kw, name.text)
+    let open = expect(p, "LPAREN", "'(' after the function name")
+    let params = node("Params", open, "")
+    if not at(p, "RPAREN")
+        let more = true
+        while more and p.err == none
+            let t = expect(p, "NAME", "a parameter name")
+            for seen in params.kids
+                if seen.text == t.text
+                    fail(p, t, "duplicate parameter '{t.text}'")
+            add(params, node("Name", t, t.text))
+            more = match(p, "COMMA")
+    expect(p, "RPAREN", "')' after the parameters")
+    add(n, params)
+    if match(p, "ASSIGN")
+        add(n, expression(p))
+        end_of_line(p)
+    else
+        add(n, block(p))
+    return n
+
+fun if_stmt(p)
+    let kw = advance(p)
+    let n = node("If", kw, "")
+    add(n, expression(p))
+    add(n, block(p))
+    if at(p, "ELSE")
+        advance(p)
+        if at(p, "IF")
+            add(n, if_stmt(p))
+        else
+            add(n, block(p))
+    return n
+
+fun while_stmt(p)
+    let kw = advance(p)
+    let n = node("While", kw, "")
+    add(n, expression(p))
+    add(n, block(p))
+    return n
+
+fun for_stmt(p)
+    let kw = advance(p)
+    let name = expect(p, "NAME", "a loop name after 'for'")
+    expect(p, "IN", "'in' after the loop name")
+    let n = node("For", kw, name.text)
+    add(n, expression(p))
+    add(n, block(p))
+    return n
+
+fun expr_stmt(p)
+    let start = peek(p)
+    let e = expression(p)
+    if at(p, "ASSIGN")
+        let eq = advance(p)
+        if e.kind != "Name" and e.kind != "Index" and e.kind != "Field"
+            fail(p, eq, "can only assign to a name, an index or a field")
+        let n = node("Assign", start, "")
+        add(n, e)
+        add(n, expression(p))
+        end_of_line(p)
+        return n
+    let n = node("ExprStmt", start, "")
+    add(n, e)
+    end_of_line(p)
+    return n
+
+# ---- expressions, lowest precedence first ----
+
+fun expression(p) = or_expr(p)
+
+fun binary(left, op, right)
+    let n = node("Binary", op, op.text)
+    add(n, left)
+    return add(n, right)
+
+fun or_expr(p)
+    let left = and_expr(p)
+    while at(p, "OR")
+        let op = advance(p)
+        left = binary(left, op, and_expr(p))
+    return left
+
+fun and_expr(p)
+    let left = not_expr(p)
+    while at(p, "AND")
+        let op = advance(p)
+        left = binary(left, op, not_expr(p))
+    return left
+
+fun not_expr(p)
+    if at(p, "NOT")
+        let op = advance(p)
+        return add(node("Unary", op, "not"), not_expr(p))
+    return compare(p)
+
+let compare_ops = {EQ_EQ: true, BANG_EQ: true, LESS: true, LESS_EQ: true, GREATER: true, GREATER_EQ: true, IN: true}
+
+fun compare(p)
+    let left = range(p)
+    if peek(p).kind in compare_ops
+        let op = advance(p)
+        left = binary(left, op, range(p))
+        if peek(p).kind in compare_ops
+            fail(p, peek(p), "comparisons cannot be chained; use 'and'")
+    return left
+
+fun range(p)
+    let left = additive(p)
+    if at(p, "DOT_DOT")
+        let op = advance(p)
+        let n = add(node("Range", op, ""), left)
+        return add(n, additive(p))
+    return left
+
+fun additive(p)
+    let left = multiplicative(p)
+    while at(p, "PLUS") or at(p, "MINUS")
+        let op = advance(p)
+        left = binary(left, op, multiplicative(p))
+    return left
+
+fun multiplicative(p)
+    let left = unary(p)
+    while at(p, "STAR") or at(p, "SLASH") or at(p, "PERCENT")
+        let op = advance(p)
+        left = binary(left, op, unary(p))
+    return left
+
+fun unary(p)
+    if at(p, "MINUS")
+        let op = advance(p)
+        return add(node("Unary", op, "-"), unary(p))
+    return postfix(p)
+
+# Parses "item, item, ..." up to `close`; a trailing comma is fine.
+fun items(p, n, close)
+    if not at(p, close)
+        let more = true
+        while more and p.err == none
+            add(n, expression(p))
+            more = match(p, "COMMA") and not at(p, close)
+
+fun postfix(p)
+    let e = primary(p)
+    while p.err == none
+        if at(p, "LPAREN")
+            let call = add(node("Call", advance(p), ""), e)
+            items(p, call, "RPAREN")
+            expect(p, "RPAREN", "')' after the arguments")
+            e = call
+        else if at(p, "LBRACKET")
+            let idx = add(node("Index", advance(p), ""), e)
+            add(idx, expression(p))
+            expect(p, "RBRACKET", "']' after the index")
+            e = idx
+        else if at(p, "DOT")
+            let dot = advance(p)
+            let name = expect(p, "NAME", "a field name after '.'")
+            e = add(node("Field", dot, name.text), e)
+        else
+            return e
+    return e
+
+let literals = {NUMBER: "Number", STRING: "String", NAME: "Name"}
+let words = {TRUE: "True", FALSE: "False", NONE: "None"}
+
+fun primary(p)
+    let t = peek(p)
+    let k = t.kind
+    if k in literals
+        advance(p)
+        return node(literals[k], t, t.text)
+    if k in words
+        advance(p)
+        return node(words[k], t, "")
+    if k == "STRING_PART"
+        return interp(p)
+    if k == "LPAREN"
+        advance(p)
+        let e = expression(p)
+        expect(p, "RPAREN", "')'")
+        return e
+    if k == "LBRACKET"
+        advance(p)
+        let l = node("List", t, "")
+        items(p, l, "RBRACKET")
+        expect(p, "RBRACKET", "']' to close the list")
+        return l
+    if k == "LBRACE"
+        return map_literal(p)
+    fail_expected(p, "an expression")
+    return node("None", t, "")
+
+fun map_literal(p)
+    let open = advance(p)
+    let m = node("Map", open, "")
+    if not at(p, "RBRACE")
+        let more = true
+        while more and p.err == none
+            let key = peek(p)
+            if key.kind != "NAME" and key.kind != "STRING"
+                fail_expected(p, "a map key (a name or a string)")
+            advance(p)
+            for seen in m.kids
+                if seen.text == key.text
+                    fail(p, key, "duplicate map key '{key.text}'")
+            expect(p, "COLON", "':' after the map key")
+            add(m, add(node("Pair", key, key.text), expression(p)))
+            more = match(p, "COMMA") and not at(p, "RBRACE")
+    expect(p, "RBRACE", "'}}' to close the map")
+    return m
+
+fun interp(p)
+    let n = node("Interp", peek(p), "")
+    while p.err == none
+        let part = advance(p)
+        if part.text != ""
+            add(n, node("String", part, part.text))
+        if part.kind == "STRING_END"
+            return n
+        expect(p, "INTERP_START", "'{{'")
+        if at(p, "INTERP_END")
+            fail(p, peek(p), "empty '{{}}' in a string; use '{{{{' for a brace")
+        add(n, expression(p))
+        expect(p, "INTERP_END", "'}}' to close the value in the string")
+        if not at(p, "STRING_PART") and not at(p, "STRING_END")
+            fail_expected(p, "the rest of the string")
+    return n
+
+fun parse(tokens)
+    let p = new_parser(tokens)
+    let tree = program(p)
+    return {tree: tree, err: p.err}

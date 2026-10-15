@@ -72,7 +72,7 @@ print(box.title, box["version"])
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
-- Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic.
+- Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `pop`, `insert`, `remove`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
 
 ## Use

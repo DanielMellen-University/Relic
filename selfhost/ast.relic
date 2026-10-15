@@ -1,0 +1,39 @@
+# selfhost/ast.relic: same output as `relic --ast FILE`, using the Relic lexer and parser.
+#   relic selfhost/ast.relic FILE
+use lexer
+use parser
+use tokens_fmt
+use std/files
+
+fun dump(n, depth, out)
+    let line = ""
+    for i in 0..depth
+        line = line + "  "
+    line = line + n.kind
+    if n.kind == "String"
+        line = line + " " + tokens_fmt.quote(n.text)
+    else if n.text != ""
+        line = line + " " + n.text
+    append(out, line)
+    for k in n.kids
+        dump(k, depth + 1, out)
+
+let argv = args()
+if len(argv) != 1
+    eprint("usage: relic selfhost/ast.relic FILE")
+else
+    let path = argv[0]
+    let lexed = lexer.lex(files.read(path))
+    let err = lexed.err
+    let tree = none
+    if err == none
+        let parsed = parser.parse(lexed.tokens)
+        err = parsed.err
+        tree = parsed.tree
+    if err != none
+        eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
+    else
+        let out = []
+        dump(tree, 0, out)
+        for line in out
+            print(line)

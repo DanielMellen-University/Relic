@@ -1,0 +1,16 @@
+# selfhost/tokens_fmt.relic: string quoting shared by the dump tools.
+
+fun quote(s)
+    let q = "\""
+    for c in s
+        if c == "\n"
+            q = q + "\\n"
+        else if c == "\t"
+            q = q + "\\t"
+        else if c == "\""
+            q = q + "\\\""
+        else if c == "\\"
+            q = q + "\\\\"
+        else
+            q = q + c
+    return q + "\""

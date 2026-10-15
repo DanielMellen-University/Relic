@@ -191,6 +191,9 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 
 - `selfhost/lexer.relic`: the lexer. `lex(src)` gives back `{tokens, err}`. Relic has no catchable errors yet, so the first error is stored and lexing stops.
 - `selfhost/tokens.relic`: prints the same dump as `--tokens`. Run it with `relic selfhost/tokens.relic FILE`.
+- `selfhost/parser.relic`: the parser. `parse(tokens)` gives back `{tree, err}`; nodes are maps `{kind, text, line, col, kids}`. After the first error every step sees an `ERR` token, so the parse winds down without error checks at each call.
+- `selfhost/ast.relic`: prints the same tree as `--ast`. `selfhost/tokens_fmt.relic` holds the shared string quoting.
+- The `selfhost_parser` test does the same comparison against `--ast`.
 - The `selfhost_lexer` test runs both lexers over every `.relic` file in the repo and needs identical stdout and stderr.
 - New built-ins for scripts: `args()` (words after the file name) and `eprint(...)` (print to stderr).
 - Watch out: a lone `{` or `}` in a string literal starts or ends interpolation. Write `"{{"` and `"}}"` for literal braces.

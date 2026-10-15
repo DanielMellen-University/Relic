@@ -53,3 +53,7 @@ endforeach()
 add_test(NAME selfhost_lexer
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_lexers.cmake)
+
+add_test(NAME selfhost_parser
+  COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+    -P ${CMAKE_SOURCE_DIR}/tools/compare_parsers.cmake)
