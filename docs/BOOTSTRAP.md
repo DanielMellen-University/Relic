@@ -10,7 +10,7 @@ Steps for the phase 1 host. This is a plan, not code.
 
 ## Status
 
-Steps 1 to 3 are done (M1). Until M4, `relic file.relic` accepts blank and `#` comment lines and reports "not implemented yet" for anything else.
+Steps 1 to 4 are done (M1 and M2). `relic --tokens file.relic` prints one token per line as `line:col KIND text`. Until M4, `relic file.relic` reports lex errors, and reports "not implemented yet" at the first token of any program that has code.
 
 ## Steps
 

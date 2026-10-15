@@ -99,6 +99,13 @@ print(box.title)
 
 **Default:** runtime errors stop the program with a message and location. **Open:** catchable errors.
 
+## Lexer notes (M2)
+
+- Inside `( )`, `[ ]` and `{ }`, newlines do not end a line, so long calls and literals can wrap.
+- An interpolated string becomes `STRING_PART`, `INTERP_START`, the inner tokens, `INTERP_END`, and a final `STRING_END`. A plain string is one `STRING` token.
+- `!` on its own is an error that points to `not`.
+- A number followed right away by a letter is an error.
+
 ## Architecture
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.

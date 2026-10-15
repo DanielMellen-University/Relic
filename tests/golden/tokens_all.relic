@@ -1,0 +1,10 @@
+# demo
+let names = ["Ada", "Linus"]
+
+fun greet(who)
+    print("hello {who}, {{ok}}")
+
+for i in 0..10
+    if not i == 3 and i >= 1.5
+        next
+let box = {title: "M", n: none}

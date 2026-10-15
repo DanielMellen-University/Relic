@@ -1,10 +1,18 @@
 # Golden test runner. Usage:
 #   cmake -DRELIC=path/to/relic -DTEST=tests/golden/name.relic -P tools/run_golden.cmake
+# Optional name.args holds flags to pass first.
 # Compares stdout with name.out, or stderr with name.err for error tests.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
+# Optional name.args: extra flags placed before the file, e.g. --tokens
+set(args "")
+if(EXISTS ${dir}/${name}.args)
+  file(READ ${dir}/${name}.args args)
+  string(STRIP "${args}" args)
+  separate_arguments(args)
+endif()
 execute_process(
-  COMMAND ${RELIC} ${TEST}
+  COMMAND ${RELIC} ${args} ${TEST}
   WORKING_DIRECTORY ${dir}
   OUTPUT_VARIABLE out
   ERROR_VARIABLE err

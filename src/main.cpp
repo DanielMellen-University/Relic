@@ -6,7 +6,7 @@
 #include <string>
 
 static void usage() {
-    std::cerr << "usage: relic [--version] [file.relic]\n";
+    std::cerr << "usage: relic [--version] [--tokens] [file.relic]\n";
 }
 
 int main(int argc, char** argv) {
@@ -18,12 +18,13 @@ int main(int argc, char** argv) {
         usage();
         return 0;
     }
-    if (argc != 2) {
+    bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
+    if (argc != 2 && !tokens) {
         // REPL arrives in M5.
         usage();
         return 2;
     }
-    std::string path = argv[1];
+    std::string path = argv[tokens ? 2 : 1];
     std::ifstream f(path, std::ios::binary);
     if (!f) {
         std::cerr << "relic: cannot open " << path << "\n";
@@ -31,7 +32,8 @@ int main(int argc, char** argv) {
     }
     std::stringstream ss;
     ss << f.rdbuf();
-    relic::RunResult r = relic::run_source(path, ss.str());
+    relic::RunResult r = tokens ? relic::dump_tokens(path, ss.str())
+                               : relic::run_source(path, ss.str());
     std::cout << r.out;
     std::cerr << r.err;
     return r.exit_code;

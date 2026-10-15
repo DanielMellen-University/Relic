@@ -1,26 +1,65 @@
 #include "core.hpp"
 #include "diag/diag.hpp"
+#include "lexer/lexer.hpp"
 #include "version.hpp"
-
-#include <sstream>
 
 namespace relic {
 
 std::string version_string() { return std::string("relic ") + RELIC_VERSION; }
 
+namespace {
+
+std::string quote(const std::string& s) {
+    std::string q = "\"";
+    for (char c : s) {
+        if (c == '\n') q += "\\n";
+        else if (c == '\t') q += "\\t";
+        else if (c == '"') q += "\\\"";
+        else if (c == '\\') q += "\\\\";
+        else q += c;
+    }
+    return q + "\"";
+}
+
+bool has_text(Tok k) {
+    switch (k) {
+        case Tok::Newline: case Tok::Indent: case Tok::Dedent: case Tok::Eof: return false;
+        default: return true;
+    }
+}
+
+bool is_string(Tok k) { return k == Tok::String || k == Tok::StringPart || k == Tok::StringEnd; }
+
+}  // namespace
+
+RunResult dump_tokens(const std::string& path, const std::string& source) {
+    RunResult r;
+    try {
+        for (const Token& t : lex(source)) {
+            r.out += std::to_string(t.line) + ":" + std::to_string(t.col) + " " + tok_name(t.kind);
+            if (has_text(t.kind)) r.out += " " + (is_string(t.kind) ? quote(t.text) : t.text);
+            r.out += "\n";
+        }
+    } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.out.clear();
+        r.err = diag::format(path, e.line, e.col, e.what());
+    }
+    return r;
+}
+
 RunResult run_source(const std::string& path, const std::string& source) {
     RunResult r;
-    std::istringstream in(source);
-    std::string line;
-    int line_no = 0;
-    while (std::getline(in, line)) {
-        ++line_no;
-        size_t i = line.find_first_not_of(" \t\r");
-        if (i == std::string::npos || line[i] == '#') continue;
+    try {
+        auto tokens = lex(source);
+        if (tokens.front().kind != Tok::Eof) {
+            r.exit_code = 1;
+            r.err = diag::format(path, tokens.front().line, tokens.front().col,
+                                 "not implemented yet: the interpreter arrives in M4");
+        }
+    } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, line_no, static_cast<int>(i) + 1,
-                             "not implemented yet: the interpreter arrives in M4");
-        return r;
+        r.err = diag::format(path, e.line, e.col, e.what());
     }
     return r;
 }

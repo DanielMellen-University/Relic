@@ -16,6 +16,7 @@ configure_file(src/version.hpp.in ${CMAKE_BINARY_DIR}/generated/version.hpp)
 add_library(relic_core STATIC
   src/core.cpp
   src/diag/diag.cpp
+  src/lexer/lexer.cpp
 )
 target_include_directories(relic_core PUBLIC src ${CMAKE_BINARY_DIR}/generated)
 
