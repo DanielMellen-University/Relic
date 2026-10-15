@@ -71,7 +71,8 @@ print(box.title, box["version"])
 - Conditions must be `true` or `false`. `if 1` is an error.
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Two files can use each other.
-- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`. The full rules are in [DESIGN.md](docs/DESIGN.md).
+- Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
+- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `pop`, `insert`, `remove`. The full rules are in [DESIGN.md](docs/DESIGN.md).
 
 ## Use
 

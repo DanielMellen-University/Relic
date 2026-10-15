@@ -158,7 +158,32 @@ These are **Default** behaviors the interpreter now follows.
 | `append(list, x)` | adds to the end of a list |
 | `str(x)` | turns a value into text |
 | `keys(map)` | list of keys in order |
-| `type(x)` | `"none"`, `"bool"`, `"number"`, `"string"`, `"list"`, `"map"` or `"function"` |
+| `type(x)` | `"none"`, `"bool"`, `"number"`, `"string"`, `"list"`, `"map"`, `"function"` or `"module"` |
+
+### Primitives added in M8
+
+| Name | Does |
+|---|---|
+| `slice(x, a, b)` | part of a string or list from `a` up to `b - 1`; ends are clamped |
+| `ord(c)` / `chr(n)` | character code (0 to 255) and back |
+| `num(s)` | parses a number from a string; error if it is not one |
+| `pop(list)` | removes and gives back the last item |
+| `insert(list, i, x)` | puts `x` at index `i` |
+| `remove(list, i)` / `remove(map, k)` | drops an item or key and gives back its value |
+| `host_*` | files, clocks and float math borrowed from C++. Call them through `std/` instead |
+
+## Standard library (M8)
+
+**Default.** The standard library is Relic code in `std/`, loaded with `use std/name`. Only the pieces Relic cannot do itself come from the host, and those are named `host_*` so the borrowed list stays visible.
+
+- `use std/x` looks in `$RELIC_STD` if set, otherwise the `std/` folder of the source tree the host was built from.
+- `std/strings`: `find`, `contains`, `starts_with`, `ends_with`, `upper`, `lower`, `trim`, `split`, `join`, `replace`, `repeat`. ASCII only for now.
+- `std/lists`: `map`, `filter`, `reduce`, `sum`, `index_of`, `reverse`, `copy`, `sort` (stable merge sort), `sort_by(xs, less)`.
+- `std/maps`: `values`, `items`, `get(m, k, fallback)`, `merge(a, b)`.
+- `std/files`: `read`, `write`, `append_text`, `exists`, `lines`. Paths are relative to where `relic` runs. Host: `host_read_file`, `host_write_file`, `host_file_exists`.
+- `std/time`: `now()` (Unix seconds), `clock()` (steady seconds), `since(start)`. Host: `host_now`, `host_clock`.
+- `std/math`: `pi`, `e`, `abs`, `min`, `max`, `clamp`, `floor`, `ceil`, `round`, `sqrt`, `pow`, `sin`, `cos`, `exp`, `log`, `is_whole`. Host: floor, sqrt, sin, cos, exp, log, pow.
+- **Open:** UTF-8 aware strings, directory listing, deleting files, dates and time zones, random numbers.
 
 ## Architecture
 

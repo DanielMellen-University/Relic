@@ -32,7 +32,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 - [x] Memory model decided: reference counting, cycle collector later (see DESIGN.md)
 - [x] Modules and imports: `use path/name`, cycles allowed
-- [ ] Standard library: strings, lists, maps (methods beyond literals), files, time, math
+- [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8)
 - [ ] Bytecode VM if the tree-walker is too slow
 - [ ] Native code generation explored (stretch)
 
