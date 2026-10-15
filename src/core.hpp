@@ -9,10 +9,8 @@ struct RunResult {
     std::string err;
 };
 
-// Shared entry point for the file runner (and later the REPL).
-// M3: lexes and parses the source and reports lex and syntax errors. Running code is not
-// implemented yet: any program with statements reports "not implemented yet"
-// at its first statement. The interpreter lands in M4.
+// Shared entry point for the file runner (and later the REPL): lex, parse,
+// run. Output printed before a runtime error is kept in `out`.
 RunResult run_source(const std::string& path, const std::string& source);
 
 // Backs the --tokens flag: one token per line as "line:col KIND text".

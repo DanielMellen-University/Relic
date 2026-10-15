@@ -10,7 +10,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M1 | Host skeleton: build, CI, test runner | M0 | done |
 | M2 | Lexer | M1 | done |
 | M3 | Parser and AST | M2 | done |
-| M4 | Tree-walk interpreter | M3 | 2 weeks |
+| M4 | Tree-walk interpreter | M3 | done |
 | M5 | REPL and file runner | M4 | 1 week |
 | M6 | Relic 1.0 release | M5 | 1 week |
 | M7 | Memory model and modules | M6 | 2 to 3 weeks |

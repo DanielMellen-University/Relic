@@ -1,0 +1,22 @@
+# functions are values, closures keep their scope
+fun make_counter()
+    let n = 0
+    fun step()
+        n = n + 1
+        return n
+    return step
+
+let a = make_counter()
+let b = make_counter()
+a()
+a()
+print("a: {a()}, b: {b()}")
+
+fun twice(f, x) = f(f(x))
+fun add3(x) = x + 3
+print(twice(add3, 10))
+
+fun nothing()
+    let x = 1
+print(nothing())
+print(type(add3), type(print), print)

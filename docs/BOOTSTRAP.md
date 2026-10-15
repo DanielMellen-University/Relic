@@ -10,7 +10,7 @@ Steps for the phase 1 host. This is a plan, not code.
 
 ## Status
 
-Steps 1 to 5 are done (M1 to M3). `relic --tokens file.relic` prints one token per line as `line:col KIND text`, and `relic --ast file.relic` prints the tree. Until M4, `relic file.relic` reports lex and syntax errors, and reports "not implemented yet" at the first statement of any program that has code.
+All 7 steps are done (M1 to M4). `relic file.relic` runs programs, `tests/golden/hello.relic` prints `hello`, `relic --tokens` prints tokens and `relic --ast` prints the tree.
 
 ## Steps
 

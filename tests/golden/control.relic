@@ -1,0 +1,22 @@
+# if, while, for, break, next, scope
+let total = 0
+for i in 0..10
+    if i == 7
+        break
+    if i % 2 == 0
+        next
+    total = total + i
+print(total)
+
+let n = 0
+while true
+    n = n + 1
+    if n >= 3
+        break
+print(n)
+
+let x = 1
+if true
+    let x = 2
+    print(x)
+print(x)

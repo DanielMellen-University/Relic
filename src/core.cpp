@@ -2,6 +2,9 @@
 #include "diag/diag.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+#include "interp/interp.hpp"
+
+#include <sstream>
 #include "version.hpp"
 
 namespace relic {
@@ -67,11 +70,15 @@ RunResult run_source(const std::string& path, const std::string& source) {
     RunResult r;
     try {
         auto prog = parse(lex(source));
-        if (!prog->kids.empty()) {
+        std::ostringstream out;
+        Interpreter interp(out);
+        try {
+            interp.run(*prog);
+        } catch (const RuntimeError& e) {
             r.exit_code = 1;
-            r.err = diag::format(path, prog->kids.front()->line, prog->kids.front()->col,
-                                 "not implemented yet: the interpreter arrives in M4");
+            r.err = diag::format(path, e.line, e.col, e.what());
         }
+        r.out = out.str();
     } catch (const LexError& e) {
         r.exit_code = 1;
         r.err = diag::format(path, e.line, e.col, e.what());

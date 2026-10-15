@@ -106,6 +106,36 @@ print(box.title)
 - `!` on its own is an error that points to `not`.
 - A number followed right away by a letter is an error.
 
+## Runtime rules (M4)
+
+These are **Default** behaviors the interpreter now follows.
+
+- Conditions and `and` / `or` / `not` need real bools. `if 1` is an error, so there is no truthiness to learn.
+- `and` and `or` stop early: `false and x` never looks at `x`.
+- `+` adds numbers, joins strings and joins lists. Mixing types is an error, so use `str(x)` or interpolation.
+- `%` takes the sign of the right side: `-7 % 3` is `2`.
+- Whole numbers print without a decimal point: `7 / 2` prints `3.5`, `6 / 2` prints `3`.
+- `a..b` makes a list from `a` up to `b - 1`. Both ends must be whole numbers.
+- Lists and maps are shared, not copied: `let ys = xs` points at the same list.
+- `for` loops over a copy of the list, so changing the list inside the loop is safe. It also loops over the characters of a string and the keys of a map, in insertion order.
+- Maps keep insertion order. Reading a missing key is an error; `"k" in map` checks first.
+- List indexes start at 0 and must be in range. Negative indexes are an error.
+- `let` inside a block makes a new name for that block and hides any outer one. Plain `x = ...` changes the nearest existing `x`.
+- A function with no `return` gives `none`. `return`, `break` and `next` in the wrong place are errors.
+- Calls deeper than 800 stop with "too much recursion".
+- Output printed before a runtime error is kept.
+
+### Built-ins
+
+| Name | Does |
+|---|---|
+| `print(a, b, ...)` | writes values separated by spaces, then a newline |
+| `len(x)` | length of a string, list or map |
+| `append(list, x)` | adds to the end of a list |
+| `str(x)` | turns a value into text |
+| `keys(map)` | list of keys in order |
+| `type(x)` | `"none"`, `"bool"`, `"number"`, `"string"`, `"list"`, `"map"` or `"function"` |
+
 ## Architecture
 
 1. **Lexer**: source text to tokens. Emits `INDENT` and `DEDENT` tokens from leading spaces, so the parser sees blocks like it would see braces.

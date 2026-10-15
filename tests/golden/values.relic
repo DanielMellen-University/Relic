@@ -1,0 +1,21 @@
+# numbers, strings, bools, none, lists, maps, ranges, interpolation
+print(1 + 2 * 3, (1 + 2) * 3, 7 / 2, 7 % 3, -7 % 3, 0.1 + 0.2, -5)
+print("ab" + "cd", len("hello"), "ell" in "hello", "a" < "b")
+print(true and not false, false or false, 1 == 1, [1, 2] == [1, 2], none == none)
+let xs = [1, 2]
+append(xs, 3)
+xs[0] = 10
+print(xs, len(xs), xs[2], 2 in xs, xs + [4])
+let box = {title: "MONOLITH", "big version": 2}
+box.title = "M2"
+box["new"] = true
+print(box, box.title, box["big version"], len(box), "new" in box)
+print(keys(box))
+for k in box
+    print("{k} -> {box[k]}")
+print(0..5, 3..3)
+let name = "Relic"
+print("hi {name}, {{braces}} and {len(name) * 2}")
+print(str(42) + "!", type(none), type([]), type({}))
+for ch in "abc"
+    print(ch)

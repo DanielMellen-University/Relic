@@ -2,7 +2,17 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **M3 done, parser**. The C++17 host builds and CI runs on every push. `relic --tokens file.relic` prints tokens and `relic --ast file.relic` prints the syntax tree, with `file:line:col` errors for bad input. It cannot run Relic code yet; the interpreter is M4. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **M4 done, interpreter**. `relic file.relic` runs Relic programs: FizzBuzz, recursion, sorting, closures, lists and maps all work, and errors show `file:line:col`. `--tokens` and `--ast` print the tokens and the tree. Next up is the REPL (M5). CI runs on every push. The 1.0 syntax is frozen (see [DESIGN.md](docs/DESIGN.md)).
+
+## A taste
+
+```
+fun greet(who)
+    print("hello {who}")
+
+for name in ["Ada", "Linus", "Grace"]
+    greet(name)
+```
 
 ## Build
 

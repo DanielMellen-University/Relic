@@ -44,8 +44,10 @@ static void test_core() {
     auto comments = relic::run_source("c.relic", "# hi\n\n    # indented\n");
     CHECK(comments.exit_code == 0 && comments.err.empty());
     auto code = relic::run_source("p.relic", "\nprint(\"hi\")\n");
-    CHECK(code.exit_code == 1);
-    CHECK(code.err.rfind("p.relic:2:1: error:", 0) == 0);
+    CHECK(code.exit_code == 0 && code.out == "hi\n");
+    auto bad = relic::run_source("p.relic", "print(1)\nprint(x)\n");
+    CHECK(bad.exit_code == 1 && bad.out == "1\n");
+    CHECK(bad.err == "p.relic:2:7: error: 'x' is not defined\n");
 }
 
 static void test_basic_tokens() {
@@ -178,8 +180,37 @@ static void test_parser() {
     CHECK(parse_error("for i x\n    a") == "1:7 expected 'in' after the loop name, got name 'x'");
 }
 
+// Runs a program and returns stdout, or "error: ..." on failure.
+static std::string run(const std::string& src) {
+    auto r = relic::run_source("t.relic", src);
+    if (r.exit_code != 0) return "error: " + r.err.substr(r.err.find("error: ") + 7);
+    return r.out;
+}
+
+static void test_interp() {
+    CHECK(run("print(2 + 3 * 4)") == "14\n");
+    CHECK(run("print(10 / 4, 9 % 4, -1 % 4)") == "2.5 1 3\n");
+    CHECK(run("print(\"a\" == \"a\", [1] != [2], {a: 1} == {a: 1})") == "true true true\n");
+    CHECK(run("let x = 1\nx = x + 1\nprint(x)") == "2\n");
+    CHECK(run("fun f(n) = n * 2\nprint(f(4))") == "8\n");
+    CHECK(run("let xs = [3]\nlet ys = xs\nappend(ys, 4)\nprint(xs)") == "[3, 4]\n");
+    CHECK(run("for i in 0..3\n    print(i)") == "0\n1\n2\n");
+    CHECK(run("print(false and nope)") == "false\n");  // short circuit
+    CHECK(run("print(true or nope)") == "true\n");
+    CHECK(run("print(\"{1 + 1}x\")") == "2x\n");
+    CHECK(run("print(len([1, 2]), len({}), len(\"\"))") == "2 0 0\n");
+    CHECK(run("print(1 and true)") ==
+          "error: 'and' operand must be true or false, got number\n");
+    CHECK(run("print(\"a\" * 2)") == "error: cannot multiply a string and a number\n");
+    CHECK(run("let xs = [1]\nprint(xs[0.5])") == "error: list index must be a whole number\n");
+    CHECK(run("next") == "error: 'next' outside a loop\n");
+    CHECK(run("len(1, 2)") == "error: len() takes 1 argument, got 2\n");
+    CHECK(run("append(1, 2)") == "error: append(): first argument must be a list, got number\n");
+}
+
 int main() {
     test_parser();
+    test_interp();
     test_core();
     test_basic_tokens();
     test_numbers();
