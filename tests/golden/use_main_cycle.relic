@@ -1,0 +1,5 @@
+# a module that uses the main file back does not run it twice
+use modules/back
+print("main runs once")
+fun greet(who) = "hello {who}"
+print(back.call_back())

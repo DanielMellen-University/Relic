@@ -30,6 +30,7 @@ const char* tok_name(Tok k) {
         case Tok::True: return "TRUE";
         case Tok::False: return "FALSE";
         case Tok::None: return "NONE";
+        case Tok::Use: return "USE";
         case Tok::Plus: return "PLUS";
         case Tok::Minus: return "MINUS";
         case Tok::Star: return "STAR";
@@ -68,7 +69,7 @@ const std::unordered_map<std::string, Tok> kKeywords = {
     {"in", Tok::In},       {"break", Tok::Break},   {"next", Tok::Next},
     {"return", Tok::Return}, {"and", Tok::And},     {"or", Tok::Or},
     {"not", Tok::Not},     {"true", Tok::True},     {"false", Tok::False},
-    {"none", Tok::None},
+    {"none", Tok::None},   {"use", Tok::Use},
 };
 
 constexpr int kIndentWidth = 4;

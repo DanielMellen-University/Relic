@@ -1,0 +1,1 @@
+err_use_missing.relic:1:1: error: cannot find module 'modules/nope' (no file modules/nope.relic)

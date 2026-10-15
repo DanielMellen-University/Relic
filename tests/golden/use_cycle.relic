@@ -1,0 +1,5 @@
+# two modules that use each other
+use modules/ping
+use modules/pong
+print(ping.ping(3))
+print(pong.pong(3))

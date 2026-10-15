@@ -1,0 +1,2 @@
+use modules/mathx
+print(mathx.cube(2))

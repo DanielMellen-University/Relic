@@ -1,0 +1,2 @@
+use ../mathx
+fun box_area(w) = mathx.square(w)

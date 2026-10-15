@@ -1,0 +1,5 @@
+# helper module for use_basic
+let pi = 3.14159
+fun square(x) = x * x
+fun area(r) = pi * square(r)
+print("mathx loaded")

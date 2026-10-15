@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace relic {
 
@@ -15,6 +16,7 @@ struct RuntimeError : std::runtime_error {
     int col;
     RuntimeError(int l, int c, const std::string& msg)
         : std::runtime_error(msg), line(l), col(c) {}
+    std::string file;  // set when the error happened in another file than the one being run
 };
 
 struct Env {
@@ -33,12 +35,20 @@ public:
     // Runs every statement. If `last` is set and the final statement is a bare
     // expression, its value is stored there (the REPL echoes it).
     void run(const Ast& program, Value* last = nullptr);  // throws RuntimeError
+    // The file being run. `use` paths resolve against its folder; "<repl>"
+    // or empty means the current directory.
+    void set_main_file(const std::string& path);
 
 private:
     enum class Flow { Normal, Break, Next, Return };
 
     std::ostream& out_;
-    std::shared_ptr<Env> globals_;
+    std::shared_ptr<Env> builtins_;  // shared by every module
+    std::shared_ptr<Env> globals_;   // top level of the main file
+    std::string current_file_;
+    std::unordered_map<std::string, std::shared_ptr<Module>> modules_;  // by resolved path
+    std::vector<std::unique_ptr<Ast>> module_trees_;
+    Value load_module(const Ast& use);
     Value ret_;
     const Ast* flow_node_ = nullptr;  // the break/next/return that caused the flow
     int depth_ = 0;

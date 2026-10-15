@@ -1,0 +1,5 @@
+use pong
+fun ping(n)
+    if n == 0
+        return "ping done"
+    return pong.pong(n - 1)

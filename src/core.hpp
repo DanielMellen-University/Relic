@@ -29,7 +29,8 @@ public:
 private:
     std::ostream& out_;
     std::unique_ptr<Interpreter> interp_;
-    std::vector<std::unique_ptr<Ast>> trees_;  // functions point into these
+    std::vector<std::unique_ptr<Ast>> trees_;
+    bool main_set_ = false;  // functions point into these
 };
 
 // File runner. Output printed before a runtime error is kept in `out`.

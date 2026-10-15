@@ -87,6 +87,7 @@ private:
             case Tok::If: return if_stmt();
             case Tok::While: return while_stmt();
             case Tok::For: return for_stmt();
+            case Tok::Use: return use_stmt();
             case Tok::Return: {
                 advance();
                 auto n = make(Node::Return, t);
@@ -112,6 +113,22 @@ private:
         while (!at(Tok::Dedent) && !at(Tok::Eof)) b->kids.push_back(statement());
         match(Tok::Dedent);
         return b;
+    }
+
+    // use name, use dir/name, use ../dir/name
+    AstPtr use_stmt() {
+        const Token& kw = advance();
+        std::string path;
+        while (at(Tok::DotDot)) {
+            advance();
+            expect(Tok::Slash, "'/' after '..'");
+            path += "../";
+        }
+        path += expect(Tok::Name, "a module name after 'use'").text;
+        while (match(Tok::Slash)) path += "/" + expect(Tok::Name, "a name after '/'").text;
+        auto n = make(Node::Use, kw, path);
+        end_of_line();
+        return n;
     }
 
     AstPtr let_stmt() {

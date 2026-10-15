@@ -21,6 +21,7 @@ const char* type_name(const Value& v) {
         case 3: return "string";
         case 4: return "list";
         case 5: return "map";
+        case 8: return "module";
         default: return "function";
     }
 }
@@ -89,7 +90,8 @@ std::string repr(const Value& v) {
             return s + "}";
         }
         case 6: return "<fun " + v.as<std::shared_ptr<Function>>()->name + ">";
-        default: return "<fun " + v.as<std::shared_ptr<Builtin>>()->name + ">";
+        case 7: return "<fun " + v.as<std::shared_ptr<Builtin>>()->name + ">";
+        default: return "<module " + v.as<std::shared_ptr<Module>>()->name + ">";
     }
 }
 
@@ -117,7 +119,8 @@ bool equal(const Value& a, const Value& b) {
             return true;
         }
         case 6: return a.as<std::shared_ptr<Function>>() == b.as<std::shared_ptr<Function>>();
-        default: return a.as<std::shared_ptr<Builtin>>() == b.as<std::shared_ptr<Builtin>>();
+        case 7: return a.as<std::shared_ptr<Builtin>>() == b.as<std::shared_ptr<Builtin>>();
+        default: return a.as<std::shared_ptr<Module>>() == b.as<std::shared_ptr<Module>>();
     }
 }
 

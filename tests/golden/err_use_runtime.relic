@@ -1,0 +1,2 @@
+use modules/broken
+print(broken.boom(1))

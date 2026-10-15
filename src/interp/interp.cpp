@@ -1,6 +1,12 @@
 #include "interp/interp.hpp"
 
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 namespace relic {
 
@@ -40,8 +46,80 @@ size_t list_slot(const Ast& at, const Value& idx, size_t size, const char* what 
 }  // namespace
 
 Interpreter::Interpreter(std::ostream& out)
-    : out_(out), globals_(std::make_shared<Env>()) {
+    : out_(out), builtins_(std::make_shared<Env>()), globals_(std::make_shared<Env>(builtins_)) {
     install_builtins();
+}
+
+namespace fs = std::filesystem;
+
+namespace {
+
+// Folder that `use` paths in `file` resolve against.
+std::string folder_of(const std::string& file) {
+    if (file.empty() || file == "<repl>") return "";
+    size_t cut = file.find_last_of("/\\");
+    return cut == std::string::npos ? "" : file.substr(0, cut + 1);
+}
+
+std::string key_of(const std::string& file) {
+    std::error_code ec;
+    fs::path k = fs::weakly_canonical(fs::path(file), ec);
+    return ec ? file : k.generic_string();
+}
+
+}  // namespace
+
+void Interpreter::set_main_file(const std::string& path) {
+    current_file_ = path;
+    if (path.empty() || path == "<repl>") return;
+    // Register the main file, so a module that uses it back gets this same
+    // scope instead of running the file a second time.
+    std::string name = fs::path(path).stem().string();
+    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_});
+}
+
+Value Interpreter::load_module(const Ast& use) {
+    std::string file = folder_of(current_file_) + use.text + ".relic";
+    std::string key = key_of(file);
+    auto it = modules_.find(key);
+    if (it != modules_.end()) return Value(it->second);  // loaded, or loading (a cycle)
+
+    std::ifstream in(file, std::ios::binary);
+    if (!in) fail(use, "cannot find module '" + use.text + "' (no file " + use.text + ".relic)");
+    std::stringstream ss;
+    ss << in.rdbuf();
+
+    std::string name = use.text.substr(use.text.find_last_of('/') + 1);
+    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_)});
+    modules_[key] = mod;  // before running, so cycles find it
+
+    std::string saved = current_file_;
+    current_file_ = file;
+    struct Restore { std::string& cur; std::string old; ~Restore() { cur = old; } } restore{current_file_, saved};
+    try {
+        module_trees_.push_back(parse(lex(ss.str())));
+    } catch (const LexError& e) {
+        RuntimeError r(e.line, e.col, e.what());
+        r.file = file;
+        throw r;
+    } catch (const ParseError& e) {
+        RuntimeError r(e.line, e.col, e.what());
+        r.file = file;
+        throw r;
+    }
+    const Ast& prog = *module_trees_.back();
+    try {
+        for (const auto& st : prog.kids) {
+            Flow f = exec(*st, mod->scope);
+            if (f == Flow::Return) fail(*flow_node_, "'return' outside a function");
+            if (f == Flow::Break) fail(*flow_node_, "'break' outside a loop");
+            if (f == Flow::Next) fail(*flow_node_, "'next' outside a loop");
+        }
+    } catch (RuntimeError& e) {
+        if (e.file.empty()) e.file = file;
+        throw;
+    }
+    return Value(mod);
 }
 
 void Interpreter::run(const Ast& program, Value* last) {
@@ -85,7 +163,7 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             eval(*n.kids[0], env);
             return Flow::Normal;
         case Node::Fun: {
-            auto f = std::make_shared<Function>(Function{n.text, &n, env});
+            auto f = std::make_shared<Function>(Function{n.text, &n, env, current_file_});
             env->vars[n.text] = Value(f);
             return Flow::Normal;
         }
@@ -130,6 +208,11 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             ret_ = n.kids.empty() ? Value() : eval(*n.kids[0], env);
             flow_node_ = &n;
             return Flow::Return;
+        case Node::Use: {
+            Value m = load_module(n);
+            env->vars[m.as<std::shared_ptr<Module>>()->name] = m;
+            return Flow::Normal;
+        }
         case Node::Break:
             flow_node_ = &n;
             return Flow::Break;
@@ -150,6 +233,8 @@ void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>&
     }
     Value obj = eval(*target.kids[0], env);
     if (target.kind == Node::Field) {
+        if (obj.is<std::shared_ptr<Module>>())
+            fail(target, "cannot change a module's names from outside; give it a function that does it");
         if (!obj.is<std::shared_ptr<Map>>())
             fail(target, std::string("cannot set a field on a ") + type_name(obj));
         obj.as<std::shared_ptr<Map>>()->set(target.text, std::move(v));
@@ -215,6 +300,13 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
         case Node::Call: return call(n, env);
         case Node::Field: {
             Value obj = eval(*n.kids[0], env);
+            if (obj.is<std::shared_ptr<Module>>()) {
+                const Module& m = *obj.as<std::shared_ptr<Module>>();
+                auto it = m.scope->vars.find(n.text);
+                if (it == m.scope->vars.end())
+                    fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                return it->second;
+            }
             if (!obj.is<std::shared_ptr<Map>>())
                 fail(n, std::string("cannot read a field of a ") + type_name(obj));
             const Map& m = *obj.as<std::shared_ptr<Map>>();
@@ -350,8 +442,17 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     const Ast& body = *f.node->kids[1];
     ++depth_;
     struct Guard { int& d; ~Guard() { --d; } } guard{depth_};
-    if (body.kind != Node::Block) return eval(body, scope);  // short form: fun f(x) = expr
-    Flow fl = exec_block(body, scope);
+    std::string saved = current_file_;
+    current_file_ = f.file;  // so a `use` or `fun` inside resolves against the right file
+    struct Restore { std::string& cur; std::string old; ~Restore() { cur = old; } } restore{current_file_, saved};
+    Flow fl;
+    try {
+        if (body.kind != Node::Block) return eval(body, scope);  // short form: fun f(x) = expr
+        fl = exec_block(body, scope);
+    } catch (RuntimeError& e) {
+        if (e.file.empty() && f.file != saved) e.file = f.file;
+        throw;
+    }
     if (fl == Flow::Break) fail(*flow_node_, "'break' outside a loop");
     if (fl == Flow::Next) fail(*flow_node_, "'next' outside a loop");
     if (fl == Flow::Return) {

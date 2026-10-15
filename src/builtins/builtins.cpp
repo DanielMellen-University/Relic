@@ -5,7 +5,7 @@ namespace relic {
 
 void Interpreter::install_builtins() {
     auto add = [&](const std::string& name, int arity, std::function<Value(std::vector<Value>&)> fn) {
-        globals_->vars[name] = Value(std::make_shared<Builtin>(Builtin{name, arity, std::move(fn)}));
+        builtins_->vars[name] = Value(std::make_shared<Builtin>(Builtin{name, arity, std::move(fn)}));
     };
 
     // print(a, b, ...) writes the values separated by spaces, then a newline.

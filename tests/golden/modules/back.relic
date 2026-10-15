@@ -1,0 +1,2 @@
+use ../use_main_cycle
+fun call_back() = use_main_cycle.greet("back")

@@ -76,6 +76,10 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
     try {
         trees_.push_back(parse(lex(source)));
         Value last;
+        if (!main_set_) {
+            interp_->set_main_file(path);
+            main_set_ = true;
+        }
         interp_->run(*trees_.back(), echo ? &last : nullptr);
         if (echo && !last.is<NoneV>()) out_ << repr(last) << "\n";
     } catch (const LexError& e) {
@@ -86,7 +90,7 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         r.err = diag::format(path, e.line, e.col, e.what());
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
     }
     return r;
 }

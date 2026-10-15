@@ -1,0 +1,8 @@
+use modules/mathx
+use modules/shapes/box
+use modules/mathx
+print(mathx.square(7))
+print(mathx.area(1))
+print(box.box_area(3))
+print(mathx)
+print(type(mathx))

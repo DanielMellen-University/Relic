@@ -1,0 +1,1 @@
+fun boom(x) = x + "a"

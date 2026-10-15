@@ -24,6 +24,7 @@ enum class Node {
     Return,    // kids: [value]
     Break,
     Next,
+    Use,       // text: module path as written, e.g. "lib/math" or "../util"
     // expressions
     Number,    // text: digits as written
     String,    // text: decoded value
