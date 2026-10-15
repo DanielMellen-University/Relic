@@ -4,11 +4,11 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 ## Phase 1: Host bootstrap
 
-- [ ] Pick the host language (**Default:** C++17, to match MONOLITH 1)
-- [ ] Build setup (**Default:** CMake) and CI that runs on every push
+- [x] Pick the host language (**Default:** C++17, to match MONOLITH 1)
+- [x] Build setup (**Default:** CMake) and CI that runs on every push
 - [ ] `relic` prints `hello` from a golden test (see [BOOTSTRAP.md](BOOTSTRAP.md))
-- [ ] Test runner that runs `.relic` files and compares output
-- [ ] Track every borrowed piece in a list so it can be replaced later
+- [x] Test runner that runs `.relic` files and compares output
+- [x] Track every borrowed piece in a list so it can be replaced later
 
 ## Phase 2: Language core
 

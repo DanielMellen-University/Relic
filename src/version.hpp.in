@@ -1,0 +1,2 @@
+#pragma once
+#define RELIC_VERSION "@PROJECT_VERSION@"

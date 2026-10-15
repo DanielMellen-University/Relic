@@ -2,7 +2,18 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **design phase**. This repo holds design and roadmap docs only. There is no compiler or interpreter yet.
+> Status: **M1 done, host skeleton**. The C++17 host builds, `relic --version` works, and the test setup runs in CI. It cannot run Relic code yet.
+
+## Build
+
+Needs a C++17 compiler and CMake 3.16 or newer.
+
+```
+cmake -S . -B build
+cmake --build build
+./build/relic --version
+ctest --test-dir build --output-on-failure
+```
 
 ## What Relic is
 

@@ -8,6 +8,10 @@ Steps for the phase 1 host. This is a plan, not code.
 - CMake 3.16 or newer
 - No other libraries. **Default:** the C++ standard library is the only borrowed dependency.
 
+## Status
+
+Steps 1 to 3 are done (M1). Until M4, `relic file.relic` accepts blank and `#` comment lines and reports "not implemented yet" for anything else.
+
 ## Steps
 
 1. **Layout.** Create the folders in [ARCHITECTURE.md](ARCHITECTURE.md) and a `CMakeLists.txt` with the three targets.
@@ -28,4 +32,5 @@ Track everything Relic relies on that we did not write. Each row needs a planned
 |---|---|---|
 | C++ compiler and stdlib | host interpreter | phase 3 (self-host) |
 | CMake | build | **Open** (Relic build tool later) |
-| CI service | running tests | not planned |
+| CMake script mode | golden test runner (`tools/run_golden.cmake`) | phase 3 (runner in Relic) |
+| GitHub Actions | CI on Linux, macOS, Windows | not planned |

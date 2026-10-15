@@ -20,6 +20,16 @@ The runner executes `relic name.relic`, captures stdout, and compares it byte fo
 - Every bug fix adds a test that failed before the fix.
 - Line endings are normalized to `\n` before comparing.
 
+## Running tests
+
+```
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Each `tests/golden/*.relic` file becomes its own ctest case, run by `tools/run_golden.cmake`. In `.err` files, paths are written relative to `tests/golden/`.
+
 ## Unit tests
 
 C++ tests in `tests/unit/` for the lexer and parser, where checking tokens or tree shape is easier than checking output. **Default:** a small hand-written test harness, no test library.

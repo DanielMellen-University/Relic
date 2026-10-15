@@ -1,0 +1,2 @@
+# Code is not runnable until M4.
+print("hello")

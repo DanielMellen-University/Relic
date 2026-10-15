@@ -7,7 +7,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | # | Milestone | Depends on | Estimate |
 |---|---|---|---|
 | M0 | Repo and docs | none | done (draft) |
-| M1 | Host skeleton: build, CI, test runner | M0 | 1 week |
+| M1 | Host skeleton: build, CI, test runner | M0 | done |
 | M2 | Lexer | M1 | 1 week |
 | M3 | Parser and AST | M2 | 2 weeks |
 | M4 | Tree-walk interpreter | M3 | 2 weeks |
