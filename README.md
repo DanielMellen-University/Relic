@@ -25,6 +25,53 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+## Relic in five minutes
+
+```
+# comments start with #
+let count = 3              # declare with let
+count = count + 1          # change it without let
+
+let name = "Relic"
+print("hello {name}")      # {} puts a value inside a string
+
+# blocks are indented 4 spaces, no braces or colons
+if count > 3 and name != ""
+    print("big")
+else if count == 3
+    print("three")
+else
+    print("small")
+
+let i = 0
+while i < 3
+    i = i + 1
+
+for n in 1..4              # 1, 2, 3 (the end is left out)
+    if n == 2
+        next               # skip to the next turn
+    print(n)
+
+fun add(a, b)
+    return a + b
+fun double(x) = x * 2      # one-line form
+
+let xs = [3, 1, 2]
+append(xs, 4)
+print(xs[0], len(xs))      # lists start at 0
+
+let box = {title: "MONOLITH", version: 2}
+box.version = 3
+print(box.title, box["version"])
+```
+
+- Math: `+ - * / %`. `%` is the remainder: `10 % 3` is `1`.
+- Compare: `== != < <= > >=`. Logic: `and or not`. Membership: `x in list`.
+- Values: numbers, strings, `true`, `false`, `none`, lists and maps.
+- Conditions must be `true` or `false`. `if 1` is an error.
+- The sample above is checked by the `readme_sample` golden test.
+- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`. The full rules are in [DESIGN.md](docs/DESIGN.md).
+
 ## Use
 
 | Command | Does |

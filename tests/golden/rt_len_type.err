@@ -1,0 +1,1 @@
+rt_len_type.relic:1:10: error: len(): cannot get the length of a number

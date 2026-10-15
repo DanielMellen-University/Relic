@@ -1,0 +1,1 @@
+rt_keys_type.relic:1:11: error: keys(): argument must be a map, got list

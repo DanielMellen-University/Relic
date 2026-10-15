@@ -29,10 +29,10 @@ long long whole(const Ast& at, const Value& v, const char* what) {
     return static_cast<long long>(d);
 }
 
-size_t list_slot(const Ast& at, const Value& idx, size_t size) {
-    long long i = whole(at, idx, "list index");
+size_t list_slot(const Ast& at, const Value& idx, size_t size, const char* what = "list index") {
+    long long i = whole(at, idx, what);
     if (i < 0 || static_cast<size_t>(i) >= size)
-        fail(at, "list index " + std::to_string(i) + " is out of range (size " +
+        fail(at, std::string(what) + " " + std::to_string(i) + " is out of range (size " +
                      std::to_string(size) + ")");
     return static_cast<size_t>(i);
 }
@@ -230,7 +230,7 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
             }
             if (obj.is<std::string>()) {
                 const std::string& s = obj.as<std::string>();
-                return Value(std::string(1, s[list_slot(*n.kids[1], idx, s.size())]));
+                return Value(std::string(1, s[list_slot(*n.kids[1], idx, s.size(), "string index")]));
             }
             if (obj.is<std::shared_ptr<Map>>()) {
                 if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");

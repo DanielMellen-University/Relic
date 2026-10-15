@@ -1,0 +1,1 @@
+rt_builtin_arity.relic:1:10: error: len() takes 1 argument, got 0

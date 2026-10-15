@@ -1,0 +1,1 @@
+rt_range_type.relic:1:13: error: range end must be a number, got string
