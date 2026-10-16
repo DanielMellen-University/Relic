@@ -24,7 +24,7 @@ enum class Op {
     Jump, JumpIfFalse, CheckBool, JumpIfFalseKeep, JumpIfTrueKeep,
     Binary, Unary, Range, Field, Index, SetField, SetIndex,
     List, Map, Interp, Call, Closure, Return, ReturnNone,
-    ForPrep, ForNext, Fail, Use, TryBegin, TryEnd, CheckType,
+    ForPrep, ForNext, ForRangePrep, ForRangeNext, Fail, Use, TryBegin, TryEnd, CheckType,
 };
 
 const char* op_name(Op o) {
@@ -35,9 +35,18 @@ const char* op_name(Op o) {
         "JUMP", "JUMP_IF_FALSE", "CHECK_BOOL", "JUMP_IF_FALSE_KEEP", "JUMP_IF_TRUE_KEEP",
         "BINARY", "UNARY", "RANGE", "FIELD", "INDEX", "SET_FIELD", "SET_INDEX",
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
-        "FOR_PREP", "FOR_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
+        "FOR_PREP", "FOR_NEXT", "FOR_RANGE_PREP", "FOR_RANGE_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
     };
     return names[static_cast<int>(o)];
+}
+
+// Binary operators by number, so the VM's fast paths skip string compares.
+enum BinOp { BOther, BAdd, BSub, BMul, BDiv, BMod, BEq, BNe, BLt, BLe, BGt, BGe };
+int binop_code(const std::string& o) {
+    static const char* names[] = {"", "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="};
+    for (int i = 1; i < 12; ++i)
+        if (o == names[i]) return i;
+    return BOther;
 }
 
 struct Instr {
@@ -335,10 +344,18 @@ private:
                 return;
             }
             case Node::For: {
-                expr(*n.kids[0]);
-                emit(Op::ForPrep, 0, 0, n.kids[0].get());
+                // `for i in a..b` counts on the stack instead of building the list.
+                bool range = n.kids[0]->kind == Node::Range;
+                if (range) {
+                    expr(*n.kids[0]->kids[0]);
+                    expr(*n.kids[0]->kids[1]);
+                    emit(Op::ForRangePrep, 0, 0, n.kids[0].get());
+                } else {
+                    expr(*n.kids[0]);
+                    emit(Op::ForPrep, 0, 0, n.kids[0].get());
+                }
                 size_t top = here();
-                size_t fn = emit(Op::ForNext);
+                size_t fn = emit(range ? Op::ForRangeNext : Op::ForNext);
                 fns_.back().loops.push_back({scopes_.size(), 2, top, {}, {}, fns_.back().try_depth});
                 // Each turn gets a scope holding the loop name and the body's names.
                 open_scope();
@@ -517,7 +534,7 @@ private:
                 }
                 expr(*n.kids[0]);
                 expr(*n.kids[1]);
-                emit(Op::Binary, 0, 0, &n);
+                emit(Op::Binary, binop_code(n.text), 0, &n);
                 return;
             case Node::Call:
                 for (const auto& k : n.kids) expr(*k);
@@ -637,7 +654,7 @@ private:
         for (size_t i = 0; i < args.size(); ++i)
             if (!p.param_hints[i].empty())
                 op_check_type(*in.at, p.param_hints[i], args[i], f.name + "() argument '" + p.node->kids[0]->kids[i]->text + "' must be");
-        auto scope = std::make_shared<Scope>(p.nslots, std::static_pointer_cast<Scope>(f.vm_scope));
+        auto scope = new_scope(p.nslots, std::static_pointer_cast<Scope>(f.vm_scope));
         for (size_t i = 0; i < args.size(); ++i) scope->slots[i] = std::move(args[i]);
         ++depth_;
         struct Guard { int& d; ~Guard() { --d; } } guard{depth_};
@@ -653,14 +670,59 @@ private:
 
     const Program* cur_mod_ = nullptr;
 
+    // Scopes nobody kept (no closure captured them) are reused, which saves
+    // two allocations per loop turn with a `let` in it and per call.
+    std::vector<std::shared_ptr<Scope>> spare_;
+    std::vector<std::vector<Value>> spare_stacks_;
+    std::shared_ptr<Scope> new_scope(int n, std::shared_ptr<Scope> parent) {
+        if (!spare_.empty()) {
+            std::shared_ptr<Scope> s = std::move(spare_.back());
+            spare_.pop_back();
+            s->slots.resize(static_cast<size_t>(n));
+            s->parent = std::move(parent);
+            return s;
+        }
+        return std::make_shared<Scope>(n, std::move(parent));
+    }
+    void recycle(std::shared_ptr<Scope>&& s) {
+        if (s.use_count() != 1 || spare_.size() >= 64) return;
+        for (Value& v : s->slots) v = Value();
+        s->slots.clear();
+        s->parent.reset();
+        spare_.push_back(std::move(s));
+    }
+
     Value run(const Proto& p, std::shared_ptr<Scope> sc) {
+        Scope* const stop = sc ? sc->parent.get() : nullptr;
+        auto leave = [&]() {  // hand this call's scopes back for reuse
+            while (sc && sc.get() != stop) {
+                std::shared_ptr<Scope> parent = sc->parent;
+                recycle(std::move(sc));
+                sc = std::move(parent);
+            }
+        };
         const Program* saved = cur_mod_;
         cur_mod_ = p.mod;
         struct Restore { const Program*& c; const Program* old; ~Restore() { c = old; } } restore{cur_mod_, saved};
         std::vector<Value>& globals_ = p.mod->globals;
         std::vector<char>& defined_ = p.mod->defined;
+        // Value stacks are reused between calls too.
         std::vector<Value> st;
-        st.reserve(16);
+        if (!spare_stacks_.empty()) {
+            st.swap(spare_stacks_.back());
+            spare_stacks_.pop_back();
+        } else {
+            st.reserve(16);
+        }
+        struct GiveBack {
+            std::vector<Value>& st;
+            std::vector<std::vector<Value>>& pool;
+            ~GiveBack() {
+                if (pool.size() >= 64) return;
+                st.clear();
+                pool.push_back(std::move(st));
+            }
+        } give_back{st, spare_stacks_};
         auto pop = [&]() {
             Value v = std::move(st.back());
             st.pop_back();
@@ -727,16 +789,22 @@ private:
                     break;
                 }
                 case Op::Pop: st.pop_back(); break;
-                case Op::EnterScope: sc = std::make_shared<Scope>(in.a, std::move(sc)); break;
+                case Op::EnterScope: sc = new_scope(in.a, std::move(sc)); break;
                 case Op::ExitScope:
-                    for (int i = 0; i < in.a; ++i) sc = sc->parent;
+                    for (int i = 0; i < in.a; ++i) {
+                        std::shared_ptr<Scope> parent = sc->parent;
+                        recycle(std::move(sc));
+                        sc = std::move(parent);
+                    }
                     break;
                 case Op::Jump:
                     if (static_cast<size_t>(in.a) < ip) gc_maybe();  // a loop turn
                     ip = static_cast<size_t>(in.a);
                     break;
                 case Op::JumpIfFalse:
-                    if (!op_condition(*in.at, st.back(), p.strings[in.b].c_str())) ip = static_cast<size_t>(in.a);
+                    if (st.back().is<bool>()) {
+                        if (!st.back().as<bool>()) ip = static_cast<size_t>(in.a);
+                    } else if (!op_condition(*in.at, st.back(), p.strings[in.b].c_str())) ip = static_cast<size_t>(in.a);
                     st.pop_back();
                     break;
                 case Op::CheckBool: op_condition(*in.at, st.back(), p.strings[in.b].c_str()); break;
@@ -749,26 +817,46 @@ private:
                 case Op::Binary: {
                     Value b = pop();
                     Value& a = st.back();
-                    // Fast path for number math, the hot case in loops.
+                    // Fast paths for number math and compares, the hot case in loops.
+                    // Anything unusual (overflow, division, mixed types) takes op_binary.
                     if (a.is<long long>() && b.is<long long>()) {
-                        const std::string& o = in.at->text;
                         long long x = a.as<long long>(), y = b.as<long long>(), r;
-                        if (o.size() == 1) {
-                            if (o[0] == '+' && !add_overflows(x, y, &r)) { a = Value(r); break; }
-                            if (o[0] == '-' && !sub_overflows(x, y, &r)) { a = Value(r); break; }
-                            if (o[0] == '<') { a = Value(x < y); break; }
-                            if (o[0] == '>') { a = Value(x > y); break; }
+                        bool done = true;
+                        switch (in.a) {
+                            case BAdd: if (add_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                            case BSub: if (sub_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                            case BMul: if (mul_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                            case BMod:
+                                if (y <= 0) { done = false; break; }
+                                r = x % y;
+                                if (r < 0) r += y;
+                                a = Value(r);
+                                break;
+                            case BEq: a = Value(x == y); break;
+                            case BNe: a = Value(x != y); break;
+                            case BLt: a = Value(x < y); break;
+                            case BLe: a = Value(x <= y); break;
+                            case BGt: a = Value(x > y); break;
+                            case BGe: a = Value(x >= y); break;
+                            default: done = false;
                         }
+                        if (done) break;
                     } else if (a.is<double>() && b.is<double>()) {
-                        const std::string& o = in.at->text;
                         double x = a.as<double>(), y = b.as<double>();
-                        if (o.size() == 1) {
-                            if (o[0] == '+') { a = Value(x + y); break; }
-                            if (o[0] == '-') { a = Value(x - y); break; }
-                            if (o[0] == '*') { a = Value(x * y); break; }
-                            if (o[0] == '<') { a = Value(x < y); break; }
-                            if (o[0] == '>') { a = Value(x > y); break; }
+                        bool done = true;
+                        switch (in.a) {
+                            case BAdd: a = Value(x + y); break;
+                            case BSub: a = Value(x - y); break;
+                            case BMul: a = Value(x * y); break;
+                            case BEq: a = Value(x == y); break;
+                            case BNe: a = Value(x != y); break;
+                            case BLt: a = Value(x < y); break;
+                            case BLe: a = Value(x <= y); break;
+                            case BGt: a = Value(x > y); break;
+                            case BGe: a = Value(x >= y); break;
+                            default: done = false;
                         }
+                        if (done) break;
                     }
                     a = op_binary(*in.at, a, b);
                     break;
@@ -838,8 +926,12 @@ private:
                     st.emplace_back(f);
                     break;
                 }
-                case Op::Return: return pop();
-                case Op::ReturnNone: return Value();
+                case Op::Return: {
+                    Value r = pop();
+                    leave();
+                    return r;
+                }
+                case Op::ReturnNone: leave(); return Value();
                 case Op::ForPrep: {
                     Value src = pop();
                     st.emplace_back(std::make_shared<List>(op_loop_items(*in.at, src)));
@@ -853,6 +945,26 @@ private:
                         Value item = items[static_cast<size_t>(i)];
                         i += 1;
                         st.push_back(std::move(item));
+                    } else {
+                        st.pop_back();
+                        st.pop_back();
+                        ip = static_cast<size_t>(in.a);
+                    }
+                    break;
+                }
+                case Op::ForRangePrep: {
+                    Value b = pop();
+                    Value a = pop();
+                    long long lo, hi;
+                    op_range_bounds(*in.at, a, b, lo, hi);
+                    st.emplace_back(hi);
+                    st.emplace_back(lo);
+                    break;
+                }
+                case Op::ForRangeNext: {
+                    long long& i = std::get<long long>(st.back().v);
+                    if (i < st[st.size() - 2].as<long long>()) {
+                        st.emplace_back(i++);
                     } else {
                         st.pop_back();
                         st.pop_back();

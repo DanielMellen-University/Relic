@@ -6,6 +6,10 @@ RELIC=${1:-build/relic}
 cd "$(dirname "$0")/.."
 printf "%-12s %10s %10s %8s\n" bench tree-walk vm speedup
 for f in bench/*.relic; do
+  # redraw needs a window; skip it on builds without graphics.
+  if [ "$(basename "$f")" = redraw.relic ] && ! echo 'print(host_gfx_available())' | "$RELIC" | grep -q true; then
+    continue
+  fi
   t0=$(date +%s.%N); a=$("$RELIC" --tree "$f"); t1=$(date +%s.%N)
   b=$("$RELIC" "$f"); t2=$(date +%s.%N)
   [ "$a" = "$b" ] || { echo "output differs on $f"; exit 1; }

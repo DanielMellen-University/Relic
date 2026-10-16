@@ -99,16 +99,27 @@ std::string a_type(const Value& v);
 inline bool is_num(const Value& v) { return v.is<double>() || v.is<long long>(); }
 // Int math that reports overflow instead of wrapping. Portable (no compiler builtins).
 inline bool add_overflows(long long x, long long y, long long* r) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_add_overflow(x, y, r);
+#else
     if ((y > 0 && x > LLONG_MAX - y) || (y < 0 && x < LLONG_MIN - y)) return true;
     *r = x + y;
     return false;
+#endif
 }
 inline bool sub_overflows(long long x, long long y, long long* r) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_sub_overflow(x, y, r);
+#else
     if ((y < 0 && x > LLONG_MAX + y) || (y > 0 && x < LLONG_MIN + y)) return true;
     *r = x - y;
     return false;
+#endif
 }
 inline bool mul_overflows(long long x, long long y, long long* r) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_mul_overflow(x, y, r);
+#else
     if (x != 0 && y != 0) {
         if (x > 0 ? (y > 0 ? x > LLONG_MAX / y : y < LLONG_MIN / x)
                   : (y > 0 ? x < LLONG_MIN / y : y < LLONG_MAX / x))
@@ -116,6 +127,7 @@ inline bool mul_overflows(long long x, long long y, long long* r) {
     }
     *r = x * y;
     return false;
+#endif
 }
 inline double to_num(const Value& v) {
     return v.is<long long>() ? static_cast<double>(v.as<long long>()) : v.as<double>();

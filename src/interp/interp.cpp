@@ -249,10 +249,15 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
 
 [[noreturn]] void fail_at(const Ast& at, const std::string& msg) { fail(at, msg); }
 
-Value op_range(const Ast& n, const Value& av, const Value& bv) {
-    long long a = whole(*n.kids[0], av, "range start");
-    long long b = whole(*n.kids[1], bv, "range end");
+void op_range_bounds(const Ast& n, const Value& av, const Value& bv, long long& a, long long& b) {
+    a = whole(*n.kids[0], av, "range start");
+    b = whole(*n.kids[1], bv, "range end");
     if (b - a > 10000000) fail(n, "range is too large");
+}
+
+Value op_range(const Ast& n, const Value& av, const Value& bv) {
+    long long a, b;
+    op_range_bounds(n, av, bv, a, b);
     auto l = std::make_shared<List>();
     for (long long i = a; i < b; ++i) l->emplace_back(static_cast<long long>(i));
     return Value(l);

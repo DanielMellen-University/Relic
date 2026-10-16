@@ -56,6 +56,23 @@ source -> lexer -> tokens -> parser -> AST -> compiler -> bytecode -> VM   (defa
 
 One `Value` type: none, bool, int, float, string, list, map, function, built-in, module. Memory is reference counted with host smart pointers, and `src/interp/gc.cpp` collects cycles (see DESIGN.md, Memory model).
 
+## VM speed
+
+Run `tools/bench.sh build-rel/relic` on a Release build. What makes the VM fast:
+
+- `BINARY` carries its operator as a number. int and float math and compares skip `op_binary` unless something unusual happens (overflow, division, mixed types).
+- `for i in a..b` counts on the stack (`FOR_RANGE_PREP`, `FOR_RANGE_NEXT`) instead of building the list.
+- Scopes no closure kept, and value stacks, are reused instead of allocated per call or loop turn.
+
+Fastest of 7 runs, Release, VM, before and after this pass (865a85e):
+
+| bench | before | after |
+|---|---|---|
+| fib | 39 ms | 32 ms |
+| lists | 50 ms | 41 ms |
+| loops | 264 ms | 157 ms |
+| strings | 46 ms | 32 ms |
+
 ## Debug flags
 
 - `--tokens` prints the token stream

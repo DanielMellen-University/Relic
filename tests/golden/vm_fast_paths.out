@@ -1,0 +1,13 @@
+int overflow
+int overflow
+2 -2 -1 1
+division by zero
+3.5 2.0 6 true false true false
+4.0 3.0 false true true true
+true true true
+0
+11
+22
+-3
+285 0
+range end must be a whole number
