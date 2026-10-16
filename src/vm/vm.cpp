@@ -42,6 +42,12 @@ const char* op_name(Op o) {
     return names[static_cast<int>(o)];
 }
 
+#if defined(_MSC_VER)
+#define RELIC_NOINLINE __declspec(noinline)
+#else
+#define RELIC_NOINLINE __attribute__((noinline))
+#endif
+
 // Binary operators by number, so the VM's fast paths skip string compares.
 enum BinOp { BOther, BAdd, BSub, BMul, BDiv, BMod, BEq, BNe, BLt, BLe, BGt, BGe };
 int binop_code(const std::string& o) {
@@ -696,12 +702,7 @@ private:
 
     // Kept out of run() so its stack frame stays small: deep Relic recursion
     // nests one run() per call.
-#if defined(_MSC_VER)
-    __declspec(noinline)
-#else
-    __attribute__((noinline))
-#endif
-    void binary(const Instr& in, std::vector<Value>& st) {
+    RELIC_NOINLINE void binary(const Instr& in, std::vector<Value>& st) {
         Value b = std::move(st.back());
         st.pop_back();
         Value& a = st.back();
@@ -749,12 +750,7 @@ private:
         a = op_binary(*in.at, a, b);
     }
 
-#if defined(_MSC_VER)
-    __declspec(noinline)
-#else
-    __attribute__((noinline))
-#endif
-    [[noreturn]] void undefined_name(const Proto& p, const Instr& in, const std::string& name) {
+    [[noreturn]] RELIC_NOINLINE void undefined_name(const Proto& p, const Instr& in, const std::string& name) {
         std::vector<std::string> names;
         if (in.op == Op::LoadBuiltin) {
             const std::string& ls = p.strings[in.b];
@@ -767,12 +763,7 @@ private:
         fail_at(*in.at, "'" + name + "' is not defined" + op_suggest(name, names));
     }
 
-#if defined(_MSC_VER)
-    __declspec(noinline)
-#else
-    __attribute__((noinline))
-#endif
-    void range_prep(const Instr& in, std::vector<Value>& st) {
+    RELIC_NOINLINE void range_prep(const Instr& in, std::vector<Value>& st) {
         Value b = std::move(st.back());
         st.pop_back();
         Value a = std::move(st.back());
