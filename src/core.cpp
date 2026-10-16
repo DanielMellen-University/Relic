@@ -121,6 +121,20 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
     return r;
 }
 
+RunResult check_source(const std::string& path, const std::string& source) {
+    RunResult r;
+    try {
+        if (vm_check(*parse(lex(source)), path, r.err) > 0) r.exit_code = 1;
+    } catch (const LexError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    } catch (const ParseError& e) {
+        r.exit_code = 1;
+        r.err = diag::format(path, e.line, e.col, e.what());
+    }
+    return r;
+}
+
 RunResult dump_bytecode(const std::string& path, const std::string& source) {
     RunResult r;
     try {

@@ -51,6 +51,10 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
 // Backs --bytecode: the compiled code listing.
 RunResult dump_bytecode(const std::string& path, const std::string& source);
 
+// Backs `relic check FILE`: syntax errors, names never defined, and
+// statements that always fail, without running anything. Exit 1 if any.
+RunResult check_source(const std::string& path, const std::string& source);
+
 // Backs the --tokens flag: one token per line as "line:col KIND text".
 RunResult dump_tokens(const std::string& path, const std::string& source);
 

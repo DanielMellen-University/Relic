@@ -1,0 +1,11 @@
+# relic check: finds these without running the file.
+use std/files
+let count = 0
+fun later()
+    return helper(1)
+fun helper(x)
+    let total = x
+    return totl + cuont
+print(prnt)
+print(files.exists("x"))
+break

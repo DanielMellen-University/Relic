@@ -18,6 +18,7 @@ static bool stdout_is_terminal() { return isatty(1) != 0; }
 
 static void usage() {
     std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
+                 "       relic check file.relic...   (find mistakes without running)\n"
                  "       relic            (no file: start the REPL)\n";
 }
 
@@ -29,6 +30,23 @@ int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") {
         usage();
         return 0;
+    }
+    if (argc >= 3 && std::string(argv[1]) == "check") {
+        int code = 0;
+        for (int i = 2; i < argc; ++i) {
+            std::ifstream f(argv[i], std::ios::binary);
+            if (!f) {
+                std::cerr << "relic: cannot open " << argv[i] << "\n";
+                code = 2;
+                continue;
+            }
+            std::stringstream ss;
+            ss << f.rdbuf();
+            relic::RunResult r = relic::check_source(argv[i], ss.str());
+            std::cerr << r.err;
+            if (r.exit_code && !code) code = r.exit_code;
+        }
+        return code;
     }
     bool tokens = argc == 3 && std::string(argv[1]) == "--tokens";
     bool ast = argc == 3 && std::string(argv[1]) == "--ast";

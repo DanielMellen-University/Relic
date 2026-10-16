@@ -1,0 +1,5 @@
+# relic check on a clean file prints nothing.
+use std/strings
+fun shout(s) = strings.upper(s) + "!"
+for w in ["a", "b"]
+    print(shout(w))

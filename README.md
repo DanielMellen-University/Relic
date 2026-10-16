@@ -99,6 +99,7 @@ catch err
 |---|---|
 | `relic file.relic [args...]` | runs a program on the bytecode VM; `args()` returns the extra words |
 | `relic --tree file.relic` | runs it on the tree-walk interpreter instead |
+| `relic check file.relic...` | finds mistakes without running: syntax errors, names never defined (with a "did you mean"), `break` or `return` in the wrong place. Exit 1 if any |
 | `relic` | opens the REPL (runs on the tree-walker) |
 | `relic --tokens file.relic` | prints the tokens |
 | `relic --ast file.relic` | prints the syntax tree |

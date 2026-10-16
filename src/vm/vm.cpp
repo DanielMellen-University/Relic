@@ -1,10 +1,12 @@
 #include "vm/vm.hpp"
+#include "diag/diag.hpp"
 
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
+#include <algorithm>
 #include <fstream>
 
 #include <memory>
@@ -997,6 +999,37 @@ private:
 
 void vm_run(const Ast& program, std::ostream& out, const std::string& path) {
     Machine(out).run_main(program, path == "<repl>" ? "" : path);
+}
+
+int vm_check(const Ast& program, const std::string& path, std::string& out) {
+    Program prog;
+    Compiler(prog).compile_main(program);
+    std::ostringstream sink;
+    Interpreter host(sink);
+    const auto& builtins = host.builtins()->vars;
+    struct Item { int line, col; std::string msg; };
+    std::vector<Item> items;
+    for (const auto& p : prog.protos) {
+        for (const Instr& in : p->code) {
+            if (in.op == Op::Fail && in.at) {
+                items.push_back({in.at->line, in.at->col, p->strings[in.a]});
+            } else if (in.op == Op::LoadBuiltin && in.at) {
+                const std::string& name = p->strings[in.a];
+                if (builtins.count(name) || prog.global_index.count(name)) continue;
+                std::vector<std::string> names = prog.global_names;
+                const std::string& ls = p->strings[in.b];
+                for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
+                    names.push_back(ls.substr(i, j - i));
+                for (const auto& kv : builtins) names.push_back(kv.first);
+                items.push_back({in.at->line, in.at->col, "'" + name + "' is not defined" + op_suggest(name, names)});
+            }
+        }
+    }
+    std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+        return a.line != b.line ? a.line < b.line : a.col < b.col;
+    });
+    for (const auto& it : items) out += diag::format(path, it.line, it.col, it.msg, "warning");
+    return static_cast<int>(items.size());
 }
 
 std::string vm_disassemble(const Ast& program) {

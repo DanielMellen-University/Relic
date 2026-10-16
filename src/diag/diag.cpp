@@ -27,8 +27,8 @@ std::string snippet(const std::string& path, int line, int col) {
     return "    " + text + "\n    " + pad + "^\n";
 }
 
-std::string format(const std::string& path, int line, int col, const std::string& msg) {
-    return path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": error: " + msg + "\n" +
+std::string format(const std::string& path, int line, int col, const std::string& msg, const char* kind) {
+    return path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg + "\n" +
            snippet(path, line, col);
 }
 

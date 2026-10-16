@@ -1,0 +1,12 @@
+check_mistakes.relic:8:12: warning: 'totl' is not defined (did you mean 'total'?)
+        return totl + cuont
+               ^
+check_mistakes.relic:8:19: warning: 'cuont' is not defined (did you mean 'count'?)
+        return totl + cuont
+                      ^
+check_mistakes.relic:9:7: warning: 'prnt' is not defined (did you mean 'print'?)
+    print(prnt)
+          ^
+check_mistakes.relic:11:1: warning: 'break' outside a loop
+    break
+    ^
