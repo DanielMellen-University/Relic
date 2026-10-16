@@ -212,6 +212,11 @@ void Interpreter::install_builtins() {
         for (const auto& s : script_args()) l->emplace_back(s);
         return Value(l);
     });
+    add("host_args", 0, [](std::vector<Value>&) {
+        auto l = std::make_shared<List>();
+        for (const auto& s : script_args()) l->emplace_back(s);
+        return Value(l);
+    });
     // eprint(a, ...): like print, but to stderr.
     add("eprint", -1, [](std::vector<Value>& a) {
         for (size_t i = 0; i < a.size(); ++i) std::cerr << (i ? " " : "") << show(a[i]);
@@ -311,7 +316,9 @@ void Interpreter::install_builtins() {
     });
     add("host_exit", 1, [whole_arg, this](std::vector<Value>& a) -> Value {
         long long code = whole_arg(a[0], "code");
-        out_.flush();
+        // Program output is collected in a buffer until the run ends; write it now.
+        if (auto* buf = dynamic_cast<std::ostringstream*>(&out_)) std::cout << buf->str();
+        else out_.flush();
         std::cout.flush();
         std::exit(static_cast<int>(code));
     });

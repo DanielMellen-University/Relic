@@ -1,0 +1,5 @@
+a/b/c.txt a/c c /abs
+c.txt a/b true /
+.txt .gz true true
+notes f.txt
+a/c/d .. /a .

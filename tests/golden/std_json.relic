@@ -1,0 +1,15 @@
+use std/json
+let v = {name: "Notes", size: 3, ratio: 0.5, tags: ["a", "b"], open: true, parent: none, note: "say \"hi\"\n\ttab"}
+let s = json.encode(v)
+print(s)
+let back = json.decode(s)
+print(back.name, back.size, back.ratio, back.tags, back.open, back.parent)
+print(back.note == v.note, keys(back))
+print(json.pretty({a: [1, {b: []}], c: {}}))
+print(json.decode(" [1, -2.5e2, \"\\u00e9\\ud83d\\ude00\", {{}}] "))
+print(type(json.decode("12")), type(json.decode("1.5")))
+for bad in ["[1,", "{{\"a\" 1}}", "tru", "\"abc", "[1] x"]
+    try
+        json.decode(bad)
+    catch err
+        print(err.message)

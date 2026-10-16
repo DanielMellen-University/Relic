@@ -1,0 +1,6 @@
+use std/paths
+print(paths.join("a/b", "c.txt"), paths.join("a/", "c"), paths.join("", "c"), paths.join("a", "/abs"))
+print(paths.base("a/b/c.txt"), paths.dir("a/b/c.txt"), paths.dir("c.txt") == "", paths.dir("/x"))
+print(paths.ext("notes.txt"), paths.ext("archive.tar.gz"), paths.ext(".hidden") == "", paths.ext("a.d/file") == "")
+print(paths.stem("a/notes.txt"), paths.base("a\\win\\f.txt"))
+print(paths.normalize("a/./b/../c//d/"), paths.normalize("../x/.."), paths.normalize("/../a"), paths.normalize("a/.."))

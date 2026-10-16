@@ -1,0 +1,4 @@
+use std/graphics
+print(graphics.clipboard() == "")
+graphics.copy("Notes text")
+print(graphics.clipboard())

@@ -1,0 +1,37 @@
+# SDL-only: events, drawing extras and clipboard, headless (ctest gfx_events).
+use std/graphics
+graphics.open(80, 60, "events")
+graphics.clear(10, 10, 10)
+graphics.line(0, 0, 79, 59, 255, 0, 0)
+graphics.outline(5, 5, 20, 10, 0, 255, 0)
+graphics.clip(10, 10, 30, 30)
+graphics.rect_alpha(0, 0, 80, 60, 0, 0, 255, 128)
+graphics.unclip()
+graphics.present()
+print(graphics.size())
+graphics.simulate("key", "a", none)
+graphics.simulate("text", "hé", none)
+graphics.simulate("click", 12, 34)
+graphics.simulate("wheel", 0, -2)
+graphics.simulate("resize", 100, 70)
+let seen = []
+let e = graphics.next_event()
+while e != none
+    if e.type == "key_down"
+        append(seen, "key " + e.key + " " + str(e.shift))
+    else if e.type == "text"
+        append(seen, "text " + e.text)
+    else if e.type == "mouse_down" or e.type == "mouse_up"
+        append(seen, "{e.type} {e.button} {e.x} {e.y}")
+    else if e.type == "wheel"
+        append(seen, "wheel {e.dy}")
+    else if e.type == "resize"
+        append(seen, "resize {e.width} {e.height}")
+    e = graphics.next_event()
+for s in seen
+    print(s)
+print(graphics.next_key())
+graphics.copy("clip")
+print(type(graphics.clipboard()))
+graphics.close()
+print("done")

@@ -1,0 +1,11 @@
+use std/os
+use std/time
+print(os.args(), os.env("RELIC_SURELY_NOT_SET_42"), type(os.cwd()))
+let t = time.timer()
+time.sleep(5)
+let dt = time.tick(t)
+print(dt >= 0.004, dt < 2)
+time.limit(t, 1000)
+print(time.since(t.last) >= 0)
+os.exit(0)
+print("not reached")

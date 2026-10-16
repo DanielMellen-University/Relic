@@ -83,6 +83,10 @@ if(RELIC_SDL)
   add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
   set_tests_properties(gfx_smoke PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nint false\ndone")
+  # Event queue (simulated keys, text, clicks, wheel, resize), extra drawing, clipboard.
+  add_test(NAME gfx_events COMMAND relic gfx_events.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
+  set_tests_properties(gfx_events PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    PASS_REGULAR_EXPRESSION "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34\nmouse_up 1 12 34\nwheel -2\nresize 100 70\na\nstring\ndone")
   if(TARGET SDL2_image::SDL2_image)
     add_test(NAME gfx_png COMMAND relic gfx_png.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_png PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"

@@ -1,0 +1,83 @@
+# std/paths: path text helpers. Paths use "/"; "\" is read as "/" too.
+
+fun _fix(p)
+    let out = ""
+    for c in p
+        if c == "\\"
+            out = out + "/"
+        else
+            out = out + c
+    return out
+
+fun _last_slash(p)
+    let cut = -1
+    let i = 0
+    for c in p
+        if c == "/"
+            cut = i
+        i = i + 1
+    return cut
+
+# join(a, b): b on its own if it starts with "/", else a + "/" + b.
+fun join(a, b)
+    let x = _fix(a)
+    let y = _fix(b)
+    if x == "" or (len(y) > 0 and y[0] == "/")
+        return y
+    if x[len(x) - 1] == "/"
+        return x + y
+    return x + "/" + y
+
+fun base(p)
+    let x = _fix(p)
+    return slice(x, _last_slash(x) + 1, len(x))
+
+# dir("a/b/c.txt") is "a/b"; dir("c.txt") is "".
+fun dir(p)
+    let x = _fix(p)
+    let cut = _last_slash(x)
+    if cut == 0
+        return "/"
+    if cut < 0
+        return ""
+    return slice(x, 0, cut)
+
+# ext("notes.txt") is ".txt"; "" when there is none.
+fun ext(p)
+    let b = base(p)
+    let i = len(b) - 1
+    while i > 0
+        if b[i] == "."
+            return slice(b, i, len(b))
+        i = i - 1
+    return ""
+
+fun stem(p) = slice(base(p), 0, len(base(p)) - len(ext(p)))
+
+# normalize: folds "." and "dir/.." away and drops doubled slashes.
+fun normalize(p)
+    let x = _fix(p)
+    let absolute = len(x) > 0 and x[0] == "/"
+    let parts = []
+    let cur = ""
+    for c in x + "/"
+        if c == "/"
+            if cur == ".." and len(parts) > 0 and parts[len(parts) - 1] != ".."
+                pop(parts)
+            else if cur == ".." and absolute
+                cur = ""
+            else if cur != "." and cur != ""
+                append(parts, cur)
+            cur = ""
+        else
+            cur = cur + c
+    let out = ""
+    for i in 0..len(parts)
+        if i > 0
+            out = out + "/"
+        out = out + parts[i]
+    if absolute
+        return "/" + out
+    if out == ""
+        return "."
+    return out

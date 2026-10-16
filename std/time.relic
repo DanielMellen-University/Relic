@@ -3,3 +3,26 @@
 fun now() = host_now()       # seconds since 1970-01-01 UTC
 fun clock() = host_clock()   # steady clock for measuring; only differences mean anything
 fun since(start) = host_clock() - start
+fun sleep(ms) = host_sleep(ms)
+
+# Frame timer: tick(t) once per frame gives seconds since the last tick and
+# keeps t.fps up to date (averaged over about one second).
+fun timer() = {last: host_clock(), fps: 0, frames: 0, window: 0}
+
+fun tick(t)
+    let now = host_clock()
+    let dt = now - t.last
+    t.last = now
+    t.frames = t.frames + 1
+    t.window = t.window + dt
+    if t.window >= 1
+        t.fps = t.frames / t.window
+        t.frames = 0
+        t.window = 0
+    return dt
+
+# limit(t, fps): sleeps so frames run no faster than fps.
+fun limit(t, fps)
+    let left = 1 / fps - (host_clock() - t.last)
+    if left > 0
+        host_sleep(left * 1000)

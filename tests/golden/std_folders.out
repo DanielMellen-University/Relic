@@ -1,0 +1,6 @@
+["a.txt", "b.txt", "sub"] true false
+5
+["c.txt", "deep"] hello
+host_remove(): cannot remove std_folders.tmpdir/sub
+false
+host_list_dir(): cannot list no_such_folder

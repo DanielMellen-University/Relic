@@ -36,3 +36,29 @@ fun load_image(path) = host_gfx_image_load(path)
 fun image(id, x, y) = host_gfx_image(id, x, y)
 fun image_width(id) = host_gfx_image_width(id)
 fun image_height(id) = host_gfx_image_height(id)
+
+# Events, oldest first: next_event() gives a map or none. Each has a type:
+#   key_down, key_up   key, repeat, shift, ctrl, alt
+#   text               text (typed characters, UTF-8; use this for text boxes)
+#   mouse_down, mouse_up  button (1 left, 2 middle, 3 right), x, y, clicks
+#   mouse_move         x, y, dx, dy
+#   wheel              dx, dy (dy > 0 scrolls up)
+#   resize             width, height (the window is resizable)
+#   quit
+fun next_event() = host_gfx_next_event()
+fun size() = host_gfx_size()      # [width, height] of the drawing area
+# simulate(kind, a, b) queues a fake event: "key" name, "text" s, "click" x y,
+# "wheel" dx dy, "resize" w h. For tests and demos; pass none for unused args.
+fun simulate(kind, a, b) = host_gfx_simulate(kind, a, b)
+
+# More drawing.
+fun line(x1, y1, x2, y2, r, g, b) = host_gfx_line(x1, y1, x2, y2, r, g, b)
+fun outline(x, y, w, h, r, g, b) = host_gfx_outline(x, y, w, h, r, g, b)
+fun rect_alpha(x, y, w, h, r, g, b, a) = host_gfx_rect_alpha(x, y, w, h, r, g, b, a)
+fun clip(x, y, w, h) = host_gfx_clip(x, y, w, h)   # draw only inside this rect
+fun unclip() = host_gfx_clip(0, 0, 0, 0)
+
+# Clipboard text. The system clipboard while a window is open; works without
+# a window too (kept inside this program).
+fun copy(s) = host_clipboard_set(s)
+fun clipboard() = host_clipboard_get()

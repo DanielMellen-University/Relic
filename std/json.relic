@@ -1,0 +1,240 @@
+# std/json: JSON text to Relic values and back. Objects become maps (key
+# order kept), arrays lists, null none. Bad input fails with the position.
+
+fun _hex(n, width)
+    let digits = "0123456789abcdef"
+    let out = ""
+    for i in 0..width
+        out = digits[n % 16] + out
+        n = int(n / 16)
+    return out
+
+fun _quote(s)
+    let out = "\""
+    for c in s
+        let k = ord(c)
+        if c == "\""
+            out = out + "\\\""
+        else if c == "\\"
+            out = out + "\\\\"
+        else if c == "\n"
+            out = out + "\\n"
+        else if c == "\t"
+            out = out + "\\t"
+        else if k == 13
+            out = out + "\\r"
+        else if k < 32
+            out = out + "\\u" + _hex(k, 4)
+        else
+            out = out + c
+    return out + "\""
+
+fun _enc(v, indent, depth)
+    let t = type(v)
+    if t == "none"
+        return "null"
+    if t == "bool" or t == "int" or t == "float"
+        return str(v)
+    if t == "string"
+        return _quote(v)
+    if t != "list" and t != "map"
+        fail("json: cannot encode a " + t)
+    let open = "["
+    let close = "]"
+    let items = v
+    if t == "map"
+        open = "{{"
+        close = "}}"
+        items = keys(v)
+    if len(items) == 0
+        return open + close
+    let pad = ""
+    let end_pad = ""
+    let sep = ","
+    if indent != ""
+        sep = ","
+        pad = "\n"
+        end_pad = "\n"
+        for i in 0..depth + 1
+            pad = pad + indent
+        for i in 0..depth
+            end_pad = end_pad + indent
+    let out = open
+    let first = true
+    for item in items
+        if not first
+            out = out + sep
+        first = false
+        out = out + pad
+        if t == "map"
+            out = out + _quote(item) + ":"
+            if indent != ""
+                out = out + " "
+            out = out + _enc(v[item], indent, depth + 1)
+        else
+            out = out + _enc(item, indent, depth + 1)
+    return out + end_pad + close
+
+fun encode(v) = _enc(v, "", 0)
+fun pretty(v) = _enc(v, "  ", 0)
+
+# ---- decoding ----
+
+fun _bad(p, what) = fail("json: {what} at {p.i}")
+
+fun _ws(p)
+    while p.i < p.n
+        let c = p.s[p.i]
+        if c == " " or c == "\n" or c == "\t" or ord(c) == 13
+            p.i = p.i + 1
+        else
+            return none
+
+fun _lit(p, word, value)
+    if slice(p.s, p.i, p.i + len(word)) != word
+        _bad(p, "unexpected text")
+    p.i = p.i + len(word)
+    return value
+
+fun _hexval(p)
+    let v = 0
+    for c in slice(p.s, p.i, p.i + 4)
+        let k = ord(c)
+        if k >= 48 and k <= 57
+            v = v * 16 + k - 48
+        else if k >= 97 and k <= 102
+            v = v * 16 + k - 87
+        else if k >= 65 and k <= 70
+            v = v * 16 + k - 55
+        else
+            _bad(p, "bad \\u escape")
+    if p.i + 4 > p.n
+        _bad(p, "bad \\u escape")
+    p.i = p.i + 4
+    return v
+
+fun _str(p)
+    p.i = p.i + 1
+    let out = ""
+    let start = p.i
+    while true
+        if p.i >= p.n
+            _bad(p, "unterminated string")
+        let c = p.s[p.i]
+        if c == "\""
+            out = out + slice(p.s, start, p.i)
+            p.i = p.i + 1
+            return out
+        if c == "\\"
+            out = out + slice(p.s, start, p.i)
+            p.i = p.i + 1
+            if p.i >= p.n
+                _bad(p, "unterminated string")
+            let e = p.s[p.i]
+            p.i = p.i + 1
+            if e == "n"
+                out = out + "\n"
+            else if e == "t"
+                out = out + "\t"
+            else if e == "r"
+                out = out + chr(13)
+            else if e == "b"
+                out = out + chr(8)
+            else if e == "f"
+                out = out + chr(12)
+            else if e == "u"
+                let k = _hexval(p)
+                if k >= 55296 and k <= 56319 and slice(p.s, p.i, p.i + 2) == "\\u"
+                    p.i = p.i + 2
+                    let lo = _hexval(p)
+                    k = 65536 + (k - 55296) * 1024 + (lo - 56320)
+                if k >= 55296 and k <= 57343
+                    k = 65533
+                out = out + chr(k)
+            else if e == "\"" or e == "\\" or e == "/"
+                out = out + e
+            else
+                _bad(p, "bad escape")
+            start = p.i
+        else
+            p.i = p.i + 1
+
+fun _num(p)
+    let start = p.i
+    while p.i < p.n and _has("+-0123456789.eE", p.s[p.i])
+        p.i = p.i + 1
+    try
+        return num(slice(p.s, start, p.i))
+    catch err
+        _bad(p, "bad number")
+
+fun _has(set, c)
+    for x in set
+        if x == c
+            return true
+    return false
+
+fun _val(p)
+    _ws(p)
+    if p.i >= p.n
+        _bad(p, "unexpected end")
+    let c = p.s[p.i]
+    if c == "{{"
+        let m = {}
+        p.i = p.i + 1
+        _ws(p)
+        if p.i < p.n and p.s[p.i] == "}}"
+            p.i = p.i + 1
+            return m
+        while true
+            _ws(p)
+            if p.i >= p.n or p.s[p.i] != "\""
+                _bad(p, "expected a key")
+            let k = _str(p)
+            _ws(p)
+            if p.i >= p.n or p.s[p.i] != ":"
+                _bad(p, "expected ':'")
+            p.i = p.i + 1
+            m[k] = _val(p)
+            _ws(p)
+            if p.i < p.n and p.s[p.i] == ","
+                p.i = p.i + 1
+            else if p.i < p.n and p.s[p.i] == "}}"
+                p.i = p.i + 1
+                return m
+            else
+                _bad(p, "expected ',' or '}}'")
+    if c == "["
+        let l = []
+        p.i = p.i + 1
+        _ws(p)
+        if p.i < p.n and p.s[p.i] == "]"
+            p.i = p.i + 1
+            return l
+        while true
+            append(l, _val(p))
+            _ws(p)
+            if p.i < p.n and p.s[p.i] == ","
+                p.i = p.i + 1
+            else if p.i < p.n and p.s[p.i] == "]"
+                p.i = p.i + 1
+                return l
+            else
+                _bad(p, "expected ',' or ']'")
+    if c == "\""
+        return _str(p)
+    if c == "t"
+        return _lit(p, "true", true)
+    if c == "f"
+        return _lit(p, "false", false)
+    if c == "n"
+        return _lit(p, "null", none)
+    return _num(p)
+
+fun decode(text)
+    let p = {s: text, i: 0, n: len(text)}
+    let v = _val(p)
+    _ws(p)
+    if p.i != p.n
+        _bad(p, "extra text")
+    return v

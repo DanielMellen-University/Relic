@@ -1,0 +1,6 @@
+# std/os: the running process.
+
+fun args() = host_args()             # words after the file name
+fun env(name) = host_env(name)    # a string, or none when not set
+fun cwd() = host_cwd()            # current folder, with "/" separators
+fun exit(code) = host_exit(code)  # stops the program now with this exit code

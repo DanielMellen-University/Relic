@@ -11,3 +11,18 @@ fun lines(path)
     if len(parts) > 0 and parts[len(parts) - 1] == ""
         pop(parts)
     return parts
+
+# Folders. list gives names (not full paths), sorted.
+fun list(path) = host_list_dir(path)
+fun is_dir(path) = host_is_dir(path)
+fun make_dir(path) = host_make_dir(path)       # makes parent folders too
+fun remove(path) = host_remove(path)           # a file or an empty folder
+fun rename(from, to) = host_rename(from, to)
+fun size(path) = host_file_size(path)          # in bytes
+
+# remove_tree(path): a folder and everything in it, or one file.
+fun remove_tree(path)
+    if host_is_dir(path)
+        for name in host_list_dir(path)
+            remove_tree(path + "/" + name)
+    host_remove(path)

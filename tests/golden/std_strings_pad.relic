@@ -1,0 +1,2 @@
+use std/strings
+print(strings.pad_left("7", 3, "0"), strings.pad_right("ab", 4, ".") + "|", strings.pad_left("long", 2, " "))

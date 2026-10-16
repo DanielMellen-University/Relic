@@ -80,3 +80,16 @@ fun repeat(s, n)
     for i in 0..n
         out = out + s
     return out
+
+# pad_left("7", 3, "0") is "007"; pad_right pads on the right.
+fun pad_left(s, width, fill)
+    let out = s
+    while len(out) < width
+        out = fill + out
+    return out
+
+fun pad_right(s, width, fill)
+    let out = s
+    while len(out) < width
+        out = out + fill
+    return out

@@ -1,0 +1,19 @@
+{"name":"Notes","size":3,"ratio":0.5,"tags":["a","b"],"open":true,"parent":null,"note":"say \"hi\"\n\ttab"}
+Notes 3 0.5 ["a", "b"] true none
+true ["name", "size", "ratio", "tags", "open", "parent", "note"]
+{
+  "a": [
+    1,
+    {
+      "b": []
+    }
+  ],
+  "c": {}
+}
+[1, -250.0, "é😀", {}]
+int float
+json: unexpected end at 3
+json: expected ':' at 5
+json: unexpected text at 0
+json: unterminated string at 4
+json: extra text at 4

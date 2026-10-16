@@ -1,0 +1,21 @@
+use std/files
+let d = "std_folders.tmpdir"
+if files.exists(d) or files.is_dir(d)
+    files.remove_tree(d)
+files.make_dir(d + "/sub/deep")
+files.write(d + "/b.txt", "hello")
+files.write(d + "/a.txt", "")
+print(files.list(d), files.is_dir(d + "/sub"), files.is_dir(d + "/b.txt"))
+print(files.size(d + "/b.txt"))
+files.rename(d + "/b.txt", d + "/sub/c.txt")
+print(files.list(d + "/sub"), files.read(d + "/sub/c.txt"))
+try
+    files.remove(d + "/sub")
+catch err
+    print(err.message)
+files.remove_tree(d)
+print(files.is_dir(d))
+try
+    files.list("no_such_folder")
+catch err
+    print(err.message)
