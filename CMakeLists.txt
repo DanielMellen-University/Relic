@@ -38,6 +38,19 @@ if(RELIC_SDL)
     target_include_directories(relic_core PRIVATE ${SDL2_INCLUDE_DIRS})
     target_link_libraries(relic_core PUBLIC ${SDL2_LIBRARIES})
   endif()
+  # Optional extras: PNG (and JPG) images via SDL2_image, TrueType text via SDL2_ttf.
+  find_package(SDL2_image CONFIG QUIET)
+  if(TARGET SDL2_image::SDL2_image)
+    target_compile_definitions(relic_core PRIVATE RELIC_HAVE_SDL_IMAGE)
+    target_link_libraries(relic_core PUBLIC SDL2_image::SDL2_image)
+    message(STATUS "Relic graphics: PNG images on (SDL2_image)")
+  endif()
+  find_package(SDL2_ttf CONFIG QUIET)
+  if(TARGET SDL2_ttf::SDL2_ttf)
+    target_compile_definitions(relic_core PRIVATE RELIC_HAVE_SDL_TTF)
+    target_link_libraries(relic_core PUBLIC SDL2_ttf::SDL2_ttf)
+    message(STATUS "Relic graphics: TrueType fonts on (SDL2_ttf)")
+  endif()
 endif()
 target_compile_definitions(relic_core PRIVATE RELIC_STD_DIR="${CMAKE_SOURCE_DIR}/std/")
 
@@ -70,6 +83,18 @@ if(RELIC_SDL)
   add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
   set_tests_properties(gfx_smoke PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nint false\ndone")
+  if(TARGET SDL2_image::SDL2_image)
+    add_test(NAME gfx_png COMMAND relic gfx_png.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
+    set_tests_properties(gfx_png PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+      PASS_REGULAR_EXPRESSION "^true\n5 4\n")
+  endif()
+  find_file(RELIC_TEST_FONT NAMES DejaVuSans.ttf
+    PATHS /usr/share/fonts/truetype/dejavu /usr/share/fonts/TTF /Library/Fonts C:/Windows/Fonts NO_DEFAULT_PATH)
+  if(TARGET SDL2_ttf::SDL2_ttf AND RELIC_TEST_FONT)
+    add_test(NAME gfx_ttf COMMAND relic gfx_ttf.relic ${RELIC_TEST_FONT} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
+    set_tests_properties(gfx_ttf PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+      PASS_REGULAR_EXPRESSION "^true\nwide true\ntall true\ndone")
+  endif()
 endif()
 
 add_test(NAME selfhost_lexer

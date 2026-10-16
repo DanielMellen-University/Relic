@@ -17,7 +17,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
-| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 and 2: drawing, input, text, BMP images) |
+| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 to 3: drawing, input, text, BMP and PNG images, TrueType fonts) |
 | M12 | Apps and IDE | M11 | not started |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.

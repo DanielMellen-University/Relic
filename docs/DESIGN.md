@@ -294,12 +294,14 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 - Optional at build time: `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2 dev files, e.g. `apt install libsdl2-dev`, `brew install sdl2`, or vcpkg `sdl2` on Windows). The default build and CI have no SDL.
 - `use std/graphics` gives `available()`, `open(w, h, title)`, `close()`, `clear(r, g, b)`, `rect(x, y, w, h, r, g, b)`, `pixel(x, y, r, g, b)`, `present()`, `quit_requested()` and `wait(ms)`. One window at a time; colors are 0 to 255.
 - Input: `key_down(name)`, `next_key()` (next pressed key or `none`), `mouse_x()`, `mouse_y()`, `mouse_down(button)` (1 left, 2 middle, 3 right). Key names are lowercase SDL names (`"a"`, `"space"`, `"left"`, `"escape"`).
-- Text: `text(x, y, s, r, g, b)` and `text_scaled(x, y, s, scale, r, g, b)` in a built-in 8x12 ASCII font (generated once from DejaVu Sans Mono by `tools/gen_font.py`; no SDL_ttf).
-- Images: `load_image(path)` gives an id; `image(id, x, y)`, `image_width(id)`, `image_height(id)`. BMP only for now (no SDL_image).
+- Text: `text(x, y, s, r, g, b)` and `text_scaled(x, y, s, scale, r, g, b)` in a built-in 8x12 ASCII font (generated once from DejaVu Sans Mono by `tools/gen_font.py`). This stays the default.
+- TrueType (optional, SDL2_ttf): `load_font(path, size)` gives an id; `font_text(font, x, y, s, r, g, b)` draws UTF-8 text; `font_size(font, s)` gives `[w, h]`. `has_fonts()` says if it is built in.
+- Images: `load_image(path)` gives an id; `image(id, x, y)`, `image_width(id)`, `image_height(id)`. BMP always. PNG and JPG when built with SDL2_image; `has_png()` says if it is.
+- SDL2_image and SDL2_ttf are found automatically when `RELIC_SDL=ON` (`apt install libsdl2-image-dev libsdl2-ttf-dev`). Without them, BMP and the built-in font still work.
 - Without SDL, `available()` is `false` and every other call stops with a message saying how to rebuild.
 - Host side: `host_gfx_*` built-ins in `src/builtins/graphics.cpp`.
 - Try it: `build-sdl/relic examples/hello_window.relic` opens a window for about two seconds.
-- **Open:** PNG images, TrueType fonts, more than one window.
+- **Open:** more than one window.
 
 ## Architecture
 

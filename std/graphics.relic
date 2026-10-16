@@ -22,7 +22,16 @@ fun mouse_down(button) = host_gfx_mouse_down(button)  # 1 left, 2 middle, 3 righ
 fun text(x, y, s, r, g, b) = host_gfx_text(x, y, s, 1, r, g, b)
 fun text_scaled(x, y, s, scale, r, g, b) = host_gfx_text(x, y, s, scale, r, g, b)
 
-# Images: BMP files only for now. load returns an id; open a window first.
+# Fonts: the built-in font above is the default. With SDL2_ttf, load a .ttf
+# at a pixel size and draw with it. font_size gives [width, height] of a string.
+fun has_fonts() = host_gfx_has_fonts()
+fun load_font(path, size) = host_gfx_font_load(path, size)
+fun font_text(font, x, y, s, r, g, b) = host_gfx_font_text(font, x, y, s, r, g, b)
+fun font_size(font, s) = host_gfx_font_size(font, s)
+
+# Images: BMP always; PNG and JPG too when built with SDL2_image (has_png()).
+# load returns an id; open a window first.
+fun has_png() = host_gfx_has_png()
 fun load_image(path) = host_gfx_image_load(path)
 fun image(id, x, y) = host_gfx_image(id, x, y)
 fun image_width(id) = host_gfx_image_width(id)

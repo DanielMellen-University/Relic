@@ -1,0 +1,9 @@
+# SDL_image smoke test (ctest gfx_png): a PNG loads like a BMP.
+use std/graphics
+print(graphics.has_png())
+graphics.open(32, 32, "png")
+let img = graphics.load_image("tiny.png")
+print(graphics.image_width(img), graphics.image_height(img))
+graphics.image(img, 1, 1)
+graphics.present()
+graphics.close()

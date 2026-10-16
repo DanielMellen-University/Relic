@@ -12,6 +12,12 @@
 #ifdef RELIC_HAVE_SDL
 #include <SDL.h>
 #include "builtins/font8x12.inc"
+#ifdef RELIC_HAVE_SDL_IMAGE
+#include <SDL_image.h>
+#endif
+#ifdef RELIC_HAVE_SDL_TTF
+#include <SDL_ttf.h>
+#endif
 #endif
 
 namespace relic {
@@ -42,6 +48,11 @@ bool g_quit = false;
 std::deque<std::string> g_keys;      // keys pressed since the last next_key()
 std::vector<SDL_Texture*> g_images;  // index = image id; freed on close
 std::vector<std::pair<int, int>> g_sizes;
+#ifdef RELIC_HAVE_SDL_TTF
+std::vector<TTF_Font*> g_fonts;  // index = font id; freed on close
+
+TTF_Font* font_of(const Value& v);
+#endif
 
 std::string lower(std::string s) {
     for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
@@ -71,6 +82,14 @@ int image_id(const Value& v) {
     return id;
 }
 
+#ifdef RELIC_HAVE_SDL_TTF
+TTF_Font* font_of(const Value& v) {
+    int id = whole(v, "font");
+    if (id < 0 || id >= static_cast<int>(g_fonts.size()) || !g_fonts[id]) throw std::string("not an open font");
+    return g_fonts[id];
+}
+#endif
+
 SDL_Renderer* need_window() {
     if (!g_renderer) throw std::string("no window is open; call open first");
     return g_renderer;
@@ -81,6 +100,11 @@ void close_window() {
         if (t) SDL_DestroyTexture(t);
     g_images.clear();
     g_sizes.clear();
+#ifdef RELIC_HAVE_SDL_TTF
+    for (TTF_Font* f : g_fonts)
+        if (f) TTF_CloseFont(f);
+    g_fonts.clear();
+#endif
     g_keys.clear();
     g_quit = false;
     if (g_renderer) SDL_DestroyRenderer(g_renderer);
@@ -219,7 +243,17 @@ void add_graphics_builtins(const AddBuiltin& add) {
     add("host_gfx_image_load", 1, [](std::vector<Value>& a) {
         SDL_Renderer* r = need_window();
         std::string path = str(a[0], "path");
+#ifdef RELIC_HAVE_SDL_IMAGE
+        SDL_Surface* surf = IMG_Load(path.c_str());
+#else
+        auto ends = [&](const char* ext) {
+            std::string e = ext;
+            return path.size() >= e.size() && lower(path.substr(path.size() - e.size())) == e;
+        };
+        if (!ends(".bmp"))
+            throw std::string("cannot load image ") + path + ": only BMP is built in; rebuild with SDL2_image installed for PNG";
         SDL_Surface* surf = SDL_LoadBMP(path.c_str());
+#endif
         if (!surf) throw std::string("cannot load image ") + path + ": " + SDL_GetError();
         SDL_Texture* t = SDL_CreateTextureFromSurface(r, surf);
         int w = surf->w, h = surf->h;
@@ -244,6 +278,70 @@ void add_graphics_builtins(const AddBuiltin& add) {
         need_window();
         return Value(static_cast<long long>(g_sizes[image_id(a[0])].second));
     });
+    add("host_gfx_has_png", 0, [](std::vector<Value>&) {
+#ifdef RELIC_HAVE_SDL_IMAGE
+        return Value(true);
+#else
+        return Value(false);
+#endif
+    });
+    add("host_gfx_has_fonts", 0, [](std::vector<Value>&) {
+#ifdef RELIC_HAVE_SDL_TTF
+        return Value(true);
+#else
+        return Value(false);
+#endif
+    });
+#ifdef RELIC_HAVE_SDL_TTF
+    // TrueType text. load gives a font id; text is drawn blended (smooth edges).
+    add("host_gfx_font_load", 2, [](std::vector<Value>& a) {
+        need_window();
+        std::string path = str(a[0], "path");
+        int size = whole(a[1], "size");
+        if (size < 1) throw std::string("size must be 1 or more");
+        if (!TTF_WasInit() && TTF_Init() != 0) throw std::string("cannot start fonts: ") + TTF_GetError();
+        TTF_Font* f = TTF_OpenFont(path.c_str(), size);
+        if (!f) throw std::string("cannot load font ") + path + ": " + TTF_GetError();
+        g_fonts.push_back(f);
+        return Value(static_cast<long long>(g_fonts.size() - 1));
+    });
+    add("host_gfx_font_text", 7, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        TTF_Font* f = font_of(a[0]);
+        int x = whole(a[1], "x"), y = whole(a[2], "y");
+        std::string t = str(a[3], "text");
+        SDL_Color c{static_cast<Uint8>(channel(a[4], "red")), static_cast<Uint8>(channel(a[5], "green")),
+                    static_cast<Uint8>(channel(a[6], "blue")), 255};
+        if (t.empty()) return Value();
+        SDL_Surface* s = TTF_RenderUTF8_Blended(f, t.c_str(), c);
+        if (!s) throw std::string("cannot draw text: ") + TTF_GetError();
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(r, s);
+        SDL_Rect dst{x, y, s->w, s->h};
+        SDL_FreeSurface(s);
+        if (tex) {
+            SDL_RenderCopy(r, tex, nullptr, &dst);
+            SDL_DestroyTexture(tex);
+        }
+        return Value();
+    });
+    add("host_gfx_font_size", 2, [](std::vector<Value>& a) {
+        need_window();
+        TTF_Font* f = font_of(a[0]);
+        std::string t = str(a[1], "text");
+        int w = 0, h = TTF_FontHeight(f);
+        if (!t.empty() && TTF_SizeUTF8(f, t.c_str(), &w, &h) != 0) throw std::string("cannot measure text: ") + TTF_GetError();
+        auto l = std::make_shared<List>();
+        l->push_back(Value(static_cast<long long>(w)));
+        l->push_back(Value(static_cast<long long>(h)));
+        return Value(l);
+    });
+#else
+    const std::pair<const char*, int> no_fonts[] = {{"host_gfx_font_load", 2}, {"host_gfx_font_text", 7}, {"host_gfx_font_size", 2}};
+    for (const auto& s : no_fonts)
+        add(s.first, s.second, [](std::vector<Value>&) -> Value {
+            throw std::string("TrueType fonts are not built in; rebuild with SDL2_ttf installed");
+        });
+#endif
     add("host_gfx_wait", 1, [](std::vector<Value>& a) {
         int ms = whole(a[0], "milliseconds");
         if (ms > 0) SDL_Delay(static_cast<Uint32>(ms));
@@ -251,12 +349,15 @@ void add_graphics_builtins(const AddBuiltin& add) {
     });
 #else
     add("host_gfx_available", 0, [](std::vector<Value>&) { return Value(false); });
+    add("host_gfx_has_png", 0, [](std::vector<Value>&) { return Value(false); });
+    add("host_gfx_has_fonts", 0, [](std::vector<Value>&) { return Value(false); });
     const std::pair<const char*, int> stubs[] = {
         {"host_gfx_open", 3}, {"host_gfx_close", 0}, {"host_gfx_clear", 3}, {"host_gfx_rect", 7},
         {"host_gfx_pixel", 5}, {"host_gfx_present", 0}, {"host_gfx_quit_requested", 0}, {"host_gfx_wait", 1},
         {"host_gfx_key_down", 1}, {"host_gfx_next_key", 0}, {"host_gfx_mouse_x", 0}, {"host_gfx_mouse_y", 0},
         {"host_gfx_mouse_down", 1}, {"host_gfx_text", 7}, {"host_gfx_image_load", 1}, {"host_gfx_image", 3},
         {"host_gfx_image_width", 1}, {"host_gfx_image_height", 1},
+        {"host_gfx_font_load", 2}, {"host_gfx_font_text", 7}, {"host_gfx_font_size", 2},
     };
     for (const auto& s : stubs) add(s.first, s.second, [](std::vector<Value>&) -> Value { missing(); });
     (void)channel;
