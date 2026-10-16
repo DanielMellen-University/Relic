@@ -1,0 +1,6 @@
+check_forward.relic:2:7: warning: 'greet' is used before it is defined
+    print(greet("Ada"))
+          ^
+check_forward.relic:5:9: warning: 'later' is used before it is defined
+    let n = later()
+            ^

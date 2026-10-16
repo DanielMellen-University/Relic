@@ -4,3 +4,4 @@
 files.remove(): cannot remove std_folders.tmpdir/sub
 false
 files.list(): cannot list no_such_folder
+missing_ok

@@ -89,7 +89,7 @@ fun greet(name as string) as string = "hello " + name
 
 ## Control flow
 
-- `if` / `else if` / `else`
+- `if` / `else if` / `else`. Always a block on the next indented lines. There is no one-line `if` or ternary (`x if c else y`).
 - `while cond`
 - `for item in list` and `for i in 0..10`. **Default:** `for` is in 1.0, since it replaces most C-style counting loops.
 - `break`, `next` (**Default** over `continue`), `return`
@@ -101,6 +101,7 @@ fun greet(name as string) as string = "hello " + name
 - **Default:** closures are supported.
 - **Default:** a short form for one-line functions: `fun double(x) = x * 2`.
 - **Default:** a function with no `return` gives `none`.
+- A name exists only **after** its `fun` or `let` line has run. A top-level call above the definition is an error at run time: `'greet' is not defined`. Inside another function it is fine: by the time that function runs, the later `fun` has already run. `relic check` warns on top-level uses before the definition.
 
 ## Modules
 
@@ -114,6 +115,7 @@ print(mathx.square(4))
 
 - `use a/b/name` loads `a/b/name.relic`, relative to the folder of the file that holds the `use`. Inside the REPL it is relative to the current directory.
 - The last part of the path becomes the name in the current scope. `use lib/mathx as m` binds it as `m` instead.
+- `use` can sit at the top of a file or inside a block/function. The name is bound in that scope only (a `use` inside `fun f()` is not visible outside `f`).
 - A module runs once. Using it again, from anywhere, gives the same module.
 - Every top-level `let` and `fun` in the module is reachable as `name.thing`, except private names.
 - Private names: a top-level name that starts with `_` stays inside its file. `mathx._cache` from another file is an error: `'_cache' is private to module 'mathx'`. Inside the file, `_cache` works as usual. Map keys that start with `_` are normal keys.
@@ -221,18 +223,22 @@ area.relic:3:20: error: 'hieght' is not defined (did you mean 'height'?)
 These are **Default** behaviors the interpreter now follows.
 
 - Conditions and `and` / `or` / `not` need real bools. `if 1` is an error, so there is no truthiness to learn.
-- `and` and `or` stop early: `false and x` never looks at `x`.
+- `and` and `or` stop early and return a bool: `false and x` never looks at `x` and is `false`; `true or x` never looks at `x` and is `true`. Both sides, when evaluated, must be bools.
 - `+` adds numbers, joins strings and joins lists. Mixing types is an error, so use `str(x)` or interpolation.
-- `%` takes the sign of the right side: `-7 % 3` is `2`.
+- `%` takes the sign of the right side: `-7 % 3` is `2`. `/` always gives a float (see [Numbers](#numbers)).
 - `a..b` makes a list of ints from `a` up to `b - 1`. Both ends must be whole numbers.
-- Lists and maps are shared, not copied: `let ys = xs` points at the same list.
+- Numbers, bools, `none` and strings copy on assignment. Strings are immutable: `s[0] = "x"` is an error; build a new string instead.
+- Lists, maps, functions and modules are shared by reference: `let ys = xs` then `append(ys, 1)` changes `xs` too. Use `lists.copy(xs)` or `slice(xs, 0, len(xs))` for a shallow copy.
+- Field writes go through any path to a map: `box.x = 1`, `box["x"] = 1`, and `wins[i].x = 1` all change the same map.
+- `==` / `!=` compare by value for lists and maps (nested contents), and by contents for strings. Two functions are equal only if they are the same function value. `none` compares equal only to `none`, so `let drag = none` then `if drag != none` is the usual optional pattern.
 - `for` loops over a copy of the list, so changing the list inside the loop is safe. It also loops over the characters of a string and the keys of a map, in insertion order.
-- Maps keep insertion order. Reading a missing key is an error; `"k" in map` checks first.
+- Maps keep insertion order (`keys`, `for`, `maps.values`, `maps.items`). Reading a missing key is an error; `"k" in map` checks first.
 - List indexes start at 0 and must be in range. Negative indexes are an error.
-- `let` inside a block makes a new name for that block and hides any outer one. Plain `x = ...` changes the nearest existing `x`.
+- `let` inside a block makes a new name for that block and hides any outer one. Plain `x = ...` changes the nearest existing `x`. Closures capture the scope: a function defined inside a block still sees those names after the block ends.
 - A function with no `return` gives `none`. `return`, `break` and `next` in the wrong place are errors.
 - Calls deeper than 800 stop with "too much recursion".
 - Output printed before a runtime error is kept.
+- Error shape: `file:line:col: error: message`, then the source line and a `^` under the column (see [How errors print](#how-errors-print)). `catch err` gives `{message, line, col}`.
 
 ### Built-ins
 

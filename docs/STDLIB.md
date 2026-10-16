@@ -78,12 +78,12 @@ Paths are relative to where `relic` runs. Caught errors use the std name
 | `write(path, text)` | none | `cannot write {path}` |
 | `append_text(path, text)` | none | `cannot write {path}` |
 | `lines(path)` | list of strings | same as `read`; strips a trailing empty line |
-| `exists(path)` | bool | never fails |
+| `exists(path)` | bool | never fails; true for a file **or** a folder |
 | `list(path)` | list of names | sorted; `cannot list {path}` |
 | `is_dir(path)` | bool | never fails (`false` if missing) |
 | `make_dir(path)` | none | parents too; **ok if it already exists**; `cannot make folder {path}` |
-| `remove(path)` | none | file or empty folder; `cannot remove {path}` |
-| `remove_tree(path)` | none | folder and contents, or one file |
+| `remove(path)` | none | file or **empty** folder; fails if missing, or if the folder still has entries: `cannot remove {path}` |
+| `remove_tree(path)` | none | folder and contents, or one file; **missing path is a no-op** |
 | `rename(from, to)` | none | `cannot rename {from}` |
 | `size(path)` | int (bytes) | `cannot get the size of {path}` |
 
@@ -200,13 +200,25 @@ Colors are 0 to 255 per channel. One window at a time.
 | `canvas(w, h)` | ints > 0 | image id | paint target |
 | `draw_to(c)` | id or `none` | none | `none` returns drawing to the window |
 
+While `draw_to(c)` is active, every draw call (including `clear`) goes to that
+canvas only, not the window. `clear` fills the whole canvas.
+
+```
+let c = graphics.canvas(64, 64)
+graphics.draw_to(c)
+graphics.clear(20, 20, 40)
+graphics.rect(8, 8, 48, 48, 200, 80, 40)
+graphics.draw_to(none)
+graphics.image(c, 10, 10)   # stamp the canvas onto the window
+```
+
 ### Polling input
 
 | Call | Args | Returns | Errors |
 |---|---|---|---|
 | `key_down(name)` | string | bool | unknown key name |
 | `next_key()` | | string or `none` | next pressed key since last call |
-| `mouse_x()` / `mouse_y()` | | int | |
+| `mouse_x()` / `mouse_y()` | | int | **window pixel** coords (0,0 is the top-left of the client area) |
 | `mouse_down(button)` | 1 left, 2 middle, 3 right | bool | |
 
 ### Events
@@ -218,8 +230,8 @@ plus the fields below.
 |---|---|
 | `key_down` / `key_up` | `key` (string), `repeat` (bool), `shift` `ctrl` `alt` (bool) |
 | `text` | `text` (UTF-8 string; use this for typing into a box) |
-| `mouse_down` / `mouse_up` | `button` (1/2/3), `x`, `y`, `clicks` |
-| `mouse_move` | `x`, `y`, `dx`, `dy` |
+| `mouse_down` / `mouse_up` | `button` (1/2/3), `x`, `y`, `clicks` (x/y are window pixels) |
+| `mouse_move` | `x`, `y`, `dx`, `dy` (window pixels) |
 | `wheel` | `dx`, `dy` (`dy` > 0 scrolls up) |
 | `resize` | `width`, `height` |
 | `quit` | (no extra fields) |
@@ -235,9 +247,9 @@ for an unused arg.
 
 | kind | a | b | Event(s) queued |
 |---|---|---|---|
-| `"key"` | key name | `none` or mods | one `key_down` |
+| `"key"` | key name | `none` or mods | one `key_down` only (**does not** also queue `text`) |
 | `"keyup"` | key name | `none` or mods | one `key_up` |
-| `"text"` | string | `none` | one `text` |
+| `"text"` | string | `none` | one `text` (use this for typing into a box; pair with `"key"` if you also need the key event) |
 | `"click"` | x | y | `mouse_down` then `mouse_up` (left) |
 | `"mousedown"` | x | y | one `mouse_down` (left, `clicks` 1) |
 | `"mouseup"` | x | y | one `mouse_up` (left, `clicks` 1) |
@@ -252,7 +264,8 @@ key name fails.
 
 ### Key names
 
-Lowercase SDL names. Common ones:
+Any name `SDL_GetKeyFromName` accepts works (case-insensitive). Unknown names
+fail with `unknown key name`. Common ones:
 
 | Name | Key |
 |---|---|
@@ -271,6 +284,7 @@ Lowercase SDL names. Common ones:
 
 `key_down("left")` polls the held state. Event `key` fields use the same
 names. Prefer `text` events for typed characters (shift, layout, Unicode).
+A simulated `"key"` does **not** produce a `text` event; call `simulate("text", ...)` too when testing typing.
 
 ### Clipboard
 

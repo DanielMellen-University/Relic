@@ -21,8 +21,11 @@ fun rename(from, to) = host_rename(from, to)
 fun size(path) = host_file_size(path)          # in bytes
 
 # remove_tree(path): a folder and everything in it, or one file.
+# Missing path is a no-op (like `rm -rf`).
 fun remove_tree(path)
     if host_is_dir(path)
         for name in host_list_dir(path)
             remove_tree(path + "/" + name)
-    host_remove(path)
+        host_remove(path)
+    else if host_file_exists(path)
+        host_remove(path)

@@ -238,8 +238,8 @@ void Interpreter::install_builtins() {
         return Value();
     });
     add("host_file_exists", 1, [str_arg](std::vector<Value>& a) {
-        std::ifstream f(str_arg(a[0], "path"));
-        return Value(static_cast<bool>(f));
+        std::error_code ec;
+        return Value(std::filesystem::exists(std::filesystem::u8path(str_arg(a[0], "path")), ec));
     });
     add("host_clock", 0, [](std::vector<Value>&) {
         using namespace std::chrono;

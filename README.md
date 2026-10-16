@@ -67,12 +67,13 @@ print(box.title, box["version"])
 
 - Math: `+ - * / %`. `%` is the remainder: `10 % 3` is `1`.
 - Numbers: `3` is an `int`, `3.5` and `1e3` are `float`. `/` always gives a float (`6 / 2` is `3.0`); `int(x)` cuts it back.
-- Compare: `== != < <= > >=`. Logic: `and or not`. Membership: `x in list`.
-- Values: ints, floats, strings, `true`, `false`, `none`, lists and maps. Strings are UTF-8: `len("héllo")` is `5`.
-- Conditions must be `true` or `false`. `if 1` is an error.
+- Compare: `== != < <= > >=`. Logic: `and or not` (need real bools; stop early). Membership: `x in list`.
+- Values: ints, floats, strings, `true`, `false`, `none`, lists and maps. Strings are UTF-8 and immutable: `len("héllo")` is `5`. Lists and maps are shared by reference; `==` compares them by value.
+- Conditions must be `true` or `false`. `if 1` is an error. `if` always takes an indented block (no one-line `if`).
+- A `fun` or `let` name exists only after that line has run. Put definitions above the top-level code that calls them (or call them from another function).
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
-- Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
+- Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/math`, `std/files`, `std/paths`, `std/json`, `std/os`, `std/time`, `std/graphics`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself. Full tables: [STDLIB.md](docs/STDLIB.md).
 - Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. App-shaped example: `examples/mini_desktop/`. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The first MONOLITH 2 desktop sketch: `build-sdl/relic shell/desktop.relic`.
 - Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
@@ -99,7 +100,7 @@ catch err
 |---|---|
 | `relic file.relic [args...]` | runs a program on the bytecode VM; `args()` returns the extra words |
 | `relic --tree file.relic` | runs it on the tree-walk interpreter instead |
-| `relic check file.relic...` | finds mistakes without running: syntax errors, names never defined (with a "did you mean"), `break` or `return` in the wrong place. Exit 1 if any |
+| `relic check file.relic...` | finds mistakes without running: syntax errors, names never defined (with a "did you mean"), top-level use before `fun`/`let`, `break` or `return` in the wrong place. Exit 1 if any |
 | `relic` | opens the REPL (runs on the tree-walker) |
 | `relic --tokens file.relic` | prints the tokens |
 | `relic --ast file.relic` | prints the syntax tree |

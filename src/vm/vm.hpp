@@ -18,7 +18,7 @@ void vm_run(const Ast& program, std::ostream& out, const std::string& path);
 std::string vm_disassemble(const Ast& program);
 
 // Backs `relic check`: compiles without running and reports names that are
-// never defined and statements that always fail (like 'break' outside a
+// never defined, top-level use before definition, and statements that always fail (like 'break' outside a
 // loop), one diagnostic each. Gives the count; the text goes to `out`.
 int vm_check(const Ast& program, const std::string& path, std::string& out);
 

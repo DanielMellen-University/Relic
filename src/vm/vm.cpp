@@ -1025,9 +1025,24 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
     struct Item { int line, col; std::string msg; };
     std::vector<Item> items;
     for (const auto& p : prog.protos) {
+        // Top-level names exist only after their `fun` / `let` / `use` line runs.
+        // Track DefineGlobal order in <main> so a call above its definition warns.
+        const bool is_main = p->name == "<main>";
+        std::vector<char> defined_here(is_main ? prog.global_names.size() : 0, 0);
         for (const Instr& in : p->code) {
             if (in.op == Op::Fail && in.at) {
                 items.push_back({in.at->line, in.at->col, p->strings[in.a]});
+            } else if (in.op == Op::DefineGlobal && is_main) {
+                if (in.a >= 0 && static_cast<size_t>(in.a) < defined_here.size())
+                    defined_here[static_cast<size_t>(in.a)] = 1;
+            } else if (in.op == Op::LoadGlobal && in.at && is_main) {
+                const std::string& name = p->strings[in.b];
+                if (in.a >= 0 && static_cast<size_t>(in.a) < defined_here.size()
+                    && !defined_here[static_cast<size_t>(in.a)]
+                    && !builtins.count(name)) {
+                    items.push_back({in.at->line, in.at->col,
+                                     "'" + name + "' is used before it is defined"});
+                }
             } else if (in.op == Op::LoadBuiltin && in.at) {
                 const std::string& name = p->strings[in.a];
                 if (builtins.count(name) || prog.global_index.count(name)) continue;

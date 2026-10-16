@@ -1,0 +1,6 @@
+# Top-level call before the fun runs: relic check should warn.
+print(greet("Ada"))
+fun greet(who)
+    return "hello {who}"
+let n = later()
+fun later() = 1

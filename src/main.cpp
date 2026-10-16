@@ -18,7 +18,7 @@ static bool stdout_is_terminal() { return isatty(1) != 0; }
 
 static void usage() {
     std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
-                 "       relic check file.relic...   (find mistakes without running)\n"
+                 "       relic check file.relic...   (find mistakes without running (incl. use before definition))\n"
                  "       relic            (no file: start the REPL)\n";
 }
 

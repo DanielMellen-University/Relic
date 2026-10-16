@@ -19,3 +19,5 @@ try
     files.list("no_such_folder")
 catch err
     print(err.message)
+files.remove_tree("no_such_tree")
+print("missing_ok")
