@@ -31,6 +31,13 @@ while e != none
 for s in seen
     print(s)
 print(graphics.next_key())
+let c = graphics.canvas(30, 20)
+graphics.draw_to(c)
+graphics.clear(255, 255, 255)
+graphics.rect(1, 1, 4, 4, 255, 0, 0)
+graphics.draw_to(none)
+graphics.image(c, 0, 0)
+print(graphics.image_width(c), graphics.image_height(c))
 graphics.copy("clip")
 print(type(graphics.clipboard()))
 graphics.close()

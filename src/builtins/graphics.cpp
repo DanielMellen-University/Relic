@@ -475,6 +475,25 @@ void add_graphics_builtins(const AddBuiltin& add) {
         SDL_RenderSetClipRect(r, rect.w > 0 && rect.h > 0 ? &rect : nullptr);
         return Value();
     });
+    // Canvas: an image you can draw into, for paint-style apps that keep
+    // what was drawn. draw_to(id) sends drawing there; draw_to(none) back to the window.
+    add("host_gfx_canvas", 2, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        int w = whole(a[0], "width"), h = whole(a[1], "height");
+        if (w <= 0 || h <= 0) throw std::string("width and height must be above 0");
+        SDL_Texture* t = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+        if (!t) throw std::string("cannot make a canvas: ") + SDL_GetError();
+        SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
+        g_images.push_back(t);
+        g_sizes.push_back({w, h});
+        return Value(static_cast<long long>(g_images.size() - 1));
+    });
+    add("host_gfx_draw_to", 1, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        SDL_Texture* t = a[0].is<NoneV>() ? nullptr : g_images[image_id(a[0])];
+        if (SDL_SetRenderTarget(r, t) != 0) throw std::string("cannot draw into that image: ") + SDL_GetError();
+        return Value();
+    });
     add("host_gfx_wait", 1, [](std::vector<Value>& a) {
         int ms = whole(a[0], "milliseconds");
         if (ms > 0) SDL_Delay(static_cast<Uint32>(ms));
@@ -493,6 +512,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         {"host_gfx_font_load", 2}, {"host_gfx_font_text", 7}, {"host_gfx_font_size", 2},
         {"host_gfx_next_event", 0}, {"host_gfx_simulate", 3}, {"host_gfx_size", 0}, {"host_gfx_line", 7},
         {"host_gfx_outline", 7}, {"host_gfx_rect_alpha", 8}, {"host_gfx_clip", 4},
+        {"host_gfx_canvas", 2}, {"host_gfx_draw_to", 1},
     };
     for (const auto& s : stubs) add(s.first, s.second, [](std::vector<Value>&) -> Value { missing(); });
     (void)channel;

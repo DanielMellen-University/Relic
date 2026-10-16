@@ -1,0 +1,46 @@
+# bench/redraw.relic: frame time of a busy desktop redraw on the VM.
+#   SDL_VIDEODRIVER=dummy build-sdl/relic bench/redraw.relic [frames]
+# Draws a taskbar and 6 windows, each with a title and 20 lines of text, with
+# no waiting between frames. A frame must stay under 16.7 ms for 60fps.
+use std/graphics
+use std/time
+
+let frames = 300
+if len(args()) > 0
+    frames = int(args()[0])
+let wins = []
+for i in 0..6
+    let lines = []
+    for j in 0..20
+        append(lines, "line {j} of window {i}: the quick brown fox jumps")
+    append(wins, {x: 20 + i * 40, y: 20 + i * 30, w: 420, h: 300, title: "Window {i}", lines: lines})
+
+fun draw(t)
+    graphics.clear(30, 60, 90)
+    for w in wins
+        graphics.rect(w.x, w.y, w.w, 16, 60, 90, 160)
+        graphics.rect(w.x, w.y + 16, w.w, w.h, 235, 235, 235)
+        graphics.outline(w.x, w.y, w.w, w.h + 16, 0, 0, 0)
+        graphics.text(w.x + 4, w.y + 2, w.title, 255, 255, 255)
+        graphics.clip(w.x, w.y + 16, w.w, w.h)
+        let row = 0
+        for line in w.lines
+            graphics.text(w.x + 6, w.y + 22 + row * 14, line, 20, 20, 20)
+            row = row + 1
+        graphics.unclip()
+    graphics.rect(0, 456, 640, 24, 50, 50, 55)
+    graphics.text(8, 462, "Start  frame {t}", 255, 255, 255)
+    graphics.present()
+
+graphics.open(640, 480, "redraw bench")
+let start = time.clock()
+let logic = 0
+for t in 0..frames
+    let e = graphics.next_event()
+    while e != none
+        e = graphics.next_event()
+    draw(t)
+let total = time.clock() - start
+graphics.close()
+let ms = total * 1000 / frames
+print("frames {frames}, {int(ms * 100) / 100} ms per frame, {int(1000 / ms)} fps max")

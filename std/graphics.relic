@@ -62,3 +62,9 @@ fun unclip() = host_gfx_clip(0, 0, 0, 0)
 # a window too (kept inside this program).
 fun copy(s) = host_clipboard_set(s)
 fun clipboard() = host_clipboard_get()
+
+# Canvas: an image that keeps what is drawn into it (for paint apps).
+# draw_to(c) sends all drawing to canvas c until draw_to(none); then show it
+# with image(c, x, y) like any other image.
+fun canvas(width, height) = host_gfx_canvas(width, height)
+fun draw_to(c) = host_gfx_draw_to(c)
