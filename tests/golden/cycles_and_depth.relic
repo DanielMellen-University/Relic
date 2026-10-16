@@ -1,0 +1,19 @@
+# Lists and maps that hold themselves print with [...] and {...}, and very
+# deep nesting is freed without crashing.
+let m = {a: 1}
+m.self = m
+let l = [m]
+append(l, l)
+print(m, l)
+print("{l}")
+print(l == l, [l] == [l], m == m)
+let deep = []
+for i in 0..50000
+    deep = [deep]
+print(len(deep))
+deep = none
+let wide = {}
+for i in 0..50000
+    wide = {inner: wide}
+wide = 0
+print("freed")

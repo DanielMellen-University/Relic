@@ -17,6 +17,15 @@ std::string snippet(const std::string& path, int line, int col) {
         if (!std::getline(f, text)) return "";
     if (!text.empty() && text.back() == '\r') text.pop_back();
     if (text.find_first_not_of(" \t") == std::string::npos) return "";
+    // Very long lines are cut to a window around the column.
+    if (text.size() > 160) {
+        size_t from = static_cast<size_t>(col) > 80 ? static_cast<size_t>(col) - 80 : 0;
+        while (from > 0 && (static_cast<unsigned char>(text[from]) & 0xC0) == 0x80) --from;
+        size_t to = from + 160;
+        while (to < text.size() && (static_cast<unsigned char>(text[to]) & 0xC0) == 0x80) ++to;
+        text = text.substr(from, to - from);
+        col -= static_cast<int>(from);
+    }
     std::string pad;
     // Columns count bytes; the caret lines up by characters.
     for (size_t i = 0; i + 1 < static_cast<size_t>(col) && i < text.size(); ++i) {

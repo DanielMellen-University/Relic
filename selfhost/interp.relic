@@ -224,17 +224,33 @@ fun show(v)
     return repr(v)
 
 fun repr(v)
+    return repr_in(v, [])
+
+# A list or map that holds itself prints as [...] or {...} where it repeats,
+# like the host, and so does anything nested 1000 deep.
+fun repr_in(v, path)
     let t = type_of(v)
     if t == "string"
         return tokens_fmt.quote(v)
+    if t == "list" or t == "map"
+        let seen = len(path) >= 1000
+        for p in path
+            if host_same(p, v)
+                seen = true
+        if seen
+            if t == "list"
+                return "[...]"
+            return "{{...}}"
+        append(path, v)
     if t == "list"
         let s = "["
         let first = true
         for x in v
             if not first
                 s = s + ", "
-            s = s + repr(x)
+            s = s + repr_in(x, path)
             first = false
+        pop(path)
         return s + "]"
     if t == "map"
         let s = "{{"
@@ -246,8 +262,9 @@ fun repr(v)
                 s = s + k
             else
                 s = s + tokens_fmt.quote(k)
-            s = s + ": " + repr(v[k])
+            s = s + ": " + repr_in(v[k], path)
             first = false
+        pop(path)
         return s + "}}"
     if t == "function"
         return "<fun " + v.name + ">"
@@ -262,6 +279,8 @@ fun equal(a, b)
     if ta != type_of(b)
         return false
     if ta == "list"
+        if host_same(a, b)
+            return true
         if len(a) != len(b)
             return false
         for i in 0..len(a)
@@ -269,6 +288,8 @@ fun equal(a, b)
                 return false
         return true
     if ta == "map"
+        if host_same(a, b)
+            return true
         if len(a) != len(b)
             return false
         for k in a

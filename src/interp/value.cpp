@@ -13,6 +13,47 @@ void trace_value(const Value& v, std::vector<GcObj*>& out) {
     else if (v.is<std::shared_ptr<Function>>()) out.push_back(v.as<std::shared_ptr<Function>>().get());
 }
 
+// A list inside a list inside a list... would free itself one C++ call per
+// level and overflow the stack. Instead each dying container hands children
+// it alone owns to this queue, and the outermost destructor empties it.
+namespace {
+std::vector<Value>* g_dying = nullptr;
+
+bool sole_container(const Value& v) {
+    if (v.is<std::shared_ptr<List>>()) return v.as<std::shared_ptr<List>>().use_count() == 1;
+    if (v.is<std::shared_ptr<Map>>()) return v.as<std::shared_ptr<Map>>().use_count() == 1;
+    return false;
+}
+
+template <class Each>
+void free_flat(Each each) {
+    bool outer = g_dying == nullptr;
+    std::vector<Value> queue;
+    if (outer) g_dying = &queue;
+    each([](Value& v) {
+        if (sole_container(v)) g_dying->push_back(std::move(v));
+    });
+    if (!outer) return;
+    while (!queue.empty()) {
+        Value v = std::move(queue.back());
+        queue.pop_back();
+    }  // each v's destructor may push more onto the queue
+    g_dying = nullptr;
+}
+}  // namespace
+
+List::~List() {
+    free_flat([this](auto keep) {
+        for (Value& v : *this) keep(v);
+    });
+}
+
+Map::~Map() {
+    free_flat([this](auto keep) {
+        for (auto& kv : items) keep(kv.second);
+    });
+}
+
 void List::trace(std::vector<GcObj*>& out) const {
     for (const Value& v : *this) trace_value(v, out);
 }
@@ -101,29 +142,46 @@ std::string show(const Value& v) {
     return repr(v);
 }
 
+// A list or map that holds itself prints as [...] or {...} where it repeats,
+// and so does anything nested deeper than kMaxShowDepth.
+static constexpr size_t kMaxShowDepth = 1000;
+
+static std::string repr_in(const Value& v, std::vector<const void*>& path);
+
 std::string repr(const Value& v) {
+    std::vector<const void*> path;
+    return repr_in(v, path);
+}
+
+static std::string repr_in(const Value& v, std::vector<const void*>& path) {
+    if (v.is<std::shared_ptr<List>>() || v.is<std::shared_ptr<Map>>()) {
+        bool list = v.is<std::shared_ptr<List>>();
+        const void* id = list ? static_cast<const void*>(v.as<std::shared_ptr<List>>().get())
+                              : static_cast<const void*>(v.as<std::shared_ptr<Map>>().get());
+        bool seen = false;
+        for (const void* p : path) seen = seen || p == id;
+        if (seen || path.size() >= kMaxShowDepth) return list ? "[...]" : "{...}";
+        path.push_back(id);
+        struct Pop { std::vector<const void*>& p; ~Pop() { p.pop_back(); } } pop{path};
+        std::string s = list ? "[" : "{";
+        if (list) {
+            const List& l = *v.as<std::shared_ptr<List>>();
+            for (size_t i = 0; i < l.size(); ++i) s += (i ? ", " : "") + repr_in(l[i], path);
+            return s + "]";
+        }
+        const Map& m = *v.as<std::shared_ptr<Map>>();
+        for (size_t i = 0; i < m.keys.size(); ++i) {
+            const std::string& k = m.keys[i];
+            s += (i ? ", " : "") + (is_plain_name(k) ? k : quoted(k)) + ": " + repr_in(m.items.at(k), path);
+        }
+        return s + "}";
+    }
     switch (v.v.index()) {
         case 0: return "none";
         case 1: return v.as<bool>() ? "true" : "false";
         case 2: return float_text(v.as<double>());
         case 3: return std::to_string(v.as<long long>());
         case 4: return quoted(v.as<std::string>());
-        case 5: {
-            std::string s = "[";
-            const List& l = *v.as<std::shared_ptr<List>>();
-            for (size_t i = 0; i < l.size(); ++i) s += (i ? ", " : "") + repr(l[i]);
-            return s + "]";
-        }
-        case 6: {
-            const Map& m = *v.as<std::shared_ptr<Map>>();
-            std::string s = "{";
-            for (size_t i = 0; i < m.keys.size(); ++i) {
-                const std::string& k = m.keys[i];
-                s += (i ? ", " : "") + (is_plain_name(k) ? k : quoted(k)) + ": " +
-                     repr(m.items.at(k));
-            }
-            return s + "}";
-        }
         case 7: return "<fun " + v.as<std::shared_ptr<Function>>()->name + ">";
         case 8: return "<fun " + v.as<std::shared_ptr<Builtin>>()->name + ">";
         default: return "<module " + v.as<std::shared_ptr<Module>>()->name + ">";
@@ -203,7 +261,15 @@ std::string utf8_encode(long cp) {
     return out;
 }
 
-bool equal(const Value& a, const Value& b) {
+// Deeper than this, two structures count as different rather than
+// overflowing the C++ stack.
+static constexpr int kMaxEqualDepth = 10000;
+static bool equal_at(const Value& a, const Value& b, int depth);
+
+bool equal(const Value& a, const Value& b) { return equal_at(a, b, 0); }
+
+static bool equal_at(const Value& a, const Value& b, int depth) {
+    if (depth > kMaxEqualDepth) return false;
     if (is_num(a) && is_num(b)) {
         if (a.is<long long>() && b.is<long long>()) return a.as<long long>() == b.as<long long>();
         return to_num(a) == to_num(b);
@@ -219,7 +285,7 @@ bool equal(const Value& a, const Value& b) {
             if (&x == &y) return true;  // same list (also stops a list that holds itself)
             if (x.size() != y.size()) return false;
             for (size_t i = 0; i < x.size(); ++i)
-                if (!equal(x[i], y[i])) return false;
+                if (!equal_at(x[i], y[i], depth + 1)) return false;
             return true;
         }
         case 6: {
@@ -228,7 +294,7 @@ bool equal(const Value& a, const Value& b) {
             if (&x == &y) return true;
             if (x.keys.size() != y.keys.size()) return false;
             for (const auto& k : x.keys)
-                if (!y.has(k) || !equal(x.items.at(k), y.items.at(k))) return false;
+                if (!y.has(k) || !equal_at(x.items.at(k), y.items.at(k), depth + 1)) return false;
             return true;
         }
         case 7: return a.as<std::shared_ptr<Function>>() == b.as<std::shared_ptr<Function>>();

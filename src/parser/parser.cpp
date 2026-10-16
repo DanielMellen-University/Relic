@@ -49,6 +49,18 @@ public:
 private:
     const std::vector<Token>& toks_;
     size_t pos_ = 0;
+    // Nesting of expressions, `-`, `not` and blocks. A limit keeps a hostile
+    // file from overflowing the C++ stack.
+    static constexpr int kMaxNesting = 100;
+    int nesting_ = 0;
+    struct Nest {
+        Parser& p;
+        explicit Nest(Parser& pp) : p(pp) {
+            if (++p.nesting_ > kMaxNesting)
+                p.fail(p.peek(), "too deeply nested (more than " + std::to_string(kMaxNesting) + " levels)");
+        }
+        ~Nest() { --p.nesting_; }
+    };
 
     const Token& peek(size_t ahead = 0) const {
         size_t i = pos_ + ahead;
@@ -106,6 +118,7 @@ private:
     }
 
     AstPtr block() {
+        Nest nest(*this);
         const Token& start = peek();
         if (!at(Tok::Newline)) fail_expected("end of line before the block");
         advance();
@@ -261,7 +274,10 @@ private:
 
     // ---- expressions, lowest precedence first ----
 
-    AstPtr expression() { return or_expr(); }
+    AstPtr expression() {
+        Nest nest(*this);
+        return or_expr();
+    }
 
     AstPtr binary(AstPtr left, const Token& op, AstPtr right) {
         auto n = make(Node::Binary, *left, op.text);
@@ -294,6 +310,7 @@ private:
         if (at(Tok::Not)) {
             const Token& op = advance();
             auto n = make(Node::Unary, op, "not");
+            Nest nest(*this);
             n->kids.push_back(not_expr());
             return n;
         }
@@ -351,6 +368,7 @@ private:
         if (at(Tok::Minus)) {
             const Token& op = advance();
             auto n = make(Node::Unary, op, "-");
+            Nest nest(*this);
             n->kids.push_back(unary());
             return n;
         }

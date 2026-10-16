@@ -327,6 +327,16 @@ void Interpreter::install_builtins() {
         if (ms > 0) std::this_thread::sleep_for(std::chrono::microseconds(static_cast<long long>(ms * 1000)));
         return Value();
     });
+    // host_same(a, b): true when a and b are the very same list, map or
+    // function, not just equal. The self-hosted interpreter uses it to print
+    // lists that hold themselves.
+    add("host_same", 2, [](std::vector<Value>& a) {
+        const Value &x = a[0], &y = a[1];
+        if (x.v.index() != y.v.index()) return Value(false);
+        if (x.is<std::shared_ptr<List>>()) return Value(x.as<std::shared_ptr<List>>() == y.as<std::shared_ptr<List>>());
+        if (x.is<std::shared_ptr<Map>>()) return Value(x.as<std::shared_ptr<Map>>() == y.as<std::shared_ptr<Map>>());
+        return Value(false);
+    });
     add("host_std_root", 0, [](std::vector<Value>&) { return Value(std_root()); });
     // host_names(): [name, arity] for every host_* built-in.
     add("host_names", 0, [this](std::vector<Value>&) {

@@ -136,6 +136,9 @@ print(mathx.square(4))
 - Same collector for the tree-walker and the VM. A loop making millions of cycles stays at a flat memory size.
 - Cost: about 10 percent on `bench/`, from tracking each container.
 - Still borrowed: the counts themselves come from the host's `std::shared_ptr`. A Relic-written runtime would own them.
+- Deep nesting is safe. A list 100,000 levels deep is freed with a work queue, not one C++ call per level.
+- Printing a list or map that holds itself shows `[...]` or `{...}` where it repeats, like `[1, [...]]`. Anything nested more than 1000 deep prints the same way.
+- Source nesting (brackets, `-`, `not`, blocks) is capped at 100 levels: `too deeply nested (more than 100 levels)`.
 
 ## Errors
 

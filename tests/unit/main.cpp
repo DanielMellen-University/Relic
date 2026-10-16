@@ -49,6 +49,16 @@ static void test_core() {
     auto bad = relic::run_source("p.relic", "print(1)\nprint(x)\n");
     CHECK(bad.exit_code == 1 && bad.out == "1\n");
     CHECK(bad.err == "p.relic:2:7: error: 'x' is not defined\n");
+    // Hostile nesting is an error, not a stack overflow.
+    std::string deep = "print(" + std::string(20000, '(') + "1" + std::string(20000, ')') + ")\n";
+    std::string negs = "let x = " + std::string(20000, '-') + "1\n";
+    for (const std::string& src : {deep, negs}) {
+        auto a = relic::run_source("n.relic", src);
+        auto b = relic::run_source_vm("n.relic", src);
+        auto c = relic::check_source("n.relic", src);
+        CHECK(a.exit_code == 1 && a.err.find("too deeply nested") != std::string::npos);
+        CHECK(b.err == a.err && c.err == a.err);
+    }
 }
 
 static void test_basic_tokens() {

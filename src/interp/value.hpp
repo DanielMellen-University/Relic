@@ -22,12 +22,19 @@ struct List : std::vector<Value>, GcObj {
     List(List&&) = default;
     List& operator=(const List&) = default;
     List& operator=(List&&) = default;
+    ~List() override;  // frees deep nesting without deep C++ recursion
     void trace(std::vector<GcObj*>& out) const override;
     void clear_refs() override;
 };
 
 // Map that keeps insertion order, so printing and `for k in map` are stable.
 struct Map : GcObj {
+    Map() = default;
+    Map(const Map&) = default;
+    Map(Map&&) = default;
+    Map& operator=(const Map&) = default;
+    Map& operator=(Map&&) = default;
+    ~Map() override;
     std::vector<std::string> keys;
     std::unordered_map<std::string, Value> items;
     bool has(const std::string& k) const;
