@@ -31,3 +31,50 @@ try
     print(wm._inside)
 catch e
     print(e.message)
+
+# drag by title bar
+wm.click(d, 10, 470)
+b = wm.menu_item_box(d, 0)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+w = wm.focused(d)
+let ox = w.x
+let oy = w.y
+print(wm.click(d, w.x + 20, w.y + 4), d.drag.mode)
+wm.motion(d, w.x + 20 + 50, w.y + 4 + 30)
+print(w.x - ox, w.y - oy)
+wm.release(d)
+print(d.drag)
+
+# resize from bottom-right grip
+let rb = wm.resize_box(w)
+let ow = w.width
+let oh = w.height
+print(wm.click(d, rb[0] + 2, rb[1] + 2), d.drag.mode)
+wm.motion(d, w.x + ow + 40, w.y + wm.title_height + oh + 20)
+print(w.width - ow, w.height - oh)
+wm.release(d)
+
+# clamp: drag far off the top-left, stay reachable
+print(wm.click(d, w.x + 10, w.y + 4))
+wm.motion(d, -500, -500)
+print(w.x > -w.width, w.y >= 0)
+wm.release(d)
+
+# terminal app: help, echo, apps, clear (no date: non-deterministic)
+wm.click(d, 10, 470)
+b = wm.menu_item_box(d, 2)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+w = wm.focused(d)
+print(w.app.name)
+for k in ["h", "e", "l", "p", "return"]
+    wm.key(d, k)
+for k in ["e", "c", "h", "o", "space", "h", "i", "return"]
+    wm.key(d, k)
+for k in ["a", "p", "p", "s", "return"]
+    wm.key(d, k)
+let lines = w.app.lines(w.state)
+print(lines[len(lines) - 2])
+print(lines[len(lines) - 4])
+for k in ["c", "l", "e", "a", "r", "return"]
+    wm.key(d, k)
+print(w.app.lines(w.state))

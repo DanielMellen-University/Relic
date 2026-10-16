@@ -5,15 +5,23 @@
 # apps, last one on top). An app is a map:
 #   {name, width, height, init(), lines(state), on_click(state, x, y), on_key(state, key)}
 # lines() gives the text rows the desktop draws inside the window.
+# Drag and resize use press (via click), motion, and release. drag on the
+# desktop is none, or {id, mode, ox, oy} with mode "move" or "resize".
+
+use std/strings
+use std/time
 
 let bar_height = 24     # taskbar along the bottom
 let title_height = 16   # window title bar
 let start_width = 56
 let menu_row = 18
 let tab_width = 90
+let grip = 12           # bottom-right resize handle
+let min_width = 80
+let min_height = 40
 
 fun new_desktop(width, height, apps)
-    return {width: width, height: height, apps: apps, windows: [], menu_open: false, next_id: 1}
+    return {width: width, height: height, apps: apps, windows: [], menu_open: false, next_id: 1, drag: none}
 
 fun bar_top(d) = d.height - bar_height
 
@@ -26,6 +34,8 @@ fun menu_item_box(d, i)
 fun tab_box(d, i) = [start_width + 4 + i * (tab_width + 4), bar_top(d) + 3, tab_width, bar_height - 6]
 
 fun close_box(w) = [w.x + w.width - title_height, w.y, title_height, title_height]
+
+fun resize_box(w) = [w.x + w.width - grip, w.y + title_height + w.height - grip, grip, grip]
 
 fun _inside(b, x, y) = x >= b[0] and x < b[0] + b[2] and y >= b[1] and y < b[1] + b[3]
 
@@ -56,6 +66,37 @@ fun close(d, id)
     let i = _index_of(d, id)
     if i >= 0
         remove(d.windows, i)
+    if d.drag != none and d.drag.id == id
+        d.drag = none
+
+# Keep enough of the title bar on screen so the window stays reachable.
+fun _clamp_pos(d, w)
+    let max_x = d.width - 40
+    let min_x = 40 - w.width
+    if w.x < min_x
+        w.x = min_x
+    if w.x > max_x
+        w.x = max_x
+    let max_y = bar_top(d) - title_height
+    if w.y < 0
+        w.y = 0
+    if w.y > max_y
+        w.y = max_y
+
+fun _clamp_size(d, w)
+    if w.width < min_width
+        w.width = min_width
+    if w.height < min_height
+        w.height = min_height
+    if w.x + w.width > d.width
+        w.width = d.width - w.x
+        if w.width < min_width
+            w.width = min_width
+    let room = bar_top(d) - w.y - title_height
+    if w.height > room
+        w.height = room
+        if w.height < min_height
+            w.height = min_height
 
 # Taskbar order is launch order, which is the id order.
 fun tabs(d)
@@ -70,7 +111,11 @@ fun tabs(d)
             append(out, w)
     return out
 
+fun _begin_drag(d, w, mode, x, y)
+    d.drag = {id: w.id, mode: mode, ox: x - w.x, oy: y - w.y}
+
 # A mouse click at (x, y). Gives a short word saying what it hit.
+# Title and resize hits also start a drag; call motion and release after.
 fun click(d, x, y)
     if d.menu_open
         d.menu_open = false
@@ -93,15 +138,42 @@ fun click(d, x, y)
         let w = d.windows[i]
         if _inside([w.x, w.y, w.width, w.height + title_height], x, y)
             _raise(d, i)
+            w = d.windows[len(d.windows) - 1]
             if _inside(close_box(w), x, y)
                 close(d, w.id)
                 return "close"
             if y < w.y + title_height
+                _begin_drag(d, w, "move", x, y)
                 return "title"
+            if _inside(resize_box(w), x, y)
+                _begin_drag(d, w, "resize", x, y)
+                return "resize"
             w.app.on_click(w.state, x - w.x, y - w.y - title_height)
             return "app"
         i = i - 1
     return "desktop"
+
+# Mouse move while a button may be held. Updates a drag or resize in progress.
+fun motion(d, x, y)
+    if d.drag == none
+        return
+    let i = _index_of(d, d.drag.id)
+    if i < 0
+        d.drag = none
+        return
+    let w = d.windows[i]
+    if d.drag.mode == "move"
+        w.x = x - d.drag.ox
+        w.y = y - d.drag.oy
+        _clamp_pos(d, w)
+    else if d.drag.mode == "resize"
+        w.width = x - w.x
+        w.height = y - w.y - title_height
+        _clamp_size(d, w)
+
+# Mouse button up ends any drag or resize.
+fun release(d)
+    d.drag = none
 
 # A key press goes to the window on top.
 fun key(d, k)
@@ -109,7 +181,7 @@ fun key(d, k)
     if w != none
         w.app.on_key(w.state, k)
 
-# ---- two small apps ----
+# ---- three small apps ----
 
 fun _clicker_init() = {count: 0}
 fun _clicker_lines(s) = ["Clicks: {s.count}", "Click here to count."]
@@ -132,6 +204,55 @@ fun _notes_key(s, k)
     else if len(k) == 1
         s.text = s.text + k
 
+# Relic-native terminal (no host process spawn). Commands: help, clear, echo, apps, date.
+fun _term_init() = {buf: ["Terminal. Type help."], input: ""}
+
+fun _term_lines(s)
+    let out = []
+    for line in s.buf
+        append(out, line)
+    append(out, "> " + s.input + "_")
+    return out
+
+fun _term_click(s, x, y)
+    return none
+
+fun _term_reply(s, line)
+    append(s.buf, line)
+
+fun _term_run(s, line)
+    let trimmed = strings.trim(line)
+    append(s.buf, "> " + line)
+    if trimmed == ""
+        return
+    let parts = strings.split(trimmed, " ")
+    let cmd = parts[0]
+    if cmd == "help"
+        _term_reply(s, "help clear echo apps date")
+    else if cmd == "clear"
+        s.buf = []
+    else if cmd == "echo"
+        _term_reply(s, strings.join(slice(parts, 1, len(parts)), " "))
+    else if cmd == "apps"
+        _term_reply(s, "Clicker, Notes, Terminal")
+    else if cmd == "date"
+        _term_reply(s, str(time.now()))
+    else
+        _term_reply(s, "unknown: " + cmd)
+
+fun _term_key(s, k)
+    if k == "return" or k == "enter"
+        _term_run(s, s.input)
+        s.input = ""
+    else if k == "backspace"
+        if len(s.input) > 0
+            s.input = slice(s.input, 0, len(s.input) - 1)
+    else if k == "space"
+        s.input = s.input + " "
+    else if len(k) == 1
+        s.input = s.input + k
+
 let clicker = {name: "Clicker", width: 180, height: 60, init: _clicker_init, lines: _clicker_lines, on_click: _clicker_click, on_key: _clicker_key}
 let notes = {name: "Notes", width: 220, height: 60, init: _notes_init, lines: _notes_lines, on_click: _notes_click, on_key: _notes_key}
-fun default_apps() = [clicker, notes]
+let terminal = {name: "Terminal", width: 280, height: 120, init: _term_init, lines: _term_lines, on_click: _term_click, on_key: _term_key}
+fun default_apps() = [clicker, notes, terminal]

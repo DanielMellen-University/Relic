@@ -12,3 +12,16 @@ close
 ["Notes#2"] menu false
 desktop bar
 '_inside' is private to module 'wm'
+launch
+title move
+50 30
+none
+resize resize
+40 20
+title
+true true
+launch
+Terminal
+Clicker, Notes, Terminal
+hi
+["> _"]

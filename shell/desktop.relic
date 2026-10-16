@@ -1,7 +1,8 @@
 # shell/desktop.relic: a first MONOLITH 2 desktop, written in Relic (M11).
 #   build-sdl/relic shell/desktop.relic
-# Click Start, pick an app, click inside it or type. The x box closes a window,
-# taskbar buttons bring one to the front. Escape quits.
+# Click Start, pick an app, click inside it or type. Drag a title bar to move,
+# drag the bottom-right corner to resize. The x box closes a window, taskbar
+# buttons bring one to the front. Escape quits.
 use wm
 use std/graphics
 
@@ -26,6 +27,8 @@ fun draw(d)
         for line in w.app.lines(w.state)
             graphics.text(w.x + 6, w.y + wm.title_height + 6 + row * 14, line, 20, 20, 20)
             row = row + 1
+        let rb = wm.resize_box(w)
+        draw_box(rb, 160, 160, 170)
     let bt = wm.bar_top(d)
     draw_box([0, bt, d.width, wm.bar_height], 50, 50, 55)
     draw_box([2, bt + 3, wm.start_width - 4, wm.bar_height - 6], 70, 130, 70)
@@ -60,9 +63,15 @@ else
             else
                 wm.key(d, k)
             k = graphics.next_key()
+        let mx = graphics.mouse_x()
+        let my = graphics.mouse_y()
         let down = graphics.mouse_down(1)
         if down and not was_down
-            wm.click(d, graphics.mouse_x(), graphics.mouse_y())
+            wm.click(d, mx, my)
+        else if down and was_down
+            wm.motion(d, mx, my)
+        else if not down and was_down
+            wm.release(d)
         was_down = down
         draw(d)
         graphics.wait(16)
