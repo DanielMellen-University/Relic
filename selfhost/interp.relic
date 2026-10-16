@@ -53,6 +53,11 @@ fun new_runtime()
         let v = {name: b[0], arity: b[1]}
         v[tag] = "builtin"
         builtins.vars[b[0]] = v
+    # host_* built-ins (files, clocks, math, graphics) are passed through to the host.
+    for b in host_names()
+        let v = {name: b[0], arity: b[1]}
+        v[tag] = "builtin"
+        builtins.vars[b[0]] = v
     rt.globals = new_env(builtins)
     rt.builtins = builtins
     return rt
@@ -105,9 +110,9 @@ fun norm_path(p)
 
 fun load_module(rt, n)
     let path = n.text
-    if len(path) >= 4 and slice(path, 0, 4) == "std/"
-        return fail(rt, n, "'use std/...' is not supported by the self-hosted interpreter yet")
     let file = folder_of(rt.file) + path + ".relic"
+    if len(path) >= 4 and slice(path, 0, 4) == "std/"
+        file = host_std_root() + slice(path, 4, len(path)) + ".relic"
     let key = norm_path(file)
     if key in rt.modules
         return rt.modules[key]
@@ -728,8 +733,13 @@ fun builtin(rt, name, a)
         if t != "string"
             return bad("fail(): message must be a string, got " + t)
         return bad(a[0])
-    if name == "args"
+    if name == "args" or name == "host_args"
         return ok([])
+    if slice(name, 0, 5) == "host_"
+        try
+            return ok(host_call(name, a))
+        catch e
+            return bad(slice(e.message, 13, len(e.message)))
     if name == "slice"
         for i in [1, 2]
             let what = "start"

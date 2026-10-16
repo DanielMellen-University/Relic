@@ -62,7 +62,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
   - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 101 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, `std_*`, `rt_recursion`, `try_recursion` and `gc_cycles`.
-  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `std/` in the self-hosted interpreter and a faster runtime (M10).
+  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs a faster runtime (M10). `use std/...` works in the self-hosted interpreter since M12 (host_* calls go through `host_call`).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 109 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
