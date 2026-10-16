@@ -149,6 +149,8 @@ hello Daniel
 - [Project plan](docs/PROJECT_PLAN.md): milestones, status, risks, decisions
 - [Architecture](docs/ARCHITECTURE.md): host layout, build targets, engines
 - [Bootstrap](docs/BOOTSTRAP.md): how the host started, borrowed pieces list
+- [Standard library](docs/STDLIB.md): every std/ module
+- [MONOLITH 2 readiness](docs/MONOLITH2-READINESS.md)
 - [Testing](docs/TESTING.md): golden tests, comparison tests, CI
 - [1.0 checklist](docs/1.0-CHECKLIST.md): what 1.0 needed, and the one open check
 

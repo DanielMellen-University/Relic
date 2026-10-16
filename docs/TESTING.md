@@ -49,7 +49,7 @@ Extra ctest cases check that different engines agree, byte for byte, on stdout a
 |---|---|---|
 | `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `std_*`, `rt_recursion`, `try_recursion` and `gc_cycles` |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion` and `gc_cycles` |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` |
 
 The skips are limits of the Relic-written interpreter, listed in DESIGN.md (Self-host).
