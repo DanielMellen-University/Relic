@@ -73,7 +73,7 @@ print(box.title, box["version"])
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/files`, `std/time`, `std/math`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself.
-- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. The first MONOLITH 2 desktop: `build-sdl/relic shell/desktop.relic`.
+- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. App-shaped example: `examples/mini_desktop/`. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The first MONOLITH 2 desktop sketch: `build-sdl/relic shell/desktop.relic`.
 - Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `fail`, `gc`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
@@ -150,7 +150,7 @@ hello Daniel
 - [Project plan](docs/PROJECT_PLAN.md): milestones, status, risks, decisions
 - [Architecture](docs/ARCHITECTURE.md): host layout, build targets, engines
 - [Bootstrap](docs/BOOTSTRAP.md): how the host started, borrowed pieces list
-- [Standard library](docs/STDLIB.md): every std/ module
+- [Standard library](docs/STDLIB.md): every std/ module (including [headless GUI testing](docs/STDLIB.md#running-headless--testing-gui-apps))
 - [MONOLITH 2 readiness](docs/MONOLITH2-READINESS.md)
 - [Testing](docs/TESTING.md): golden tests, comparison tests, CI
 - [1.0 checklist](docs/1.0-CHECKLIST.md): what 1.0 needed, and the one open check

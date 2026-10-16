@@ -38,6 +38,3 @@ renderer it takes about 4 ms a frame (about 240 fps). A Debug build takes about
 - Running host programs from a terminal app. MONOLITH 1's terminal runs its
   own commands, so MONOLITH 2 can do the same in Relic.
 - File change times and folder watching. None of the MONOLITH 1 apps need them.
-- `print` output is collected and written when the program ends (or on
-  `os.exit`). Fine for apps that draw. Use `eprint` to log while running.
-- Errors from std calls keep the host name, like `host_list_dir(): cannot list x`.

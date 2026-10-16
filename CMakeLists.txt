@@ -88,6 +88,14 @@ if(RELIC_SDL)
   add_test(NAME gfx_events COMMAND relic gfx_events.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
   set_tests_properties(gfx_events PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
     PASS_REGULAR_EXPRESSION "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34\nmouse_up 1 12 34\nwheel -2\nresize 100 70\na\n30 20\nstring\ndone")
+
+  add_test(NAME gfx_simulate COMMAND relic gfx_simulate.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
+  set_tests_properties(gfx_simulate PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    PASS_REGULAR_EXPRESSION "^key_down a true true false\nkey_up a true false false\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
+  # Mini desktop example: multi-app event loop, headless.
+  add_test(NAME mini_desktop COMMAND relic desktop.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/examples/mini_desktop)
+  set_tests_properties(mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+    PASS_REGULAR_EXPRESSION "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
   if(TARGET SDL2_image::SDL2_image)
     add_test(NAME gfx_png COMMAND relic gfx_png.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_png PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"

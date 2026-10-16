@@ -1,0 +1,39 @@
+# Terminal app with its own commands (ls, cat, echo)
+use std/files
+use std/strings
+
+fun new_app()
+    return {title: "Terminal", lines: ["Relic terminal. try ls, cat, echo"], input: ""}
+
+fun run(app, line)
+    append(app.lines, "> " + line)
+    let parts = strings.split(strings.trim(line), " ")
+    let cmd = parts[0]
+    let rest = slice(parts, 1, len(parts))
+    try
+        if cmd == "ls"
+            let dir = "."
+            if len(rest) > 0
+                dir = rest[0]
+            for name in files.list(dir)
+                append(app.lines, name)
+        else if cmd == "cat"
+            if len(rest) == 0
+                fail("cat: missing file")
+            append(app.lines, files.read(rest[0]))
+        else if cmd == "echo"
+            append(app.lines, strings.join(rest, " "))
+        else if cmd != ""
+            append(app.lines, "unknown command: {cmd}")
+    catch err
+        append(app.lines, "error: {err.message}")
+
+fun on_text(app, t)
+    app.input = app.input + t
+
+fun on_key(app, key)
+    if key == "return"
+        run(app, app.input)
+        app.input = ""
+    else if key == "backspace" and len(app.input) > 0
+        app.input = slice(app.input, 0, len(app.input) - 1)

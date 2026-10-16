@@ -120,6 +120,14 @@ print(mathx.square(4))
 - Names are read live. Two modules can use each other: the second `use` in a cycle gets the module that is still loading, and its names appear as they are defined. Calling across the cycle inside functions always works. Reading a name at the top level before the other file has defined it is an error: `module 'x' has no 'y' (yet)`.
 - A module can use the main file back. It gets the main file's own scope; the main file does not run twice.
 - Modules are values of type `module`. They print as `<module name>`. You cannot assign `mod.x = ...` from outside.
+- Because they are values, you can store a module in a variable and call through it (handy for app dispatch):
+
+```
+let mod = notes
+if kind == "terminal"
+    mod = terminal
+mod.on_key(app, key)
+```
 - Every module sees the built-ins, but not the main file's globals.
 - Errors point at the file they happened in, so a mistake inside `lib/mathx.relic` reports `lib/mathx.relic:line:col`.
 - `use` is now a keyword, so it can no longer be a variable name. The same goes for `try`, `catch` and `as`.
@@ -154,7 +162,7 @@ catch err
 
 - `try` and `catch` are keywords. Both open an indented block, like `if` and `else`. A `try` needs a `catch`.
 - `catch err` binds the error as a map `{message, line, col}`. `catch` with no name is allowed.
-- `fail("message")` raises an error with that message. Uncaught, it prints like any other error: `file:line:col: error: message`.
+- `fail("message")` raises an error with that message. The argument must be a string (`fail(1)` is an error). Uncaught, it prints like any other error: `file:line:col: error: message`.
 - Every runtime error can be caught, including errors from built-ins, `use` and "too much recursion". Syntax errors in the main file cannot, since nothing runs.
 - `break`, `next` and `return` inside a `try` leave it normally.
 - Changes made before the error stay made.
@@ -236,7 +244,7 @@ These are **Default** behaviors the interpreter now follows.
 | `str(x)` | turns a value into text |
 | `keys(map)` | list of keys in order |
 | `type(x)` | `"none"`, `"bool"`, `"int"`, `"float"`, `"string"`, `"list"`, `"map"`, `"function"` or `"module"` |
-| `fail(message)` | raises an error that `try` / `catch` can catch |
+| `fail(message)` | raises an error that `try` / `catch` can catch; `message` must be a string |
 | `int(x)` / `float(x)` | a number or a numeric string as an int (cut toward zero) or a float |
 | `gc()` | runs the cycle collector now; gives how many containers it freed |
 
@@ -257,13 +265,9 @@ These are **Default** behaviors the interpreter now follows.
 **Default.** The standard library is Relic code in `std/`, loaded with `use std/name`. Only the pieces Relic cannot do itself come from the host, and those are named `host_*` so the borrowed list stays visible.
 
 - `use std/x` looks in `$RELIC_STD` if set, otherwise the `std/` folder of the source tree the host was built from.
-- `std/strings`: `find`, `contains`, `starts_with`, `ends_with`, `upper`, `lower`, `trim`, `split`, `join`, `replace`, `repeat`. ASCII only for now.
-- `std/lists`: `map`, `filter`, `reduce`, `sum`, `index_of`, `reverse`, `copy`, `sort` (stable merge sort), `sort_by(xs, less)`.
-- `std/maps`: `values`, `items`, `get(m, k, fallback)`, `merge(a, b)`.
-- `std/files`: `read`, `write`, `append_text`, `exists`, `lines`. Paths are relative to where `relic` runs. Host: `host_read_file`, `host_write_file`, `host_file_exists`.
-- `std/time`: `now()` (Unix seconds), `clock()` (steady seconds), `since(start)`. Host: `host_now`, `host_clock`.
-- `std/math`: `pi`, `e`, `abs`, `min`, `max`, `clamp`, `floor`, `ceil`, `round`, `sqrt`, `pow`, `sin`, `cos`, `exp`, `log`, `is_whole`. Host: floor, sqrt, sin, cos, exp, log, pow.
-- **Open:** directory listing, deleting files, dates and time zones, random numbers, Unicode-aware `upper` and `lower`.
+- Modules today: `strings`, `lists`, `maps`, `math`, `files`, `paths`, `json`, `os`, `time`, `graphics`.
+- Full signatures, errors, events and headless testing: **[STDLIB.md](STDLIB.md)**.
+- **Open:** dates and time zones, random numbers, Unicode-aware `upper` and `lower`.
 
 ## Self-host (M9)
 
@@ -309,15 +313,12 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 **Default:** SDL2 is the graphics backend, the same as MONOLITH 1. It is a borrowed piece, listed like the C++ host, to be replaced once Relic has its own drawing layer.
 
 - Optional at build time: `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2 dev files, e.g. `apt install libsdl2-dev`, `brew install sdl2`, or vcpkg `sdl2` on Windows). The default build and CI have no SDL.
-- `use std/graphics` gives `available()`, `open(w, h, title)`, `close()`, `clear(r, g, b)`, `rect(x, y, w, h, r, g, b)`, `pixel(x, y, r, g, b)`, `present()`, `quit_requested()` and `wait(ms)`. One window at a time; colors are 0 to 255.
-- Input: `key_down(name)`, `next_key()` (next pressed key or `none`), `mouse_x()`, `mouse_y()`, `mouse_down(button)` (1 left, 2 middle, 3 right). Key names are lowercase SDL names (`"a"`, `"space"`, `"left"`, `"escape"`).
-- Text: `text(x, y, s, r, g, b)` and `text_scaled(x, y, s, scale, r, g, b)` in a built-in 8x12 ASCII font (generated once from DejaVu Sans Mono by `tools/gen_font.py`). This stays the default.
-- TrueType (optional, SDL2_ttf): `load_font(path, size)` gives an id; `font_text(font, x, y, s, r, g, b)` draws UTF-8 text; `font_size(font, s)` gives `[w, h]`. `has_fonts()` says if it is built in.
-- Images: `load_image(path)` gives an id; `image(id, x, y)`, `image_width(id)`, `image_height(id)`. BMP always. PNG and JPG when built with SDL2_image; `has_png()` says if it is.
 - SDL2_image and SDL2_ttf are found automatically when `RELIC_SDL=ON` (`apt install libsdl2-image-dev libsdl2-ttf-dev`). Without them, BMP and the built-in font still work.
 - Without SDL, `available()` is `false` and every other call stops with a message saying how to rebuild.
+- Full API (drawing, events, `simulate`, key names, clipboard, canvas, headless): **[STDLIB.md](STDLIB.md#stdgraphics)**.
 - Host side: `host_gfx_*` built-ins in `src/builtins/graphics.cpp`.
-- Try it: `build-sdl/relic examples/hello_window.relic` opens a window for about two seconds.
+- Try it: `build-sdl/relic examples/hello_window.relic`, `examples/input_demo.relic`, or `examples/mini_desktop/desktop.relic`.
+- Headless tests: `SDL_VIDEODRIVER=dummy` (see STDLIB.md).
 - **Open:** more than one window.
 
 ## Architecture

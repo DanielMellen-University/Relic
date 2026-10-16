@@ -4,6 +4,7 @@
 #include "builtins/graphics.hpp"
 
 #include <cctype>
+#include <cstring>
 #include <cmath>
 #include <deque>
 #include <string>
@@ -395,16 +396,43 @@ void add_graphics_builtins(const AddBuiltin& add) {
         return v;
     });
     // Puts a made-up event in SDL's queue, for tests and scripted demos.
-    // kind: "key" (a = key name), "text" (a = text), "click" (a = x, b = y),
-    // "wheel" (a = dx, b = dy), "resize" (a = width, b = height).
+    // kind / a / b:
+    //   "key"/"keyup"  a=name  b=none or "shift"/"ctrl"/"alt" (join with +)
+    //   "text"         a=text  b=none
+    //   "click"        a=x     b=y     (left down then up)
+    //   "mousedown"/"mouseup"  a=x  b=y  (left button)
+    //   "move"         a=x     b=y     (dx and dy are 0)
+    //   "wheel"        a=dx    b=dy
+    //   "resize"       a=w     b=h
+    //   "quit"         a=none  b=none
     add("host_gfx_simulate", 3, [](std::vector<Value>& a) {
         need_window();
         std::string kind = str(a[0], "kind");
+        auto parse_mods = [](const Value& v) -> Uint16 {
+            if (v.is<NoneV>()) return 0;
+            std::string s = str(v, "mods");
+            for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            Uint16 mod = 0;
+            auto has = [&](const char* word) {
+                auto p = s.find(word);
+                if (p == std::string::npos) return false;
+                auto end = p + std::strlen(word);
+                bool left = p == 0 || s[p - 1] == '+' || s[p - 1] == ',' || s[p - 1] == ' ';
+                bool right = end >= s.size() || s[end] == '+' || s[end] == ',' || s[end] == ' ';
+                return left && right;
+            };
+            if (has("shift")) mod |= KMOD_SHIFT;
+            if (has("ctrl")) mod |= KMOD_CTRL;
+            if (has("alt")) mod |= KMOD_ALT;
+            if (mod == 0 && !s.empty()) throw std::string("unknown modifier: ") + str(v, "mods");
+            return mod;
+        };
         SDL_Event e{};
-        if (kind == "key") {
-            e.type = SDL_KEYDOWN;
+        if (kind == "key" || kind == "keyup") {
+            e.type = kind == "key" ? SDL_KEYDOWN : SDL_KEYUP;
             e.key.keysym.sym = SDL_GetKeyFromName(str(a[1], "key").c_str());
             if (e.key.keysym.sym == SDLK_UNKNOWN) throw std::string("unknown key name");
+            e.key.keysym.mod = parse_mods(a[2]);
             SDL_PushEvent(&e);
         } else if (kind == "text") {
             std::string t = str(a[1], "text");
@@ -422,6 +450,20 @@ void add_graphics_builtins(const AddBuiltin& add) {
                 b.button.y = whole(a[2], "y");
                 SDL_PushEvent(&b);
             }
+        } else if (kind == "mousedown" || kind == "mouseup") {
+            e.type = kind == "mousedown" ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
+            e.button.button = SDL_BUTTON_LEFT;
+            e.button.clicks = 1;
+            e.button.x = whole(a[1], "x");
+            e.button.y = whole(a[2], "y");
+            SDL_PushEvent(&e);
+        } else if (kind == "move") {
+            e.type = SDL_MOUSEMOTION;
+            e.motion.x = whole(a[1], "x");
+            e.motion.y = whole(a[2], "y");
+            e.motion.xrel = 0;
+            e.motion.yrel = 0;
+            SDL_PushEvent(&e);
         } else if (kind == "wheel") {
             e.type = SDL_MOUSEWHEEL;
             e.wheel.x = whole(a[1], "dx");
@@ -432,6 +474,9 @@ void add_graphics_builtins(const AddBuiltin& add) {
             e.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;
             e.window.data1 = whole(a[1], "width");
             e.window.data2 = whole(a[2], "height");
+            SDL_PushEvent(&e);
+        } else if (kind == "quit") {
+            e.type = SDL_QUIT;
             SDL_PushEvent(&e);
         } else {
             throw std::string("unknown event kind: ") + kind;

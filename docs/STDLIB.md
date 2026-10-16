@@ -4,67 +4,300 @@ Load a module with `use std/NAME`, then call `NAME.fun(...)`. Modules are
 plain Relic in `std/`; the few `host_*` calls they make are the C++ host.
 Errors raise with `fail` and can be caught with `try` / `catch`.
 
+`fail(message)` takes a **string only**. Anything else is an error:
+`fail(): message must be a string, got ...`.
+
+Modules are values. You can store one in a variable and call through it
+(dispatch by which module you picked):
+
+```
+let mod = notes
+if kind == "terminal"
+    mod = terminal
+mod.on_key(app, key)
+```
+
 ## std/strings
-`find(s, sub)` (index or -1), `contains`, `starts_with`, `ends_with`,
-`upper`, `lower`, `trim`, `split(s, sep)`, `join(items, sep)`,
-`replace(s, old, new)`, `repeat(s, n)`, `pad_left(s, width, fill)`,
-`pad_right(s, width, fill)`, `is_space(c)`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `find(s, sub)` | int | index of first `sub`, or `-1` |
+| `contains(s, sub)` | bool | |
+| `starts_with(s, pre)` | bool | |
+| `ends_with(s, suf)` | bool | |
+| `upper(s)` / `lower(s)` | string | ASCII letters only |
+| `trim(s)` | string | leading and trailing space |
+| `split(s, sep)` | list | |
+| `join(items, sep)` | string | |
+| `replace(s, old, new)` | string | all non-overlapping |
+| `repeat(s, n)` | string | |
+| `pad_left(s, width, fill)` / `pad_right(...)` | string | |
+| `is_space(c)` | bool | space, tab, newline, CR |
 
 ## std/lists
-`map(xs, f)`, `filter(xs, keep)`, `reduce(xs, f, start)`, `sum`,
-`index_of(xs, item)`, `reverse`, `copy`, `sort(xs)`, `sort_by(xs, less)`.
-Sorting gives a new list and is stable.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `map(xs, f)` | list | |
+| `filter(xs, keep)` | list | |
+| `reduce(xs, f, start)` | any | |
+| `sum(xs)` | number | |
+| `index_of(xs, item)` | int | or `-1` |
+| `reverse(xs)` | list | new list |
+| `copy(xs)` | list | shallow |
+| `sort(xs)` | list | new list, stable |
+| `sort_by(xs, less)` | list | `less(a, b)` is bool |
 
 ## std/maps
-`values(m)`, `items(m)` (list of `[key, value]`), `get(m, k, fallback)`, `merge(a, b)`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `values(m)` | list | insertion order |
+| `items(m)` | list | `[key, value]` pairs |
+| `get(m, k, fallback)` | any | fallback when `k` missing |
+| `merge(a, b)` | map | new map; **`b` wins** on shared keys |
 
 ## std/math
-`abs`, `min`, `max`, `clamp(x, lo, hi)`, `floor`, `ceil`, `round`, `sqrt`,
-`pow`, `sin`, `cos`, `exp`, `log`, `is_whole`.
+
+| Call | Returns |
+|---|---|
+| `abs` `min` `max` `clamp(x, lo, hi)` | number |
+| `floor` `ceil` `round` | int |
+| `sqrt` `pow` `sin` `cos` `exp` `log` | float |
+| `is_whole(x)` | bool |
+| `pi` `e` | float constants |
 
 ## std/files
-Text: `read(path)`, `write(path, text)`, `append_text(path, text)`,
-`lines(path)`, `exists(path)`.
-Folders: `list(path)` (sorted names), `is_dir`, `make_dir` (parents too),
-`remove` (file or empty folder), `remove_tree`, `rename(from, to)`, `size` (bytes).
-Paths are relative to where `relic` runs.
+
+Paths are relative to where `relic` runs. Caught errors use the std name
+(`files.list(): cannot list x`), not the `host_*` name.
+
+| Call | Returns | On failure |
+|---|---|---|
+| `read(path)` | string | `cannot open {path}` |
+| `write(path, text)` | none | `cannot write {path}` |
+| `append_text(path, text)` | none | `cannot write {path}` |
+| `lines(path)` | list of strings | same as `read`; strips a trailing empty line |
+| `exists(path)` | bool | never fails |
+| `list(path)` | list of names | sorted; `cannot list {path}` |
+| `is_dir(path)` | bool | never fails (`false` if missing) |
+| `make_dir(path)` | none | parents too; **ok if it already exists**; `cannot make folder {path}` |
+| `remove(path)` | none | file or empty folder; `cannot remove {path}` |
+| `remove_tree(path)` | none | folder and contents, or one file |
+| `rename(from, to)` | none | `cannot rename {from}` |
+| `size(path)` | int (bytes) | `cannot get the size of {path}` |
 
 ## std/paths
-`join(a, b)`, `base(p)`, `dir(p)`, `ext(p)` (with the dot), `stem(p)`,
-`normalize(p)`. Always `/`; a `\` in input is read as `/`.
+
+Always `/`. A `\` in input is read as `/`.
+
+| Call | Returns | Example |
+|---|---|---|
+| `join(a, b)` | string | `join("a", "b")` → `"a/b"`; absolute `b` wins |
+| `base(p)` | string | `"a/b.txt"` → `"b.txt"` |
+| `dir(p)` | string | `"a/b.txt"` → `"a"`; no slash → `""` |
+| `ext(p)` | string | with the dot: `".txt"`, or `""` |
+| `stem(p)` | string | `"b.txt"` → `"b"` |
+| `normalize(p)` | string | collapses `.` and `..` |
 
 ## std/json
-`encode(v)`, `pretty(v)` (2-space indent), `decode(text)`. Objects are maps
-and keep key order, `null` is `none`. Bad input fails with `json: ... at N`.
+
+Objects become maps (key order kept). Arrays become lists. `null` is `none`.
+
+| Call | Returns | On failure |
+|---|---|---|
+| `encode(v)` | string | `json: cannot encode a {type}` for function/module |
+| `pretty(v)` | string | same; 2-space indent |
+| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index |
+
+`catch err` after a bad `decode` gives `{message, line, col}`. The useful
+part is `err.message` (includes the `at N` index). `line` / `col` point at
+the `fail` inside `std/json`, not at a spot in the JSON text.
 
 ## std/os
-`args()`, `env(name)` (string or `none`), `cwd()`, `exit(code)`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `args()` | list of strings | words after the file name |
+| `env(name)` | string or `none` | |
+| `cwd()` | string | `/` separators |
+| `exit(code)` | never returns | flushes output first |
+
+`os.args()` is the same list as the built-in `args()`. Prefer `os.args()` in
+modules; `args()` is also fine at the top level of a script.
 
 ## std/time
-`now()` (seconds since 1970, UTC), `clock()` (steady, for differences),
-`since(start)`, `sleep(ms)`.
-Frame timer: `let t = time.timer()`, then each frame `let dt = time.tick(t)`;
-`t.fps` is the measured rate and `time.limit(t, 60)` caps it.
+
+Times are in seconds (floating point).
+
+| Call | Returns | Notes |
+|---|---|---|
+| `now()` | float | UTC seconds since 1970 |
+| `clock()` | float | steady clock; only differences mean anything |
+| `since(start)` | float | `clock() - start` |
+| `sleep(ms)` | none | milliseconds |
+| `timer()` | map | `{last, fps, frames, window}` |
+| `tick(t)` | float | seconds since last tick; updates `t.fps` |
+| `limit(t, fps)` | none | sleeps so frames run no faster than `fps` |
+
+Frame timer: `let t = time.timer()`, then each frame `let dt = time.tick(t)`.
+`t.fps` is averaged over about one second of frames (it stays `0` until that
+window fills). Call `time.limit(t, 60)` at the end of a frame to cap the rate.
+`limit` measures from `t.last` (set by the last `tick`), so call `tick` then
+draw then `limit`.
 
 ## std/graphics
-Needs a host built with `-DRELIC_SDL=ON`; `available()` says if it was.
 
-- Window: `open(w, h, title)` (resizable), `close()`, `size()` gives `[w, h]`,
-  `present()`, `quit_requested()`, `wait(ms)`.
-- Drawing: `clear`, `rect`, `pixel`, `line`, `outline`, `rect_alpha` (last arg 0 to 255),
-  `clip(x, y, w, h)` and `unclip()`. Colors are 0 to 255 per channel.
-- Text: `text`, `text_scaled` (built-in 8x12 font); with SDL2_ttf `load_font`,
-  `font_text`, `font_size`.
-- Images: `load_image` (BMP, plus PNG and JPG with SDL2_image), `image`,
-  `image_width`, `image_height`. `canvas(w, h)` makes an image to draw into with
-  `draw_to(c)`; `draw_to(none)` goes back to the window.
-- Events: `next_event()` gives the oldest event map or `none`. Types:
-  `key_down` / `key_up` (key, repeat, shift, ctrl, alt), `text` (text),
-  `mouse_down` / `mouse_up` (button, x, y, clicks), `mouse_move` (x, y, dx, dy),
-  `wheel` (dx, dy), `resize` (width, height), `quit`.
-  `simulate(kind, a, b)` queues a fake one for tests.
-- Polling still works: `key_down(name)`, `next_key()`, `mouse_x()`, `mouse_y()`, `mouse_down(button)`.
-- Clipboard: `copy(s)`, `clipboard()`. Uses the system clipboard while a window is open.
+Needs a host built with `-DRELIC_SDL=ON`. `available()` is `false` otherwise;
+every other call then fails with a rebuild message.
+
+Colors are 0 to 255 per channel. One window at a time.
+
+### Window
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `available()` | | bool | |
+| `open(w, h, title)` | int, int, string | none | size must be > 0; title must be string |
+| `close()` | | none | |
+| `size()` | | `[w, h]` | no window open |
+| `present()` | | none | no window |
+| `quit_requested()` | | bool | no window; also pumps events |
+| `wait(ms)` | number | none | |
+
+### Drawing
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `clear(r, g, b)` | 3 channels | none | no window; channel 0..255 |
+| `rect(x, y, w, h, r, g, b)` | ints + channels | none | |
+| `rect_alpha(x, y, w, h, r, g, b, a)` | same + alpha 0..255 | none | blends over what is there |
+| `pixel(x, y, r, g, b)` | | none | |
+| `line(x1, y1, x2, y2, r, g, b)` | | none | |
+| `outline(x, y, w, h, r, g, b)` | | none | rectangle border |
+| `clip(x, y, w, h)` | | none | draw only inside; `w`/`h` <= 0 clears |
+| `unclip()` | | none | same as `clip(0,0,0,0)` |
+
+### Text
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `text(x, y, s, r, g, b)` | | none | built-in 8x12 ASCII; other chars draw as `?` |
+| `text_scaled(x, y, s, scale, r, g, b)` | scale >= 1 | none | each glyph is `8*scale` wide, `12*scale` tall |
+| `has_fonts()` | | bool | true when built with SDL2_ttf |
+| `load_font(path, size)` | string, int >= 1 | font id (int) | needs fonts; bad path |
+| `font_text(font, x, y, s, r, g, b)` | | none | UTF-8; needs fonts |
+| `font_size(font, s)` | | `[w, h]` | needs fonts |
+
+### Images and canvas
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `has_png()` | | bool | true when built with SDL2_image |
+| `load_image(path)` | string | image id (int) | open window first; BMP always; PNG/JPG need `has_png()` |
+| `image(id, x, y)` | | none | draws at full size |
+| `image_width(id)` / `image_height(id)` | | int | |
+| `canvas(w, h)` | ints > 0 | image id | paint target |
+| `draw_to(c)` | id or `none` | none | `none` returns drawing to the window |
+
+### Polling input
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `key_down(name)` | string | bool | unknown key name |
+| `next_key()` | | string or `none` | next pressed key since last call |
+| `mouse_x()` / `mouse_y()` | | int | |
+| `mouse_down(button)` | 1 left, 2 middle, 3 right | bool | |
+
+### Events
+
+`next_event()` gives the oldest event map or `none`. Each map has `type`
+plus the fields below.
+
+| `type` | Fields |
+|---|---|
+| `key_down` / `key_up` | `key` (string), `repeat` (bool), `shift` `ctrl` `alt` (bool) |
+| `text` | `text` (UTF-8 string; use this for typing into a box) |
+| `mouse_down` / `mouse_up` | `button` (1/2/3), `x`, `y`, `clicks` |
+| `mouse_move` | `x`, `y`, `dx`, `dy` |
+| `wheel` | `dx`, `dy` (`dy` > 0 scrolls up) |
+| `resize` | `width`, `height` |
+| `quit` | (no extra fields) |
+
+`click` is **not** an event type. It is a `simulate` kind that queues a
+`mouse_down` then a `mouse_up` (left button, `clicks` 1). Real events always
+use `mouse_down` / `mouse_up`.
+
+### simulate
+
+`simulate(kind, a, b)` queues a fake event. Needs an open window. Pass `none`
+for an unused arg.
+
+| kind | a | b | Event(s) queued |
+|---|---|---|---|
+| `"key"` | key name | `none` or mods | one `key_down` |
+| `"keyup"` | key name | `none` or mods | one `key_up` |
+| `"text"` | string | `none` | one `text` |
+| `"click"` | x | y | `mouse_down` then `mouse_up` (left) |
+| `"mousedown"` | x | y | one `mouse_down` (left, `clicks` 1) |
+| `"mouseup"` | x | y | one `mouse_up` (left, `clicks` 1) |
+| `"move"` | x | y | one `mouse_move` (`dx` and `dy` are 0) |
+| `"wheel"` | dx | dy | one `wheel` |
+| `"resize"` | width | height | one `resize` |
+| `"quit"` | `none` | `none` | one `quit` (and `quit_requested()` becomes true) |
+
+Mods for `"key"` / `"keyup"`: `"shift"`, `"ctrl"`, `"alt"`, or join with `+`
+(`"ctrl+shift"`). They set the matching bools on the event. Unknown kind or
+key name fails.
+
+### Key names
+
+Lowercase SDL names. Common ones:
+
+| Name | Key |
+|---|---|
+| `"a"` .. `"z"` | letters |
+| `"0"` .. `"9"` | digits |
+| `"space"` | space |
+| `"return"` | Enter |
+| `"escape"` | Esc |
+| `"backspace"` | Backspace |
+| `"tab"` | Tab |
+| `"left"` `"right"` `"up"` `"down"` | arrows |
+| `"lshift"` `"rshift"` | Shift |
+| `"lctrl"` `"rctrl"` | Ctrl |
+| `"lalt"` `"ralt"` | Alt |
+| `"f1"` .. `"f12"` | function keys |
+
+`key_down("left")` polls the held state. Event `key` fields use the same
+names. Prefer `text` events for typed characters (shift, layout, Unicode).
+
+### Clipboard
+
+| Call | Args | Returns |
+|---|---|---|
+| `copy(s)` | string | none |
+| `clipboard()` | | string |
+
+Uses the system clipboard while a window is open; otherwise keeps text inside
+this process (so tests work headless).
+
+### Running headless / testing GUI apps
+
+Build with SDL, then run with a fake display:
+
+```
+cmake -S . -B build-sdl -DRELIC_SDL=ON
+cmake --build build-sdl
+SDL_VIDEODRIVER=dummy ./build-sdl/relic your_app.relic
+```
+
+`open` still works. There is no visible window. Drive input with `simulate`,
+read it with `next_event`, and assert on your app state (see
+`examples/mini_desktop/` and `tests/sdl/gfx_events.relic`).
+
+`ctest --test-dir build-sdl` sets `SDL_VIDEODRIVER=dummy` for the graphics
+tests automatically.
 
 Window drag and resize inside a Relic desktop are built from `mouse_down`,
-`mouse_move` and `mouse_up` events; the host window itself sends `resize`.
+`mouse_move` and `mouse_up`; the host window itself sends `resize`.

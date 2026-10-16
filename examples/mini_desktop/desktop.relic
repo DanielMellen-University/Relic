@@ -1,0 +1,130 @@
+# Mini desktop: taskbar, Notes, Terminal, JSON settings.
+# Layout is the pattern MONOLITH 2 apps can follow: modules as values,
+# one event loop, focus, and a short simulate script for headless runs.
+#
+# Headless: SDL_VIDEODRIVER=dummy build-sdl/relic examples/mini_desktop/desktop.relic
+# (run from this folder, or any cwd with the same relative data/ paths)
+
+use std/graphics
+use std/files
+use std/json
+use std/maps
+use apps/notes
+use apps/terminal
+
+let settings_path = "data/settings.json"
+
+# Notes starts empty each run so headless output stays stable.
+if files.exists("data/notes.txt")
+    files.remove("data/notes.txt")
+
+fun load_settings()
+    let defaults = {bg: [30, 40, 60], user: "daniel", frames: 40}
+    if not files.exists(settings_path)
+        files.make_dir("data")
+        files.write(settings_path, json.pretty(defaults))
+        return defaults
+    try
+        return maps.merge(defaults, json.decode(files.read(settings_path)))
+    catch err
+        eprint("bad settings: {err.message}")
+        return defaults
+
+let settings = load_settings()
+let windows = [
+    {app: notes.new_app(), kind: "notes", x: 20, y: 20, w: 260, h: 160},
+    {app: terminal.new_app(), kind: "terminal", x: 300, y: 40, w: 300, h: 200},
+]
+let focus = 1
+
+# Modules are values: pick the app module once, then call through it.
+fun handle(ev)
+    let w = windows[focus]
+    let mod = notes
+    if w.kind == "terminal"
+        mod = terminal
+    if ev.type == "text"
+        mod.on_text(w.app, ev.text)
+    else if ev.type == "key_down"
+        if ev.key == "tab"
+            focus = (focus + 1) % len(windows)
+        else if ev.key == "s" and ev.ctrl and w.kind == "notes"
+            notes.save(w.app)
+        else
+            mod.on_key(w.app, ev.key)
+    else if ev.type == "mouse_down"
+        let i = 0
+        for win in windows
+            if ev.x >= win.x and ev.x < win.x + win.w and ev.y >= win.y and ev.y < win.y + win.h
+                focus = i
+            i = i + 1
+
+fun draw()
+    let bg = settings.bg
+    graphics.clear(bg[0], bg[1], bg[2])
+    let i = 0
+    for win in windows
+        let tc = 80
+        if i == focus
+            tc = 160
+        graphics.rect(win.x, win.y, win.w, win.h, 230, 230, 230)
+        graphics.rect(win.x, win.y, win.w, 16, tc, tc, 200)
+        graphics.text(win.x + 4, win.y + 2, win.app.title, 255, 255, 255)
+        graphics.clip(win.x, win.y + 16, win.w, win.h - 16)
+        let lines = []
+        if win.kind == "notes"
+            lines = [win.app.text, win.app.status]
+        else
+            lines = slice(win.app.lines, len(win.app.lines) - 10, len(win.app.lines)) + ["> " + win.app.input]
+        let y = win.y + 20
+        for ln in lines
+            graphics.text(win.x + 4, y, ln, 0, 0, 0)
+            y = y + 14
+        graphics.unclip()
+        i = i + 1
+    let size = graphics.size()
+    graphics.rect(0, size[1] - 24, size[0], 24, 20, 20, 20)
+    graphics.text(6, size[1] - 18, "Start | {settings.user}", 255, 255, 255)
+    graphics.present()
+
+fun script()
+    # Fake input so a headless run exercises the apps.
+    for c in "echo hi"
+        graphics.simulate("text", c, none)
+    graphics.simulate("key", "return", none)
+    for c in "ls data"
+        graphics.simulate("text", c, none)
+    graphics.simulate("key", "return", none)
+    for c in "cat nope.txt"
+        graphics.simulate("text", c, none)
+    graphics.simulate("key", "return", none)
+    graphics.simulate("click", 30, 30)
+    for c in "hello notes"
+        graphics.simulate("text", c, none)
+    graphics.simulate("key", "s", "ctrl")
+
+if not graphics.available()
+    print("needs RELIC_SDL")
+else
+    graphics.open(640, 400, "Mini desktop")
+    script()
+    let frame = 0
+    let running = true
+    while running and frame < settings.frames and not graphics.quit_requested()
+        let ev = graphics.next_event()
+        while ev != none
+            if ev.type == "quit" or (ev.type == "key_down" and ev.key == "escape")
+                running = false
+            else
+                handle(ev)
+            ev = graphics.next_event()
+        draw()
+        graphics.wait(1)
+        frame = frame + 1
+    if windows[0].app.status != "saved"
+        notes.save(windows[0].app)
+    graphics.close()
+    for ln in windows[1].app.lines
+        print(ln)
+    print("notes:", windows[0].app.text, windows[0].app.status)
+    print("focus:", focus)

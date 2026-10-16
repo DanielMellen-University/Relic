@@ -1,0 +1,23 @@
+# Notes app: one text buffer, save to data/notes.txt
+use std/files
+
+let path = "data/notes.txt"
+
+fun new_app()
+    return {title: "Notes", text: "", status: "new"}
+
+fun on_text(app, t)
+    app.text = app.text + t
+
+fun on_key(app, key)
+    if key == "backspace" and len(app.text) > 0
+        app.text = slice(app.text, 0, len(app.text) - 1)
+    else if key == "return"
+        app.text = app.text + "\n"
+
+fun save(app)
+    try
+        files.write(path, app.text)
+        app.status = "saved"
+    catch err
+        app.status = "save failed: {err.message}"
