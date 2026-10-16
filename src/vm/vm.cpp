@@ -694,6 +694,95 @@ private:
         spare_.push_back(std::move(s));
     }
 
+    // Kept out of run() so its stack frame stays small: deep Relic recursion
+    // nests one run() per call.
+#if defined(_MSC_VER)
+    __declspec(noinline)
+#else
+    __attribute__((noinline))
+#endif
+    void binary(const Instr& in, std::vector<Value>& st) {
+        Value b = std::move(st.back());
+        st.pop_back();
+        Value& a = st.back();
+        // Fast paths for number math and compares, the hot case in loops.
+        // Anything unusual (overflow, division, mixed types) takes op_binary.
+        if (a.is<long long>() && b.is<long long>()) {
+            long long x = a.as<long long>(), y = b.as<long long>(), r;
+            bool done = true;
+            switch (in.a) {
+                case BAdd: if (add_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                case BSub: if (sub_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                case BMul: if (mul_overflows(x, y, &r)) done = false; else a = Value(r); break;
+                case BMod:
+                    if (y <= 0) { done = false; break; }
+                    r = x % y;
+                    if (r < 0) r += y;
+                    a = Value(r);
+                    break;
+                case BEq: a = Value(x == y); break;
+                case BNe: a = Value(x != y); break;
+                case BLt: a = Value(x < y); break;
+                case BLe: a = Value(x <= y); break;
+                case BGt: a = Value(x > y); break;
+                case BGe: a = Value(x >= y); break;
+                default: done = false;
+            }
+            if (done) return;
+        } else if (a.is<double>() && b.is<double>()) {
+            double x = a.as<double>(), y = b.as<double>();
+            bool done = true;
+            switch (in.a) {
+                case BAdd: a = Value(x + y); break;
+                case BSub: a = Value(x - y); break;
+                case BMul: a = Value(x * y); break;
+                case BEq: a = Value(x == y); break;
+                case BNe: a = Value(x != y); break;
+                case BLt: a = Value(x < y); break;
+                case BLe: a = Value(x <= y); break;
+                case BGt: a = Value(x > y); break;
+                case BGe: a = Value(x >= y); break;
+                default: done = false;
+            }
+            if (done) return;
+        }
+        a = op_binary(*in.at, a, b);
+    }
+
+#if defined(_MSC_VER)
+    __declspec(noinline)
+#else
+    __attribute__((noinline))
+#endif
+    [[noreturn]] void undefined_name(const Proto& p, const Instr& in, const std::string& name) {
+        std::vector<std::string> names;
+        if (in.op == Op::LoadBuiltin) {
+            const std::string& ls = p.strings[in.b];
+            for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
+                names.push_back(ls.substr(i, j - i));
+        }
+        for (size_t g = 0; g < p.mod->global_names.size(); ++g)
+            if (p.mod->defined[g]) names.push_back(p.mod->global_names[g]);
+        for (const auto& kv : host_.builtins()->vars) names.push_back(kv.first);
+        fail_at(*in.at, "'" + name + "' is not defined" + op_suggest(name, names));
+    }
+
+#if defined(_MSC_VER)
+    __declspec(noinline)
+#else
+    __attribute__((noinline))
+#endif
+    void range_prep(const Instr& in, std::vector<Value>& st) {
+        Value b = std::move(st.back());
+        st.pop_back();
+        Value a = std::move(st.back());
+        st.pop_back();
+        long long lo, hi;
+        op_range_bounds(*in.at, a, b, lo, hi);
+        st.emplace_back(hi);
+        st.emplace_back(lo);
+    }
+
     Value run(const Proto& p, std::shared_ptr<Scope> sc) {
         Scope* const stop = sc ? sc->parent.get() : nullptr;
         auto leave = [&]() {  // hand this call's scopes back for reuse
@@ -764,18 +853,7 @@ private:
                 case Op::LoadBuiltin: {
                     const std::string& name = p.strings[in.op == Op::LoadGlobal ? in.b : in.a];
                     const Value* b = builtin(name);
-                    if (!b) {
-                        std::vector<std::string> names;
-                        if (in.op == Op::LoadBuiltin) {
-                            const std::string& ls = p.strings[in.b];
-                            for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
-                                names.push_back(ls.substr(i, j - i));
-                        }
-                        for (size_t g = 0; g < p.mod->global_names.size(); ++g)
-                            if (defined_[g]) names.push_back(p.mod->global_names[g]);
-                        for (const auto& kv : host_.builtins()->vars) names.push_back(kv.first);
-                        fail_at(*in.at, "'" + name + "' is not defined" + op_suggest(name, names));
-                    }
+                    if (!b) undefined_name(p, in, name);
                     st.push_back(*b);
                     break;
                 }
@@ -816,53 +894,7 @@ private:
                 case Op::JumpIfTrueKeep:
                     if (st.back().as<bool>()) ip = static_cast<size_t>(in.a);
                     break;
-                case Op::Binary: {
-                    Value b = pop();
-                    Value& a = st.back();
-                    // Fast paths for number math and compares, the hot case in loops.
-                    // Anything unusual (overflow, division, mixed types) takes op_binary.
-                    if (a.is<long long>() && b.is<long long>()) {
-                        long long x = a.as<long long>(), y = b.as<long long>(), r;
-                        bool done = true;
-                        switch (in.a) {
-                            case BAdd: if (add_overflows(x, y, &r)) done = false; else a = Value(r); break;
-                            case BSub: if (sub_overflows(x, y, &r)) done = false; else a = Value(r); break;
-                            case BMul: if (mul_overflows(x, y, &r)) done = false; else a = Value(r); break;
-                            case BMod:
-                                if (y <= 0) { done = false; break; }
-                                r = x % y;
-                                if (r < 0) r += y;
-                                a = Value(r);
-                                break;
-                            case BEq: a = Value(x == y); break;
-                            case BNe: a = Value(x != y); break;
-                            case BLt: a = Value(x < y); break;
-                            case BLe: a = Value(x <= y); break;
-                            case BGt: a = Value(x > y); break;
-                            case BGe: a = Value(x >= y); break;
-                            default: done = false;
-                        }
-                        if (done) break;
-                    } else if (a.is<double>() && b.is<double>()) {
-                        double x = a.as<double>(), y = b.as<double>();
-                        bool done = true;
-                        switch (in.a) {
-                            case BAdd: a = Value(x + y); break;
-                            case BSub: a = Value(x - y); break;
-                            case BMul: a = Value(x * y); break;
-                            case BEq: a = Value(x == y); break;
-                            case BNe: a = Value(x != y); break;
-                            case BLt: a = Value(x < y); break;
-                            case BLe: a = Value(x <= y); break;
-                            case BGt: a = Value(x > y); break;
-                            case BGe: a = Value(x >= y); break;
-                            default: done = false;
-                        }
-                        if (done) break;
-                    }
-                    a = op_binary(*in.at, a, b);
-                    break;
-                }
+                case Op::Binary: binary(in, st); break;
                 case Op::Unary: st.back() = op_unary(*in.at, st.back()); break;
                 case Op::Range: {
                     Value b = pop();
@@ -954,15 +986,7 @@ private:
                     }
                     break;
                 }
-                case Op::ForRangePrep: {
-                    Value b = pop();
-                    Value a = pop();
-                    long long lo, hi;
-                    op_range_bounds(*in.at, a, b, lo, hi);
-                    st.emplace_back(hi);
-                    st.emplace_back(lo);
-                    break;
-                }
+                case Op::ForRangePrep: range_prep(in, st); break;
                 case Op::ForRangeNext: {
                     long long& i = std::get<long long>(st.back().v);
                     if (i < st[st.size() - 2].as<long long>()) {

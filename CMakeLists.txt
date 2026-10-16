@@ -58,8 +58,9 @@ add_executable(relic src/main.cpp)
 target_link_libraries(relic PRIVATE relic_core)
 if(MSVC)
   # The tree-walker recurses once per Relic call; the 1 MB Windows default is
-  # too small for the 800-call limit. Match the 8 MB Linux/macOS default.
-  target_link_options(relic PRIVATE /STACK:8388608)
+  # too small for the 800-call limit. MSVC frames run larger than GCC and
+  # Clang ones, so give it 16 MB (Linux and macOS default to 8 MB).
+  target_link_options(relic PRIVATE /STACK:16777216)
 endif()
 
 enable_testing()
