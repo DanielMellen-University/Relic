@@ -1,0 +1,14 @@
+start
+[] menu true
+launch
+["Clicker#1"] menu false
+app app
+Clicks: 2
+launch
+hi !_
+tab
+["Notes#2", "Clicker#1"] menu false
+close
+["Notes#2"] menu false
+desktop bar
+'_inside' is private to module 'wm'

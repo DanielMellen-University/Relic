@@ -1,0 +1,33 @@
+# the desktop model in shell/wm.relic, driven by fake clicks and keys
+use ../../shell/wm
+let d = wm.new_desktop(640, 480, wm.default_apps())
+fun show(d)
+    let names = []
+    for w in d.windows
+        append(names, "{w.app.name}#{w.id}")
+    print(names, "menu", d.menu_open)
+print(wm.click(d, 10, 470))
+show(d)
+let b = wm.menu_item_box(d, 0)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+show(d)
+let w = wm.focused(d)
+print(wm.click(d, w.x + 10, w.y + 30), wm.click(d, w.x + 10, w.y + 30))
+print(w.app.lines(w.state)[0])
+wm.click(d, 10, 470)
+b = wm.menu_item_box(d, 1)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+for k in ["h", "i", "space", "x", "backspace", "!"]
+    wm.key(d, k)
+print(wm.focused(d).app.lines(wm.focused(d).state)[1])
+b = wm.tab_box(d, 0)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+show(d)
+let cb = wm.close_box(wm.focused(d))
+print(wm.click(d, cb[0] + 2, cb[1] + 2))
+show(d)
+print(wm.click(d, 600, 100), wm.click(d, 300, 470))
+try
+    print(wm._inside)
+catch e
+    print(e.message)

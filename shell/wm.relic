@@ -1,0 +1,137 @@
+# shell/wm.relic: the MONOLITH 2 desktop model (M11). No drawing here, so it
+# runs and tests without SDL. shell/desktop.relic draws it with std/graphics.
+#
+# A desktop has apps (what the Start menu can launch) and windows (running
+# apps, last one on top). An app is a map:
+#   {name, width, height, init(), lines(state), on_click(state, x, y), on_key(state, key)}
+# lines() gives the text rows the desktop draws inside the window.
+
+let bar_height = 24     # taskbar along the bottom
+let title_height = 16   # window title bar
+let start_width = 56
+let menu_row = 18
+let tab_width = 90
+
+fun new_desktop(width, height, apps)
+    return {width: width, height: height, apps: apps, windows: [], menu_open: false, next_id: 1}
+
+fun bar_top(d) = d.height - bar_height
+
+# Start menu rows, bottom up from the taskbar: [x, y, w, h] of row i.
+fun menu_item_box(d, i)
+    let n = len(d.apps)
+    return [0, bar_top(d) - (n - i) * menu_row, 120, menu_row]
+
+# Taskbar button of window i (in launch order is fine, it is by index).
+fun tab_box(d, i) = [start_width + 4 + i * (tab_width + 4), bar_top(d) + 3, tab_width, bar_height - 6]
+
+fun close_box(w) = [w.x + w.width - title_height, w.y, title_height, title_height]
+
+fun _inside(b, x, y) = x >= b[0] and x < b[0] + b[2] and y >= b[1] and y < b[1] + b[3]
+
+fun launch(d, app)
+    let n = len(d.windows)
+    let w = {id: d.next_id, app: app, state: app.init(), x: 40 + n * 24, y: 30 + n * 20, width: app.width, height: app.height}
+    d.next_id = d.next_id + 1
+    append(d.windows, w)
+    return w
+
+fun focused(d)
+    if len(d.windows) == 0
+        return none
+    return d.windows[len(d.windows) - 1]
+
+fun _raise(d, i)
+    let w = d.windows[i]
+    remove(d.windows, i)
+    append(d.windows, w)
+
+fun _index_of(d, id)
+    for i in 0..len(d.windows)
+        if d.windows[i].id == id
+            return i
+    return -1
+
+fun close(d, id)
+    let i = _index_of(d, id)
+    if i >= 0
+        remove(d.windows, i)
+
+# Taskbar order is launch order, which is the id order.
+fun tabs(d)
+    let out = []
+    for w in d.windows
+        let placed = false
+        for i in 0..len(out)
+            if not placed and w.id < out[i].id
+                insert(out, i, w)
+                placed = true
+        if not placed
+            append(out, w)
+    return out
+
+# A mouse click at (x, y). Gives a short word saying what it hit.
+fun click(d, x, y)
+    if d.menu_open
+        d.menu_open = false
+        for i in 0..len(d.apps)
+            if _inside(menu_item_box(d, i), x, y)
+                launch(d, d.apps[i])
+                return "launch"
+    if y >= bar_top(d)
+        if x < start_width
+            d.menu_open = not d.menu_open
+            return "start"
+        let t = tabs(d)
+        for i in 0..len(t)
+            if _inside(tab_box(d, i), x, y)
+                _raise(d, _index_of(d, t[i].id))
+                return "tab"
+        return "bar"
+    let i = len(d.windows) - 1
+    while i >= 0
+        let w = d.windows[i]
+        if _inside([w.x, w.y, w.width, w.height + title_height], x, y)
+            _raise(d, i)
+            if _inside(close_box(w), x, y)
+                close(d, w.id)
+                return "close"
+            if y < w.y + title_height
+                return "title"
+            w.app.on_click(w.state, x - w.x, y - w.y - title_height)
+            return "app"
+        i = i - 1
+    return "desktop"
+
+# A key press goes to the window on top.
+fun key(d, k)
+    let w = focused(d)
+    if w != none
+        w.app.on_key(w.state, k)
+
+# ---- two small apps ----
+
+fun _clicker_init() = {count: 0}
+fun _clicker_lines(s) = ["Clicks: {s.count}", "Click here to count."]
+fun _clicker_click(s, x, y)
+    s.count = s.count + 1
+fun _clicker_key(s, k)
+    if k == "space"
+        s.count = s.count + 1
+
+fun _notes_init() = {text: ""}
+fun _notes_lines(s) = ["Type something:", s.text + "_"]
+fun _notes_click(s, x, y)
+    return none
+fun _notes_key(s, k)
+    if k == "backspace"
+        if len(s.text) > 0
+            s.text = slice(s.text, 0, len(s.text) - 1)
+    else if k == "space"
+        s.text = s.text + " "
+    else if len(k) == 1
+        s.text = s.text + k
+
+let clicker = {name: "Clicker", width: 180, height: 60, init: _clicker_init, lines: _clicker_lines, on_click: _clicker_click, on_key: _clicker_key}
+let notes = {name: "Notes", width: 220, height: 60, init: _notes_init, lines: _notes_lines, on_click: _notes_click, on_key: _notes_key}
+fun default_apps() = [clicker, notes]

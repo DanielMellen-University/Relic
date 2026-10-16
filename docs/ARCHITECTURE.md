@@ -19,6 +19,7 @@ Relic/
     diag/           error messages with file, line, column
   std/              standard library, written in Relic
   selfhost/         lexer, parser and interpreter written in Relic
+  shell/            MONOLITH 2 desktop in Relic: wm.relic (model), desktop.relic (drawing)
   examples/         small programs, such as hello_window.relic
   bench/            benchmark programs for tools/bench.sh
   tests/

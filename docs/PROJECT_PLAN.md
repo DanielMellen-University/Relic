@@ -68,7 +68,9 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
-  - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds. Next: PNG images, desktop shell.
+  - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds.
+  - Slice 3: **done.** PNG and JPG via optional SDL2_image, TrueType text via optional SDL2_ttf.
+  - Shell, first cut: `shell/wm.relic` (window model, no drawing, golden test `shell_wm`) and `shell/desktop.relic` (draws it). Start menu launches Clicker or Notes; windows raise, close and take keys; taskbar buttons raise. Next: dragging, resizing, a terminal app.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 
