@@ -61,8 +61,8 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 91 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, modules (`use_*`, `std_*`, `err_use_*`), `rt_recursion`, `try_recursion` and `gc_cycles`.
-  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `use` in the self-hosted interpreter and a faster runtime (M10).
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 101 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, `std_*`, `rt_recursion`, `try_recursion` and `gc_cycles`.
+  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs `std/` in the self-hosted interpreter and a faster runtime (M10).
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 109 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
@@ -79,7 +79,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 | Syntax keeps changing | Rework in parser and tests | Freeze 1.0 syntax before M3 |
 | Memory model picked late | Rewrite of runtime | Decided in M7: reference counting |
 | Self-host too large | Stall at phase 3 | Ported one stage at a time; all three stages done |
-| Self-hosted side too slow or missing `use` | Host never retired | Add `use` to `selfhost/interp.relic`, then a VM in Relic |
+| Self-hosted side too slow or missing `std/` | Host never retired | Expose `host_*` in `selfhost/interp.relic`, then a VM in Relic |
 | Tree-walker too slow for desktop | Laggy shell | Host VM done and default; more speed work before the shell |
 | Borrowed pieces creep in | Breaks the domestic goal | Keep the borrowed list in BOOTSTRAP.md current |
 

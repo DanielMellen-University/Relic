@@ -25,8 +25,8 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 - [x] Lexer rewritten in Relic (`selfhost/lexer.relic`, matches `--tokens` on every file)
 - [x] Parser rewritten in Relic (`selfhost/parser.relic`, matches `--ast` on every file)
-- [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; no `use` yet, see DESIGN.md)
-- [ ] Relic builds and runs itself without the C/C++ host for language logic (still runs on the host; needs `use` in the self-hosted interpreter and a Relic-written VM)
+- [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; `use` for local files, no `std/` yet)
+- [ ] Relic builds and runs itself without the C/C++ host for language logic (still runs on the host; needs `std/` in the self-hosted interpreter and a Relic-written VM)
 
 ## Phase 4: Runtime and standard library
 

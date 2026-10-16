@@ -10,7 +10,9 @@
 # step after that is a no-op, and loops stop, so output after an error never
 # happens. Known limits are listed in docs/DESIGN.md (Self-host).
 use lexer
+use parser
 use tokens_fmt
+use std/files
 
 let tag = chr(1)
 let max_depth = 800
@@ -45,18 +47,101 @@ fun find(env, name)
     return none
 
 fun new_runtime()
-    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none}
+    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}}
     let builtins = new_env(none)
     for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
         let v = {name: b[0], arity: b[1]}
         v[tag] = "builtin"
         builtins.vars[b[0]] = v
     rt.globals = new_env(builtins)
+    rt.builtins = builtins
     return rt
+
+# ---- modules ----
+
+# The main file is a module too, so a module that uses it back gets the same scope.
+fun set_main(rt, path)
+    rt.file = path
+    let name = path
+    let cut = last_slash(name)
+    name = slice(name, cut + 1, len(name))
+    if len(name) > 6 and slice(name, len(name) - 6, len(name)) == ".relic"
+        name = slice(name, 0, len(name) - 6)
+    rt.modules[norm_path(path)] = new_module(name, rt.globals)
+
+fun new_module(name, scope)
+    let m = {name: name, scope: scope}
+    m[tag] = "module"
+    return m
+
+fun last_slash(s)
+    let cut = -1
+    for i in 0..len(s)
+        if s[i] == "/" or s[i] == "\\"
+            cut = i
+    return cut
+
+fun folder_of(file) = slice(file, 0, last_slash(file) + 1)
+
+# A cache key for a path: drops "." parts and folds "dir/.." away.
+fun norm_path(p)
+    let parts = []
+    let cur = ""
+    for c in p + "/"
+        if c == "/" or c == "\\"
+            if cur == ".."  and len(parts) > 0 and parts[len(parts) - 1] != ".." and parts[len(parts) - 1] != ""
+                pop(parts)
+            else if cur != "." and not (cur == "" and len(parts) > 0)
+                append(parts, cur)
+            cur = ""
+        else
+            cur = cur + c
+    let out = ""
+    for i in 0..len(parts)
+        if i > 0
+            out = out + "/"
+        out = out + parts[i]
+    return out
+
+fun load_module(rt, n)
+    let path = n.text
+    if len(path) >= 4 and slice(path, 0, 4) == "std/"
+        return fail(rt, n, "'use std/...' is not supported by the self-hosted interpreter yet")
+    let file = folder_of(rt.file) + path + ".relic"
+    let key = norm_path(file)
+    if key in rt.modules
+        return rt.modules[key]
+    if not files.exists(file)
+        return fail(rt, n, "cannot find module '{path}' (no file {path}.relic)")
+    let name = slice(path, last_slash(path) + 1, len(path))
+    let mod = new_module(name, new_env(rt.builtins))
+    rt.modules[key] = mod
+    let saved = rt.file
+    rt.file = file
+    let lexed = lexer.lex(files.read(file))
+    let err = lexed.err
+    if err == none
+        let parsed = parser.parse(lexed.tokens)
+        err = parsed.err
+        if err == none
+            for s in parsed.tree.kids
+                let f = exec(rt, s, mod.scope)
+                if rt.err != none
+                    break
+                if f == "return"
+                    fail(rt, rt.flow_node, "'return' outside a function")
+                else if f == "break"
+                    fail(rt, rt.flow_node, "'break' outside a loop")
+                else if f == "next"
+                    fail(rt, rt.flow_node, "'next' outside a loop")
+    if err != none and rt.err == none
+        rt.err = {line: err.line, col: err.col, msg: err.msg, file: file}
+    rt.file = saved
+    return mod
 
 fun fail(rt, at, msg)
     if rt.err == none
-        rt.err = {line: at.line, col: at.col, msg: msg}
+        rt.err = {line: at.line, col: at.col, msg: msg, file: rt.file}
     return none
 
 # ---- values ----
@@ -73,6 +158,8 @@ fun a_type(v)
 fun type_of(v)
     let t = type(v)
     if t == "map" and tag in v
+        if v[tag] == "module"
+            return "module"
         return "function"
     return t
 
@@ -117,6 +204,8 @@ fun repr(v)
         return s + "}}"
     if t == "function"
         return "<fun " + v.name + ">"
+    if t == "module"
+        return "<module " + v.name + ">"
     return str(v)
 
 fun equal(a, b)
@@ -222,7 +311,7 @@ fun exec(rt, n, env)
         return "normal"
     if k == "Fun"
         rt.next_id = rt.next_id + 1
-        let f = {name: n.text, node: n, closure: env, id: rt.next_id}
+        let f = {name: n.text, node: n, closure: env, id: rt.next_id, file: rt.file}
         f[tag] = "fun"
         env.vars[n.text] = f
         return "normal"
@@ -294,7 +383,12 @@ fun exec(rt, n, env)
         rt.flow_node = n
         return "next"
     if k == "Use"
-        fail(rt, n, "'use' is not supported by the self-hosted interpreter yet")
+        let m = load_module(rt, n)
+        if rt.err == none
+            if len(n.kids) > 0
+                env.vars[n.kids[0].text] = m
+            else
+                env.vars[m.name] = m
         return "normal"
     fail(rt, n, "cannot run a " + k + " here")
     return "normal"
@@ -315,6 +409,8 @@ fun assign(rt, target, v, env, value_at)
         return
     let t = type_of(obj)
     if target.kind == "Field"
+        if t == "module"
+            return fail(rt, target, "cannot change a module's names from outside; give it a function that does it")
         if t != "map"
             return fail(rt, target, "cannot set a field on " + a_type(obj))
         obj[target.text] = v
@@ -398,6 +494,12 @@ fun eval(rt, n, env)
         let obj = eval(rt, n.kids[0], env)
         if rt.err != none
             return none
+        if type_of(obj) == "module"
+            if len(n.text) > 0 and n.text[0] == "_"
+                return fail(rt, n, "'{n.text}' is private to module '{obj.name}'")
+            if not (n.text in obj.scope.vars)
+                return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
+            return obj.scope.vars[n.text]
         if type_of(obj) != "map"
             return fail(rt, n, "cannot read a field of " + a_type(obj))
         if not (n.text in obj)
@@ -550,6 +652,8 @@ fun call(rt, n, env)
     let ret_hint = hint_of(f.node, 2)
     let ret_what = "{f.name}() must return"
     rt.depth = rt.depth + 1
+    let saved_file = rt.file
+    rt.file = f.file
     let result = none
     if body.kind != "Block"
         result = eval(rt, body, scope)
@@ -569,6 +673,7 @@ fun call(rt, n, env)
         else if ret_hint != "" and fl == "normal"
             check_type(rt, f.node, ret_hint, none, ret_what)
     rt.depth = rt.depth - 1
+    rt.file = saved_file
     return result
 
 # ---- built-ins: {value, err}, err is the message without the name ----

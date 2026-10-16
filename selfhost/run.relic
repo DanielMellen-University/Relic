@@ -18,7 +18,10 @@ else
         err = parsed.err
         if err == none
             let rt = interp.new_runtime()
+            interp.set_main(rt, path)
             interp.run(rt, parsed.tree)
             err = rt.err
     if err != none
+        if "file" in err and err.file != ""
+            path = err.file
         eprint("{path}:{err.line}:{err.col}: error: {err.msg}")

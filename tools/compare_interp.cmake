@@ -3,7 +3,7 @@
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -P tools/compare_interp.cmake
 # Skipped, with the reason:
 #   repl_*         typed into the REPL, not run as files
-#   use_*, std_*, err_use_*  modules: the self-hosted interpreter has no `use` yet
+#   std_*          std/ modules need host-only primitives the self-hosted interpreter lacks
 #   rt_recursion   the host's 800-call limit is reached by the interpreter itself first
 #   try_recursion  same reason
 #   gc_cycles      gc() counts the host heap, which holds the interpreter too
@@ -12,7 +12,7 @@ set(bad 0)
 set(total 0)
 foreach(f ${files})
   get_filename_component(n ${f} NAME_WE)
-  if(n MATCHES "^(repl_|use_|std_|err_use_)" OR n STREQUAL "rt_recursion" OR n STREQUAL "try_recursion" OR n STREQUAL "gc_cycles")
+  if(n MATCHES "^(repl_|std_)" OR n STREQUAL "rt_recursion" OR n STREQUAL "try_recursion" OR n STREQUAL "gc_cycles")
     continue()
   endif()
   math(EXPR total "${total}+1")
