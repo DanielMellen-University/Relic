@@ -40,7 +40,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 ## Phase 5: Desktop shell in Relic
 
 - [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11)
-- [ ] Window manager, taskbar and Start menu rewritten in Relic (started: `shell/desktop.relic` with windows, a taskbar, a Start menu and two apps; no dragging or resizing yet)
+- [ ] Window manager, taskbar and Start menu rewritten in Relic (started: `shell/desktop.relic` with windows, taskbar, Start menu, drag, resize, and Clicker/Notes/Terminal apps)
 - [ ] Virtual filesystem reachable from Relic
 
 ## Phase 6: Apps as proof
