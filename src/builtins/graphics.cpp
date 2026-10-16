@@ -41,13 +41,28 @@ int channel(const Value& v, const char* what) {
     return c;
 }
 
+std::string g_clipboard;
+
+std::string str_any(const Value& v) {
+    if (!v.is<std::string>()) throw std::string("text must be a string, got ") + type_name(v);
+    return v.as<std::string>();
+}  // used when there is no SDL window
+
 #ifdef RELIC_HAVE_SDL
+Value event(const char* type, std::initializer_list<std::pair<const char*, Value>> fields) {
+    auto m = std::make_shared<Map>();
+    m->set("type", Value(std::string(type)));
+    for (auto& f : fields) m->set(f.first, f.second);
+    return Value(m);
+}
+
 SDL_Window* g_window = nullptr;
 SDL_Renderer* g_renderer = nullptr;
 bool g_quit = false;
 std::deque<std::string> g_keys;      // keys pressed since the last next_key()
 std::vector<SDL_Texture*> g_images;  // index = image id; freed on close
 std::vector<std::pair<int, int>> g_sizes;
+std::deque<Value> g_events;          // event maps since the last next_event()
 #ifdef RELIC_HAVE_SDL_TTF
 std::vector<TTF_Font*> g_fonts;  // index = font id; freed on close
 
@@ -63,11 +78,37 @@ std::string lower(std::string s) {
 void pump() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT) g_quit = true;
-        else if (e.type == SDL_KEYDOWN && !e.key.repeat) {
-            g_keys.push_back(lower(SDL_GetKeyName(e.key.keysym.sym)));
-            if (g_keys.size() > 64) g_keys.pop_front();
+        using I = long long;
+        if (e.type == SDL_QUIT) {
+            g_quit = true;
+            g_events.push_back(event("quit", {}));
+        } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+            std::string k = lower(SDL_GetKeyName(e.key.keysym.sym));
+            if (e.type == SDL_KEYDOWN && !e.key.repeat) {
+                g_keys.push_back(k);
+                if (g_keys.size() > 64) g_keys.pop_front();
+            }
+            Uint16 mod = e.key.keysym.mod;
+            g_events.push_back(event(e.type == SDL_KEYDOWN ? "key_down" : "key_up",
+                {{"key", Value(k)}, {"repeat", Value(e.key.repeat != 0)}, {"shift", Value((mod & KMOD_SHIFT) != 0)},
+                 {"ctrl", Value((mod & KMOD_CTRL) != 0)}, {"alt", Value((mod & KMOD_ALT) != 0)}}));
+        } else if (e.type == SDL_TEXTINPUT) {
+            g_events.push_back(event("text", {{"text", Value(std::string(e.text.text))}}));
+        } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+            g_events.push_back(event(e.type == SDL_MOUSEBUTTONDOWN ? "mouse_down" : "mouse_up",
+                {{"button", Value(I(e.button.button))}, {"x", Value(I(e.button.x))}, {"y", Value(I(e.button.y))},
+                 {"clicks", Value(I(e.button.clicks))}}));
+        } else if (e.type == SDL_MOUSEMOTION) {
+            g_events.push_back(event("mouse_move", {{"x", Value(I(e.motion.x))}, {"y", Value(I(e.motion.y))},
+                {"dx", Value(I(e.motion.xrel))}, {"dy", Value(I(e.motion.yrel))}}));
+        } else if (e.type == SDL_MOUSEWHEEL) {
+            int dy = e.wheel.y, dx = e.wheel.x;
+            if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) { dx = -dx; dy = -dy; }
+            g_events.push_back(event("wheel", {{"dx", Value(I(dx))}, {"dy", Value(I(dy))}}));
+        } else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            g_events.push_back(event("resize", {{"width", Value(I(e.window.data1))}, {"height", Value(I(e.window.data2))}}));
         }
+        if (g_events.size() > 512) g_events.pop_front();
     }
 }
 
@@ -106,6 +147,7 @@ void close_window() {
     g_fonts.clear();
 #endif
     g_keys.clear();
+    g_events.clear();
     g_quit = false;
     if (g_renderer) SDL_DestroyRenderer(g_renderer);
     if (g_window) SDL_DestroyWindow(g_window);
@@ -131,7 +173,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         if (g_window) close_window();
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) throw std::string("cannot start video: ") + SDL_GetError();
         g_window = SDL_CreateWindow(a[2].as<std::string>().c_str(), SDL_WINDOWPOS_CENTERED,
-                                    SDL_WINDOWPOS_CENTERED, w, h, 0);
+                                    SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_RESIZABLE);
         if (!g_window) {
             std::string err = SDL_GetError();
             close_window();
@@ -144,6 +186,8 @@ void add_graphics_builtins(const AddBuiltin& add) {
             close_window();
             throw std::string("cannot draw in the window: ") + err;
         }
+        SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
+        SDL_StartTextInput();
         return Value();
     });
     add("host_gfx_close", 0, [](std::vector<Value>&) {
@@ -342,6 +386,95 @@ void add_graphics_builtins(const AddBuiltin& add) {
             throw std::string("TrueType fonts are not built in; rebuild with SDL2_ttf installed");
         });
 #endif
+    add("host_gfx_next_event", 0, [](std::vector<Value>&) {
+        need_window();
+        pump();
+        if (g_events.empty()) return Value();
+        Value v = g_events.front();
+        g_events.pop_front();
+        return v;
+    });
+    // Puts a made-up event in SDL's queue, for tests and scripted demos.
+    // kind: "key" (a = key name), "text" (a = text), "click" (a = x, b = y),
+    // "wheel" (a = dx, b = dy), "resize" (a = width, b = height).
+    add("host_gfx_simulate", 3, [](std::vector<Value>& a) {
+        need_window();
+        std::string kind = str(a[0], "kind");
+        SDL_Event e{};
+        if (kind == "key") {
+            e.type = SDL_KEYDOWN;
+            e.key.keysym.sym = SDL_GetKeyFromName(str(a[1], "key").c_str());
+            if (e.key.keysym.sym == SDLK_UNKNOWN) throw std::string("unknown key name");
+            SDL_PushEvent(&e);
+        } else if (kind == "text") {
+            std::string t = str(a[1], "text");
+            if (t.size() >= sizeof(e.text.text)) throw std::string("text is too long");
+            e.type = SDL_TEXTINPUT;
+            std::copy(t.begin(), t.end(), e.text.text);
+            SDL_PushEvent(&e);
+        } else if (kind == "click") {
+            for (Uint32 t : {SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP}) {
+                SDL_Event b{};
+                b.type = t;
+                b.button.button = SDL_BUTTON_LEFT;
+                b.button.clicks = 1;
+                b.button.x = whole(a[1], "x");
+                b.button.y = whole(a[2], "y");
+                SDL_PushEvent(&b);
+            }
+        } else if (kind == "wheel") {
+            e.type = SDL_MOUSEWHEEL;
+            e.wheel.x = whole(a[1], "dx");
+            e.wheel.y = whole(a[2], "dy");
+            SDL_PushEvent(&e);
+        } else if (kind == "resize") {
+            e.type = SDL_WINDOWEVENT;
+            e.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;
+            e.window.data1 = whole(a[1], "width");
+            e.window.data2 = whole(a[2], "height");
+            SDL_PushEvent(&e);
+        } else {
+            throw std::string("unknown event kind: ") + kind;
+        }
+        return Value();
+    });
+    add("host_gfx_size", 0, [](std::vector<Value>&) {
+        need_window();
+        int w = 0, h = 0;
+        SDL_GetRendererOutputSize(g_renderer, &w, &h);
+        auto l = std::make_shared<List>();
+        l->push_back(Value(static_cast<long long>(w)));
+        l->push_back(Value(static_cast<long long>(h)));
+        return Value(l);
+    });
+    add("host_gfx_line", 7, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        SDL_SetRenderDrawColor(r, channel(a[4], "red"), channel(a[5], "green"), channel(a[6], "blue"), 255);
+        SDL_RenderDrawLine(r, whole(a[0], "x1"), whole(a[1], "y1"), whole(a[2], "x2"), whole(a[3], "y2"));
+        return Value();
+    });
+    add("host_gfx_outline", 7, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        SDL_Rect rect{whole(a[0], "x"), whole(a[1], "y"), whole(a[2], "width"), whole(a[3], "height")};
+        SDL_SetRenderDrawColor(r, channel(a[4], "red"), channel(a[5], "green"), channel(a[6], "blue"), 255);
+        SDL_RenderDrawRect(r, &rect);
+        return Value();
+    });
+    // Rect with alpha 0 (clear) to 255 (solid), blended over what is there.
+    add("host_gfx_rect_alpha", 8, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        SDL_Rect rect{whole(a[0], "x"), whole(a[1], "y"), whole(a[2], "width"), whole(a[3], "height")};
+        SDL_SetRenderDrawColor(r, channel(a[4], "red"), channel(a[5], "green"), channel(a[6], "blue"), channel(a[7], "alpha"));
+        SDL_RenderFillRect(r, &rect);
+        return Value();
+    });
+    // Limits drawing to a rectangle; width or height 0 or less turns it off.
+    add("host_gfx_clip", 4, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        SDL_Rect rect{whole(a[0], "x"), whole(a[1], "y"), whole(a[2], "width"), whole(a[3], "height")};
+        SDL_RenderSetClipRect(r, rect.w > 0 && rect.h > 0 ? &rect : nullptr);
+        return Value();
+    });
     add("host_gfx_wait", 1, [](std::vector<Value>& a) {
         int ms = whole(a[0], "milliseconds");
         if (ms > 0) SDL_Delay(static_cast<Uint32>(ms));
@@ -358,10 +491,32 @@ void add_graphics_builtins(const AddBuiltin& add) {
         {"host_gfx_mouse_down", 1}, {"host_gfx_text", 7}, {"host_gfx_image_load", 1}, {"host_gfx_image", 3},
         {"host_gfx_image_width", 1}, {"host_gfx_image_height", 1},
         {"host_gfx_font_load", 2}, {"host_gfx_font_text", 7}, {"host_gfx_font_size", 2},
+        {"host_gfx_next_event", 0}, {"host_gfx_simulate", 3}, {"host_gfx_size", 0}, {"host_gfx_line", 7},
+        {"host_gfx_outline", 7}, {"host_gfx_rect_alpha", 8}, {"host_gfx_clip", 4},
     };
     for (const auto& s : stubs) add(s.first, s.second, [](std::vector<Value>&) -> Value { missing(); });
     (void)channel;
 #endif
+    // Clipboard: the system one while an SDL window is open, else one kept in
+    // this process, so text copy and paste work in tests too.
+    add("host_clipboard_set", 1, [](std::vector<Value>& a) {
+        g_clipboard = str_any(a[0]);
+#ifdef RELIC_HAVE_SDL
+        if (g_window) SDL_SetClipboardText(g_clipboard.c_str());
+#endif
+        return Value();
+    });
+    add("host_clipboard_get", 0, [](std::vector<Value>&) {
+#ifdef RELIC_HAVE_SDL
+        if (g_window && SDL_HasClipboardText()) {
+            char* t = SDL_GetClipboardText();
+            std::string s = t ? t : "";
+            SDL_free(t);
+            return Value(s);
+        }
+#endif
+        return Value(g_clipboard);
+    });
 }
 
 }  // namespace relic

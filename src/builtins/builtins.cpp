@@ -2,12 +2,17 @@
 #include "interp/interp.hpp"
 #include "builtins/graphics.hpp"
 
+namespace relic { std::string std_root(); }
+
 #include <chrono>
 #include <cerrno>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
+#include <thread>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 
@@ -250,6 +255,97 @@ void Interpreter::install_builtins() {
     math1("host_log", [](double x) { return std::log(x); });
     add("host_pow", 2, [num_arg](std::vector<Value>& a) {
         return Value(std::pow(num_arg(a[0], "base"), num_arg(a[1], "power")));
+    });
+
+    // ---- M12 host pieces for MONOLITH 2: folders, process, and a way for the
+    // self-hosted interpreter to reach any host_* built-in. ----
+    namespace fs = std::filesystem;
+    add("host_list_dir", 1, [str_arg](std::vector<Value>& a) {
+        const std::string& p = str_arg(a[0], "path");
+        std::error_code ec;
+        std::vector<std::string> names;
+        for (fs::directory_iterator it(fs::u8path(p), ec), end; !ec && it != end; it.increment(ec))
+            names.push_back(it->path().filename().u8string());
+        if (ec) throw std::string("cannot list ") + p;
+        std::sort(names.begin(), names.end());
+        auto l = std::make_shared<List>();
+        for (auto& n : names) l->emplace_back(n);
+        return Value(l);
+    });
+    add("host_is_dir", 1, [str_arg](std::vector<Value>& a) {
+        std::error_code ec;
+        return Value(fs::is_directory(fs::u8path(str_arg(a[0], "path")), ec));
+    });
+    add("host_make_dir", 1, [str_arg](std::vector<Value>& a) {
+        const std::string& p = str_arg(a[0], "path");
+        std::error_code ec;
+        fs::create_directories(fs::u8path(p), ec);
+        if (ec || !fs::is_directory(fs::u8path(p))) throw std::string("cannot make folder ") + p;
+        return Value();
+    });
+    // Removes a file or an empty folder.
+    add("host_remove", 1, [str_arg](std::vector<Value>& a) {
+        const std::string& p = str_arg(a[0], "path");
+        std::error_code ec;
+        if (!fs::remove(fs::u8path(p), ec) || ec) throw std::string("cannot remove ") + p;
+        return Value();
+    });
+    add("host_rename", 2, [str_arg](std::vector<Value>& a) {
+        const std::string& from = str_arg(a[0], "from");
+        std::error_code ec;
+        fs::rename(fs::u8path(from), fs::u8path(str_arg(a[1], "to")), ec);
+        if (ec) throw std::string("cannot rename ") + from;
+        return Value();
+    });
+    add("host_file_size", 1, [str_arg](std::vector<Value>& a) {
+        const std::string& p = str_arg(a[0], "path");
+        std::error_code ec;
+        auto n = fs::file_size(fs::u8path(p), ec);
+        if (ec) throw std::string("cannot get the size of ") + p;
+        return Value(static_cast<long long>(n));
+    });
+    add("host_cwd", 0, [](std::vector<Value>&) { return Value(fs::current_path().generic_u8string()); });
+    add("host_env", 1, [str_arg](std::vector<Value>& a) {
+        const char* v = std::getenv(str_arg(a[0], "name").c_str());
+        return v ? Value(std::string(v)) : Value();
+    });
+    add("host_exit", 1, [whole_arg, this](std::vector<Value>& a) -> Value {
+        long long code = whole_arg(a[0], "code");
+        out_.flush();
+        std::cout.flush();
+        std::exit(static_cast<int>(code));
+    });
+    add("host_sleep", 1, [num_arg](std::vector<Value>& a) {
+        double ms = num_arg(a[0], "milliseconds");
+        if (ms > 0) std::this_thread::sleep_for(std::chrono::microseconds(static_cast<long long>(ms * 1000)));
+        return Value();
+    });
+    add("host_std_root", 0, [](std::vector<Value>&) { return Value(std_root()); });
+    // host_names(): [name, arity] for every host_* built-in.
+    add("host_names", 0, [this](std::vector<Value>&) {
+        std::vector<std::string> names;
+        for (auto& kv : builtins_->vars)
+            if (kv.first.rfind("host_", 0) == 0) names.push_back(kv.first);
+        std::sort(names.begin(), names.end());
+        auto l = std::make_shared<List>();
+        for (auto& n : names) {
+            auto pair = std::make_shared<List>();
+            pair->emplace_back(n);
+            pair->emplace_back(static_cast<long long>(builtins_->vars[n].as<std::shared_ptr<Builtin>>()->arity));
+            l->emplace_back(pair);
+        }
+        return Value(l);
+    });
+    // host_call(name, args): calls a host_* built-in with a list of arguments.
+    add("host_call", 2, [this, str_arg, list_arg](std::vector<Value>& a) {
+        const std::string& n = str_arg(a[0], "name");
+        auto it = builtins_->vars.find(n);
+        if (n.rfind("host_", 0) != 0 || it == builtins_->vars.end()) throw std::string("no host built-in ") + n;
+        std::vector<Value> args = list_arg(a[1]);
+        auto b = it->second.as<std::shared_ptr<Builtin>>();
+        if (b->arity >= 0 && static_cast<size_t>(b->arity) != args.size())
+            throw n + "() takes " + std::to_string(b->arity) + " arguments";
+        return b->fn(args);
     });
 
     add_graphics_builtins(add);
