@@ -436,7 +436,10 @@ fun eval(rt, n, env)
         return none
     let k = n.kind
     if k == "Number"
-        return num(n.text)
+        try
+            return num(n.text)
+        catch e
+            return fail(rt, n, "float is too large")
     if k == "String"
         return n.text
     if k == "True"
@@ -793,8 +796,8 @@ fun builtin(rt, name, a)
         return ok(remove(a[0], a[1]))
     return bad("cannot remove from " + a_type(a[0]))
 
-# num() on a string: digits with an optional fraction and sign. Narrower than
-# the host's strtod (no exponents, inf or nan); see DESIGN.md.
+# num() on a string: digits with an optional sign, fraction and exponent.
+# Narrower than the host's strtod (no inf, nan or hex); see DESIGN.md.
 fun parse_number(s)
     let i = 0
     if i < len(s) and (s[i] == "-" or s[i] == "+")
@@ -808,6 +811,16 @@ fun parse_number(s)
         while i < len(s) and lexer.is_digit(s[i])
             i = i + 1
             digits = digits + 1
+    if digits > 0 and i < len(s) and (s[i] == "e" or s[i] == "E")
+        i = i + 1
+        if i < len(s) and (s[i] == "-" or s[i] == "+")
+            i = i + 1
+        let exp_digits = 0
+        while i < len(s) and lexer.is_digit(s[i])
+            i = i + 1
+            exp_digits = exp_digits + 1
+        if exp_digits == 0
+            digits = 0
     if digits == 0 or i != len(s)
         return bad("not a number: \"" + s + "\"")
     return ok(num(s))

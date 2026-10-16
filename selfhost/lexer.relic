@@ -146,6 +146,16 @@ fun number(st, l, c)
         advance(st)
         while is_digit(peek(st, 0))
             advance(st)
+    # Exponent: 1e3, 2.5e-4, 6E+2. Only taken when digits follow.
+    if peek(st, 0) == "e" or peek(st, 0) == "E"
+        let k = 1
+        if peek(st, 1) == "+" or peek(st, 1) == "-"
+            k = 2
+        if is_digit(peek(st, k))
+            for j in 0..k
+                advance(st)
+            while is_digit(peek(st, 0))
+                advance(st)
     if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
         fail(st, st.line, st.col, "letter right after a number")
         return

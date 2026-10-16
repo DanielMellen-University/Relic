@@ -66,7 +66,7 @@ print(box.title, box["version"])
 ```
 
 - Math: `+ - * / %`. `%` is the remainder: `10 % 3` is `1`.
-- Numbers: `3` is an `int`, `3.5` is a `float`. `/` always gives a float (`6 / 2` is `3.0`); `int(x)` cuts it back.
+- Numbers: `3` is an `int`, `3.5` and `1e3` are `float`. `/` always gives a float (`6 / 2` is `3.0`); `int(x)` cuts it back.
 - Compare: `== != < <= > >=`. Logic: `and or not`. Membership: `x in list`.
 - Values: ints, floats, strings, `true`, `false`, `none`, lists and maps. Strings are UTF-8: `len("héllo")` is `5`.
 - Conditions must be `true` or `false`. `if 1` is an error.

@@ -161,6 +161,7 @@ catch err
 **Default (since 1.0).** Two number types.
 
 - `3` is an `int`, `3.0` and `0.5` are `float`.
+- Exponents: `1e3`, `2.5e-4`, `6E+2` are always `float`. A literal past the float range is an error (`float is too large`).
 - `+ - * %` on two ints give an int. Anything with a float gives a float.
 - `/` always gives a float: `7 / 2` is `3.5`, `6 / 2` is `3.0`. Use `int(x)` to cut toward zero.
 - Ints are 64-bit. Going past the range is an error (`int overflow`), not a wrap.
@@ -263,7 +264,7 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
   - `use` works for your own files (with `as`, cycles, private `_` names), but not `use std/...`: `host_*` built-ins are not exposed.
   - Every Relic call inside it costs several host calls, so the host's 800-call limit stops deep recursion (around 100 levels) before its own 800 limit. `rt_recursion` and `try_recursion` are skipped for that reason.
   - No `gc()`: the host collector already covers its maps. `gc_cycles` is skipped.
-  - `args()` gives an empty list. `num()` on strings takes digits, a sign and a fraction only (no exponents).
+  - `args()` gives an empty list. `num()` on strings takes digits, a sign, a fraction and an exponent (no inf, nan or hex).
   - It is far slower than the host. Speed is M10's job.
 - The `selfhost_parser` test does the same comparison against `--ast`.
 - The `selfhost_lexer` test runs both lexers over every `.relic` file in the repo and needs identical stdout and stderr.

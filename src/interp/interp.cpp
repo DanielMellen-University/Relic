@@ -155,7 +155,11 @@ Value op_math(const Ast& n, const Value& a, const Value& b) {
 }
 
 Value op_number(const Ast& n) {
-    if (n.text.find('.') != std::string::npos) return Value(std::stod(n.text));
+    if (n.text.find_first_of(".eE") != std::string::npos) {
+        double d = std::strtod(n.text.c_str(), nullptr);
+        if (std::isinf(d)) fail(n, "float is too large");
+        return Value(d);
+    }
     errno = 0;
     long long i = std::strtoll(n.text.c_str(), nullptr, 10);
     if (errno == ERANGE) fail(n, "int is too large (the limit is 9223372036854775807)");

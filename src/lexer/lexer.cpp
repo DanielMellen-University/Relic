@@ -260,6 +260,14 @@ private:
             advance();
             while (std::isdigit(static_cast<unsigned char>(peek()))) advance();
         }
+        // Exponent: 1e3, 2.5e-4, 6E+2. Only taken when digits follow.
+        if (peek() == 'e' || peek() == 'E') {
+            size_t k = (peek(1) == '+' || peek(1) == '-') ? 2 : 1;
+            if (std::isdigit(static_cast<unsigned char>(peek(k)))) {
+                for (size_t j = 0; j < k; ++j) advance();
+                while (std::isdigit(static_cast<unsigned char>(peek()))) advance();
+            }
+        }
         if (std::isalpha(static_cast<unsigned char>(peek())) || peek() == '_')
             error(line_, col_, "letter right after a number");
         emit(Tok::Number, src_.substr(start, pos_ - start), l, c);
