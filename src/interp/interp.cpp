@@ -1,6 +1,7 @@
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
 
+#include <algorithm>
 #include <cerrno>
 #include <cmath>
 #include <cstdlib>
@@ -180,6 +181,8 @@ Value op_unary(const Ast& n, const Value& v) {
     return Value(!v.as<bool>());
 }
 
+static const std::vector<std::string>& map_keys(const Map& m) { return m.keys; }
+
 Value op_field(const Ast& n, const Value& obj) {
             if (obj.is<std::shared_ptr<Module>>()) {
                 const Module& m = *obj.as<std::shared_ptr<Module>>();
@@ -198,7 +201,7 @@ Value op_field(const Ast& n, const Value& obj) {
             if (!obj.is<std::shared_ptr<Map>>())
                 fail(n, std::string("cannot read a field of ") + a_type(obj));
             const Map& m = *obj.as<std::shared_ptr<Map>>();
-            if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'");
+            if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'" + op_suggest(n.text, map_keys(m)));
             return m.items.at(n.text);
 }
 
@@ -218,7 +221,7 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
                 if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");
                 const Map& m = *obj.as<std::shared_ptr<Map>>();
                 const std::string& k = idx.as<std::string>();
-                if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'");
+                if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'" + op_suggest(k, map_keys(m)));
                 return m.items.at(k);
             }
             fail(n, std::string("cannot index ") + a_type(obj));
@@ -353,6 +356,60 @@ std::string key_of(const std::string& file) {
 std::string module_path(const std::string& importer, const std::string& use_path) {
     return use_path.rfind("std/", 0) == 0 ? std_root() + use_path.substr(4) + ".relic"
                                           : folder_of(importer) + use_path + ".relic";
+}
+
+namespace {
+bool in_std(const std::string& file) {
+    if (file.empty()) return false;
+    std::string root = key_of(std_root());
+    std::string k = key_of(file);
+    return k.size() > root.size() && k.compare(0, root.size(), root) == 0;
+}
+}  // namespace
+
+std::string op_suggest(const std::string& name, const std::vector<std::string>& candidates) {
+    size_t limit = name.size() >= 5 ? 2 : 1;
+    std::string best;
+    size_t best_d = limit + 1;
+    for (const auto& c : candidates) {
+        if (c == name || c.empty()) continue;
+        if (c.rfind("host_", 0) == 0 && name.rfind("host_", 0) != 0) continue;
+        size_t lo = c.size() < name.size() ? name.size() - c.size() : c.size() - name.size();
+        if (lo > limit) continue;
+        std::vector<size_t> row(c.size() + 1);
+        for (size_t j = 0; j <= c.size(); ++j) row[j] = j;
+        for (size_t i = 1; i <= name.size(); ++i) {
+            size_t diag = row[0];
+            row[0] = i;
+            for (size_t j = 1; j <= c.size(); ++j) {
+                size_t up = row[j];
+                row[j] = std::min({row[j] + 1, row[j - 1] + 1, diag + (name[i - 1] == c[j - 1] ? 0 : 1)});
+                diag = up;
+            }
+        }
+        size_t d = row[c.size()];
+        if (d >= name.size()) continue;
+        if (d < best_d || (d == best_d && c < best)) {
+            best_d = d;
+            best = c;
+        }
+    }
+    return best.empty() ? "" : " (did you mean '" + best + "'?)";
+}
+
+void op_std_boundary(RuntimeError& e, const std::string& callee_file, const std::string& caller_file,
+                     const std::string& fname, int line, int col) {
+    if (!in_std(callee_file) || in_std(caller_file)) return;
+    if (!e.file.empty() && !in_std(e.file)) return;  // error was in user code, e.g. a callback
+    std::string stem = callee_file.substr(callee_file.find_last_of("/\\") + 1);
+    stem = stem.substr(0, stem.rfind('.'));
+    std::string msg = e.what();
+    std::string head = stem + "." + fname + "(): ";
+    if (msg.rfind("host_", 0) == 0 && msg.find("(): ") != std::string::npos)
+        msg = head + msg.substr(msg.find("(): ") + 4);
+    RuntimeError r(line, col, msg);
+    r.file = caller_file;
+    e = r;
 }
 
 void Interpreter::set_main_file(const std::string& path) {
@@ -551,7 +608,12 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
         case Node::None: return Value();
         case Node::Name: {
             Value* v = env->find(n.text);
-            if (!v) fail(n, "'" + n.text + "' is not defined");
+            if (!v) {
+                std::vector<std::string> names;
+                for (Env* e = env.get(); e; e = e->parent.get())
+                    for (const auto& kv : e->vars) names.push_back(kv.first);
+                fail(n, "'" + n.text + "' is not defined" + op_suggest(n.text, names));
+            }
             return *v;
         }
         case Node::Interp: {
@@ -659,6 +721,7 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
         if (!ret_hint.empty()) op_check_type(*f.node, ret_hint, Value(), ret_what);
     } catch (RuntimeError& e) {
         if (e.file.empty() && f.file != saved) e.file = f.file;
+        op_std_boundary(e, f.file, saved, f.name, n.line, n.col);
         throw;
     }
     return Value();

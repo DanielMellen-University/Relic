@@ -1,1 +1,3 @@
 syn_block_same_line.relic:1:9: error: expected end of line before the block, got name 'print'
+    if true print(1)
+            ^

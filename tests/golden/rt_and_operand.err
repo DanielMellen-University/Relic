@@ -1,1 +1,3 @@
 rt_and_operand.relic:1:16: error: 'and' operand must be true or false, got int
+    print(true and 1)
+                   ^

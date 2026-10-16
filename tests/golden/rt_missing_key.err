@@ -1,1 +1,3 @@
 rt_missing_key.relic:2:8: error: map has no key 'b'
+    print(m.b)
+           ^

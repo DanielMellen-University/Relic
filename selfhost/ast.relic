@@ -4,6 +4,7 @@ use lexer
 use parser
 use tokens_fmt
 use std/files
+use errfmt
 
 fun dump(n, depth, out)
     let line = ""
@@ -31,7 +32,7 @@ else
         err = parsed.err
         tree = parsed.tree
     if err != none
-        eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
+        errfmt.show(path, err)
     else
         let out = []
         dump(tree, 0, out)

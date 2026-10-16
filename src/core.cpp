@@ -97,8 +97,14 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
 }
 
 RunResult run_source_vm(const std::string& path, const std::string& source) {
-    RunResult r;
     std::ostringstream out;
+    RunResult r = run_source_vm(path, source, out);
+    r.out = out.str();
+    return r;
+}
+
+RunResult run_source_vm(const std::string& path, const std::string& source, std::ostream& out) {
+    RunResult r;
     try {
         auto tree = parse(lex(source));
         vm_run(*tree, out, path);
@@ -112,7 +118,6 @@ RunResult run_source_vm(const std::string& path, const std::string& source) {
         r.exit_code = 1;
         r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
     }
-    r.out = out.str();
     return r;
 }
 
@@ -136,6 +141,11 @@ RunResult run_source(const std::string& path, const std::string& source) {
     RunResult r = session.run(path, source);
     r.out = out.str();
     return r;
+}
+
+RunResult run_source(const std::string& path, const std::string& source, std::ostream& out) {
+    Session session(out);
+    return session.run(path, source);
 }
 
 namespace {

@@ -1,1 +1,3 @@
 rt_index_negative.relic:2:10: error: list index -1 is out of range (size 1)
+    print(xs[-1])
+             ^

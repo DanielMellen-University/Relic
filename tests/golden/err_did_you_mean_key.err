@@ -1,0 +1,3 @@
+err_did_you_mean_key.relic:7:11: error: map has no key 'heigth' (did you mean 'height'?)
+    print(size.heigth)
+              ^

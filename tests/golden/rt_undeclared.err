@@ -1,1 +1,3 @@
 rt_undeclared.relic:1:1: error: 'count' is not declared; use 'let count = ...'
+    count = 1
+    ^

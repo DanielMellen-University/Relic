@@ -31,6 +31,14 @@ bool op_type_ok(const std::string& type, const Value& v);
 void op_check_type(const Ast& at, const std::string& type, const Value& v, const std::string& what);
 // The hint of a Let, a Fun (its return) or a parameter Name, or "" if none.
 const std::string& op_hint(const Ast& n);
+// An error leaving a std module into user code is reported at the user's
+// call, under the std-level name: "files.list(): cannot list x" instead of
+// "host_list_dir(): ..." at a line inside std/files.relic.
+void op_std_boundary(RuntimeError& e, const std::string& callee_file, const std::string& caller_file,
+                     const std::string& fname, int line, int col);
+// " (did you mean 'x'?)" for the closest candidate within a small edit
+// distance, or "". Ties go to the alphabetically first name.
+std::string op_suggest(const std::string& name, const std::vector<std::string>& candidates);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
 
 // Modules: the file a `use` path names, seen from the importing file, and the

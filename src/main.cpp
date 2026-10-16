@@ -9,9 +9,11 @@
 #ifdef _WIN32
 #include <io.h>
 static bool stdin_is_terminal() { return _isatty(_fileno(stdin)) != 0; }
+static bool stdout_is_terminal() { return _isatty(_fileno(stdout)) != 0; }
 #else
 #include <unistd.h>
 static bool stdin_is_terminal() { return isatty(0) != 0; }
+static bool stdout_is_terminal() { return isatty(1) != 0; }
 #endif
 
 static void usage() {
@@ -50,12 +52,16 @@ int main(int argc, char** argv) {
     }
     std::stringstream ss;
     ss << f.rdbuf();
+    // Program output streams as it is printed. On a terminal every write is
+    // flushed at once; into a pipe or file it is buffered and flushed at exit.
+    std::ios::sync_with_stdio(false);
+    if (stdout_is_terminal()) std::cout << std::unitbuf;
     relic::RunResult r = tokens ? relic::dump_tokens(path, ss.str())
                        : ast  ? relic::dump_tree(path, ss.str())
                        : bytecode ? relic::dump_bytecode(path, ss.str())
-                       : tree ? relic::run_source(path, ss.str())
-                              : relic::run_source_vm(path, ss.str());
-    std::cout << r.out;
+                       : tree ? relic::run_source(path, ss.str(), std::cout)
+                              : relic::run_source_vm(path, ss.str(), std::cout);
+    std::cout << r.out << std::flush;
     std::cerr << r.err;
     return r.exit_code;
 }

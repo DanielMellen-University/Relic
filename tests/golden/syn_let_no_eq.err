@@ -1,1 +1,3 @@
 syn_let_no_eq.relic:1:7: error: expected '=' after the name, got number 5
+    let x 5
+          ^

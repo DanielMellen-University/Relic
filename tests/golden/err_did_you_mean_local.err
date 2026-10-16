@@ -1,0 +1,3 @@
+err_did_you_mean_local.relic:3:20: error: 'hieght' is not defined (did you mean 'height'?)
+        return width * hieght
+                       ^

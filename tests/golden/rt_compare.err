@@ -1,1 +1,3 @@
 rt_compare.relic:1:9: error: cannot compare an int and a string
+    print(1 < "a")
+            ^

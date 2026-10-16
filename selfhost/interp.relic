@@ -13,6 +13,7 @@ use lexer
 use parser
 use tokens_fmt
 use std/files
+use std/strings
 
 let tag = chr(1)
 let max_depth = 800
@@ -37,6 +38,47 @@ fun hint_of(n, i)
     if len(n.kids) > i and n.kids[i].kind == "Type"
         return n.kids[i].text
     return ""
+
+# " (did you mean 'x'?)" for the closest name within a small edit distance.
+fun suggest(name, names)
+    let limit = 1
+    if len(name) >= 5
+        limit = 2
+    let best = ""
+    let best_d = limit + 1
+    for c in names
+        if c == name or c == "" or (strings.starts_with(c, "host_") and not strings.starts_with(name, "host_"))
+            next
+        if len(c) - len(name) > limit or len(name) - len(c) > limit
+            next
+        let d = edit_distance(name, c)
+        if d < len(name) and (d < best_d or (d == best_d and c < best))
+            best_d = d
+            best = c
+    if best == ""
+        return ""
+    return " (did you mean '{best}'?)"
+
+fun edit_distance(a, b)
+    let row = []
+    for j in 0..len(b) + 1
+        append(row, j)
+    for i in 1..len(a) + 1
+        let diag = row[0]
+        row[0] = i
+        for j in 1..len(b) + 1
+            let up = row[j]
+            let cost = 1
+            if a[i - 1] == b[j - 1]
+                cost = 0
+            let v = row[j] + 1
+            if row[j - 1] + 1 < v
+                v = row[j - 1] + 1
+            if diag + cost < v
+                v = diag + cost
+            row[j] = v
+            diag = up
+    return row[len(b)]
 
 fun find(env, name)
     let e = env
@@ -456,7 +498,13 @@ fun eval(rt, n, env)
     if k == "Name"
         let e = find(env, n.text)
         if e == none
-            return fail(rt, n, "'{n.text}' is not defined")
+            let names = []
+            let s = env
+            while s != none
+                for k in keys(s.vars)
+                    append(names, k)
+                s = s.parent
+            return fail(rt, n, "'{n.text}' is not defined" + suggest(n.text, names))
         return e.vars[n.text]
     if k == "Interp"
         let s = ""
@@ -511,7 +559,7 @@ fun eval(rt, n, env)
         if type_of(obj) != "map"
             return fail(rt, n, "cannot read a field of " + a_type(obj))
         if not (n.text in obj)
-            return fail(rt, n, "map has no key '{n.text}'")
+            return fail(rt, n, "map has no key '{n.text}'" + suggest(n.text, keys(obj)))
         return obj[n.text]
     if k == "Index"
         let obj = eval(rt, n.kids[0], env)
@@ -533,7 +581,7 @@ fun eval(rt, n, env)
             if type(idx) != "string"
                 return fail(rt, n.kids[1], "map keys must be strings")
             if not (idx in obj)
-                return fail(rt, n.kids[1], "map has no key '{idx}'")
+                return fail(rt, n.kids[1], "map has no key '{idx}'" + suggest(idx, keys(obj)))
             return obj[idx]
         return fail(rt, n, "cannot index " + a_type(obj))
     return fail(rt, n, "cannot evaluate a " + k)
@@ -680,9 +728,31 @@ fun call(rt, n, env)
                 check_type(rt, rt.flow_node, ret_hint, result, ret_what)
         else if ret_hint != "" and fl == "normal"
             check_type(rt, f.node, ret_hint, none, ret_what)
+    if rt.err != none
+        std_boundary(rt, f, saved_file, n)
     rt.depth = rt.depth - 1
     rt.file = saved_file
     return result
+
+# An error leaving std into user code is reported at the user's call, with
+# "host_x(): " renamed to the std function the user called.
+fun in_std(file)
+    let root = norm_path(host_std_root())
+    let k = norm_path(file)
+    return file != "" and len(k) > len(root) and slice(k, 0, len(root)) == root
+
+fun std_boundary(rt, f, caller_file, n)
+    if not in_std(f.file) or in_std(caller_file)
+        return none
+    if rt.err.file != "" and not in_std(rt.err.file)
+        return none
+    let msg = rt.err.msg
+    let cut = strings.find(msg, "(): ")
+    if strings.starts_with(msg, "host_") and cut >= 0
+        let stem = slice(f.file, last_slash(f.file) + 1, len(f.file))
+        stem = slice(stem, 0, len(stem) - 6)
+        msg = stem + "." + f.name + "(): " + slice(msg, cut + 4, len(msg))
+    rt.err = {line: n.line, col: n.col, msg: msg, file: caller_file}
 
 # ---- built-ins: {value, err}, err is the message without the name ----
 

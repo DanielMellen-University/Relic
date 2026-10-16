@@ -1,0 +1,4 @@
+# A std error is reported at this call, under the std name.
+use std/files
+print("before")
+files.read(42)

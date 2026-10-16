@@ -1,1 +1,3 @@
 err_unmatched.relic:2:6: error: unmatched ']'
+        2]
+         ^

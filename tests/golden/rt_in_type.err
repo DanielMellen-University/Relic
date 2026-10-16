@@ -1,1 +1,3 @@
 rt_in_type.relic:1:9: error: cannot look inside an int
+    print(1 in 5)
+            ^

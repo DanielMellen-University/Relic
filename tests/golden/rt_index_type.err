@@ -1,1 +1,3 @@
 rt_index_type.relic:2:8: error: cannot index an int
+    print(n[0])
+           ^

@@ -1,0 +1,6 @@
+# Built-ins are suggested; no hint when nothing is close.
+try
+    prnt("hi")
+catch e
+    print(e.message)
+print(zzzz)

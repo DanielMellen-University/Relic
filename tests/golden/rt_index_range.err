@@ -1,1 +1,3 @@
 rt_index_range.relic:2:10: error: list index 2 is out of range (size 2)
+    print(xs[2])
+             ^

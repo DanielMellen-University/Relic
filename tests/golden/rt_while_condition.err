@@ -1,1 +1,3 @@
 rt_while_condition.relic:1:7: error: 'while' condition must be true or false, got none
+    while none
+          ^

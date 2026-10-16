@@ -1,0 +1,7 @@
+# Map keys: field and index.
+let size = {width: 4, height: 2}
+try
+    print(size["widht"])
+catch e
+    print(e.message)
+print(size.heigth)

@@ -35,6 +35,9 @@ private:
 
 // File runner. Output printed before a runtime error is kept in `out`.
 RunResult run_source(const std::string& path, const std::string& source);
+// Same, but program output goes straight to `out` as it is printed (the
+// command line passes std::cout). RunResult::out stays empty.
+RunResult run_source(const std::string& path, const std::string& source, std::ostream& out);
 
 // Interactive loop used by `relic` with no file. Reads from `in` until end of
 // input or `:quit`. Prompts and the banner are shown only when `interactive`.
@@ -43,6 +46,7 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
 
 // Runs a file on the bytecode VM (--vm). Same output and errors as run_source.
 RunResult run_source_vm(const std::string& path, const std::string& source);
+RunResult run_source_vm(const std::string& path, const std::string& source, std::ostream& out);
 
 // Backs --bytecode: the compiled code listing.
 RunResult dump_bytecode(const std::string& path, const std::string& source);

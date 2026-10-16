@@ -5,6 +5,7 @@ use lexer
 use parser
 use interp
 use std/files
+use errfmt
 
 let argv = args()
 if len(argv) != 1
@@ -24,4 +25,4 @@ else
     if err != none
         if "file" in err and err.file != ""
             path = err.file
-        eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
+        errfmt.show(path, err)

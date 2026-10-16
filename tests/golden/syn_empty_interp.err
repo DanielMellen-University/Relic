@@ -1,1 +1,3 @@
 syn_empty_interp.relic:1:11: error: empty '{}' in a string; use '{{' for a brace
+    print("a {} b")
+              ^

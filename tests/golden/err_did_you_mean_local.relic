@@ -1,0 +1,4 @@
+# Locals and parameters are suggested too.
+fun area(width, height)
+    return width * hieght
+print(area(2, 3))

@@ -3,6 +3,7 @@
 use lexer
 use tokens_fmt
 use std/files
+use errfmt
 
 let quiet = {NEWLINE: true, INDENT: true, DEDENT: true, EOF: true}
 let stringy = {STRING: true, STRING_PART: true, STRING_END: true}
@@ -14,7 +15,7 @@ else
     let path = argv[0]
     let r = lexer.lex(files.read(path))
     if r.err != none
-        eprint("{path}:{r.err.line}:{r.err.col}: error: {r.err.msg}")
+        errfmt.show(path, r.err)
     else
         for t in r.tokens
             let line = "{t.line}:{t.col} {t.kind}"

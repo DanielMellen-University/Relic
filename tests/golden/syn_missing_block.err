@@ -1,1 +1,3 @@
 syn_missing_block.relic:2:1: error: expected an indented block, got name 'print'
+    print(1)
+    ^

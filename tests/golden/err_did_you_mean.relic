@@ -1,0 +1,3 @@
+# A misspelled name gets a hint.
+let count = 3
+print(cuont)

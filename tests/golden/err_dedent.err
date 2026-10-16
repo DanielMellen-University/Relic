@@ -1,1 +1,3 @@
 err_dedent.relic:4:3: error: dedent does not line up with any outer block
+      let b = 2
+      ^

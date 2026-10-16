@@ -1,1 +1,3 @@
 rt_bad_condition.relic:1:4: error: 'if' condition must be true or false, got int
+    if 1
+       ^

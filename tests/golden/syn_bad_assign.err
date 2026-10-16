@@ -1,1 +1,3 @@
 syn_bad_assign.relic:1:5: error: can only assign to a name, an index or a field
+    f() = 3
+        ^

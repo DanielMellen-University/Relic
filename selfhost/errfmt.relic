@@ -1,0 +1,43 @@
+# selfhost/errfmt.relic: error text the same as the host prints, the
+# "path:line:col: error: msg" line and then the source line with a caret.
+use std/files
+use std/strings
+
+fun _byte_len(c)
+    let n = ord(c)
+    if n < 128
+        return 1
+    if n < 2048
+        return 2
+    if n < 65536
+        return 3
+    return 4
+
+fun snippet(path, line, col)
+    if line < 1 or col < 1 or not files.exists(path)
+        return ""
+    let lines = strings.split(files.read(path), "\n")
+    if line > len(lines)
+        return ""
+    let text = lines[line - 1]
+    if len(text) > 0 and text[len(text) - 1] == chr(13)
+        text = slice(text, 0, len(text) - 1)
+    if strings.trim(text) == ""
+        return ""
+    let pad = ""
+    let bytes = 0
+    for c in text
+        if bytes >= col - 1
+            break
+        if c == chr(9)
+            pad = pad + c
+        else
+            pad = pad + " "
+        bytes = bytes + _byte_len(c)
+    return "    {text}\n    {pad}^\n"
+
+fun show(path, err)
+    eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
+    let s = snippet(path, err.line, err.col)
+    if s != ""
+        eprint(slice(s, 0, len(s) - 1))

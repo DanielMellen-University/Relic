@@ -230,7 +230,11 @@ private:
         } else if (prog_.global_index.count(n.text)) {
             emit(Op::LoadGlobal, prog_.global_index[n.text], str(n.text), &n);
         } else {
-            emit(Op::LoadBuiltin, str(n.text), 0, &n);
+            // b: the local names in scope here, for a "did you mean" hint.
+            std::string locals;
+            for (const auto& sc : scopes_)
+                for (const auto& kv : sc.names) locals += kv.first + "\n";
+            emit(Op::LoadBuiltin, str(n.text), str(locals), &n);
         }
     }
 
@@ -642,6 +646,7 @@ private:
             return run(p, std::move(scope));
         } catch (RuntimeError& e) {
             if (e.file.empty()) e.file = p.mod->file;
+            op_std_boundary(e, p.mod->file, cur_mod_ ? cur_mod_->file : std::string(), f.name, in.at->line, in.at->col);
             throw;
         }
     }
@@ -695,7 +700,18 @@ private:
                 case Op::LoadBuiltin: {
                     const std::string& name = p.strings[in.op == Op::LoadGlobal ? in.b : in.a];
                     const Value* b = builtin(name);
-                    if (!b) fail_at(*in.at, "'" + name + "' is not defined");
+                    if (!b) {
+                        std::vector<std::string> names;
+                        if (in.op == Op::LoadBuiltin) {
+                            const std::string& ls = p.strings[in.b];
+                            for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
+                                names.push_back(ls.substr(i, j - i));
+                        }
+                        for (size_t g = 0; g < p.mod->global_names.size(); ++g)
+                            if (defined_[g]) names.push_back(p.mod->global_names[g]);
+                        for (const auto& kv : host_.builtins()->vars) names.push_back(kv.first);
+                        fail_at(*in.at, "'" + name + "' is not defined" + op_suggest(name, names));
+                    }
                     st.push_back(*b);
                     break;
                 }

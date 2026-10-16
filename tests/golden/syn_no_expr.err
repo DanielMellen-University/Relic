@@ -1,1 +1,3 @@
 syn_no_expr.relic:1:9: error: expected an expression, got end of line
+    let x = 
+            ^

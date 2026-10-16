@@ -1,1 +1,3 @@
 rt_string_index_range.relic:1:12: error: string index 5 is out of range (size 2)
+    print("ab"[5])
+               ^

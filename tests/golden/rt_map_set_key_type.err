@@ -1,1 +1,3 @@
 rt_map_set_key_type.relic:2:3: error: map keys must be strings
+    m[0] = 2
+      ^

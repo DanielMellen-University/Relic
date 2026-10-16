@@ -1,1 +1,3 @@
 rt_recursion.relic:1:13: error: too much recursion (more than 800 calls deep)
+    fun f(n) = f(n + 1)
+                ^

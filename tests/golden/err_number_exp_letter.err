@@ -1,1 +1,3 @@
 err_number_exp_letter.relic:1:10: error: letter right after a number
+    let a = 1e
+             ^

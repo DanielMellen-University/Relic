@@ -156,6 +156,20 @@ catch err
 - `break`, `next` and `return` inside a `try` leave it normally.
 - Changes made before the error stay made.
 
+### How errors print
+
+```
+area.relic:3:20: error: 'hieght' is not defined (did you mean 'height'?)
+        return width * hieght
+                       ^
+```
+
+- The first line is `file:line:col: error: message`. Tools can match on it.
+- Below it come the source line and a caret under the column. REPL errors skip these two lines.
+- Unknown names and missing map keys get a "did you mean" hint when a close match exists (one or two typos away).
+- An error inside a std module is reported at your call, under the std name: `files.list(): cannot list x`, not the `host_list_dir()` it came from.
+- `print` output goes out as it is printed. On a terminal each print shows at once; into a pipe or file it is buffered and flushed at exit.
+
 ## Numbers
 
 **Default (since 1.0).** Two number types.

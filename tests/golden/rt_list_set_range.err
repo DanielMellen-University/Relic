@@ -1,1 +1,3 @@
 rt_list_set_range.relic:2:4: error: list index 3 is out of range (size 1)
+    xs[3] = 2
+       ^

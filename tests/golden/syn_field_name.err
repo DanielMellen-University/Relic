@@ -1,1 +1,3 @@
 syn_field_name.relic:2:9: error: expected a field name after '.', got number 1
+    print(m.1)
+            ^

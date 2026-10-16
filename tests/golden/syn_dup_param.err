@@ -1,1 +1,3 @@
 syn_dup_param.relic:1:10: error: duplicate parameter 'a'
+    fun f(a, a)
+             ^
