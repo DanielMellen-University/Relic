@@ -100,6 +100,29 @@ Always `/`. A `\` in input is read as `/`.
 | `stem(p)` | string | `"b.txt"` → `"b"` |
 | `normalize(p)` | string | collapses `.` and `..` |
 
+
+## std/vfs
+
+In-memory virtual filesystem for Relic apps (M11). Not the host disk; use
+`std/files` for that. Create one with `vfs.new()`, then pass it as the first
+argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
+`/home/welcome.txt` and an empty `/tmp`.
+
+| Call | Returns | On failure |
+|---|---|---|
+| `new()` | vfs | |
+| `exists(fs, path)` | bool | never fails |
+| `is_dir(fs, path)` | bool | never fails (`false` if missing) |
+| `list(fs, path)` | list of names | sorted; `cannot list {path}` |
+| `read(fs, path)` | string | `cannot read {path}` |
+| `write(fs, path, text)` | none | `cannot write {path}` |
+| `append(fs, path, text)` | none | creates the file if missing; `cannot append {path}` |
+| `make_dir(fs, path)` | none | parents too; ok if it already exists; `cannot make folder {path}` |
+| `remove(fs, path)` | none | file or **empty** folder; `cannot remove {path}` |
+| `remove_tree(fs, path)` | none | folder and contents, or one file; **missing path is a no-op** (except `/`) |
+| `rename(fs, from, to)` | none | `cannot rename {from}` |
+| `size(fs, path)` | int | length of the file text; `cannot get the size of {path}` |
+
 ## std/json
 
 Objects become maps (key order kept). Arrays become lists. `null` is `none`.

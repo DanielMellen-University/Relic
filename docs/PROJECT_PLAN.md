@@ -17,7 +17,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
-| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 to 3: drawing, input, text, BMP and PNG images, TrueType fonts) |
+| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 to 3; shell with drag/resize, Terminal, Files, Editor; `std/vfs`) |
 | M12 | Apps and IDE | M11 | not started |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
@@ -70,7 +70,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
   - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds.
   - Slice 3: **done.** PNG and JPG via optional SDL2_image, TrueType text via optional SDL2_ttf.
-  - Shell, first cut: `shell/wm.relic` (window model, no drawing, golden test `shell_wm`) and `shell/desktop.relic` (draws it). Start menu launches Clicker, Notes or Terminal; windows raise, close, drag, resize and take keys; taskbar buttons raise. Relic-native terminal commands (help, clear, echo, apps, date). Next: more apps (editor, files), virtual filesystem.
+  - Shell, first cut: `shell/wm.relic` (window model, no drawing, golden test `shell_wm`) and `shell/desktop.relic` (draws it). Start menu launches Clicker, Notes, Terminal, Files or Editor; windows raise, close, drag, resize and take keys; taskbar buttons raise. Relic-native terminal commands (help, clear, echo, apps, date). In-memory `std/vfs` (golden `std_vfs`); Files browses it, Editor edits/saves with ctrl+s. Next: polish apps, more VFS commands, host-backed mounts if needed.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
 
