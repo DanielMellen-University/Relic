@@ -22,6 +22,20 @@ title
 true true
 launch
 Terminal
-Clicker, Notes, Terminal
+Clicker, Notes, Terminal, Files, Editor
 hi
 ["> _"]
+launch
+Files
+Files: /home
+> ..
+  welcome.txt
+Files: /
+> home/
+Files: /home
+launch
+Editor
+Editor: /home/welcome.txt  (ctrl+s save)  [open]
+Editor: /home/welcome.txt  (ctrl+s save)  [saved]
+Welcome to Relic.
+!_

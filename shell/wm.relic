@@ -10,6 +10,8 @@
 
 use std/strings
 use std/time
+use std/vfs
+use std/paths
 
 let bar_height = 24     # taskbar along the bottom
 let title_height = 16   # window title bar
@@ -19,6 +21,9 @@ let tab_width = 90
 let grip = 12           # bottom-right resize handle
 let min_width = 80
 let min_height = 40
+
+# Shared in-memory VFS for Files and Editor (not the host disk).
+let _shell_fs = vfs.new()
 
 fun new_desktop(width, height, apps)
     return {width: width, height: height, apps: apps, windows: [], menu_open: false, next_id: 1, drag: none}
@@ -181,7 +186,7 @@ fun key(d, k)
     if w != none
         w.app.on_key(w.state, k)
 
-# ---- three small apps ----
+# ---- small apps ----
 
 fun _clicker_init() = {count: 0}
 fun _clicker_lines(s) = ["Clicks: {s.count}", "Click here to count."]
@@ -234,7 +239,7 @@ fun _term_run(s, line)
     else if cmd == "echo"
         _term_reply(s, strings.join(slice(parts, 1, len(parts)), " "))
     else if cmd == "apps"
-        _term_reply(s, "Clicker, Notes, Terminal")
+        _term_reply(s, "Clicker, Notes, Terminal, Files, Editor")
     else if cmd == "date"
         _term_reply(s, str(time.now()))
     else
@@ -252,7 +257,116 @@ fun _term_key(s, k)
     else if len(k) == 1
         s.input = s.input + k
 
+# Files: browse the shared VFS. Click a row or use up/down/return/backspace.
+fun _files_init() = {fs: _shell_fs, path: "/home", sel: 0}
+
+fun _files_names(s)
+    let names = []
+    if s.path != "/"
+        append(names, "..")
+    for n in vfs.list(s.fs, s.path)
+        append(names, n)
+    return names
+
+fun _files_full(s, name)
+    if name == ".."
+        return paths.dir(s.path)
+    if s.path == "/"
+        return "/" + name
+    return s.path + "/" + name
+
+fun _files_lines(s)
+    let out = ["Files: " + s.path]
+    let names = _files_names(s)
+    if s.sel >= len(names)
+        s.sel = len(names) - 1
+    if s.sel < 0
+        s.sel = 0
+    for i in 0..len(names)
+        let mark = "  "
+        if i == s.sel
+            mark = "> "
+        let name = names[i]
+        if name != ".." and vfs.is_dir(s.fs, _files_full(s, name))
+            append(out, mark + name + "/")
+        else
+            append(out, mark + name)
+    return out
+
+fun _files_open(s, name)
+    let full = _files_full(s, name)
+    if name == ".." or vfs.is_dir(s.fs, full)
+        s.path = full
+        s.sel = 0
+    else
+        # select the file; Editor opens a fixed path, so just keep selection
+        return
+
+fun _files_click(s, x, y)
+    let row = int(y / 14)
+    if row <= 0
+        return
+    let names = _files_names(s)
+    let i = row - 1
+    if i >= 0 and i < len(names)
+        s.sel = i
+        _files_open(s, names[i])
+
+fun _files_key(s, k)
+    let names = _files_names(s)
+    if k == "up"
+        if s.sel > 0
+            s.sel = s.sel - 1
+    else if k == "down"
+        if s.sel < len(names) - 1
+            s.sel = s.sel + 1
+    else if k == "return" or k == "enter"
+        if len(names) > 0
+            _files_open(s, names[s.sel])
+    else if k == "backspace"
+        if s.path != "/"
+            s.path = paths.dir(s.path)
+            s.sel = 0
+
+# Editor: text buffer over a VFS path. Type like Notes; ctrl+s saves.
+fun _editor_init()
+    let path = "/home/welcome.txt"
+    let text = ""
+    try
+        text = vfs.read(_shell_fs, path)
+    catch
+        text = ""
+    return {fs: _shell_fs, path: path, text: text, status: "open"}
+
+fun _editor_lines(s) = ["Editor: " + s.path + "  (ctrl+s save)  [" + s.status + "]", s.text + "_"]
+
+fun _editor_click(s, x, y)
+    return none
+
+fun _editor_key(s, k)
+    if k == "ctrl+s"
+        try
+            vfs.write(s.fs, s.path, s.text)
+            s.status = "saved"
+        catch err
+            s.status = err.message
+    else if k == "backspace"
+        if len(s.text) > 0
+            s.text = slice(s.text, 0, len(s.text) - 1)
+            s.status = "edited"
+    else if k == "return" or k == "enter"
+        s.text = s.text + "\n"
+        s.status = "edited"
+    else if k == "space"
+        s.text = s.text + " "
+        s.status = "edited"
+    else if len(k) == 1
+        s.text = s.text + k
+        s.status = "edited"
+
 let clicker = {name: "Clicker", width: 180, height: 60, init: _clicker_init, lines: _clicker_lines, on_click: _clicker_click, on_key: _clicker_key}
 let notes = {name: "Notes", width: 220, height: 60, init: _notes_init, lines: _notes_lines, on_click: _notes_click, on_key: _notes_key}
 let terminal = {name: "Terminal", width: 280, height: 120, init: _term_init, lines: _term_lines, on_click: _term_click, on_key: _term_key}
-fun default_apps() = [clicker, notes, terminal]
+let files_app = {name: "Files", width: 260, height: 140, init: _files_init, lines: _files_lines, on_click: _files_click, on_key: _files_key}
+let editor = {name: "Editor", width: 320, height: 80, init: _editor_init, lines: _editor_lines, on_click: _editor_click, on_key: _editor_key}
+fun default_apps() = [clicker, notes, terminal, files_app, editor]

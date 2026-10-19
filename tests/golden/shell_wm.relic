@@ -78,3 +78,30 @@ print(lines[len(lines) - 4])
 for k in ["c", "l", "e", "a", "r", "return"]
     wm.key(d, k)
 print(w.app.lines(w.state))
+
+# Files: launch, list /home, enter / via .. then back
+wm.click(d, 10, 470)
+b = wm.menu_item_box(d, 3)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+w = wm.focused(d)
+print(w.app.name)
+print(w.app.lines(w.state)[0])
+print(w.app.lines(w.state)[1])
+print(w.app.lines(w.state)[2])
+wm.key(d, "return")
+print(w.app.lines(w.state)[0])
+print(w.app.lines(w.state)[1])
+wm.key(d, "return")
+print(w.app.lines(w.state)[0])
+
+# Editor: open welcome.txt, append, save, confirm via Files listing unchanged and re-read
+wm.click(d, 10, 470)
+b = wm.menu_item_box(d, 4)
+print(wm.click(d, b[0] + 5, b[1] + 5))
+w = wm.focused(d)
+print(w.app.name)
+print(w.app.lines(w.state)[0])
+for k in ["!", "ctrl+s"]
+    wm.key(d, k)
+print(w.app.lines(w.state)[0])
+print(w.app.lines(w.state)[1])
