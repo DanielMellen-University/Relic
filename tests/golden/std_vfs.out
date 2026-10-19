@@ -1,0 +1,15 @@
+["home", "tmp"] ["welcome.txt"] []
+true true false
+Welcome to Relic.
+ 18
+onetwo
+["a.txt", "sub", "welcome.txt"] ["x.txt"]
+false onetwo
+cannot remove /home/sub
+["welcome.txt"] false
+[]
+cannot read /nope
+cannot list /home/welcome.txt
+missing_ok
+true Welcome to Relic.
+

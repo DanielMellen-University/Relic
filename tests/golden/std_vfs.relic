@@ -1,0 +1,32 @@
+use std/vfs
+let fs = vfs.new()
+print(vfs.list(fs, "/"), vfs.list(fs, "/home"), vfs.list(fs, "/tmp"))
+print(vfs.exists(fs, "/home/welcome.txt"), vfs.is_dir(fs, "/home"), vfs.is_dir(fs, "/home/welcome.txt"))
+print(vfs.read(fs, "/home/welcome.txt"), vfs.size(fs, "/home/welcome.txt"))
+vfs.write(fs, "/home/a.txt", "one")
+vfs.append(fs, "/home/a.txt", "two")
+print(vfs.read(fs, "/home/a.txt"))
+vfs.make_dir(fs, "/home/sub/deep")
+vfs.write(fs, "/home/sub/deep/x.txt", "x")
+print(vfs.list(fs, "/home"), vfs.list(fs, "/home/sub/deep"))
+vfs.rename(fs, "/home/a.txt", "/tmp/a.txt")
+print(vfs.exists(fs, "/home/a.txt"), vfs.read(fs, "/tmp/a.txt"))
+try
+    vfs.remove(fs, "/home/sub")
+catch err
+    print(err.message)
+vfs.remove_tree(fs, "/home/sub")
+print(vfs.list(fs, "/home"), vfs.exists(fs, "/home/sub"))
+vfs.remove(fs, "/tmp/a.txt")
+print(vfs.list(fs, "/tmp"))
+try
+    vfs.read(fs, "/nope")
+catch err
+    print(err.message)
+try
+    vfs.list(fs, "/home/welcome.txt")
+catch err
+    print(err.message)
+vfs.remove_tree(fs, "/no_such")
+print("missing_ok")
+print(vfs.exists(fs, "/home/./welcome.txt"), vfs.read(fs, "/home/../home/welcome.txt"))

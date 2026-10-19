@@ -1,0 +1,156 @@
+# std/vfs: in-memory virtual filesystem for Relic apps (M11).
+# Not the host disk (see std/files). Paths use "/", like std/paths.
+use std/paths
+use std/strings
+use std/lists
+
+# A dir node is {dir: true, kids: {name: node, ...}}.
+# A file node is {dir: false, text: "..."}.
+# The VFS value is {root: dir_node}.
+
+fun _norm(p)
+    let x = paths.normalize(p)
+    if x == "." or x == ""
+        return "/"
+    if not strings.starts_with(x, "/")
+        x = "/" + x
+    return paths.normalize(x)
+
+fun _parts(p)
+    let x = _norm(p)
+    if x == "/"
+        return []
+    return strings.split(slice(x, 1, len(x)), "/")
+
+fun _node(fs, path)
+    let cur = fs.root
+    for name in _parts(path)
+        if not name in cur.kids
+            return none
+        cur = cur.kids[name]
+    return cur
+
+# Drop a key without calling the builtin remove (this module exports remove).
+fun _drop(m, name)
+    let out = {}
+    for k in m
+        if k != name
+            out[k] = m[k]
+    return out
+
+fun new()
+    let fs = {root: {dir: true, kids: {}}}
+    make_dir(fs, "/home")
+    make_dir(fs, "/tmp")
+    write(fs, "/home/welcome.txt", "Welcome to Relic.\n")
+    return fs
+
+fun exists(fs, path) = _node(fs, path) != none
+
+fun is_dir(fs, path)
+    let n = _node(fs, path)
+    return n != none and n.dir
+
+fun list(fs, path)
+    let n = _node(fs, path)
+    if n == none or not n.dir
+        fail("cannot list " + _norm(path))
+    return lists.sort(keys(n.kids))
+
+fun read(fs, path)
+    let n = _node(fs, path)
+    if n == none or n.dir
+        fail("cannot read " + _norm(path))
+    return n.text
+
+fun write(fs, path, text)
+    let p = _norm(path)
+    if p == "/"
+        fail("cannot write /")
+    let parent = paths.dir(p)
+    let name = paths.base(p)
+    let d = _node(fs, parent)
+    if d == none or not d.dir
+        fail("cannot write " + p)
+    if name in d.kids and d.kids[name].dir
+        fail("cannot write " + p)
+    d.kids[name] = {dir: false, text: text}
+
+fun append(fs, path, text)
+    let p = _norm(path)
+    let n = _node(fs, p)
+    if n == none
+        write(fs, p, text)
+        return
+    if n.dir
+        fail("cannot append " + p)
+    n.text = n.text + text
+
+fun make_dir(fs, path)
+    let p = _norm(path)
+    if p == "/"
+        return
+    let cur = fs.root
+    for name in _parts(p)
+        if name in cur.kids
+            let n = cur.kids[name]
+            if not n.dir
+                fail("cannot make folder " + p)
+            cur = n
+        else
+            let n = {dir: true, kids: {}}
+            cur.kids[name] = n
+            cur = n
+
+fun remove(fs, path)
+    let p = _norm(path)
+    if p == "/"
+        fail("cannot remove /")
+    let parent = paths.dir(p)
+    let name = paths.base(p)
+    let d = _node(fs, parent)
+    if d == none or not name in d.kids
+        fail("cannot remove " + p)
+    let n = d.kids[name]
+    if n.dir and len(keys(n.kids)) > 0
+        fail("cannot remove " + p)
+    d.kids = _drop(d.kids, name)
+
+fun remove_tree(fs, path)
+    let p = _norm(path)
+    if p == "/"
+        fail("cannot remove /")
+    let n = _node(fs, p)
+    if n == none
+        return
+    if n.dir
+        for name in keys(n.kids)
+            remove_tree(fs, p + "/" + name)
+    remove(fs, p)
+
+fun rename(fs, from, to)
+    let src = _norm(from)
+    let dst = _norm(to)
+    if src == "/" or dst == "/"
+        fail("cannot rename " + src)
+    let n = _node(fs, src)
+    if n == none
+        fail("cannot rename " + src)
+    if exists(fs, dst)
+        fail("cannot rename " + src)
+    let sp = paths.dir(src)
+    let sn = paths.base(src)
+    let dp = paths.dir(dst)
+    let dn = paths.base(dst)
+    let sd = _node(fs, sp)
+    let dd = _node(fs, dp)
+    if dd == none or not dd.dir
+        fail("cannot rename " + src)
+    dd.kids[dn] = n
+    sd.kids = _drop(sd.kids, sn)
+
+fun size(fs, path)
+    let n = _node(fs, path)
+    if n == none or n.dir
+        fail("cannot get the size of " + _norm(path))
+    return len(n.text)
