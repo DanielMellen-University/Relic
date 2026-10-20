@@ -40,8 +40,8 @@ Phases run in order, with one exception: the memory model and modules from phase
 ## Phase 5: Desktop shell in Relic
 
 - [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11)
-- [ ] Window manager, taskbar and Start menu rewritten in Relic (started: `shell/wm.relic` + `shell/desktop.relic` with windows, taskbar, Start menu, drag, resize, and Clicker/Notes/Terminal/Files/Editor apps)
-- [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`; Files and Editor apps use it)
+- [ ] Window manager, taskbar and Start menu rewritten in Relic (started: `shell/wm.relic` + `shell/desktop.relic` with windows, taskbar, Start menu, drag, resize, and Clicker/Notes/Terminal/Files/Editor apps; Terminal has pwd, cd, ls, cat, mkdir, touch, write, rm and mv on the same `std/vfs` as Files and Editor)
+- [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`; Terminal, Files and Editor apps share it)
 
 ## Phase 6: Apps as proof
 

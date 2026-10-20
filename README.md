@@ -2,7 +2,7 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP and PNG images, TrueType fonts, plus a Relic desktop shell with drag, resize, Terminal/Files/Editor apps, and an in-memory `std/vfs`). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP and PNG images, TrueType fonts, plus a Relic desktop shell with drag, resize, Terminal/Files/Editor apps sharing an in-memory `std/vfs`). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
 
 ## A taste
 

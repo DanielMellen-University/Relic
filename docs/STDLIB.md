@@ -120,7 +120,7 @@ argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 | `make_dir(fs, path)` | none | parents too; ok if it already exists; `cannot make folder {path}` |
 | `remove(fs, path)` | none | file or **empty** folder; `cannot remove {path}` |
 | `remove_tree(fs, path)` | none | folder and contents, or one file; **missing path is a no-op** (except `/`) |
-| `rename(fs, from, to)` | none | `cannot rename {from}` |
+| `rename(fs, from, to)` | none | `cannot rename {from}`, also when `to` exists or is inside `from` |
 | `size(fs, path)` | int | length of the file text; `cannot get the size of {path}` |
 
 ## std/json
