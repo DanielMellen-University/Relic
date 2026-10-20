@@ -22,8 +22,18 @@ let grip = 12           # bottom-right resize handle
 let min_width = 80
 let min_height = 40
 
-# Shared in-memory VFS for Files and Editor (not the host disk).
+# Shared in-memory VFS for Files, Editor and Terminal (not the host disk).
 let _shell_fs = vfs.new()
+# The file Editor opens next. Files sets it when you open a file.
+let _shell_open = {path: "/home/welcome.txt"}
+
+# p if it is a folder, else its nearest parent that is. Used when a folder
+# an app is in gets removed or moved from another app.
+fun _existing_dir(fs, p)
+    let x = p
+    while not vfs.is_dir(fs, x)
+        x = paths.dir(x)
+    return x
 
 fun new_desktop(width, height, apps)
     return {width: width, height: height, apps: apps, windows: [], menu_open: false, next_id: 1, drag: none}
@@ -209,14 +219,15 @@ fun _notes_key(s, k)
     else if len(k) == 1
         s.text = s.text + k
 
-# Relic-native terminal (no host process spawn). Commands: help, clear, echo, apps, date.
-fun _term_init() = {buf: ["Terminal. Type help."], input: ""}
+# Relic-native terminal (no host process spawn). It works on the shared VFS
+# from a current folder that starts at /home. Paths may be relative to it.
+fun _term_init() = {buf: ["Terminal. Type help."], input: "", cwd: "/home", fs: _shell_fs}
 
 fun _term_lines(s)
     let out = []
     for line in s.buf
         append(out, line)
-    append(out, "> " + s.input + "_")
+    append(out, s.cwd + "> " + s.input + "_")
     return out
 
 fun _term_click(s, x, y)
@@ -225,23 +236,158 @@ fun _term_click(s, x, y)
 fun _term_reply(s, line)
     append(s.buf, line)
 
+fun _term_path(s, p) = paths.normalize(paths.join(s.cwd, p))
+
+# True when the command got at least n words after it, else prints usage.
+fun _term_args(s, parts, n, usage)
+    if len(parts) - 1 >= n
+        return true
+    _term_reply(s, "usage: " + usage)
+    return false
+
+fun _term_ls(s, parts)
+    let p = s.cwd
+    if len(parts) > 1
+        p = _term_path(s, parts[1])
+    if not vfs.exists(s.fs, p)
+        _term_reply(s, "ls: not found: " + p)
+        return
+    if not vfs.is_dir(s.fs, p)
+        _term_reply(s, paths.base(p))
+        return
+    let names = []
+    for n in vfs.list(s.fs, p)
+        if vfs.is_dir(s.fs, paths.join(p, n))
+            append(names, n + "/")
+        else
+            append(names, n)
+    if len(names) > 0
+        _term_reply(s, strings.join(names, "  "))
+
+fun _term_cat(s, path)
+    let p = _term_path(s, path)
+    try
+        let text = vfs.read(s.fs, p)
+        if strings.ends_with(text, "\n")
+            text = slice(text, 0, len(text) - 1)
+        if text != ""
+            for line in strings.split(text, "\n")
+                _term_reply(s, line)
+    catch err
+        _term_reply(s, "cat: " + err.message)
+
+fun _term_cd(s, parts)
+    let p = "/home"
+    if len(parts) > 1
+        p = _term_path(s, parts[1])
+    if vfs.is_dir(s.fs, p)
+        s.cwd = p
+    else
+        _term_reply(s, "cd: not a folder: " + p)
+
+fun _term_touch(s, path)
+    let p = _term_path(s, path)
+    if vfs.exists(s.fs, p)
+        return
+    try
+        vfs.write(s.fs, p, "")
+    catch err
+        _term_reply(s, "touch: " + err.message)
+
+# write and echo > replace the file; echo >> adds to the end. Each adds a newline.
+fun _term_write(s, cmd, path, text, add)
+    let p = _term_path(s, path)
+    try
+        if add
+            vfs.append(s.fs, p, text + "\n")
+        else
+            vfs.write(s.fs, p, text + "\n")
+    catch err
+        _term_reply(s, cmd + ": " + err.message)
+
+fun _term_echo(s, parts)
+    let n = len(parts)
+    if n >= 3 and (parts[n - 2] == ">" or parts[n - 2] == ">>")
+        _term_write(s, "echo", parts[n - 1], strings.join(slice(parts, 1, n - 2), " "), parts[n - 2] == ">>")
+    else
+        _term_reply(s, strings.join(slice(parts, 1, n), " "))
+
+fun _term_rm(s, path)
+    let p = _term_path(s, path)
+    if not vfs.exists(s.fs, p)
+        _term_reply(s, "rm: not found: " + p)
+    else if vfs.is_dir(s.fs, p) and len(vfs.list(s.fs, p)) > 0
+        _term_reply(s, "rm: folder not empty: " + p)
+    else
+        try
+            vfs.remove(s.fs, p)
+        catch err
+            _term_reply(s, "rm: " + err.message)
+    s.cwd = _existing_dir(s.fs, s.cwd)
+
+# mv a b: rename a to b, or move a into b when b is a folder.
+fun _term_mv(s, a, b)
+    let src = _term_path(s, a)
+    let dst = _term_path(s, b)
+    if vfs.is_dir(s.fs, dst)
+        dst = paths.join(dst, paths.base(src))
+    if not vfs.exists(s.fs, src)
+        _term_reply(s, "mv: not found: " + src)
+    else if vfs.exists(s.fs, dst)
+        _term_reply(s, "mv: already there: " + dst)
+    else
+        try
+            vfs.rename(s.fs, src, dst)
+        catch err
+            _term_reply(s, "mv: " + err.message)
+    s.cwd = _existing_dir(s.fs, s.cwd)
+
 fun _term_run(s, line)
     let trimmed = strings.trim(line)
-    append(s.buf, "> " + line)
+    append(s.buf, s.cwd + "> " + line)
     if trimmed == ""
         return
     let parts = strings.split(trimmed, " ")
     let cmd = parts[0]
     if cmd == "help"
         _term_reply(s, "help clear echo apps date")
+        _term_reply(s, "pwd cd ls cat mkdir touch write rm mv")
+        _term_reply(s, "echo text > file, echo text >> file")
     else if cmd == "clear"
         s.buf = []
     else if cmd == "echo"
-        _term_reply(s, strings.join(slice(parts, 1, len(parts)), " "))
+        _term_echo(s, parts)
     else if cmd == "apps"
         _term_reply(s, "Clicker, Notes, Terminal, Files, Editor")
     else if cmd == "date"
         _term_reply(s, str(time.now()))
+    else if cmd == "pwd"
+        _term_reply(s, s.cwd)
+    else if cmd == "cd"
+        _term_cd(s, parts)
+    else if cmd == "ls"
+        _term_ls(s, parts)
+    else if cmd == "cat"
+        if _term_args(s, parts, 1, "cat <path>")
+            _term_cat(s, parts[1])
+    else if cmd == "mkdir"
+        if _term_args(s, parts, 1, "mkdir <path>")
+            try
+                vfs.make_dir(s.fs, _term_path(s, parts[1]))
+            catch err
+                _term_reply(s, "mkdir: " + err.message)
+    else if cmd == "touch"
+        if _term_args(s, parts, 1, "touch <path>")
+            _term_touch(s, parts[1])
+    else if cmd == "write"
+        if _term_args(s, parts, 1, "write <path> <text>")
+            _term_write(s, "write", parts[1], strings.join(slice(parts, 2, len(parts)), " "), false)
+    else if cmd == "rm"
+        if _term_args(s, parts, 1, "rm <path>")
+            _term_rm(s, parts[1])
+    else if cmd == "mv"
+        if _term_args(s, parts, 2, "mv <from> <to>")
+            _term_mv(s, parts[1], parts[2])
     else
         _term_reply(s, "unknown: " + cmd)
 
@@ -261,6 +407,7 @@ fun _term_key(s, k)
 fun _files_init() = {fs: _shell_fs, path: "/home", sel: 0}
 
 fun _files_names(s)
+    s.path = _existing_dir(s.fs, s.path)
     let names = []
     if s.path != "/"
         append(names, "..")
@@ -276,8 +423,8 @@ fun _files_full(s, name)
     return s.path + "/" + name
 
 fun _files_lines(s)
-    let out = ["Files: " + s.path]
     let names = _files_names(s)
+    let out = ["Files: " + s.path]
     if s.sel >= len(names)
         s.sel = len(names) - 1
     if s.sel < 0
@@ -299,8 +446,8 @@ fun _files_open(s, name)
         s.path = full
         s.sel = 0
     else
-        # select the file; Editor opens a fixed path, so just keep selection
-        return
+        # the next Editor window opens this file
+        _shell_open.path = full
 
 fun _files_click(s, x, y)
     let row = int(y / 14)
@@ -329,8 +476,9 @@ fun _files_key(s, k)
             s.sel = 0
 
 # Editor: text buffer over a VFS path. Type like Notes; ctrl+s saves.
+# It opens the file last opened in Files, or /home/welcome.txt.
 fun _editor_init()
-    let path = "/home/welcome.txt"
+    let path = _shell_open.path
     let text = ""
     try
         text = vfs.read(_shell_fs, path)

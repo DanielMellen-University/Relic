@@ -136,7 +136,7 @@ fun rename(fs, from, to)
     let n = _node(fs, src)
     if n == none
         fail("cannot rename " + src)
-    if exists(fs, dst)
+    if exists(fs, dst) or strings.starts_with(dst, src + "/")
         fail("cannot rename " + src)
     let sp = paths.dir(src)
     let sn = paths.base(src)

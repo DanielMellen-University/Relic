@@ -13,3 +13,5 @@ cannot list /home/welcome.txt
 missing_ok
 true Welcome to Relic.
 
+cannot rename /home/box
+true false

@@ -30,3 +30,9 @@ catch err
 vfs.remove_tree(fs, "/no_such")
 print("missing_ok")
 print(vfs.exists(fs, "/home/./welcome.txt"), vfs.read(fs, "/home/../home/welcome.txt"))
+vfs.make_dir(fs, "/home/box")
+try
+    vfs.rename(fs, "/home/box", "/home/box/inner")
+catch err
+    print(err.message)
+print(vfs.is_dir(fs, "/home/box"), vfs.exists(fs, "/home/box/inner"))

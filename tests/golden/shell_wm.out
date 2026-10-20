@@ -24,7 +24,7 @@ launch
 Terminal
 Clicker, Notes, Terminal, Files, Editor
 hi
-["> _"]
+["/home> _"]
 launch
 Files
 Files: /home
@@ -39,3 +39,78 @@ Editor: /home/welcome.txt  (ctrl+s save)  [open]
 Editor: /home/welcome.txt  (ctrl+s save)  [saved]
 Welcome to Relic.
 !_
+launch
+/home> help
+help clear echo apps date
+pwd cd ls cat mkdir touch write rm mv
+echo text > file, echo text >> file
+/home> pwd
+/home
+/home> ls
+welcome.txt
+/home> mkdir notes/old
+/home> cd notes
+/home/notes> write todo.txt buy milk
+/home/notes> echo call home >> todo.txt
+/home/notes> cat todo.txt
+buy milk
+call home
+/home/notes> touch empty.txt
+/home/notes> ls
+empty.txt  old/  todo.txt
+/home/notes> mv empty.txt old
+/home/notes> ls old
+empty.txt
+/home/notes> echo draft > /tmp/plan.txt
+/home/notes> cat ../../tmp/plan.txt
+draft
+/home/notes> cd ..
+/home> pwd
+/home
+/home> cd
+/home> cd /
+/> ls
+home/  tmp/
+/> _
+/> cd home
+/home> cat nope.txt
+cat: cannot read /home/nope.txt
+/home> cd welcome.txt
+cd: not a folder: /home/welcome.txt
+/home> rm notes
+rm: folder not empty: /home/notes
+/home> rm nope
+rm: not found: /home/nope
+/home> mkdir welcome.txt/x
+mkdir: cannot make folder /home/welcome.txt/x
+/home> touch /no/such/file
+touch: cannot write /no/such/file
+/home> mv nope x
+mv: not found: /home/nope
+/home> mv notes notes/old
+mv: cannot rename /home/notes
+/home> mv welcome.txt notes/todo.txt
+mv: already there: /home/notes/todo.txt
+/home> cat
+usage: cat <path>
+/home> mv a
+usage: mv <from> <to>
+/home> frob
+unknown: frob
+/home> rm notes/old/empty.txt
+/home> ls notes/old
+/home> rm notes/old
+/home> mv /tmp/plan.txt notes
+/home> ls notes
+plan.txt  todo.txt
+launch
+["Files: /home", "> ..", "  notes/", "  welcome.txt"]
+["Files: /home/notes", "> ..", "  plan.txt", "  todo.txt"]
+launch
+["Editor: /home/notes/todo.txt  (ctrl+s save)  [open]", "buy milk\ncall home\n_"]
+Files /home/notes
+tab Terminal
+/home> rm notes/todo.txt
+/home> rm notes/plan.txt
+/home> rm notes
+["Files: /home", "  ..", "> welcome.txt"]
