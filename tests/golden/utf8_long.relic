@@ -1,0 +1,23 @@
+# Indexing and slicing a long string of mixed-width characters, forwards,
+# backwards and at the ends (the C runtime keeps a table of offsets here).
+use std/strings
+let parts = []
+for i in 0..300
+    append(parts, ["a", "é", "€", "😀"][i % 4])
+let s = strings.join(parts, "")
+print(len(s))
+let back = []
+let i = len(s) - 1
+while i >= 0
+    if i % 37 == 0
+        append(back, s[i])
+    i = i - 1
+print(strings.join(back, ""))
+print(s[0] + s[63] + s[64] + s[65] + s[127] + s[128] + s[299])
+print(slice(s, 62, 67))
+print(slice(s, 290, 400))
+print(len(slice(s, 1, 299)))
+try
+    print(s[300])
+catch e
+    print(e.message)

@@ -92,12 +92,6 @@ BI(b_gc) { UNUSED; (void)cx; (void)a; *out = rl_int((long long)rl_gc_collect());
 BI(b_type) { UNUSED; (void)cx; *out = rl_str_c(rl_type_name(a[0])); return RL_OK; }
 
 static size_t clampi(long long i, size_t n) { return i < 0 ? 0 : ((unsigned long long)i > n ? n : (size_t)i); }
-static size_t offset_of(const rl_str *s, size_t index) {
-    size_t i = 0, n = 0;
-    if (rl_str_chars((rl_str *)s) == s->len) return index < s->len ? index : s->len;  /* one byte per character */
-    while (i < s->len && n < index) { i += rl_utf8_char_size(s->data, s->len, i); ++n; }
-    return i;
-}
 
 BI(b_slice) {
     long long b = 0, e = 0;
@@ -107,8 +101,8 @@ BI(b_slice) {
         rl_str *s = S(a[0]);
         size_t n = rl_str_chars(s), x = clampi(b, n), y = clampi(e, n), bx, by;
         if (y <= x) { *out = rl_str_new("", 0); return RL_OK; }
-        bx = offset_of(s, x);
-        by = offset_of(s, y);
+        bx = rl_str_offset(s, x);
+        by = rl_str_offset(s, y);
         *out = rl_str_new(s->data + bx, by - bx);
         return RL_OK;
     }

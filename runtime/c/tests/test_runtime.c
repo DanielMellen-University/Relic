@@ -143,6 +143,45 @@ static void test_strings(void) {
     }
 }
 
+/* rl_str_offset against a plain walk, on a long string of mixed widths
+ * with bad bytes in it (long enough for the table of marks). */
+static void test_string_offsets(void) {
+    static const char *pieces[] = {"a", "\xc3\xa9", "\xe2\x82\xac", "\xf0\x9f\x98\x80", "\xff", "\xc3"};
+    char buf[4096];
+    size_t len = 0, i, chars = 0, at = 0, bad = 0;
+    rl_value v, r, a[3];
+    rl_str *s;
+    for (i = 0; len < 2000; ++i) {
+        const char *p = pieces[(i * 7 + i / 3) % 6];
+        size_t n = strlen(p);
+        memcpy(buf + len, p, n);
+        len += n;
+    }
+    buf[len] = 0;
+    v = rl_str_new(buf, len);
+    s = (rl_str *)v.u.o;
+    for (i = 0; i <= rl_str_chars(s) + 2; ++i) {  /* in order */
+        size_t want = at;
+        if (rl_str_offset(s, i) != want) ++bad;
+        if (at < len) { at += rl_utf8_char_size(buf, len, at); ++chars; }
+    }
+    CHECK(bad == 0);
+    CHECK(chars == rl_str_chars(s));
+    CHECK(s->marks != NULL);
+    for (i = rl_str_chars(s) + 1; i-- > 0;) {  /* backwards, against a fresh walk */
+        size_t k, w = 0;
+        for (k = 0; k < i && w < len; ++k) w += rl_utf8_char_size(buf, len, w);
+        if (rl_str_offset(s, i) != w) ++bad;
+    }
+    CHECK(bad == 0);
+    CHECK(rl_index(&cx, v, rl_int(1), &r) == RL_OK);  /* a, then e acute, euro, 0xff */
+    SHOW(r, "\xc3\xa9");
+    a[0] = v; a[1] = rl_int(1); a[2] = rl_int(3);
+    CHECK(call("slice", 3, a, &r) == RL_OK);
+    SHOW(r, "\xc3\xa9\xe2\x82\xac");
+    rl_release(v);
+}
+
 static void test_num_parse(void) {
     rl_value r;
     SHOW(calls("num", "42"), "42");
@@ -520,6 +559,7 @@ int main(void) {
     rl_ctx_init(&cx, 2, argv);
     test_numbers();
     test_strings();
+    test_string_offsets();
     test_num_parse();
     test_containers();
     test_errors_and_builtins();

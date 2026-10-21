@@ -51,6 +51,7 @@ typedef struct rl_str {
     rl_obj h;
     size_t len;               /* bytes, not counting the trailing 0 */
     size_t chars;             /* UTF-8 characters, (size_t)-1 until counted */
+    size_t *marks;            /* byte offset of every 64th character, built on first index; or NULL */
     char data[1];             /* len bytes plus a 0; allocated larger */
 } rl_str;
 
@@ -134,6 +135,8 @@ const char *rl_a_type(rl_value v);     /* "an int", "a list", ... for messages *
 rl_value rl_str_new(const char *bytes, size_t len);
 rl_value rl_str_c(const char *s);
 size_t rl_str_chars(rl_str *s);
+/* Byte offset of character `index` (s->len when index >= the count). */
+size_t rl_str_offset(rl_str *s, size_t index);
 rl_value rl_show(rl_value v);          /* how print shows it */
 rl_value rl_repr(rl_value v);          /* how it shows inside a list or map */
 size_t rl_utf8_char_size(const char *s, size_t len, size_t pos);

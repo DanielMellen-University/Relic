@@ -275,15 +275,6 @@ int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *na
     return rl_fail(cx, "'%s' is not defined", name);
 }
 
-/* Byte offset of character `index`. A string with as many characters as
- * bytes is all one-byte characters, so that is direct; the count is cached. */
-static size_t utf8_offset(const rl_str *s, size_t index) {
-    size_t i = 0, n = 0;
-    if (rl_str_chars((rl_str *)s) == s->len) return index < s->len ? index : s->len;
-    while (i < s->len && n < index) { i += rl_utf8_char_size(s->data, s->len, i); ++n; }
-    return i;
-}
-
 /* Index and key errors point at the index (operand 2), as on the host. */
 static int at_index(rl_ctx *cx) { cx->err_arg = 2; return RL_ERR; }
 
@@ -300,7 +291,7 @@ int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
         long long i;
         size_t at = 0;
         if (whole(cx, idx, "string index", &i)) return at_index(cx);
-        at = i < 0 ? s->len : utf8_offset(s, (size_t)i);
+        at = i < 0 ? s->len : rl_str_offset(s, (size_t)i);
         if (at >= s->len) {
             size_t dummy;
             slot(cx, idx, rl_str_chars(s), "string index", &dummy);

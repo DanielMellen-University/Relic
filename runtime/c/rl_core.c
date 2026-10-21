@@ -88,7 +88,7 @@ static void drop_obj(rl_obj *o);   /* rc already 0 */
 
 static void release_obj(rl_obj *o) {
     if (!o || --o->rc > 0) return;
-    if (o->kind == RL_STR) { free(o); --g_strings; return; }
+    if (o->kind == RL_STR) { free(((rl_str *)o)->marks); free(o); --g_strings; return; }
     dying_push(o);
     if (g_draining) return;
     g_draining = 1;
@@ -268,6 +268,7 @@ rl_value rl_str_new(const char *bytes, size_t len) {
     s->h.gc_aux = 0;
     s->len = len;
     s->chars = (size_t)-1;
+    s->marks = NULL;
     if (len) memcpy(s->data, bytes, len);
     s->data[len] = 0;
     ++g_strings;
@@ -294,6 +295,32 @@ size_t rl_str_chars(rl_str *s) {
         s->chars = n;
     }
     return s->chars;
+}
+
+/* Character to byte offset. All one-byte characters (as many characters as
+ * bytes) is direct. Otherwise a long string gets a table of the offset of
+ * every 64th character on its first index, so an index walks at most 63
+ * characters instead of the whole string before it. */
+#define RL_MARK_STEP 64
+size_t rl_str_offset(rl_str *s, size_t index) {
+    size_t n = rl_str_chars(s), i = 0, c = 0;
+    if (n == s->len) return index < s->len ? index : s->len;
+    if (index >= n) return s->len;
+    if (s->len >= 4 * RL_MARK_STEP) {
+        if (!s->marks) {
+            size_t k = 0;
+            s->marks = (size_t *)xmalloc((n / RL_MARK_STEP + 1) * sizeof(size_t));
+            while (i < s->len) {
+                if (c % RL_MARK_STEP == 0) s->marks[k++] = i;
+                i += rl_utf8_char_size(s->data, s->len, i);
+                ++c;
+            }
+        }
+        c = index - index % RL_MARK_STEP;
+        i = s->marks[index / RL_MARK_STEP];
+    }
+    while (c < index) { i += rl_utf8_char_size(s->data, s->len, i); ++c; }
+    return i;
 }
 
 /* A growable byte buffer for building strings. */
