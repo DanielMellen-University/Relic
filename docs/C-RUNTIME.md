@@ -1,6 +1,6 @@
 # The C runtime
 
-`runtime/c/` is the runtime that compiled Relic programs link against. It is milestone C1 of the plan to compile Relic to C (see [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap)). Nothing generates C for it yet; that is C2. Until then the C++ host is still the `relic` command and the default build, and this runtime is built and tested next to it.
+`runtime/c/` is the runtime that compiled Relic programs link against. It is milestone C1 of the plan to compile Relic to C (see [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap)). The code generator that writes C for it, `selfhost/cgen.relic` (C2), has its own page: [CGEN.md](CGEN.md). The C++ host is still the `relic` command and the default build, and this runtime is built and tested next to it.
 
 The header [`runtime/c/relic.h`](../runtime/c/relic.h) is the reference. This page explains it.
 
@@ -16,6 +16,7 @@ The header [`runtime/c/relic.h`](../runtime/c/relic.h) is the reference. This pa
 - [Built-ins and host primitives](#built-ins-and-host-primitives)
 - [Memory and the cycle collector](#memory-and-the-cycle-collector)
 - [Graphics](#graphics)
+- [Calls for generated code](#calls-for-generated-code)
 - [Tests](#tests)
 - [Not in the runtime yet](#not-in-the-runtime-yet)
 
@@ -107,7 +108,7 @@ Call any function value through `rl_call(cx, f, argc, argv, &out)`. It checks th
 
 ## Errors and try / catch
 
-An error is a message plus a position, kept in `cx`. Runtime calls that can fail set it with `rl_fail(cx, fmt, ...)` and return `RL_ERR`. Generated code checks every such call and, on failure, records where it was and jumps:
+An error is a message plus a position, kept in `cx`. Runtime calls that can fail set it with `rl_fail(cx, fmt, ...)` and return `RL_ERR`. Generated code checks every such call and, on failure, records where it was and jumps. In the simplest form:
 
 ```c
 #define CHECKED(call, line, col) \
@@ -117,7 +118,7 @@ CHECKED(rl_sub(cx, n, rl_int(1), &t1), 6, 18);
 CHECKED(rl_call(cx, fib, 1, &t1, &t2), 6, 15);
 ```
 
-`rl_at` only sets the position if it is not set yet, so the innermost call site wins, as on the host. A function that fails releases its temporaries at a `done:` label and returns `RL_ERR`, and its caller does the same.
+`rl_at` only sets the position if it is not set yet, so the innermost call site wins, as on the host. The code generator uses `rl_at3`, which also knows which operand an error is about (see [Calls for generated code](#calls-for-generated-code)). A function that fails releases its temporaries at a `done:` label and returns `RL_ERR`, and its caller does the same.
 
 `try` / `catch err` is a jump target inside the function:
 
@@ -172,19 +173,30 @@ The plan for the module, after C2:
 - A CMake option that builds it in place of the stub. Builds without SDL2 keep the stub.
 - The headless `gfx_smoke` and `SDL_VIDEODRIVER=dummy` tests run against it too.
 
+## Calls for generated code
+
+Added in C2 for `selfhost/cgen.relic`:
+
+| Call | What it does |
+|---|---|
+| `rl_unset()` | a value of kind `RL_UNSET`: a slot whose `let` has not run yet. New scope slots start unset. It never reaches Relic code |
+| `rl_at3(cx, file, l, c, l1, c1, l2, c2)` | sets the error position to the node (`l`, `c`), or to its first or second operand when the failing call said the error is about that one. Calls say so in `cx->err_arg` (0 node, 1 first, 2 second): index and key errors point at the index, a bad range start or end at that end, as on the host. `rl_fail` resets it |
+| `rl_fail_undefined(cx, name, n, names, slots)` | the error `'x' is not defined`, with the host's `(did you mean 'y'?)` hint chosen from the visible names whose slot is set (or NULL, meaning always visible) and every built-in |
+| `rl_interp(n, parts, &out)` | string interpolation: joins `rl_show` of each part |
+
 ## Tests
 
 | Test | What it checks |
 |---|---|
-| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, built-ins, files and clocks, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
+| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, the calls for generated code, built-ins, files and clocks, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
+| `cgen_*` | golden programs compiled by `selfhost/cgen.relic`, see [CGEN.md](CGEN.md#tests) |
 | `c_demo` | `tests/demo.c`: `tests/golden/c_demo.relic` compiled by hand the way C2 will: recursion (`fib`), a closure counter, `try` / `catch` with positions, the recursion limit, a loop over a UTF-8 string. Its output must equal `tests/golden/c_demo.out`, which the C++ host also checks as a golden test |
 
-The expected strings in `test_runtime.c` were taken from the C++ host. CI builds the runtime on its own with warnings as errors on gcc and clang (Linux, both with ASan, UBSan and LSan), clang on macOS and MSVC on Windows.
+The expected strings in `test_runtime.c` were taken from the C++ host. CI builds the runtime on its own with warnings as errors on gcc and clang (Linux, both with ASan, UBSan and LSan), clang on macOS and MSVC on Windows. The `cgen` job does the same for the whole build and runs the `c_*` and `cgen_*` tests.
 
 ## Not in the runtime yet
 
 These belong to later milestones, mostly because they need the code generator:
 
-- Loading modules: finding a `use` file, caching it, running it once, and renaming errors that leave a std module (`files.list(): ...`). The runtime has the module object; C2 and C3 decide how compiled modules link.
-- String interpolation has no helper of its own; generated code can build it with `rl_show` and `rl_add`.
+- Loading modules: finding a `use` file, caching it, running it once, and renaming errors that leave a std module (`files.list(): ...`). The runtime has the module object; C3 decides how compiled modules link (options in [CGEN.md](CGEN.md#open-choices)).
 - The SDL2 graphics module (above).

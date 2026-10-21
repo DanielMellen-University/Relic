@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. A default build has 146 ctest cases; an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts has 152.
+How Relic is tested, and how to run it. A default build has 275 ctest cases (146 plus 129 `cgen_*` cases); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
 
 ## Running the tests
 
@@ -43,10 +43,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (161 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (163 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion` and `gc_cycles` (130 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (133 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (130 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (134 today) |
 
 Two more self-host cases check the interpreter on real use:
 
@@ -72,6 +72,12 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 `golden_c_demo` runs the same program on the C++ host, so a change to either side shows up. `c_demo` is skipped by `selfhost_interp` because it recurses 800 calls deep.
 
+## Compiled golden tests
+
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (129 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet prints `cgen-skip: <reason>` and ctest reports it as skipped. Today 106 pass and 23 skip, all for `use`. Details in [CGEN.md](CGEN.md#tests).
+
+To run only these: `ctest --test-dir build -R "^cgen_"`. To check them under ASan, UBSan and LSan: configure with `-DRELIC_C_SANITIZE=ON` (gcc or clang).
+
 ## Graphics tests
 
 The default build has no SDL, so only `golden_std_graphics` runs: it checks that `std/graphics` loads and that `available()` gives a bool.
@@ -93,9 +99,10 @@ On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev 
 
 - `.github/workflows/ci.yml` builds Release and runs `ctest` on every push and pull request, on Ubuntu, macOS and Windows, without SDL.
 - A second job, `c-runtime`, builds `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
+- A third job, `cgen`, builds the whole project the same four ways and runs the `c_*` and `cgen_*` tests, so the generated C is checked strict and sanitized on every OS.
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
 
 ## Benchmarks
 
-`tools/bench.sh build/relic` times each `bench/*.relic` on the tree-walker and the VM and checks both print the same. It skips `redraw.relic` without graphics. It is local only, not part of CI. Use a Release build.
+`tools/bench.sh build/relic` times each `bench/*.relic` on the tree-walker and the VM and checks both print the same. It skips `redraw.relic` without graphics. It is local only, not part of CI. Use a Release build. Numbers for the same programs compiled to C are in [CGEN.md](CGEN.md#speed).

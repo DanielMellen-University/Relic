@@ -17,9 +17,10 @@
 2. [ARCHITECTURE.md](ARCHITECTURE.md): the host, the two engines, memory, `selfhost/`
 3. [TESTING.md](TESTING.md): golden, comparison, unit and graphics tests, CI
 4. [HOST.md](HOST.md): `host_*` built-ins, adding one, embedding `relic_core`
-5. [C-RUNTIME.md](C-RUNTIME.md): the C runtime that compiled Relic will link against
-6. [DESIGN.md](DESIGN.md): why the language is the way it is, open questions
-7. [ROADMAP.md](ROADMAP.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md): what is done and what is next
+5. [C-RUNTIME.md](C-RUNTIME.md): the C runtime that compiled Relic links against
+6. [CGEN.md](CGEN.md): the code generator that compiles Relic to C
+7. [DESIGN.md](DESIGN.md): why the language is the way it is, open questions
+8. [ROADMAP.md](ROADMAP.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md): what is done and what is next
 
 ## All docs
 
@@ -29,10 +30,11 @@
 | [LANGUAGE.md](LANGUAGE.md) | users | syntax, types, scope, operators, modules, errors, built-ins, limits |
 | [STDLIB.md](STDLIB.md) | users | each std module, with return values and errors; graphics events and headless testing |
 | [CLI.md](CLI.md) | users | commands, exit codes, `relic check`, REPL, environment variables |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits, the compiler to C |
 | [TESTING.md](TESTING.md) | contributors | how each kind of test works and how to run it |
 | [HOST.md](HOST.md) | contributors | the C++ built-ins under `std/`, and running Relic from C++ |
 | [C-RUNTIME.md](C-RUNTIME.md) | contributors | `runtime/c/`: values, ownership, calling convention, errors, built-ins, cycle collector, tests |
+| [CGEN.md](CGEN.md) | contributors | `selfhost/cgen.relic`: using it, what it covers, the generated C, scopes, error positions, tests, speed, open choices |
 | [DESIGN.md](DESIGN.md) | both | the reasons behind the language, the syntax freeze, open questions |
 | [VISION.md](VISION.md) | both | the goal, principles, non-goals, and the borrowed pieces list |
 | [ROADMAP.md](ROADMAP.md) | both | phases with tickable outcomes |

@@ -24,7 +24,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; rest open, low priority |
 | SH4 | `check` and REPL in Relic | SH2 | not started, low priority |
 | C1 | C runtime | M9 | done: `runtime/c/`, tests `c_runtime` and `c_demo` |
-| C2 | Relic-to-C codegen, core subset, in CI | C1 | not started |
+| C2 | Relic-to-C codegen, core subset, in CI | C1 | done (1.0.4): `selfhost/cgen.relic`, 106 of 129 goldens, the other 23 need modules |
 | C3 | Full language in C | C2 | not started |
 | C4 | Stage 1 fixed point | C3 | not started |
 | C5 | C++ host out of the default build | C4 | not started |
@@ -99,8 +99,8 @@ A testing aid that checks the Relic-written front end on real programs. Not the 
 ### C1 to C5: the compiler to C
 
 - C1 exit: a C runtime (values, strings, lists and maps, reference counts plus cycle collection, errors and `try`, `host_*` primitives in plain C), with the choices below decided by Daniel. **Done:** `runtime/c/`, plain C99, built next to the host and in its own strict CI job (gcc and clang with ASan, UBSan and LSan on Linux, clang on macOS, MSVC on Windows). Tests: `c_runtime` (unit, cycle and leak checks) and `c_demo` (a program compiled by hand the way C2 will, matching the host's output). The ABI is in [C-RUNTIME.md](C-RUNTIME.md). Left for later milestones: loading compiled modules and the std-boundary error names (C2, C3), the SDL2 graphics module (after C2).
-- C2 exit: a Relic program in `selfhost/` turns a core subset (numbers, strings, lists, maps, functions, control flow) into C. CI compiles that C and runs it against golden outputs on all three OSes.
-- C3 exit: closures, modules, `try` / `catch`, hints and the std all compile, and every golden program matches.
+- C2 exit: a Relic program in `selfhost/` turns a core subset (numbers, strings, lists, maps, functions, control flow) into C. CI compiles that C and runs it against golden outputs on all three OSes. **Done:** `selfhost/cgen.relic` ([CGEN.md](CGEN.md)) covers the whole language except `use`, so closures, `try` / `catch` and hints already work. Every golden except REPL and `.args` tests is a ctest case `cgen_name`: 106 of 129 pass and 23 skip because they use modules; none fail. The generated C builds with warnings as errors and runs clean under ASan, UBSan and LSan, with a leak check at exit. CI job `cgen` runs them on Linux (gcc and clang), macOS and Windows (MSVC). `fib(30)`: 141 ms against 363 ms on the host VM.
+- C3 exit: modules and the std compile (closures, `try` / `catch` and hints came early, in C2), and every golden program matches. Also left from C2: one refused corner (a name with differently hinted `let`s used from a nested function), and the open choices in [CGEN.md](CGEN.md#open-choices).
 - C4 exit: the compiler compiles itself. Stage 1 (compiled by the stage 0 host) and stage 2 (compiled by stage 1) produce identical C: a fixed point.
 - C5 exit: the default build is the C runtime plus generated C. The C++ host builds only on request, as a reference to compare against.
 
@@ -137,3 +137,8 @@ Struck-through rows are decided. The rest are **Open** and block the milestone s
 | ~~C standard and compilers~~ C99 on gcc, clang and MSVC (Decided, Daniel, Oct 20 2026) | done |
 | ~~How `try` / `catch` works in C~~ an error flag returned from every call, checked by generated code (Decided, Daniel, Oct 20 2026) | done |
 | ~~Graphics in C~~ an optional C module over SDL2 (Decided, Daniel, Oct 20 2026) | done |
+| Error positions in generated C. **Interim decision Oct 20 2026: option A, pending Daniel's confirmation.** Option A: generated code marks the position at each call site that can fail (`rl_at` style). Option B: a line table per function, looked up when an error leaves it. A is in place behind one helper (`on_error()` in `cgen.relic` and the `RLC_ERR` macro), so moving to B later is a local change | nothing yet |
+| What `gc()` returns in compiled code: approximate, exact like the host, or only Relic values in both; see [CGEN.md](CGEN.md#open-choices) (**Open**) | nothing yet |
+| When stack-held locals in compiled code are freed: on block re-entry and return (now), or also at block end (**Open**) | nothing yet |
+| Programs outside the compiled subset: refuse the file (now) or fail when the part runs (**Open**) | nothing yet |
+| How modules compile: one C file per program, one per module with init functions, or that plus a load table (**Open**) | C3 |

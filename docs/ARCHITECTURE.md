@@ -19,14 +19,14 @@ Relic/
     diag/           error messages with file, line, column
   runtime/c/        C99 runtime for compiled Relic (C1), see C-RUNTIME.md
   std/              standard library, written in Relic
-  selfhost/         lexer, parser and interpreter written in Relic
+  selfhost/         lexer, parser, interpreter and C code generator written in Relic
   examples/         small language examples (see examples/README.md)
   bench/            benchmark programs for tools/bench.sh
   tests/
     golden/         .relic programs with expected output (helpers in modules/)
     sdl/            headless graphics tests, SDL builds only
     unit/           C++ tests
-  tools/            golden runner, comparison scripts, bench.sh, gen_font.py
+  tools/            golden and cgen runners, comparison scripts, bench.sh, gen_font.py
   docs/
 ```
 
@@ -38,8 +38,9 @@ Relic/
 | `relic` | the command line program, links `relic_core` |
 | `relic_tests` | unit tests, links `relic_core` |
 | `relic_rt` | the C runtime library from `runtime/c/` (plain C99), with `relic_rt_tests` and `relic_rt_demo` |
+| `cgen_<name>` | a golden program compiled to C by `selfhost/cgen.relic` and linked with `relic_rt` (one per golden, sources in `build/cgen/`) |
 
-Options: `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` (on by default). `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
+Options: `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` (on by default), and with it the `cgen_*` targets; `-DRELIC_CGEN_TESTS=OFF` leaves out only those. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
 
 ## Pipeline
 
@@ -114,7 +115,7 @@ One `Value` type: none, bool, int, float, string, list, map, function, built-in,
 
 ## Self-host
 
-`selfhost/` holds the lexer, parser and interpreter again, written in Relic. They still run on the C++ host.
+`selfhost/` holds the lexer, parser and interpreter again, written in Relic, plus the code generator that compiles Relic to C. They all run on the C++ host.
 
 | File | What it is |
 |---|---|
@@ -126,8 +127,9 @@ One `Value` type: none, bool, int, float, string, list, map, function, built-in,
 | `interp.relic` | tree-walk interpreter with every built-in, `try` / `catch`, `as` hints, int and float, UTF-8, `use` (own files and `std/`) |
 | `errfmt.relic` | prints errors the way the host does |
 | `run.relic` | `relic selfhost/run.relic FILE` runs a program like `relic FILE` |
+| `cgen.relic` | `relic selfhost/cgen.relic FILE -o OUT.c` writes C99 for the C runtime; see [CGEN.md](CGEN.md) |
 
-How it works:
+How the interpreter works:
 
 - After the first error, every step sees an `ERR` token (parser) or a stored `rt.err` (interpreter), so the work winds down without checks at each call.
 - Functions and modules are maps tagged with the key `chr(1)`, which Relic source cannot write by accident. Modules are cached by normalized path.
@@ -151,4 +153,4 @@ What still comes from the C++ host: running all of it, reference counting and th
 
 ## Where this is going
 
-Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). C1, the C runtime, is done: see [C-RUNTIME.md](C-RUNTIME.md). The Relic-written interpreter above stays as a testing aid.
+Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). C1, the C runtime, is done: see [C-RUNTIME.md](C-RUNTIME.md). C2, the code generator, is done for everything but modules: see [CGEN.md](CGEN.md). The Relic-written interpreter above stays as a testing aid.
