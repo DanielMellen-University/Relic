@@ -25,15 +25,15 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 - [x] Lexer rewritten in Relic (`selfhost/lexer.relic`, matches `--tokens` on every file)
 - [x] Parser rewritten in Relic (`selfhost/parser.relic`, matches `--ast` on every file)
-- [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; `use` for local files, no `std/` yet)
+- [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; `use` for local files and `std/`)
 - [ ] Relic builds and runs itself without the C/C++ host for language logic (still runs on the host; `std/` works in the self-hosted interpreter, a Relic-written VM is still needed)
 
 ## Phase 4: Runtime and standard library
 
-- [x] Memory model: reference counting plus a cycle collector (see DESIGN.md)
+- [x] Memory model: reference counting plus a cycle collector (see ARCHITECTURE.md)
 - [x] Language feature complete: `try` / `catch`, int and float, `as` hints, private `_` names, UTF-8 strings
 - [x] Modules and imports: `use path/name`, cycles allowed
-- [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8)
+- [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8); later paths, json, os, vfs and graphics
 - [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. **Open:** VM written in Relic
 - [ ] Native code generation explored (stretch)
 

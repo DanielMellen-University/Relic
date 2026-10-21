@@ -1,21 +1,24 @@
 # Standard library
 
 Load a module with `use std/NAME`, then call `NAME.fun(...)`. Modules are
-plain Relic in `std/`; the few `host_*` calls they make are the C++ host.
-Errors raise with `fail` and can be caught with `try` / `catch`.
+plain Relic in `std/`; the few `host_*` calls they make are the C++ host
+([HOST.md](HOST.md)). Errors raise with `fail` and can be caught with
+`try` / `catch`. Built-in functions that need no `use` are listed in
+[LANGUAGE.md](LANGUAGE.md#built-in-functions).
 
-`fail(message)` takes a **string only**. Anything else is an error:
-`fail(): message must be a string, got ...`.
-
-Modules are values. You can store one in a variable and call through it
-(dispatch by which module you picked):
-
-```
-let mod = notes
-if kind == "terminal"
-    mod = terminal
-mod.on_key(app, key)
-```
+| Module | For |
+|---|---|
+| [std/strings](#stdstrings) | searching, splitting, case, padding |
+| [std/lists](#stdlists) | map, filter, reduce, sorting |
+| [std/maps](#stdmaps) | values, items, get with a fallback, merge |
+| [std/math](#stdmath) | rounding, roots, trig, constants |
+| [std/files](#stdfiles) | text files and folders on the host disk |
+| [std/paths](#stdpaths) | joining and splitting `/` paths |
+| [std/vfs](#stdvfs) | an in-memory filesystem |
+| [std/json](#stdjson) | JSON in and out |
+| [std/os](#stdos) | args, environment, current folder, exit |
+| [std/time](#stdtime) | clocks, sleep, a frame timer |
+| [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
 
@@ -48,6 +51,9 @@ mod.on_key(app, key)
 | `sort(xs)` | list | new list, stable |
 | `sort_by(xs, less)` | list | `less(a, b)` is bool |
 
+`fun_add` and `natural` are also visible: they are the helpers behind `sum` and
+`sort`, not meant to be called.
+
 ## std/maps
 
 | Call | Returns | Notes |
@@ -61,9 +67,9 @@ mod.on_key(app, key)
 
 | Call | Returns |
 |---|---|
-| `abs` `min` `max` `clamp(x, lo, hi)` | number |
-| `floor` `ceil` `round` | int |
-| `sqrt` `pow` `sin` `cos` `exp` `log` | float |
+| `abs(x)`, `min(a, b)`, `max(a, b)`, `clamp(x, lo, hi)` | number |
+| `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2` |
+| `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
@@ -103,7 +109,7 @@ Always `/`. A `\` in input is read as `/`.
 
 ## std/vfs
 
-In-memory virtual filesystem for Relic apps (M11). Not the host disk; use
+In-memory virtual filesystem (M11). The M0N0LITH-2 apps share one. Not the host disk; use
 `std/files` for that. Create one with `vfs.new()`, then pass it as the first
 argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 `/home/welcome.txt` and an empty `/tmp`.
@@ -330,11 +336,11 @@ SDL_VIDEODRIVER=dummy ./build-sdl/relic your_app.relic
 ```
 
 `open` still works. There is no visible window. Drive input with `simulate`,
-read it with `next_event`, and assert on your app state (see
-`examples/mini_desktop/` and `tests/sdl/gfx_events.relic`).
+read it with `next_event`, and assert on your app state (see the
+`examples/mini_desktop/` language example and `tests/sdl/gfx_events.relic`).
 
 `ctest --test-dir build-sdl` sets `SDL_VIDEODRIVER=dummy` for the graphics
 tests automatically.
 
-Window drag and resize inside a Relic desktop are built from `mouse_down`,
+Window drag and resize inside a Relic desktop (like M0N0LITH-2) are built from `mouse_down`,
 `mouse_move` and `mouse_up`; the host window itself sends `resize`.

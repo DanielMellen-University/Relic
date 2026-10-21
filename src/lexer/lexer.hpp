@@ -14,7 +14,7 @@ struct LexError : std::runtime_error {
 };
 
 // Turns Relic source into tokens. Throws LexError on bad input.
-// Layout rules (see docs/DESIGN.md):
+// Layout rules (see docs/LANGUAGE.md, Source files):
 // - blocks are 4-space indents; tabs in indentation are an error
 // - blank and comment-only lines produce no tokens
 // - newlines inside ( ), [ ] or { } do not end a line

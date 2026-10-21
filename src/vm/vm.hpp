@@ -2,7 +2,7 @@
 // Bytecode VM (M10). Compiles the AST to a flat instruction list per function
 // and runs it on a value stack. Variables resolve at compile time to scope
 // slots instead of name lookups. Behavior, output and errors match the
-// tree-walker; differences are listed in docs/DESIGN.md (Bytecode VM).
+// tree-walker; differences are listed in docs/ARCHITECTURE.md (Bytecode VM).
 #include "ast/ast.hpp"
 
 #include <ostream>

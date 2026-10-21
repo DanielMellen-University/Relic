@@ -12,14 +12,21 @@ Build a language, and then a whole desktop, from scratch. Relic is the base laye
 - **Proof by use.** Relic is done when the MONOLITH 2 shell and apps run on it. They live in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 - **Interpreter first.** Get a working language early. Native code generation comes later.
 
-## Borrowed today, replaced later
+## Borrowed today
 
-| Piece | Today | Target |
-|---|---|---|
-| Interpreter host | C++17 host runs everything; lexer, parser and interpreter also exist in Relic (`selfhost/`) | Relic runs itself |
-| Standard library | Relic code in `std/` on top of a few `host_*` built-ins (files, clocks, float math) | Relic all the way down |
-| Graphics | SDL2, optional build | Relic drawing layer |
-| Desktop shell | MONOLITH 1 (C++) | Relic, in M0N0LITH-2 |
+Everything Relic relies on that we did not write. Each piece has a planned replacement. Keep this list current when something new is borrowed.
+
+| Piece | Used for | Target | Replace in |
+|---|---|---|---|
+| C++17 compiler and stdlib | the host: lexer, parser, tree-walker, VM | Relic runs itself; Relic versions of the lexer, parser and interpreter already exist in `selfhost/` | phase 3 |
+| `host_*` built-ins | files, clocks, float math, process access under `std/` ([HOST.md](HOST.md)) | Relic all the way down | phase 4 and later |
+| `std::shared_ptr` reference counts | memory | a Relic-written runtime | phase 3 |
+| SDL2, SDL2_image, SDL2_ttf (optional) | graphics, `-DRELIC_SDL=ON` | a Relic drawing layer | phase 5 |
+| CMake | build | **Open:** a Relic build tool | |
+| CMake script mode | golden runner and comparison scripts in `tools/` | **Open:** a runner in Relic | |
+| GitHub Actions | CI on Linux, macOS, Windows | not planned | |
+
+The desktop shell (MONOLITH 1 in C++ today) is being rewritten in Relic in M0N0LITH-2.
 
 ## Non-goals
 

@@ -2,9 +2,9 @@
 
 Relic is the programming language for MONOLITH 2.
 
-This repo is the language only: the host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
+This repo is the language only: the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP and PNG images, TrueType fonts, plus an in-memory `std/vfs`). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
+> Status: **1.0.1**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM that is the default engine (M10), and optional SDL2 graphics with input, text, images and fonts (M11). The language itself is feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector. Next up is self-hosting. See the [roadmap](docs/ROADMAP.md).
 
 ## A taste
 
@@ -18,14 +18,16 @@ for name in ["Ada", "Linus", "Grace"]
 
 ## Build
 
-Needs a C++17 compiler and CMake 3.16 or newer.
+Needs a C++17 compiler and CMake 3.16 or newer. Nothing else.
 
 ```
-cmake -S . -B build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ./build/relic --version
 ctest --test-dir build --output-on-failure
 ```
+
+Then run a file with `./build/relic hello.relic`, or start the REPL with `./build/relic`. For graphics, build again with `-DRELIC_SDL=ON` (needs SDL2); see [examples/](examples/README.md).
 
 ## Relic in five minutes
 
@@ -73,95 +75,32 @@ print(box.title, box["version"])
 - Values: ints, floats, strings, `true`, `false`, `none`, lists and maps. Strings are UTF-8 and immutable: `len("héllo")` is `5`. Lists and maps are shared by reference; `==` compares them by value.
 - Conditions must be `true` or `false`. `if 1` is an error. `if` always takes an indented block (no one-line `if`).
 - A `fun` or `let` name exists only after that line has run. Put definitions above the top-level code that calls them (or call them from another function).
+- Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Names starting with `_` stay private to their file.
+- Standard library: `use std/strings`, then `strings.split("a,b", ",")`. Modules: strings, lists, maps, math, files, paths, json, os, time, vfs, graphics ([STDLIB.md](docs/STDLIB.md)).
+- Errors: `try` / `catch err` catches any runtime error (`err.message`); `fail("why")` raises one. `relic check FILE` finds mistakes without running.
 - The sample above is checked by the `readme_sample` golden test.
-- Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
-- Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/math`, `std/files`, `std/paths`, `std/json`, `std/os`, `std/time`, `std/graphics`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself. Full tables: [STDLIB.md](docs/STDLIB.md).
-- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. `examples/mini_desktop/` is a small language example shaped like a desktop (taskbar, Notes, Terminal, JSON settings). It shows how an app uses std/graphics, std/files and std/json. It is not the real environment. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The MONOLITH 2 desktop now lives in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
-- Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
-- Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
-- Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `fail`, `gc`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
 
-### Errors and type hints
-
-```
-fun half(n as int) as float = n / 2
-
-try
-    print(half(4))
-    print(half("4"))
-catch err
-    print("caught: {err.message}")
-```
-
-- `try` / `catch err` catches any runtime error; `err` is `{message, line, col}`. `fail("why")` raises one.
-- `as` hints on `let`, parameters and returns are checked while the program runs.
-
-## Use
-
-| Command | Does |
-|---|---|
-| `relic file.relic [args...]` | runs a program on the bytecode VM; `args()` returns the extra words |
-| `relic --tree file.relic` | runs it on the tree-walk interpreter instead |
-| `relic check file.relic...` | finds mistakes without running: syntax errors, names never defined (with a "did you mean"), top-level use before `fun`/`let`, `break` or `return` in the wrong place. Exit 1 if any |
-| `relic` | opens the REPL (runs on the tree-walker) |
-| `relic --tokens file.relic` | prints the tokens |
-| `relic --ast file.relic` | prints the syntax tree |
-| `relic --bytecode file.relic` | prints the compiled bytecode |
-| `relic --version` | prints the version |
-
-`--vm` is still accepted and means the same as the default.
-
-### REPL
-
-```
-$ ./build/relic
-relic 1.0.1. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
-> let x = 6
-> x * 7
-42
-> fun greet(who)
-...     print("hello {who}")
-...
-> greet("Daniel")
-hello Daniel
-```
-
-- Variables and functions stay defined until you leave.
-- A bare expression prints its value. `none` is not printed.
-- A line starting with `fun`, `if`, `while`, `for` or `else` opens a block. Type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` form runs right away.
-- An open `(`, `[` or `{` keeps reading lines until it closes.
-- An error prints `<repl>:line:col: error: ...` and the REPL keeps going. Line numbers count from the start of that input.
-- Piped input works too: `relic < script.relic` runs it line by line, without prompts.
-
-## What Relic is
-
-- A small, readable language built from scratch for MONOLITH 2.
-- The long-term goal is a stack where nothing is borrowed. Relic, its runtime and its standard library are written here. The desktop shell and the apps are written in Relic in M0N0LITH-2.
-- A C++17 host runs Relic today. It is a scaffold: the lexer, parser and interpreter already exist in Relic too (`selfhost/`), but they still run on the host. The host goes away once Relic can run itself.
+More: the [guide](docs/GUIDE.md) walks through all of it, and the [reference](docs/LANGUAGE.md) has every rule.
 
 ## How it relates to MONOLITH
 
 - **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and the planned Relic IDE do not go there.
 - **MONOLITH 2** is the next version. Its desktop shell and apps are written in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2). That repo pins a Relic commit as a submodule and builds it.
-- Relic lives here so the language can grow on its own schedule. Language work lands here, desktop and app work lands in M0N0LITH-2.
+- Language work lands here; desktop and app work lands in M0N0LITH-2.
+- The long-term goal is a stack where nothing is borrowed. The C++ host is a scaffold: it goes away once Relic can run itself. See [VISION.md](docs/VISION.md).
 
 ## Docs
 
-- [Vision](docs/VISION.md): the goal and the non-goals
-- [Roadmap](docs/ROADMAP.md): phased milestones
-- [Design](docs/DESIGN.md): the language, runtime rules, modules, std, self-host, VM, graphics
-- [Project plan](docs/PROJECT_PLAN.md): milestones, status, risks, decisions
-- [Architecture](docs/ARCHITECTURE.md): host layout, build targets, engines
-- [Bootstrap](docs/BOOTSTRAP.md): how the host started, borrowed pieces list
-- [Standard library](docs/STDLIB.md): every std/ module (including [headless GUI testing](docs/STDLIB.md#running-headless--testing-gui-apps))
-- [MONOLITH 2 readiness](docs/MONOLITH2-READINESS.md)
-- [Testing](docs/TESTING.md): golden tests, comparison tests, CI
-- [Changelog](CHANGELOG.md)
-- [1.0 checklist](docs/1.0-CHECKLIST.md): what 1.0 needed, and the one open check
+Start at the [docs index](docs/README.md). The short list:
+
+- [Guide](docs/GUIDE.md) and [language reference](docs/LANGUAGE.md)
+- [Standard library](docs/STDLIB.md)
+- [Command line and REPL](docs/CLI.md)
+- [Roadmap](docs/ROADMAP.md) and [changelog](CHANGELOG.md)
 
 ## Contributing
 
-Items marked **Default** in the docs are choices made to keep moving and can still change. Items marked **Open** need a decision. Run `ctest --test-dir build` before pushing; every change keeps the tests green.
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: run `ctest` before pushing, every bug fix adds a test, and new features need Daniel's approval first.
 
 ## License
 

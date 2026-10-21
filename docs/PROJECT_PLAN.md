@@ -15,7 +15,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M6 | Relic 1.0 release | M5 | done (`v1.0.0`; human FizzBuzz check still open) |
 | M7 | Memory model and modules | M6 | done (cycle collector added later) |
 | M8 | Standard library core | M7 | done |
-| M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
+| M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in ARCHITECTURE.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
 | M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done. The desktop shell moved to M0N0LITH-2 |
 | M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
@@ -39,7 +39,7 @@ Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 
 ### M3: Parser and AST
 - Work: expressions with precedence, statements, blocks, functions.
 - Exit: a `--ast` flag prints the tree. Syntax errors give file, line and column.
-- Risk: syntax is not settled. Lock the 1.0 syntax in DESIGN.md before starting M3.
+- Risk: syntax is not settled. Lock the 1.0 syntax in DESIGN.md before starting M3 (done; the rules now live in LANGUAGE.md).
 
 ### M4: Interpreter
 - Work: walk the AST, environments for scope, function calls, lists, `print`.
@@ -56,15 +56,15 @@ Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 
 
 ### M7 to M12
 Planned at a coarser level than M1 to M6. Status under each exit line.
-- M7 exit: memory model chosen and written up. Two files can import each other. **Done:** reference counting (DESIGN.md), `use` with cycles, golden tests `use_*` and `err_use_*`.
+- M7 exit: memory model chosen and written up. Two files can import each other. **Done:** reference counting (LANGUAGE.md, ARCHITECTURE.md), `use` with cycles, golden tests `use_*` and `err_use_*`.
 - M8 exit: stdlib covers strings, lists, maps, files, time, math, each with tests. **Done:** `std/*.relic`, golden tests `std_*`.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 101 golden programs with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see DESIGN.md: REPL tests, `std_*`, `rt_recursion`, `try_recursion` and `gc_cycles`.
-  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs a faster runtime (M10). `use std/...` works in the self-hosted interpreter since M12 (host_* calls go through `host_call`).
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 127 golden programs, `std_*` included, with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see ARCHITECTURE.md: REPL tests, `rt_recursion`, `try_recursion` and `gc_cycles`.
+  - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs a faster runtime (M10). `use std/...` works in the self-hosted interpreter too, since the MONOLITH 2 host pieces added `host_call`.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
-  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 109 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
+  - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 130 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
 - M11 exit: a window opens, draws and takes input from a Relic program. The shell running on it is tracked in M0N0LITH-2.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 

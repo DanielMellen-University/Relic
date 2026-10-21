@@ -7,7 +7,7 @@ Reference: [STDLIB.md](STDLIB.md).
 | Need | Status | Where |
 |---|---|---|
 | Error handling (`try` / `catch`, `fail`) | done | language |
-| Modules, private `_names` | done | `use`, DESIGN.md |
+| Modules, private `_names` | done | `use`, LANGUAGE.md |
 | Text files: read, write, append, lines | done | std/files |
 | Folders: list, make, remove, rename, is_dir, size | done | std/files |
 | Paths: join, dir, base, ext, stem, normalize | done | std/paths |

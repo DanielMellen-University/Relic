@@ -899,7 +899,7 @@ fun builtin(rt, name, a)
     return bad("cannot remove from " + a_type(a[0]))
 
 # num() on a string: digits with an optional sign, fraction and exponent.
-# Narrower than the host's strtod (no inf, nan or hex); see DESIGN.md.
+# Narrower than the host's strtod (no inf, nan or hex); see docs/ARCHITECTURE.md (Self-host).
 fun parse_number(s)
     let i = 0
     if i < len(s) and (s[i] == "-" or s[i] == "+")

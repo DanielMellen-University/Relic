@@ -15,7 +15,7 @@ All 7 steps are done (M1 to M4), and the host has grown well past them: see [ARC
 ## Steps
 
 1. **Layout.** Create the folders in [ARCHITECTURE.md](ARCHITECTURE.md) and a `CMakeLists.txt` with the three targets.
-2. **Entry point.** `relic --version` prints `relic 0.0.1`. Add CI that builds on push.
+2. **Entry point.** `relic --version` printed `relic 0.0.1` at the time. Add CI that builds on push.
 3. **Golden runner.** Add the runner from [TESTING.md](TESTING.md) and one test.
 4. **Tokens.** Lex names, string literals, `(`, `)`, newlines and end of file. INDENT/DEDENT can wait until blocks arrive. Add `--tokens`.
 5. **Parse a call.** Parse `name(expr)` where expr is a string. Add `--ast`.
@@ -24,15 +24,6 @@ All 7 steps are done (M1 to M4), and the host has grown well past them: see [ARC
 
 After step 7, grow each stage toward the [1.0 checklist](1.0-CHECKLIST.md).
 
-## Borrowed pieces list
+## Borrowed pieces
 
-Track everything Relic relies on that we did not write. Each row needs a planned replacement phase.
-
-| Piece | Used for | Replace in |
-|---|---|---|
-| C++ compiler and stdlib | host interpreter and VM | phase 3 (self-host); Relic versions of lexer, parser and interpreter exist in `selfhost/` |
-| `host_*` built-ins | files, clocks, float math under `std/` | phase 4 and later |
-| SDL2 (optional) | graphics, `-DRELIC_SDL=ON` | phase 5 (Relic drawing layer) |
-| CMake | build | **Open** (Relic build tool later) |
-| CMake script mode | golden runner and comparison scripts in `tools/` | **Open** (runner in Relic) |
-| GitHub Actions | CI on Linux, macOS, Windows | not planned |
+The list of borrowed pieces now lives in [VISION.md](VISION.md#borrowed-today).
