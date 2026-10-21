@@ -1,0 +1,32 @@
+# A nested function reads (and sets) a name its enclosing function declares
+# further down. Before that `let` runs it sees the outer name; after, the local.
+let x = "global"
+fun outer()
+    fun early()
+        return x
+    print(early())
+    let x = "outer"
+    print(early())
+    fun setx()
+        y = "set"
+    let y = "y0"
+    setx()
+    print(y)
+    return early
+print(outer()())
+
+fun counter()
+    fun bump()
+        n = n + 1
+        return n
+    let n = 0
+    return bump
+let c = counter()
+c()
+print(c())
+
+for i in 0..2
+    fun show()
+        return v
+    let v = i * 10
+    print(show())

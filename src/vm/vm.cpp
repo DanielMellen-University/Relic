@@ -27,6 +27,7 @@ enum class Op {
     Binary, Unary, Range, Field, Index, SetField, SetIndex,
     List, Map, Interp, Call, Closure, Return, ReturnNone,
     ForPrep, ForNext, ForRangePrep, ForRangeNext, Fail, Use, TryBegin, TryEnd, CheckType,
+    LoadLate, StoreLate, Mark,
 };
 
 const char* op_name(Op o) {
@@ -38,6 +39,7 @@ const char* op_name(Op o) {
         "BINARY", "UNARY", "RANGE", "FIELD", "INDEX", "SET_FIELD", "SET_INDEX",
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
         "FOR_PREP", "FOR_NEXT", "FOR_RANGE_PREP", "FOR_RANGE_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
+        "LOAD_LATE", "STORE_LATE", "MARK",
     };
     return names[static_cast<int>(o)];
 }
@@ -141,6 +143,10 @@ private:
     struct CScope {
         std::unordered_map<std::string, int> names;
         std::unordered_map<std::string, std::string> hints;  // `as` types
+        // Names this block declares further down. A nested function compiled
+        // before the `let` reads them through a reserved slot (late).
+        std::unordered_map<std::string, char> pending;
+        std::unordered_map<std::string, int> late;
         int count = 0;
         size_t enter_ip = 0;     // ENTER_SCOPE to patch with the slot count
         bool fn_scope = false;   // a function's own scope: its Proto holds the count
@@ -196,10 +202,45 @@ private:
     }
 
     // Scopes: only blocks that declare names get one at run time.
-    void open_scope() {
+    void open_scope(const Ast* body = nullptr) {
         CScope s;
         s.enter_ip = emit(Op::EnterScope);
+        if (body) pend(s, *body);
         scopes_.push_back(std::move(s));
+    }
+    static void pend(CScope& s, const Ast& body) {
+        for (const auto& st : body.kids) {
+            if (st->kind == Node::Let || st->kind == Node::Fun) s.pending[st->text] = 1;
+            else if (st->kind == Node::Use)
+                s.pending[st->kids.empty() ? st->text.substr(st->text.find_last_of('/') + 1) : st->kids[0]->text] = 1;
+        }
+    }
+    int reserve_late(CScope& s, const std::string& name) {
+        auto it = s.late.find(name);
+        if (it != s.late.end()) return it->second;
+        // Two slots: the value, then its mark (true once the `let` has run).
+        int slot = s.count;
+        s.count += 2;
+        s.late[name] = slot;
+        if (s.fn_scope) fns_for(s)->nslots = s.count;
+        return slot;
+    }
+    // The Proto that owns a function scope (searching the function stack).
+    Proto* fns_for(const CScope& s) {
+        for (size_t f = fns_.size(); f-- > 0;)
+            if (fns_[f].scope_base < scopes_.size() && &scopes_[fns_[f].scope_base] == &s) return fns_[f].proto;
+        return &cur();
+    }
+    // A name declared later by a block of an enclosing function: gives the
+    // scope index, or -1. Only scopes outside the current function count; in
+    // the same function the `let` cannot have run yet when this code runs.
+    int find_late(const std::string& name, size_t below) {
+        size_t base = fns_.back().scope_base;
+        for (size_t i = std::min(below, base); i-- > 0;) {
+            if (scopes_[i].names.count(name)) return -1;
+            if (scopes_[i].pending.count(name)) return static_cast<int>(i);
+        }
+        return -1;
     }
     void close_scope() {
         cur().code[scopes_.back().enter_ip].a = scopes_.back().count;
@@ -215,10 +256,18 @@ private:
             return;
         }
         CScope& s = scopes_.back();
+        s.pending.erase(name);
         auto it = s.names.find(name);
         int slot;
+        auto lt = s.late.find(name);
         if (it != s.names.end()) {
             slot = it->second;
+        } else if (lt != s.late.end()) {
+            slot = lt->second;
+            s.names[name] = slot;
+            emit(Op::Store, 0, slot, &at);
+            emit(Op::Mark, slot + 1, 0, &at);
+            return;
         } else {
             slot = s.count++;
             s.names[name] = slot;
@@ -227,9 +276,12 @@ private:
         emit(Op::Store, 0, slot, &at);
     }
 
-    bool resolve(const std::string& name, int& hops, int& slot) {
+    // Finds name in scopes below index `below` (all scopes by default).
+    bool resolve(const std::string& name, int& hops, int& slot, size_t below = SIZE_MAX) {
         hops = 0;
-        for (size_t i = scopes_.size(); i-- > 0;) {
+        size_t top = std::min(below, scopes_.size());
+        hops = static_cast<int>(scopes_.size() - top);
+        for (size_t i = top; i-- > 0;) {
             auto it = scopes_[i].names.find(name);
             if (it != scopes_[i].names.end()) {
                 slot = it->second;
@@ -240,9 +292,18 @@ private:
         return false;
     }
 
-    void load_name(const Ast& n) {
+    // A late read: LOAD_LATE pushes the slot if its `let` has run and skips the
+    // next instruction; otherwise the next instruction loads the outer name.
+    void load_name(const Ast& n, size_t below = SIZE_MAX) {
+        int li = find_late(n.text, std::min(below, scopes_.size()));
+        if (li >= 0) {
+            int slot = reserve_late(scopes_[static_cast<size_t>(li)], n.text);
+            emit(Op::LoadLate, static_cast<int>(scopes_.size()) - 1 - li, slot, &n);
+            load_name(n, static_cast<size_t>(li));
+            return;
+        }
         int hops, slot;
-        if (resolve(n.text, hops, slot)) {
+        if (resolve(n.text, hops, slot, below)) {
             emit(Op::Load, hops, slot, &n);
         } else if (prog_.global_index.count(n.text)) {
             emit(Op::LoadGlobal, prog_.global_index[n.text], str(n.text), &n);
@@ -265,7 +326,7 @@ private:
 
     void block(const Ast& b, bool new_scope) {
         bool scoped = new_scope && declares(b);
-        if (scoped) open_scope();
+        if (scoped) open_scope(&b);
         for (const auto& s : b.kids) stmt(*s);
         if (scoped) close_scope();
     }
@@ -299,6 +360,17 @@ private:
                 const Ast& t = *n.kids[0];
                 expr(*n.kids[1]);
                 if (t.kind == Node::Name) {
+                    int li = find_late(t.text, scopes_.size());
+                    if (li >= 0) {
+                        // STORE_LATE stores and skips the next instruction once the
+                        // outer `let` has run; otherwise the next one stores outward.
+                        int lslot = reserve_late(scopes_[static_cast<size_t>(li)], t.text);
+                        emit(Op::StoreLate, static_cast<int>(scopes_.size()) - 1 - li, lslot, &t);
+                        int h2, s2;
+                        if (resolve(t.text, h2, s2, static_cast<size_t>(li))) emit(Op::Store, h2, s2, &t);
+                        else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
+                        return;
+                    }
                     int hops, slot;
                     bool local = resolve(t.text, hops, slot);
                     const auto& hints = local ? scopes_[scopes_.size() - 1 - hops].hints : global_hints_;
@@ -366,7 +438,7 @@ private:
                 size_t fn = emit(range ? Op::ForRangeNext : Op::ForNext);
                 fns_.back().loops.push_back({scopes_.size(), 2, top, {}, {}, fns_.back().try_depth});
                 // Each turn gets a scope holding the loop name and the body's names.
-                open_scope();
+                open_scope(n.kids[1].get());
                 declare(n.text, n);
                 for (const auto& s : n.kids[1]->kids) stmt(*s);
                 Loop loop = std::move(fns_.back().loops.back());
@@ -424,7 +496,7 @@ private:
                     emit(Op::Pop);
                     block(*n.kids[1], true);
                 } else {
-                    open_scope();
+                    open_scope(n.kids[1].get());
                     declare(n.text, n);
                     for (const auto& s : n.kids[1]->kids) stmt(*s);
                     close_scope();
@@ -472,8 +544,9 @@ private:
             if (!prm->kids.empty()) s.hints[prm->text] = prm->kids[0]->text;
         }
         proto->nslots = s.count;
-        scopes_.push_back(std::move(s));
         const Ast& body = *n.kids[1];
+        if (body.kind == Node::Block) pend(s, body);
+        scopes_.push_back(std::move(s));
         if (body.kind == Node::Block) {
             for (const auto& st : body.kids) stmt(*st);
             if (op_hint(n).empty()) {
@@ -750,6 +823,21 @@ private:
         a = op_binary(*in.at, a, b);
     }
 
+    // LOAD_LATE / STORE_LATE: true when the outer `let` has run (its mark is set).
+    RELIC_NOINLINE bool late(const Instr& in, Scope* s, std::vector<Value>& st) {
+        for (int h = 0; h < in.a; ++h) s = s->parent.get();
+        size_t k = static_cast<size_t>(in.b);
+        if (!s->slots[k + 1].is<bool>()) return false;
+        if (in.op == Op::LoadLate) {
+            st.push_back(s->slots[k]);
+        } else {
+            s->slots[k] = std::move(st.back());
+            st.pop_back();
+        }
+        return true;
+    }
+    RELIC_NOINLINE void mark(const Instr& in, Scope* s) { s->slots[static_cast<size_t>(in.a)] = Value(true); }
+
     [[noreturn]] RELIC_NOINLINE void undefined_name(const Proto& p, const Instr& in, const std::string& name) {
         std::vector<std::string> names;
         if (in.op == Op::LoadBuiltin) {
@@ -994,6 +1082,11 @@ private:
                 case Op::TryBegin: handlers.push_back({static_cast<size_t>(in.a), st.size(), sc}); break;
                 case Op::TryEnd: handlers.pop_back(); break;
                 case Op::CheckType: op_check_type(*in.at, p.strings[in.a], st.back(), p.strings[in.b]); break;
+                case Op::LoadLate:
+                case Op::StoreLate:
+                    if (late(in, sc.get(), st)) ++ip;  // skip the outward fallback
+                    break;
+                case Op::Mark: mark(in, sc.get()); break;
             }
         }
         return Value();
@@ -1029,7 +1122,10 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
         // Track DefineGlobal order in <main> so a call above its definition warns.
         const bool is_main = p->name == "<main>";
         std::vector<char> defined_here(is_main ? prog.global_names.size() : 0, 0);
-        for (const Instr& in : p->code) {
+        for (size_t ci = 0; ci < p->code.size(); ++ci) {
+            const Instr& in = p->code[ci];
+            // The outward fallback of a late read: the name is declared later in an enclosing function.
+            if (ci > 0 && (p->code[ci - 1].op == Op::LoadLate || p->code[ci - 1].op == Op::StoreLate)) continue;
             if (in.op == Op::Fail && in.at) {
                 items.push_back({in.at->line, in.at->col, p->strings[in.a]});
             } else if (in.op == Op::DefineGlobal && is_main) {

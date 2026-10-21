@@ -590,7 +590,8 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
 void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>& env, const Ast& value_at) {
     if (target.kind == Node::Name) {
         Env* e = env->find_env(target.text);
-        if (!e) fail(target, "'" + target.text + "' is not declared; use 'let " + target.text + " = ...'");
+        // Built-ins are not declared names: `print = 1` is an error, as on the VM.
+        if (!e || e == builtins_.get()) fail(target, "'" + target.text + "' is not declared; use 'let " + target.text + " = ...'");
         if (!e->hints.empty()) {
             auto h = e->hints.find(target.text);
             if (h != e->hints.end()) op_check_type(value_at, h->second, v, "'" + target.text + "' must be");

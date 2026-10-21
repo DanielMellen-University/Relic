@@ -52,9 +52,10 @@ The rules of Relic as the host runs them today (version 1.0.1). The [guide](GUID
 ## Names and scope
 
 - `let x = 1` declares a name in the current block. `x = 2` changes the nearest existing `x`. Assigning to a name that was never declared is an error.
+- Built-ins are not declared names: `print = 1` is an error (`'print' is not declared; use 'let print = ...'`). `let print = 1` makes a new name that hides the built-in in that scope.
 - A `let` inside a block makes a new name for that block and hides an outer one.
 - A name exists only after its `let` or `fun` line has run. Calling a function at the top level above its `fun` is an error (`'greet' is not defined`). Inside another function it is fine, because the later `fun` has run by the time the call happens. `relic check` warns about the top-level case.
-- Closures capture their scope. A function made inside a block still sees that block's names after it ends. Each `for` turn gets its own scope, so closures made in a loop keep their own loop value.
+- Closures capture their scope. A function made inside a block still sees that block's names after it ends. A nested function that uses a name its enclosing function declares further down sees the outer name until that `let` has run, and the local after. Each `for` turn gets its own scope, so closures made in a loop keep their own loop value.
 - Only a name, an index (`a[i]`) or a field (`a.b`) can be assigned to. Field writes reach the map through any path: `wins[i].x = 1` changes the map inside the list.
 
 ## Operators

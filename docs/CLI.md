@@ -71,7 +71,7 @@ hello Daniel
 
 - Names stay defined until you leave.
 - A bare expression prints its value. `none` is not printed.
-- A line starting with `fun`, `if`, `while`, `for` or `else` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.
+- A line starting with `fun`, `if`, `else`, `while`, `for`, `try` or `catch` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.
 - An open `(`, `[` or `{` keeps reading lines until it closes.
 - An error prints `<repl>:line:col: error: ...` without the source line, and the REPL keeps going. Line numbers count from the start of that input.
 - `use` paths are relative to the current folder.

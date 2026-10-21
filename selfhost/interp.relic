@@ -465,7 +465,7 @@ fun exec(rt, n, env)
 fun assign(rt, target, v, env, value_at)
     if target.kind == "Name"
         let e = find(env, target.text)
-        if e == none
+        if e == none or host_same(e, rt.builtins)
             return fail(rt, target, "'{target.text}' is not declared; use 'let {target.text} = ...'")
         if target.text in e.hints
             check_type(rt, value_at, e.hints[target.text], v, "'{target.text}' must be")

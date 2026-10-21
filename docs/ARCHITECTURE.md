@@ -76,11 +76,9 @@ The default engine since M10 (`src/vm/`). `relic --bytecode FILE` prints the com
 - Each file compiles to its own program with its own numbered globals. A module value reads its fields live from that file's globals.
 - Each Relic call is one C++ call of the VM loop, so it is cheap on the host stack. The 800-call limit is the same as the tree-walker's.
 
-Where the VM and the tree-walker still differ:
+- Late names: a nested function can read or set a name that its enclosing function declares further down. The compiler reserves two slots for it, the value and a mark (`LOAD_LATE` / `STORE_LATE`), and the `let` sets the mark (`MARK`). Until the mark is set, the access falls back to the next instruction, which reaches the outer name. This gives the same result as the tree-walker's run-time lookup (golden `vm_late_local`).
 
-- The REPL uses the tree-walker.
-- A nested function that reads a name its enclosing function declares later in the same block gets the global (or built-in) of that name on the VM. The tree-walker finds the later local at call time. No golden test does this.
-- Assigning to a built-in's name without `let` (`print = 1`) is an error on the VM and allowed on the tree-walker.
+The only difference left between the engines is that the REPL uses the tree-walker.
 
 ### VM speed
 

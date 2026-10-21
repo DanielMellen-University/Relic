@@ -1,0 +1,12 @@
+try
+    fail("boom")
+catch err
+    print("caught {err.message}")
+
+let n = 0
+try
+    n = num("x")
+catch
+    n = -1
+
+n

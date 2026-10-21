@@ -1,0 +1,6 @@
+# Built-ins are not declared names, so plain assignment to one is an error
+# on both engines. let makes a new name that hides the built-in.
+let str = "mine"
+str = "changed"
+print(str)
+len = 3

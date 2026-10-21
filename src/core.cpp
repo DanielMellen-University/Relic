@@ -170,7 +170,7 @@ bool opens_block(const std::string& line) {
     try {
         auto t = lex(line);
         Tok k = t.front().kind;
-        if (k == Tok::If || k == Tok::While || k == Tok::For || k == Tok::Else) return true;
+        if (k == Tok::If || k == Tok::While || k == Tok::For || k == Tok::Else || k == Tok::Try || k == Tok::Catch) return true;
         if (k == Tok::Fun) {
             int depth = 0;
             for (const auto& tok : t) {
