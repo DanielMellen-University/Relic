@@ -37,17 +37,16 @@ Phases run in order, with one exception: the memory model and modules from phase
 - [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. **Open:** VM written in Relic
 - [ ] Native code generation explored (stretch)
 
-## Phase 5: Desktop shell in Relic
+## Phase 5: Platform for the desktop
+
+The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) and tracked in its roadmap. This phase covers what the language gives it.
 
 - [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11)
-- [ ] Window manager, taskbar and Start menu rewritten in Relic (started: `shell/wm.relic` + `shell/desktop.relic` with windows, taskbar, Start menu, drag, resize, and Clicker/Notes/Terminal/Files/Editor apps; Terminal has pwd, cd, ls, cat, mkdir, touch, write, rm and mv on the same `std/vfs` as Files and Editor)
-- [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`; Terminal, Files and Editor apps share it)
+- [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`)
+- [x] Desktop shell moved out to M0N0LITH-2 with its history (1.0.1)
 
 ## Phase 6: Apps as proof
 
-- [ ] Terminal
-- [ ] Text editor
-- [ ] File browser
-- [ ] Drawing app
-- [ ] At least one game
+Terminal, text editor, file browser, drawing app and a game are tracked in M0N0LITH-2. Relic's job here is to fix whatever those apps run into.
+
 - [ ] Relic IDE

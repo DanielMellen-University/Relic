@@ -2,7 +2,9 @@
 
 Relic is the programming language for MONOLITH 2.
 
-> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP and PNG images, TrueType fonts, plus a Relic desktop shell with drag, resize, Terminal/Files/Editor apps sharing an in-memory `std/vfs`). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
+This repo is the language only: the host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
+
+> Status: **Relic 1.0** is released (tag `v1.0.0`, MIT license). Since then: modules with `use` (M7), a standard library in `std/` (M8), a lexer, parser and interpreter written in Relic (M9), and a bytecode VM that is now the default engine (M10). Graphics on SDL2 have started as an optional build (M11: drawing, keyboard and mouse input, text, BMP and PNG images, TrueType fonts, plus an in-memory `std/vfs`). The language is now feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector (see [DESIGN.md](docs/DESIGN.md)).
 
 ## A taste
 
@@ -74,7 +76,7 @@ print(box.title, box["version"])
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/math`, `std/files`, `std/paths`, `std/json`, `std/os`, `std/time`, `std/graphics`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself. Full tables: [STDLIB.md](docs/STDLIB.md).
-- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. App-shaped example: `examples/mini_desktop/`. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The first MONOLITH 2 desktop sketch: `build-sdl/relic shell/desktop.relic`.
+- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. App-shaped example: `examples/mini_desktop/`. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The MONOLITH 2 desktop now lives in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 - Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `fail`, `gc`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
@@ -113,7 +115,7 @@ catch err
 
 ```
 $ ./build/relic
-relic 1.0.0. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.1. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42
@@ -134,14 +136,14 @@ hello Daniel
 ## What Relic is
 
 - A small, readable language built from scratch for MONOLITH 2.
-- The long-term goal is a stack where nothing is borrowed. Relic, its runtime, its standard library, the desktop shell and the apps are all written in-house.
+- The long-term goal is a stack where nothing is borrowed. Relic, its runtime and its standard library are written here. The desktop shell and the apps are written in Relic in M0N0LITH-2.
 - A C++17 host runs Relic today. It is a scaffold: the lexer, parser and interpreter already exist in Relic too (`selfhost/`), but they still run on the host. The host goes away once Relic can run itself.
 
 ## How it relates to MONOLITH
 
 - **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and its IDE do not go there.
-- **MONOLITH 2** is the next version. Its desktop shell and apps will be rewritten in Relic.
-- Relic lives here so the language can grow on its own schedule.
+- **MONOLITH 2** is the next version. Its desktop shell and apps are written in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2). That repo pins a Relic commit as a submodule and builds it.
+- Relic lives here so the language can grow on its own schedule. Language work lands here, desktop and app work lands in M0N0LITH-2.
 
 ## Docs
 
@@ -154,6 +156,7 @@ hello Daniel
 - [Standard library](docs/STDLIB.md): every std/ module (including [headless GUI testing](docs/STDLIB.md#running-headless--testing-gui-apps))
 - [MONOLITH 2 readiness](docs/MONOLITH2-READINESS.md)
 - [Testing](docs/TESTING.md): golden tests, comparison tests, CI
+- [Changelog](CHANGELOG.md)
 - [1.0 checklist](docs/1.0-CHECKLIST.md): what 1.0 needed, and the one open check
 
 ## Contributing

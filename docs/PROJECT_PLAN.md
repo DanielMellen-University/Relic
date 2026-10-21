@@ -17,8 +17,8 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
-| M11 | Graphics API and desktop shell | M10 | started (SDL2 slices 1 to 3; shell with drag/resize, Terminal, Files, Editor; `std/vfs`) |
-| M12 | Apps and IDE | M11 | not started |
+| M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done. The desktop shell moved to M0N0LITH-2 |
+| M12 | Apps and IDE | M11 | apps moved to M0N0LITH-2; IDE not started |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
 
@@ -66,13 +66,13 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 109 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
   - Still open for M10: the VM written in Relic (the self-hosted side), and VM speed work.
-- M11 exit: a window opens, draws and takes input from a Relic program, then the shell runs on it.
+- M11 exit: a window opens, draws and takes input from a Relic program. The shell running on it is tracked in M0N0LITH-2.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
   - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds.
   - Slice 3: **done.** PNG and JPG via optional SDL2_image, TrueType text via optional SDL2_ttf.
-  - Shell, first cut: `shell/wm.relic` (window model, no drawing, golden test `shell_wm`) and `shell/desktop.relic` (draws it). Start menu launches Clicker, Notes, Terminal, Files or Editor; windows raise, close, drag, resize and take keys; taskbar buttons raise. Relic-native Terminal: help, clear, echo, apps, date, plus pwd, cd, ls, cat, mkdir, touch, write, rm, mv and `echo text > file` (or `>>`) on the shared VFS, with the current folder in the prompt. In-memory `std/vfs` (golden `std_vfs`) shared by Terminal, Files and Editor; Files browses it, a file opened in Files opens in the next Editor, Editor edits/saves with ctrl+s. Next: polish apps (Terminal scrollback, Editor open by path), host-backed mounts if needed.
+  - Shell: started here (window model, Start menu, drag, resize, Terminal, Files, Editor), then moved with its history and the `shell_wm` test to [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) in 1.0.1. In-memory `std/vfs` (golden `std_vfs`) stays in Relic.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
-- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic.
+- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. The apps are built in M0N0LITH-2; Relic fixes what they find.
 
 ## Risks
 
