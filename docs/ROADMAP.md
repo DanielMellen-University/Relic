@@ -23,10 +23,25 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 ## Phase 3: Self-host
 
+The goal, approved by Daniel in October 2026: a Relic compiler written in Relic that emits C, built by a normal C compiler, so no C++ language code is left. The C++ host is stage 0 until the compiler can compile itself (C4). Milestone details are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap).
+
+Relic-written front end and interpreter. These run on the host today and are kept as a testing aid; the interpreter is not the end state.
+
 - [x] Lexer rewritten in Relic (`selfhost/lexer.relic`, matches `--tokens` on every file)
 - [x] Parser rewritten in Relic (`selfhost/parser.relic`, matches `--ast` on every file)
 - [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; `use` for local files and `std/`)
-- [ ] Relic builds and runs itself without the C/C++ host for language logic (still runs on the host; `std/` works in the self-hosted interpreter, a Relic-written VM is still needed)
+- [x] SH1: the self-hosted interpreter runs real programs with their args (`selfhost_args`)
+- [x] SH2: it runs itself: `run.relic` on `run.relic` on a test program (`selfhost_nested`)
+- [ ] SH3: parity with the host: `num()` (done), deep recursion and `gc()` (open), every skipped comparison test passing
+- [ ] SH4: `relic check` and the REPL written in Relic
+
+Compiler to C:
+
+- [ ] C1: C runtime design: values, strings, lists and maps, reference counts plus cycle collection, errors, `host_*` primitives in plain C
+- [ ] C2: Relic-to-C code generation for a core subset, compiled and run in CI against golden outputs
+- [ ] C3: full language coverage: closures, modules, `try` / `catch`, std
+- [ ] C4: stage 1: the compiler compiles itself to C, and stage 1 output equals stage 0 output (fixed point)
+- [ ] C5: the C++ host leaves the default build; it stays only as an optional reference
 
 ## Phase 4: Runtime and standard library
 
@@ -34,8 +49,8 @@ Phases run in order, with one exception: the memory model and modules from phase
 - [x] Language feature complete: `try` / `catch`, int and float, `as` hints, private `_` names, UTF-8 strings
 - [x] Modules and imports: `use path/name`, cycles allowed
 - [x] Standard library: strings, lists, maps, files, time, math (`std/`, M8); later paths, json, os, vfs and graphics
-- [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. **Open:** VM written in Relic
-- [ ] Native code generation explored (stretch)
+- [x] Bytecode VM (host, M10): default engine, 1.2x to 2.1x faster on `bench/`. A VM written in Relic is no longer planned; the C backend (phase 3) takes its place
+- [ ] Native code generation explored (stretch; the C backend in phase 3 is the first step)
 
 ## Phase 5: Platform for the desktop
 

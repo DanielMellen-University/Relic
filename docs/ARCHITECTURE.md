@@ -132,18 +132,21 @@ How it works:
 - Number math and `int()` / `float()` run on the host inside a `try`, so an int overflow becomes the program's own error.
 - `host_*` built-ins are reached through `host_call`, which is how `use std/...` works.
 
+What works:
+
+- `relic selfhost/run.relic FILE args...` passes the args to the program (`selfhost_args`).
+- It can run itself: `relic selfhost/run.relic selfhost/run.relic FILE` works (`selfhost_nested`, about 0.7 s). To make that possible, tagged maps also carry a list under `chr(2)` that is checked by identity (`host_same`), so the inner copy's functions look like plain maps to the outer copy.
+- `num()` hands the string to the host's `num()`, so the answers and errors are the same (golden `num_edges`).
+
 Limits today:
 
-- `args()` gives an empty list, so `run.relic` cannot pass a file to a program it runs (running `run.relic` on itself stops at its usage line).
-- Every Relic call inside it costs several host calls, so deep recursion stops at around 100 levels instead of 800. `rt_recursion` and `try_recursion` are skipped in the comparison for that reason.
+- Every Relic call inside it costs several host calls, so recursion stops at about 130 levels instead of 800, and the error comes from the interpreter itself, so the program cannot catch it. `rt_recursion` and `try_recursion` are skipped in the comparison for that reason. A third nested level of `run.relic` hits the same limit.
 - No `gc()`; the host collector already covers its maps. `gc_cycles` is skipped.
-- `num()` takes digits, a sign, a fraction and an exponent (no inf, nan or hex).
 - No REPL, no VM, no `check`.
-- It is slow: `bench/fib.relic` takes about 5 s on it against about 40 ms on the host VM.
+- It is slow: `bench/fib.relic` takes about 5.4 s on it against about 35 ms on the host VM (Release).
 
-What still comes from the C++ host: running all of it (there is no Relic-written VM), reference counting and the cycle collector, files, clocks, float math, process access and graphics (`host_*`), and the command line.
+What still comes from the C++ host: running all of it, reference counting and the cycle collector, number parsing, files, clocks, float math, process access and graphics (`host_*`), and the command line.
 
-## Open
+## Where this is going
 
-- **Open:** a VM written in Relic, so the self-hosted side has a fast engine.
-- **Open:** dropping the C++ host for language logic once the Relic side can run itself, including `use`.
+Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). The Relic-written interpreter above stays as a testing aid.

@@ -10,7 +10,7 @@ Build a language, and then a whole desktop, from scratch. Relic is the base laye
 - **Bootstrap, then replace.** A C/C++ host is fine for phase 1. Each borrowed piece is tracked and removed once Relic can take its place.
 - **Small and readable.** A new reader should be able to follow the language and its interpreter.
 - **Proof by use.** Relic is done when the MONOLITH 2 shell and apps run on it. They live in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
-- **Interpreter first.** Get a working language early. Native code generation comes later.
+- **Interpreter first.** Get a working language early. The end state is a compiler to C, written in Relic.
 
 ## Borrowed today
 
@@ -18,9 +18,9 @@ Everything Relic relies on that we did not write. Each piece has a planned repla
 
 | Piece | Used for | Target | Replace in |
 |---|---|---|---|
-| C++17 compiler and stdlib | the host: lexer, parser, tree-walker, VM | Relic runs itself; Relic versions of the lexer, parser and interpreter already exist in `selfhost/` | phase 3 |
-| `host_*` built-ins | files, clocks, float math, process access under `std/` ([HOST.md](HOST.md)) | Relic all the way down | phase 4 and later |
-| `std::shared_ptr` reference counts | memory | a Relic-written runtime | phase 3 |
+| C++17 compiler and stdlib | the host: lexer, parser, tree-walker, VM | a Relic compiler written in Relic that emits C; the C++ host stays as stage 0 until then | phase 3 (C5) |
+| `host_*` built-ins | files, clocks, float math, process access under `std/` ([HOST.md](HOST.md)) | plain C primitives in the C runtime | phase 3 (C1) |
+| `std::shared_ptr` reference counts | memory | the C runtime | phase 3 (C1) |
 | SDL2, SDL2_image, SDL2_ttf (optional) | graphics, `-DRELIC_SDL=ON` | a Relic drawing layer | phase 5 |
 | CMake | build | **Open:** a Relic build tool | |
 | CMake script mode | golden runner and comparison scripts in `tools/` | **Open:** a runner in Relic | |

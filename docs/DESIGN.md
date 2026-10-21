@@ -35,6 +35,7 @@ Relic should not read like C, C++ or Java. The aim is short lines, few symbols, 
 | Standard library written in Relic, with borrowed pieces named `host_*` | the borrowed list stays visible and small |
 | SDL2 for graphics, optional at build time | same backend as MONOLITH 1; the default build needs nothing but a C++ compiler |
 | Bytecode VM as the default engine, tree-walker kept | speed, with a second engine to compare against on every test |
+| Bootstrap through a Relic compiler that emits C (Daniel, Oct 2026) | C compilers are everywhere, and the result has no C++ left; the C++ host is stage 0 until the compiler compiles itself |
 
 ## Syntax freeze
 
