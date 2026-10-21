@@ -23,7 +23,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | SH2 | Self-hosted interpreter runs itself | SH1 | done |
 | SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; rest open, low priority |
 | SH4 | `check` and REPL in Relic | SH2 | not started, low priority |
-| C1 | C runtime design | M9 | not started |
+| C1 | C runtime | M9 | done: `runtime/c/`, tests `c_runtime` and `c_demo` |
 | C2 | Relic-to-C codegen, core subset, in CI | C1 | not started |
 | C3 | Full language in C | C2 | not started |
 | C4 | Stage 1 fixed point | C3 | not started |
@@ -98,7 +98,7 @@ A testing aid that checks the Relic-written front end on real programs. Not the 
 
 ### C1 to C5: the compiler to C
 
-- C1 exit: a written design for the C runtime (values, strings, lists and maps, reference counts plus cycle collection, errors and `try`, `host_*` primitives in plain C), with the choices below decided by Daniel.
+- C1 exit: a C runtime (values, strings, lists and maps, reference counts plus cycle collection, errors and `try`, `host_*` primitives in plain C), with the choices below decided by Daniel. **Done:** `runtime/c/`, plain C99, built next to the host and in its own strict CI job (gcc and clang with ASan, UBSan and LSan on Linux, clang on macOS, MSVC on Windows). Tests: `c_runtime` (unit, cycle and leak checks) and `c_demo` (a program compiled by hand the way C2 will, matching the host's output). The ABI is in [C-RUNTIME.md](C-RUNTIME.md). Left for later milestones: loading compiled modules and the std-boundary error names (C2, C3), the SDL2 graphics module (after C2).
 - C2 exit: a Relic program in `selfhost/` turns a core subset (numbers, strings, lists, maps, functions, control flow) into C. CI compiles that C and runs it against golden outputs on all three OSes.
 - C3 exit: closures, modules, `try` / `catch`, hints and the std all compile, and every golden program matches.
 - C4 exit: the compiler compiles itself. Stage 1 (compiled by the stage 0 host) and stage 2 (compiled by stage 1) produce identical C: a fixed point.
@@ -114,7 +114,7 @@ A testing aid that checks the Relic-written front end on real programs. Not the 
 | Self-hosted side too slow | Host never retired | Compile to C instead of interpreting (C1 to C5) |
 | Tree-walker too slow for desktop | Laggy shell | Host VM done and default; more speed work before the shell |
 | Borrowed pieces creep in | Breaks the domestic goal | Keep the borrowed list in VISION.md current |
-| Generated C differs by compiler or OS | C4 fixed point fails on one OS | Pick a C standard and compiler set early (Open, below); CI on all three OSes |
+| Generated C differs by compiler or OS | C4 fixed point fails on one OS | C99 on gcc, clang and MSVC (decided); the runtime is built strict on all three in CI |
 
 ## Decisions needed
 
@@ -133,7 +133,7 @@ Struck-through rows are decided. The rest are **Open** and block the milestone s
 | ~~Module system shape~~ `use path/name`, one file one module | done |
 | ~~Graphics backend for phase 5~~ SDL2 by default (matches MONOLITH 1), optional build | done |
 | ~~Bootstrap strategy~~ Relic compiler in Relic emitting C | done |
-| **Open:** memory in the C runtime (reference counts plus a cycle collector like today, or a tracing collector) | C1 |
-| **Open:** which C standard and which compilers to support | C1 |
-| **Open:** how `try` / `catch` unwinds in C (`setjmp` / `longjmp`, or error returns checked at every call) | C1 |
-| **Open:** whether graphics stays an optional C module over SDL2 | C3 |
+| ~~Memory in the C runtime~~ reference counts plus a cycle collector, like the host (Decided, Daniel, Oct 20 2026) | done |
+| ~~C standard and compilers~~ C99 on gcc, clang and MSVC (Decided, Daniel, Oct 20 2026) | done |
+| ~~How `try` / `catch` works in C~~ an error flag returned from every call, checked by generated code (Decided, Daniel, Oct 20 2026) | done |
+| ~~Graphics in C~~ an optional C module over SDL2 (Decided, Daniel, Oct 20 2026) | done |

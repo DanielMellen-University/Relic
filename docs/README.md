@@ -17,8 +17,9 @@
 2. [ARCHITECTURE.md](ARCHITECTURE.md): the host, the two engines, memory, `selfhost/`
 3. [TESTING.md](TESTING.md): golden, comparison, unit and graphics tests, CI
 4. [HOST.md](HOST.md): `host_*` built-ins, adding one, embedding `relic_core`
-5. [DESIGN.md](DESIGN.md): why the language is the way it is, open questions
-6. [ROADMAP.md](ROADMAP.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md): what is done and what is next
+5. [C-RUNTIME.md](C-RUNTIME.md): the C runtime that compiled Relic will link against
+6. [DESIGN.md](DESIGN.md): why the language is the way it is, open questions
+7. [ROADMAP.md](ROADMAP.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md): what is done and what is next
 
 ## All docs
 
@@ -31,10 +32,11 @@
 | [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits |
 | [TESTING.md](TESTING.md) | contributors | how each kind of test works and how to run it |
 | [HOST.md](HOST.md) | contributors | the C++ built-ins under `std/`, and running Relic from C++ |
+| [C-RUNTIME.md](C-RUNTIME.md) | contributors | `runtime/c/`: values, ownership, calling convention, errors, built-ins, cycle collector, tests |
 | [DESIGN.md](DESIGN.md) | both | the reasons behind the language, the syntax freeze, open questions |
 | [VISION.md](VISION.md) | both | the goal, principles, non-goals, and the borrowed pieces list |
 | [ROADMAP.md](ROADMAP.md) | both | phases with tickable outcomes |
-| [PROJECT_PLAN.md](PROJECT_PLAN.md) | contributors | milestones M0 to M12 with status, exit criteria, risks, decisions |
+| [PROJECT_PLAN.md](PROJECT_PLAN.md) | contributors | milestones M0 to M12, SH1 to SH4 and C1 to C5 with status, exit criteria, risks, decisions |
 | [MONOLITH2-READINESS.md](MONOLITH2-READINESS.md) | both | what the MONOLITH 2 desktop needs from Relic, and what is done |
 | [1.0-CHECKLIST.md](1.0-CHECKLIST.md) | record | what 1.0 needed (released as `v1.0.0`) |
 | [BOOTSTRAP.md](BOOTSTRAP.md) | record | how the host was started from an empty repo |

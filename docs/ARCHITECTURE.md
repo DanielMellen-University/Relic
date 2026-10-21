@@ -1,6 +1,6 @@
 # Architecture
 
-How Relic is built today: the C++17 host, its two engines, memory, and the Relic-written copies in `selfhost/`. Everything here is **Default** unless marked **Open**. Built-ins and embedding are in [HOST.md](HOST.md).
+How Relic is built today: the C++17 host, its two engines, memory, and the Relic-written copies in `selfhost/`. The C runtime for compiled Relic (`runtime/c/`) has its own page, [C-RUNTIME.md](C-RUNTIME.md). Everything here is **Default** unless marked **Open**. Built-ins and embedding are in [HOST.md](HOST.md).
 
 ## Folders
 
@@ -17,6 +17,7 @@ Relic/
     vm/             bytecode compiler and stack VM (the default engine)
     builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones (font8x12.inc is its generated font)
     diag/           error messages with file, line, column
+  runtime/c/        C99 runtime for compiled Relic (C1), see C-RUNTIME.md
   std/              standard library, written in Relic
   selfhost/         lexer, parser and interpreter written in Relic
   examples/         small language examples (see examples/README.md)
@@ -36,8 +37,9 @@ Relic/
 | `relic_core` | static library: lexer, parser, AST, tree-walker, VM, built-ins |
 | `relic` | the command line program, links `relic_core` |
 | `relic_tests` | unit tests, links `relic_core` |
+| `relic_rt` | the C runtime library from `runtime/c/` (plain C99), with `relic_rt_tests` and `relic_rt_demo` |
 
-Options: `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
+Options: `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` (on by default). `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
 
 ## Pipeline
 
@@ -108,7 +110,7 @@ One `Value` type: none, bool, int, float, string, list, map, function, built-in,
 - When: at calls and loop turns, once more than 100,000 containers exist and the count has doubled since the last collection, or when the program calls `gc()`. The same collector serves both engines.
 - Cost: about 10 percent on `bench/`, from tracking each container.
 - Deep nesting is freed with a work queue, not one C++ call per level.
-- Still borrowed: the counts come from `std::shared_ptr`. A Relic-written runtime would own them.
+- Still borrowed: the counts come from `std::shared_ptr`. The C runtime (`runtime/c/`) does its own counting and runs the same collector in plain C.
 
 ## Self-host
 
@@ -149,4 +151,4 @@ What still comes from the C++ host: running all of it, reference counting and th
 
 ## Where this is going
 
-Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). The Relic-written interpreter above stays as a testing aid.
+Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). C1, the C runtime, is done: see [C-RUNTIME.md](C-RUNTIME.md). The Relic-written interpreter above stays as a testing aid.

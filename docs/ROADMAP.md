@@ -37,7 +37,7 @@ Relic-written front end and interpreter. These run on the host today and are kep
 
 Compiler to C:
 
-- [ ] C1: C runtime design: values, strings, lists and maps, reference counts plus cycle collection, errors, `host_*` primitives in plain C
+- [x] C1: C runtime: values, strings, lists and maps, reference counts plus cycle collection, errors, `host_*` primitives in plain C99 (`runtime/c/`, [C-RUNTIME.md](C-RUNTIME.md))
 - [ ] C2: Relic-to-C code generation for a core subset, compiled and run in CI against golden outputs
 - [ ] C3: full language coverage: closures, modules, `try` / `catch`, std
 - [ ] C4: stage 1: the compiler compiles itself to C, and stage 1 output equals stage 0 output (fixed point)

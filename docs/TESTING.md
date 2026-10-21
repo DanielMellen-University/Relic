@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. A default build has 143 ctest cases; an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts has 149.
+How Relic is tested, and how to run it. A default build has 146 ctest cases; an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts has 152.
 
 ## Running the tests
 
@@ -61,6 +61,17 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tests/unit/main.cpp` (`relic_tests`, ctest case `unit`) checks the lexer, parser, interpreter and REPL from C++, where token lists or tree shape are easier to check than output. It uses a small hand-written harness, no test library.
 
+## C runtime tests
+
+Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md](C-RUNTIME.md#tests).
+
+| Test | Checks |
+|---|---|
+| `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, and that nothing leaks |
+| `c_demo` | the hand-compiled `tests/demo.c` prints exactly `tests/golden/c_demo.out` |
+
+`golden_c_demo` runs the same program on the C++ host, so a change to either side shows up. `c_demo` is skipped by `selfhost_interp` because it recurses 800 calls deep.
+
 ## Graphics tests
 
 The default build has no SDL, so only `golden_std_graphics` runs: it checks that `std/graphics` loads and that `available()` gives a bool.
@@ -81,6 +92,7 @@ On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev 
 ## CI
 
 - `.github/workflows/ci.yml` builds Release and runs `ctest` on every push and pull request, on Ubuntu, macOS and Windows, without SDL.
+- A second job, `c-runtime`, builds `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
 
