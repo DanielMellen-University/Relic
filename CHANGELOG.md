@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.6 (2026-10-20)
+
+- VM: a name whose `as` hint changes between `let`s is now checked against the hint of the latest `let` that ran, also when a nested function assigns to it, as on the tree-walker. Before, the VM used the hint where the function was defined, and for top-level names the last hinted `let` in the file, even for assignments above it. Stores from a nested function to a name its enclosing function declares later are now checked too. New golden `hint_relet` (tree-walker, VM and compiled C agree; it replaces the cgen-only case).
+- cgen: a hinted parameter that a later `let` re-hints now starts with its hint (found by the new golden).
+- C runtime: indexing and slicing a long string with multi-byte characters no longer walks from the start each time; it keeps a table of the byte offset of every 64th character. A loop over 40,000 mixed characters went from 1.3 s to 17 ms. No output change; new golden `utf8_long` and runtime tests (678 checks).
+- PROJECT_PLAN records the C3 choices (decided by Engineer, Oct 20 2026) and the C5 bootstrap question, pending Daniel.
+- `ctest` has 286 cases.
+
 ## 1.0.5 (2026-10-20)
 
 Code generator, full language (milestones C3 and C4):
