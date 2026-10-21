@@ -64,14 +64,22 @@ fun split(s, sep)
     return parts
 
 fun join(items, sep)
-    let out = ""
-    let first = true
+    let parts = []
     for x in items
-        if not first
-            out = out + sep
-        out = out + str(x)
-        first = false
-    return out
+        append(parts, str(x))
+    if len(parts) == 0
+        return ""
+    return _join(parts, sep, 0, len(parts))
+
+# Joins halves, so a long list costs n log n bytes copied, not n squared.
+fun _join(parts, sep, a, b)
+    if b - a <= 8
+        let out = parts[a]
+        for i in a + 1..b
+            out = out + sep + parts[i]
+        return out
+    let m = a + int((b - a) / 2)
+    return _join(parts, sep, a, m) + sep + _join(parts, sep, m, b)
 
 fun replace(s, old, new) = join(split(s, old), new)
 

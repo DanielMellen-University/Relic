@@ -7,3 +7,6 @@ print(strings.split("a,b,,c", ","))
 print(strings.join([1, 2, 3], "-"))
 print(strings.replace("a.b.c", ".", "/"), strings.repeat("ab", 3))
 print(num("42") + 1, ord("A"), chr(66), slice("hello", 1, 3))
+# long lists are joined in halves; the result is the same
+print(strings.join(0..20, ","))
+print(strings.join("abc", "-"), strings.join({x: 1, y: 2}, "+"), strings.join([], "?") == "")
