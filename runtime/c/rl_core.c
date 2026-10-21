@@ -56,6 +56,7 @@ size_t rl_live_strings(void) { return g_strings; }
 /* values                                                               */
 
 rl_value rl_none(void) { rl_value v; v.k = RL_NONE; v.u.i = 0; return v; }
+rl_value rl_unset(void) { rl_value v; v.k = RL_UNSET; v.u.i = 0; return v; }
 rl_value rl_bool(int b) { rl_value v; v.k = RL_BOOL; v.u.i = 0; v.u.b = b ? 1 : 0; return v; }
 rl_value rl_int(long long i) { rl_value v; v.k = RL_INT; v.u.i = i; return v; }
 rl_value rl_float(double f) { rl_value v; v.k = RL_FLOAT; v.u.f = f; return v; }
@@ -516,7 +517,7 @@ rl_scope *rl_scope_new(rl_scope *parent, size_t n) {
     if (parent) ++parent->h.rc;
     s->n = n;
     s->slots = n ? (rl_value *)xmalloc(n * sizeof *s->slots) : NULL;
-    for (i = 0; i < n; ++i) s->slots[i] = rl_none();
+    for (i = 0; i < n; ++i) s->slots[i] = rl_unset();
     return s;
 }
 
@@ -597,6 +598,7 @@ int rl_fail_str(rl_ctx *cx, rl_str *msg) {
     cx->err_msg = msg;
     cx->has_err = 1;
     cx->err_line = cx->err_col = 0;
+    cx->err_arg = 0;
     cx->err_file = NULL;
     return RL_ERR;
 }
@@ -629,6 +631,23 @@ void rl_at(rl_ctx *cx, const char *file, int line, int col) {
     cx->err_file = file;
     cx->err_line = line;
     cx->err_col = col;
+}
+
+void rl_at3(rl_ctx *cx, const char *file, int l, int c, int l1, int c1, int l2, int c2) {
+    if (cx->err_arg == 1) rl_at(cx, file, l1, c1);
+    else if (cx->err_arg == 2) rl_at(cx, file, l2, c2);
+    else rl_at(cx, file, l, c);
+}
+
+void rl_interp(int n, const rl_value *parts, rl_value *out) {
+    buf b = {0, 0, 0};
+    int i;
+    for (i = 0; i < n; ++i) {
+        rl_value s = rl_show(parts[i]);
+        b_add(&b, ((rl_str *)s.u.o)->data, ((rl_str *)s.u.o)->len);
+        rl_release(s);
+    }
+    *out = b_done(&b);
 }
 
 int rl_catch(rl_ctx *cx, rl_value *out) {
@@ -767,6 +786,7 @@ void rl_ctx_init(rl_ctx *cx, int argc, char **argv) {
     cx->has_err = 0;
     cx->err_msg = NULL;
     cx->err_line = cx->err_col = 0;
+    cx->err_arg = 0;
     cx->err_file = NULL;
     cx->depth = 0;
     cx->argc = argc;

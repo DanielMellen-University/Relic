@@ -85,6 +85,39 @@ foreach(t ${GOLDEN_TESTS})
       -P ${CMAKE_SOURCE_DIR}/tools/run_golden.cmake)
 endforeach()
 
+# C2: golden programs compiled to C by selfhost/cgen.relic (run on the host),
+# built against runtime/c with the same strict flags, run and compared with
+# the same .out/.err files. REPL tests and tests with .args (CLI flags) are
+# left out. relic_cgen_test(name file) works for any program with a golden.
+option(RELIC_CGEN_TESTS "Compile golden programs to C with selfhost/cgen.relic" ON)
+if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
+  enable_language(C)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/cgen)
+  file(GLOB RELIC_CGEN_DEPS ${CMAKE_SOURCE_DIR}/selfhost/*.relic ${CMAKE_SOURCE_DIR}/std/*.relic)
+  function(relic_cgen_test name src)
+    set(c ${CMAKE_BINARY_DIR}/cgen/${name}.c)
+    add_custom_command(OUTPUT ${c}
+      COMMAND relic ${CMAKE_SOURCE_DIR}/selfhost/cgen.relic ${src} -o ${c} --stub
+      DEPENDS relic ${src} ${RELIC_CGEN_DEPS}
+      COMMENT "cgen ${name}.relic"
+      VERBATIM)
+    add_executable(cgen_${name} ${c})
+    target_link_libraries(cgen_${name} PRIVATE relic_rt)
+    relic_c_target(cgen_${name})
+    add_test(NAME cgen_${name}
+      COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:cgen_${name}> -DTEST=${src}
+        -P ${CMAKE_SOURCE_DIR}/tools/run_cgen.cmake)
+    set_tests_properties(cgen_${name} PROPERTIES SKIP_REGULAR_EXPRESSION "cgen-skip: ")
+  endfunction()
+  foreach(t ${GOLDEN_TESTS})
+    get_filename_component(name ${t} NAME_WE)
+    get_filename_component(dir ${t} DIRECTORY)
+    if(NOT name MATCHES "^repl_" AND NOT EXISTS ${dir}/${name}.args)
+      relic_cgen_test(${name} ${t})
+    endif()
+  endforeach()
+endif()
+
 if(RELIC_SDL)
   # Headless SDL smoke test: input, text and image calls run without a display.
   add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/sdl)

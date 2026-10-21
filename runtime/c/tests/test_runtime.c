@@ -426,6 +426,39 @@ static void test_cycles(void) {
     (void)r;
 }
 
+/* Calls generated code (cgen) uses on top of the C1 ABI. */
+static void test_codegen_support(void) {
+    rl_value r, l, parts[3], one = rl_int(1), unset = rl_unset();
+    const char *names[2] = {"total", "count"};
+    const rl_value *slots[2];
+    /* rl_at3 picks the operand the failing call named: index errors point at
+       the index, range errors at the bad end, others at the node. */
+    l = rl_list_new(0);
+    CHECK(rl_index(&cx, l, rl_int(4), &r) == RL_ERR);
+    rl_at3(&cx, "t.relic", 1, 5, 1, 1, 1, 7);
+    CHECK(rl_catch(&cx, &r));
+    SHOW(r, "{message: \"list index 4 is out of range (size 0)\", line: 1, col: 7}");
+    rl_release(l);
+    CHECK(rl_add(&cx, rl_int(1), T("a"), &r) == RL_ERR);
+    rl_at3(&cx, "t.relic", 2, 3, 2, 1, 2, 5);
+    CHECK(rl_catch(&cx, &r));
+    SHOW(r, "{message: \"cannot add an int and a string\", line: 2, col: 3}");
+    /* undefined names suggest a close visible name or built-in; an unset
+       slot (a `let` not reached yet) is not offered */
+    slots[0] = &one;
+    slots[1] = &unset;
+    ERR(rl_fail_undefined(&cx, "totl", 2, names, slots), "'totl' is not defined (did you mean 'total'?)");
+    ERR(rl_fail_undefined(&cx, "coutn", 2, names, slots), "'coutn' is not defined");
+    ERR(rl_fail_undefined(&cx, "prnt", 0, NULL, NULL), "'prnt' is not defined (did you mean 'print'?)");
+    /* string interpolation joins shown values */
+    parts[0] = T("n=");
+    parts[1] = rl_int(3);
+    parts[2] = T("!");
+    rl_interp(3, parts, &r);
+    SHOW(r, "n=3!");
+    CHECK(unset.k == RL_UNSET);
+}
+
 int main(void) {
     char *argv[2];
     argv[0] = (char *)"one";
@@ -436,6 +469,7 @@ int main(void) {
     test_num_parse();
     test_containers();
     test_errors_and_builtins();
+    test_codegen_support();
     test_host();
     test_cycles();
     drop_temps();

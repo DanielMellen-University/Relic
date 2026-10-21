@@ -26,6 +26,8 @@ extern "C" {
 #define RL_OK 0
 #define RL_ERR 1
 #define RL_MAX_DEPTH 800
+/* A scope slot whose `let` has not run yet. Never a Relic value. */
+#define RL_UNSET (-1)
 
 typedef enum {
     RL_NONE, RL_BOOL, RL_INT, RL_FLOAT, RL_STR, RL_LIST, RL_MAP, RL_FUN, RL_MODULE, RL_SCOPE
@@ -104,6 +106,7 @@ struct rl_ctx {
     int has_err;
     rl_str *err_msg;
     int err_line, err_col;    /* 0 until rl_at sets them */
+    int err_arg;              /* which operand the error is about: 0 the operation, 1 the first, 2 the second */
     const char *err_file;
     int depth;
     int argc;
@@ -112,6 +115,7 @@ struct rl_ctx {
 
 /* ---- values ---- */
 rl_value rl_none(void);
+rl_value rl_unset(void);
 rl_value rl_bool(int b);
 rl_value rl_int(long long i);
 rl_value rl_float(double f);
@@ -136,7 +140,7 @@ rl_value rl_map_new(void);
 rl_value *rl_map_get(rl_map *m, const char *key, size_t len);
 void rl_map_set(rl_map *m, rl_str *key, rl_value v);  /* retains key and v */
 int rl_map_remove(rl_map *m, const char *key, size_t len, rl_value *out);
-rl_scope *rl_scope_new(rl_scope *parent, size_t n);  /* owned; retains parent */
+rl_scope *rl_scope_new(rl_scope *parent, size_t n);  /* owned; retains parent; slots start unset */
 void rl_scope_release(rl_scope *s);
 rl_value rl_fun_new(const char *name, rl_code code, int arity, rl_scope *env);
 rl_value rl_module_new(const char *name);
@@ -145,6 +149,14 @@ rl_value rl_module_new(const char *name);
 int rl_fail(rl_ctx *cx, const char *fmt, ...);   /* sets the error, returns RL_ERR */
 int rl_fail_str(rl_ctx *cx, rl_str *msg);
 void rl_at(rl_ctx *cx, const char *file, int line, int col); /* first position wins */
+/* Like rl_at, but picks (l1, c1) or (l2, c2) when the error is about the
+ * first or second operand (cx->err_arg), as the host does for index,
+ * range and key errors. */
+void rl_at3(rl_ctx *cx, const char *file, int l, int c, int l1, int c1, int l2, int c2);
+/* "'name' is not defined", with the host's "did you mean" over the names
+ * given (a NULL slot means always declared; otherwise only if set) and the
+ * built-ins. */
+int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *names, const rl_value *const *slots);
 int rl_catch(rl_ctx *cx, rl_value *out);         /* error -> {message, line, col}, clears it */
 /* file:line:col: error: message, then the source line and a caret, like
  * the host. source is the program text, or NULL to read the error's file now
@@ -177,6 +189,7 @@ int rl_cond(rl_ctx *cx, rl_value v, const char *what, int *truth);  /* "'if' con
 int rl_loop_items(rl_ctx *cx, rl_value src, rl_value *out);         /* a list to walk */
 int rl_check_type(rl_ctx *cx, const char *type, rl_value v, const char *what);
 int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out);
+void rl_interp(int n, const rl_value *parts, rl_value *out);   /* "{a} and {b}": show each part and join */
 
 /* ---- cycle collector ---- */
 size_t rl_gc_collect(void);     /* frees unreachable cycles, gives the count */

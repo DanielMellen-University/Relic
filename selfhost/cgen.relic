@@ -1,0 +1,1004 @@
+# selfhost/cgen.relic: the Relic-to-C code generator (milestone C2).
+#   relic selfhost/cgen.relic FILE -o OUT.c [--stub]
+# Reads FILE with the Relic-written lexer and parser and writes C99 that
+# links against runtime/c (see docs/C-RUNTIME.md). The generated program
+# prints what `relic FILE` prints and fails the same way.
+#
+# Exit codes: 0 written, 1 FILE has a lex or parse error (printed like the
+# host does), 2 FILE uses something outside the C2 subset, 3 bad usage.
+# With --stub, a lex or parse error or an unsupported program still writes
+# OUT.c: a small program that prints the same error, or that only prints
+# "cgen-skip: <reason>", and exits 0, so a build can compile every file.
+use lexer
+use parser
+use errfmt
+use std/files
+use std/strings
+
+let LB = "{{"
+let RB = "}}"
+
+# ---- C text helpers ----
+
+fun oct3(n)
+    let d = "01234567"
+    let a = int(n / 64) % 8
+    let b = int(n / 8) % 8
+    let c = n % 8
+    return "\\" + d[a] + d[b] + d[c]
+
+# The UTF-8 bytes of one character, as numbers. A malformed byte in the
+# source is one character whose ord() is the byte itself.
+fun char_bytes(ch)
+    let n = ord(ch)
+    if n < 128
+        return [n]
+    if chr(n) != ch
+        return [n]
+    if n < 2048
+        return [192 + int(n / 64), 128 + n % 64]
+    if n < 65536
+        return [224 + int(n / 4096), 128 + int(n / 64) % 64, 128 + n % 64]
+    return [240 + int(n / 262144), 128 + int(n / 4096) % 64, 128 + int(n / 64) % 64, 128 + n % 64]
+
+# {lit, bytes}: a C string literal for s and its length in bytes.
+fun c_string(s)
+    let parts = ["\""]
+    let count = 0
+    for ch in s
+        let bs = char_bytes(ch)
+        count = count + len(bs)
+        let n = bs[0]
+        if len(bs) == 1 and n >= 32 and n < 127 and ch != "\"" and ch != "\\" and ch != "?"
+            append(parts, ch)
+        else
+            for b in bs
+                append(parts, oct3(b))
+    append(parts, "\"")
+    return {lit: strings.join(parts, ""), bytes: count}
+
+# ---- compiler state ----
+
+fun new_cg(path)
+    return {path: path, funs: [], protos: [], consts: [], const_ix: {}, bnames: [], bix: {}, nfun: 0, bad: none, nlabel: 0}
+
+fun unsupported(cg, n, what)
+    if cg.bad == none
+        cg.bad = {line: n.line, col: n.col, what: what}
+
+let builtin_names = ["print", "eprint", "len", "append", "str", "keys", "fail", "gc", "type", "slice", "ord", "chr", "num", "int", "float", "pop", "insert", "remove", "args", "host_args", "host_read_file", "host_write_file", "host_file_exists", "host_clock", "host_now", "host_floor", "host_sqrt", "host_sin", "host_cos", "host_exp", "host_log", "host_pow", "host_list_dir", "host_is_dir", "host_make_dir", "host_remove", "host_rename", "host_file_size", "host_cwd", "host_env", "host_exit", "host_sleep", "host_same", "host_std_root", "host_names", "host_call", "host_gfx_available", "host_gfx_has_png", "host_gfx_has_fonts", "host_gfx_open", "host_gfx_close", "host_gfx_clear", "host_gfx_rect", "host_gfx_pixel", "host_gfx_present", "host_gfx_quit_requested", "host_gfx_wait", "host_gfx_key_down", "host_gfx_next_key", "host_gfx_mouse_x", "host_gfx_mouse_y", "host_gfx_mouse_down", "host_gfx_text", "host_gfx_image_load", "host_gfx_image", "host_gfx_image_width", "host_gfx_image_height", "host_gfx_font_load", "host_gfx_font_text", "host_gfx_font_size", "host_gfx_next_event", "host_gfx_simulate", "host_gfx_size", "host_gfx_line", "host_gfx_outline", "host_gfx_rect_alpha", "host_gfx_clip", "host_gfx_canvas", "host_gfx_draw_to", "host_clipboard_set", "host_clipboard_get"]
+let is_builtin = {}
+for b in builtin_names
+    is_builtin[b] = true
+
+# K[i]: a string constant made once at start.
+fun konst(cg, s)
+    if s in cg.const_ix
+        return cg.const_ix[s]
+    let i = len(cg.consts)
+    append(cg.consts, s)
+    cg.const_ix[s] = i
+    return i
+
+# B[i]: a built-in looked up once at start.
+fun bslot(cg, name)
+    if not (name in cg.bix)
+        cg.bix[name] = len(cg.bnames)
+        append(cg.bnames, name)
+    return "B[" + str(cg.bix[name]) + "]"
+
+fun label(cg, what)
+    cg.nlabel = cg.nlabel + 1
+    return what + "_" + str(cg.nlabel)
+
+# ---- functions and blocks ----
+# A function context (fc) is one C function. Its blocks are the scopes
+# open while compiling. In a function with no nested `fun` nothing can
+# capture its names, so they live in a C array L ("stack" mode). Otherwise
+# each block with names is an rl_scope ("heap" mode), so closures keep it.
+
+fun has_fun(n)
+    for k in n.kids
+        if k.kind == "Fun" or has_fun(k)
+            return true
+    return false
+
+fun new_fc(cg, parent, heap, is_module)
+    return {cg: cg, parent: parent, heap: heap, module: is_module, lines: [], nt: 0, maxt: 0, nl: 0, nv: 0, ns: 0, blocks: [], loops: [], targets: ["fail"], used: {}, fun_node: none, outer: [], chain: [], ret_hint: "", ret_what: "", name: ""}
+
+fun emit(fc, line)
+    append(fc.lines, "    " + line)
+
+fun temp(fc)
+    let t = fc.nt
+    fc.nt = fc.nt + 1
+    if fc.nt > fc.maxt
+        fc.maxt = fc.nt
+    return t
+
+fun T(i) = "T[" + str(i) + "]"
+
+# Releases temps from `mark` up.
+fun free_to(fc, mark)
+    let i = fc.nt - 1
+    while i >= mark
+        emit(fc, "RLC_DROP(T[" + str(i) + "]);")
+        i = i - 1
+    fc.nt = mark
+
+# Names a block declares: its direct `let` and `fun` lines, plus extras
+# (parameters, a loop name, a catch name) declared before the first line.
+fun new_block(fc, stmts, extras)
+    let b = {names: {}, order: [], decls: {}, cur: -1, fc: fc, exists: false, cvar: "", base: 0}
+    for x in extras
+        declare(b, x.name, -1, x.hint)
+    let i = 0
+    for s in stmts
+        if s.kind == "Let"
+            let h = ""
+            if len(s.kids) > 1
+                h = s.kids[1].text
+            declare(b, s.text, i, h)
+        else if s.kind == "Fun"
+            declare(b, s.text, i, "-")
+        i = i + 1
+    return b
+
+fun declare(b, name, idx, hint)
+    if not (name in b.names)
+        b.names[name] = len(b.order)
+        append(b.order, name)
+        b.decls[name] = []
+    append(b.decls[name], {idx: idx, hint: hint})
+
+# The innermost existing scope, as a C expression of type rl_scope *.
+fun env_expr(fc)
+    let i = len(fc.blocks) - 1
+    while i >= 0
+        let b = fc.blocks[i]
+        if b.exists
+            return b.cvar
+        i = i - 1
+    if fc.module
+        return "top"
+    return "E"
+
+# Opens a block: makes its scope (heap) or resets its slots (stack).
+fun open_block(fc, b, is_top)
+    let n = len(b.order)
+    if is_top
+        b.exists = true
+        b.cvar = "top"
+    else if n > 0 and fc.heap
+        b.exists = true
+        b.cvar = "S[" + str(fc.ns) + "]"
+        fc.ns = fc.ns + 1
+        emit(fc, b.cvar + " = rl_scope_new(" + env_expr(fc) + ", " + str(n) + ");")
+    else if n > 0
+        b.base = fc.nl
+        fc.nl = fc.nl + n
+        for i in 0..n
+            emit(fc, "RLC_SET(L[" + str(b.base + i) + "], rl_unset());")
+    append(fc.blocks, b)
+    return b
+
+fun close_block(fc)
+    let b = pop(fc.blocks)
+    if b.exists and b.cvar != "top"
+        emit(fc, "rl_scope_release(" + b.cvar + "); " + b.cvar + " = NULL;")
+
+fun slot_here(b, name)
+    let i = b.names[name]
+    if b.exists
+        return b.cvar + "->slots[" + str(i) + "]"
+    return "L[" + str(b.base + i) + "]"
+
+# ---- name resolution ----
+# A name is looked up the way the host's environments do it: the innermost
+# block where it is declared by now. In this function that is known while
+# compiling. In an enclosing function it is known when the `let` came
+# before the `fun`; otherwise the slot is checked when the code runs.
+
+fun last_hint(decls, before)
+    let h = ""
+    for d in decls
+        if d.idx < before
+            if d.hint != "-"
+                h = d.hint
+    return h
+
+fun same_hint(cg, n, decls)
+    let h = none
+    for d in decls
+        let x = d.hint
+        if x == "-"
+            x = ""
+        if h == none
+            h = x
+        else if h != x
+            unsupported(cg, n, "a name with different 'as' hints on its lets, used from a nested function")
+    if h == none
+        return ""
+    return h
+
+# Gives a list of {slot, static, hint}; the last one is static, or the list
+# ends without one (then: built-in or not defined).
+fun resolve(fc, n, name)
+    let out = []
+    let i = len(fc.blocks) - 1
+    while i >= 0
+        let b = fc.blocks[i]
+        if name in b.names
+            let ok = false
+            for d in b.decls[name]
+                if d.idx < b.cur
+                    ok = true
+            if ok
+                append(out, {slot: slot_here(b, name), static: true, hint: last_hint(b.decls[name], b.cur)})
+                return out
+        i = i - 1
+    for o in fc.outer
+        let b = o.block
+        if name in b.names
+            let ok = false
+            for d in b.decls[name]
+                if d.idx <= o.cur
+                    ok = true
+            let hint = same_hint(fc.cg, n, b.decls[name])
+            let s = o.path + "->slots[" + str(b.names[name]) + "]"
+            if ok
+                append(out, {slot: s, static: true, hint: hint})
+                return out
+            append(out, {slot: s, static: false, hint: hint})
+    return out
+
+# Names for "did you mean": {names, slots} as C initializers.
+fun visible_names(fc)
+    let names = []
+    let slots = []
+    let seen = {}
+    let i = len(fc.blocks) - 1
+    while i >= 0
+        let b = fc.blocks[i]
+        for name in b.order
+            if not (name in seen)
+                let ok = false
+                for d in b.decls[name]
+                    if d.idx < b.cur
+                        ok = true
+                if ok
+                    seen[name] = true
+                    append(names, name)
+                    append(slots, "NULL")
+        i = i - 1
+    for o in fc.outer
+        let b = o.block
+        for name in b.order
+            if not (name in seen)
+                seen[name] = true
+                append(names, name)
+                append(slots, "&" + o.path + "->slots[" + str(b.names[name]) + "]")
+    return {names: names, slots: slots}
+
+# ---- error positions ----
+# The one place that marks where an error happened (option A in
+# PROJECT_PLAN: a mark at each call site that can fail). n is the node the
+# host reports; a and b are the nodes for errors about the first or second
+# operand. Switching to a line table later means changing this function and
+# the RLC_ERR macro only.
+fun on_error(fc, n, a, b)
+    let target = fc.targets[len(fc.targets) - 1]
+    fc.used[target] = true
+    let p = str(n.line) + ", " + str(n.col)
+    let pa = p
+    let pb = p
+    if a != none
+        pa = str(a.line) + ", " + str(a.col)
+    if b != none
+        pb = str(b.line) + ", " + str(b.col)
+    return "RLC_ERR(" + p + ", " + pa + ", " + pb + ", " + target + ")"
+
+fun check(fc, call, n)
+    emit(fc, "if (" + call + ") " + on_error(fc, n, none, none) + ";")
+
+fun check3(fc, call, n, a, b)
+    emit(fc, "if (" + call + ") " + on_error(fc, n, a, b) + ";")
+
+fun fail_here(fc, n, msg)
+    emit(fc, "rl_fail_str(cx, (rl_str *)K[" + str(konst(fc.cg, msg)) + "].u.o); " + on_error(fc, n, none, none) + ";")
+
+# ---- expressions ----
+
+fun number_value(fc, n)
+    let t = n.text
+    if "." in t or "e" in t or "E" in t
+        let big = false
+        try
+            num(t)
+        catch err
+            big = true
+        if big
+            return none
+        return "rl_float(" + t + ")"
+    let digits = t
+    while len(digits) > 1 and digits[0] == "0"
+        digits = slice(digits, 1, len(digits))
+    if len(digits) > 19 or (len(digits) == 19 and digits > "9223372036854775807")
+        return none
+    return "rl_int(" + digits + "LL)"
+
+# A borrowed C expression for n when it needs no code, else none.
+fun simple(fc, n)
+    let k = n.kind
+    if k == "Number"
+        return number_value(fc, n)
+    if k == "String"
+        return "K[" + str(konst(fc.cg, n.text)) + "]"
+    if k == "True"
+        return "rl_bool(1)"
+    if k == "False"
+        return "rl_bool(0)"
+    if k == "None"
+        return "rl_none()"
+    if k == "Name"
+        let r = resolve(fc, n, n.text)
+        if len(r) == 1 and r[0].static
+            return r[0].slot
+        if len(r) == 0 and n.text in is_builtin
+            return bslot(fc.cg, n.text)
+    return none
+
+# {expr, temp}: an operand as a borrowed C expression; temp is -1 or the
+# temp it was put in.
+fun operand(fc, n)
+    let s = simple(fc, n)
+    if s != none
+        return {expr: s, temp: -1}
+    let t = temp(fc)
+    expr(fc, n, t)
+    return {expr: T(t), temp: t}
+
+let arith = {"+": "rl_add", "-": "rl_sub", "*": "rl_mul", "/": "rl_div", "%": "rl_mod"}
+
+# Puts n's value (owned) in T[d].
+fun expr(fc, n, d)
+    let cg = fc.cg
+    let k = n.kind
+    let dst = T(d)
+    let mark = fc.nt
+    if k == "Number"
+        let v = number_value(fc, n)
+        if v == none
+            if "." in n.text or "e" in n.text or "E" in n.text
+                fail_here(fc, n, "float is too large")
+            else
+                fail_here(fc, n, "int is too large (the limit is 9223372036854775807)")
+        else
+            emit(fc, dst + " = " + v + ";")
+    else if k == "String"
+        emit(fc, dst + " = rl_retain(K[" + str(konst(cg, n.text)) + "]);")
+    else if k == "True" or k == "False" or k == "None"
+        emit(fc, dst + " = " + simple(fc, n) + ";")
+    else if k == "Name"
+        name_value(fc, n, dst)
+    else if k == "Interp"
+        let base = fc.nt
+        for part in n.kids
+            expr(fc, part, temp(fc))
+        emit(fc, "rl_interp(" + str(len(n.kids)) + ", &T[" + str(base) + "], &" + dst + ");")
+    else if k == "List"
+        emit(fc, dst + " = rl_list_new(" + str(len(n.kids)) + ");")
+        for item in n.kids
+            let t = temp(fc)
+            expr(fc, item, t)
+            emit(fc, "rl_list_push((rl_list *)" + dst + ".u.o, " + T(t) + ");")
+            free_to(fc, t)
+    else if k == "Map"
+        emit(fc, dst + " = rl_map_new();")
+        for pair in n.kids
+            let t = temp(fc)
+            expr(fc, pair.kids[0], t)
+            emit(fc, "rl_map_set((rl_map *)" + dst + ".u.o, (rl_str *)K[" + str(konst(cg, pair.text)) + "].u.o, " + T(t) + ");")
+            free_to(fc, t)
+    else if k == "Range"
+        let a = operand(fc, n.kids[0])
+        let b = operand(fc, n.kids[1])
+        check3(fc, "rl_range(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n, n.kids[0], n.kids[1])
+    else if k == "Unary"
+        let a = operand(fc, n.kids[0])
+        if n.text == "-"
+            check(fc, "rl_neg(cx, " + a.expr + ", &" + dst + ")", n)
+        else
+            check(fc, "rl_not(cx, " + a.expr + ", &" + dst + ")", n)
+    else if k == "Binary"
+        binary(fc, n, dst)
+    else if k == "Call"
+        call(fc, n, d)
+    else if k == "Field"
+        let o = operand(fc, n.kids[0])
+        check(fc, "rl_field(cx, " + o.expr + ", " + c_string(n.text).lit + ", &" + dst + ")", n)
+    else if k == "Index"
+        let o = operand(fc, n.kids[0])
+        let i = operand(fc, n.kids[1])
+        check3(fc, "rl_index(cx, " + o.expr + ", " + i.expr + ", &" + dst + ")", n, n.kids[0], n.kids[1])
+    else
+        unsupported(cg, n, "a " + k + " expression")
+    free_to(fc, mark)
+
+fun name_value(fc, n, dst)
+    let r = resolve(fc, n, n.text)
+    let lines = []
+    let first = true
+    let done = false
+    for c in r
+        if c.static
+            if first
+                emit(fc, dst + " = rl_retain(" + c.slot + ");")
+            else
+                emit(fc, "else " + dst + " = rl_retain(" + c.slot + ");")
+            done = true
+        else
+            let pre = "else "
+            if first
+                pre = ""
+            emit(fc, pre + "if (RLC_IS(" + c.slot + ")) " + dst + " = rl_retain(" + c.slot + ");")
+        first = false
+    if done
+        return
+    let pre = "else "
+    if first
+        pre = ""
+    if n.text in is_builtin
+        emit(fc, pre + dst + " = rl_retain(" + bslot(fc.cg, n.text) + ");")
+        return
+    let v = visible_names(fc)
+    let names = []
+    for x in v.names
+        append(names, c_string(x).lit)
+    let cnt = len(names)
+    if cnt == 0
+        append(names, "NULL")
+        append(v.slots, "NULL")
+    emit(fc, pre + LB + " static const char *const nm_[] = " + LB + strings.join(names, ", ") + RB + ";")
+    emit(fc, "    const rl_value *const sl_[] = " + LB + strings.join(v.slots, ", ") + RB + ";")
+    emit(fc, "    rl_fail_undefined(cx, " + c_string(n.text).lit + ", " + str(cnt) + ", nm_, sl_); " + on_error(fc, n, none, none) + "; " + RB)
+
+fun binary(fc, n, dst)
+    let op = n.text
+    if op == "and" or op == "or"
+        let what = c_string("'" + op + "' operand").lit
+        let a = operand(fc, n.kids[0])
+        check(fc, "rl_cond(cx, " + a.expr + ", " + what + ", &c_)", n.kids[0])
+        if a.temp >= 0
+            free_to(fc, a.temp)
+        if op == "and"
+            emit(fc, "if (!c_) " + dst + " = rl_bool(0);")
+        else
+            emit(fc, "if (c_) " + dst + " = rl_bool(1);")
+        emit(fc, "else " + LB)
+        let b = operand(fc, n.kids[1])
+        check(fc, "rl_cond(cx, " + b.expr + ", " + what + ", &c_)", n.kids[1])
+        emit(fc, dst + " = rl_bool(c_);")
+        if b.temp >= 0
+            free_to(fc, b.temp)
+        emit(fc, RB)
+        return
+    let a = operand(fc, n.kids[0])
+    let b = operand(fc, n.kids[1])
+    if op in arith
+        check(fc, arith[op] + "(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
+    else if op == "=="
+        emit(fc, dst + " = rl_bool(rl_equal(" + a.expr + ", " + b.expr + "));")
+    else if op == "!="
+        emit(fc, dst + " = rl_bool(!rl_equal(" + a.expr + ", " + b.expr + "));")
+    else if op == "in"
+        check(fc, "rl_in(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
+    else
+        check(fc, "rl_compare(cx, \"" + op + "\", " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
+
+fun call(fc, n, d)
+    let callee = operand(fc, n.kids[0])
+    let base = fc.nt
+    let argc = len(n.kids) - 1
+    for i in 1..len(n.kids)
+        expr(fc, n.kids[i], temp(fc))
+    let argv = "NULL"
+    if argc > 0
+        argv = "&T[" + str(base) + "]"
+    check(fc, "rl_call(cx, " + callee.expr + ", " + str(argc) + ", " + argv + ", &" + T(d) + ")", n)
+
+# ---- statements ----
+
+fun block(fc, stmts, b)
+    let i = 0
+    for s in stmts
+        b.cur = i
+        statement(fc, s)
+        i = i + 1
+    b.cur = len(stmts)
+
+fun run_block(fc, blk, extras)
+    let b = open_block(fc, new_block(fc, blk.kids, extras), false)
+    for x in extras
+        emit(fc, "RLC_SET(" + slot_here(b, x.name) + ", " + x.init + ");")
+    block(fc, blk.kids, b)
+    close_block(fc)
+
+fun hint_check(fc, hint, value, what, at)
+    if hint != "" and hint != "any"
+        check(fc, "rl_check_type(cx, \"" + hint + "\", " + value + ", " + c_string(what).lit + ")", at)
+
+fun statement(fc, s)
+    let cg = fc.cg
+    let k = s.kind
+    let b = fc.blocks[len(fc.blocks) - 1]
+    if k == "ExprStmt"
+        let t = temp(fc)
+        expr(fc, s.kids[0], t)
+        free_to(fc, t)
+    else if k == "Let"
+        let t = temp(fc)
+        expr(fc, s.kids[0], t)
+        if len(s.kids) > 1
+            hint_check(fc, s.kids[1].text, T(t), "'" + s.text + "' must be", s.kids[0])
+        emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", " + T(t) + "); " + T(t) + " = rl_none();")
+        fc.nt = t
+    else if k == "Assign"
+        assign(fc, s)
+    else if k == "If"
+        if_stmt(fc, s)
+    else if k == "While"
+        while_stmt(fc, s)
+    else if k == "For"
+        for_stmt(fc, s)
+    else if k == "Try"
+        try_stmt(fc, s)
+    else if k == "Fun"
+        fun_stmt(fc, s, b)
+    else if k == "Return"
+        return_stmt(fc, s)
+    else if k == "Break" or k == "Next"
+        if len(fc.loops) == 0
+            if k == "Break"
+                fail_here(fc, s, "'break' outside a loop")
+            else
+                fail_here(fc, s, "'next' outside a loop")
+        else
+            let l = fc.loops[len(fc.loops) - 1]
+            if k == "Break"
+                emit(fc, "goto " + l.brk + ";")
+            else
+                emit(fc, "goto " + l.cont + ";")
+                fc.used[l.cont] = true
+    else if k == "Use"
+        unsupported(cg, s, "'use' (modules come in C3)")
+    else
+        unsupported(cg, s, "a " + k + " statement")
+
+fun assign(fc, s)
+    let target = s.kids[0]
+    let t = temp(fc)
+    expr(fc, s.kids[1], t)
+    if target.kind == "Name"
+        let r = resolve(fc, target, target.text)
+        let first = true
+        let done = false
+        for c in r
+            let pre = "else "
+            if first
+                pre = ""
+            if c.static
+                emit(fc, pre + LB)
+            else
+                emit(fc, pre + "if (RLC_IS(" + c.slot + ")) " + LB)
+            hint_check(fc, c.hint, T(t), "'" + target.text + "' must be", s.kids[1])
+            emit(fc, "RLC_SET(" + c.slot + ", " + T(t) + "); " + T(t) + " = rl_none(); " + RB)
+            first = false
+            if c.static
+                done = true
+                break
+        if not done
+            let pre = "else "
+            if first
+                pre = ""
+            emit(fc, pre + LB)
+            fail_here(fc, target, "'" + target.text + "' is not declared; use 'let " + target.text + " = ...'")
+            emit(fc, RB)
+    else if target.kind == "Field"
+        let o = operand(fc, target.kids[0])
+        check(fc, "rl_set_field(cx, " + o.expr + ", " + c_string(target.text).lit + ", " + T(t) + ")", target)
+    else
+        let o = operand(fc, target.kids[0])
+        let i = operand(fc, target.kids[1])
+        check3(fc, "rl_set_index(cx, " + o.expr + ", " + i.expr + ", " + T(t) + ")", target, target.kids[0], target.kids[1])
+    free_to(fc, t)
+
+fun cond(fc, n, what)
+    let a = operand(fc, n)
+    check(fc, "rl_cond(cx, " + a.expr + ", " + c_string(what).lit + ", &c_)", n)
+    if a.temp >= 0
+        free_to(fc, a.temp)
+
+fun if_stmt(fc, s)
+    cond(fc, s.kids[0], "'if' condition")
+    emit(fc, "if (c_) " + LB)
+    run_block(fc, s.kids[1], [])
+    emit(fc, RB)
+    if len(s.kids) > 2
+        emit(fc, "else " + LB)
+        let alt = s.kids[2]
+        if alt.kind == "If"
+            if_stmt(fc, alt)
+        else
+            run_block(fc, alt, [])
+        emit(fc, RB)
+
+# The scopes a loop body or try body opened, released at its labels.
+fun release_from(fc, s_mark, v_mark)
+    let i = s_mark
+    while i < fc.ns
+        emit(fc, "rl_scope_release(S[" + str(i) + "]); S[" + str(i) + "] = NULL;")
+        i = i + 1
+
+fun while_stmt(fc, s)
+    let top = label(fc.cg, "top")
+    let l = {brk: label(fc.cg, "brk"), cont: label(fc.cg, "cont")}
+    let s_mark = fc.ns
+    emit(fc, top + ":")
+    cond(fc, s.kids[0], "'while' condition")
+    emit(fc, "if (!c_) goto " + l.brk + ";")
+    emit(fc, "rl_gc_maybe();")
+    append(fc.loops, l)
+    run_block(fc, s.kids[1], [])
+    pop(fc.loops)
+    if l.cont in fc.used
+        emit(fc, l.cont + ":")
+    release_from(fc, s_mark, 0)
+    emit(fc, "goto " + top + ";")
+    emit(fc, l.brk + ":")
+    release_from(fc, s_mark, 0)
+
+fun for_stmt(fc, s)
+    let top = label(fc.cg, "top")
+    let l = {brk: label(fc.cg, "brk"), cont: label(fc.cg, "cont")}
+    let v = fc.nv
+    fc.nv = fc.nv + 1
+    let items = "V[" + str(v) + "]"
+    let ix = "I[" + str(v) + "]"
+    let src = operand(fc, s.kids[0])
+    check(fc, "rl_loop_items(cx, " + src.expr + ", &" + items + ")", s.kids[0])
+    if src.temp >= 0
+        free_to(fc, src.temp)
+    let s_mark = fc.ns
+    emit(fc, ix + " = 0;")
+    emit(fc, top + ":")
+    emit(fc, "if (" + ix + " >= ((rl_list *)" + items + ".u.o)->n) goto " + l.brk + ";")
+    emit(fc, "rl_gc_maybe();")
+    append(fc.loops, l)
+    run_block(fc, s.kids[1], [{name: s.text, hint: "", init: "rl_retain(((rl_list *)" + items + ".u.o)->items[" + ix + "])"}])
+    pop(fc.loops)
+    if l.cont in fc.used
+        emit(fc, l.cont + ":")
+    release_from(fc, s_mark, 0)
+    emit(fc, "++" + ix + ";")
+    emit(fc, "goto " + top + ";")
+    emit(fc, l.brk + ":")
+    release_from(fc, s_mark, 0)
+    emit(fc, "RLC_DROP(" + items + ");")
+
+fun try_stmt(fc, s)
+    let catch_l = label(fc.cg, "catch")
+    let end_l = label(fc.cg, "end")
+    let s_mark = fc.ns
+    let v_mark = fc.nv
+    append(fc.targets, catch_l)
+    let loops = fc.loops
+    run_block(fc, s.kids[0], [])
+    pop(fc.targets)
+    emit(fc, "goto " + end_l + ";")
+    if catch_l in fc.used
+        emit(fc, catch_l + ":")
+    emit(fc, "for (i_ = 0; i_ < (int)(sizeof T / sizeof T[0]); ++i_) RLC_DROP(T[i_]);")
+    release_from(fc, s_mark, 0)
+    let i = v_mark
+    while i < fc.nv
+        emit(fc, "RLC_DROP(V[" + str(i) + "]);")
+        i = i + 1
+    let t = temp(fc)
+    emit(fc, "rl_catch(cx, &" + T(t) + ");")
+    let extras = []
+    if s.text != ""
+        extras = [{name: s.text, hint: "", init: T(t)}]
+    let b = open_block(fc, new_block(fc, s.kids[1].kids, extras), false)
+    if s.text != ""
+        emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", " + T(t) + "); " + T(t) + " = rl_none();")
+    else
+        emit(fc, "RLC_DROP(" + T(t) + ");")
+    fc.nt = t
+    block(fc, s.kids[1].kids, b)
+    close_block(fc)
+    emit(fc, end_l + ": ;")
+
+fun return_stmt(fc, s)
+    if fc.module
+        if len(s.kids) > 0
+            let t = temp(fc)
+            expr(fc, s.kids[0], t)
+            free_to(fc, t)
+        fail_here(fc, s, "'return' outside a function")
+        return
+    let t = temp(fc)
+    if len(s.kids) > 0
+        expr(fc, s.kids[0], t)
+    hint_check(fc, fc.ret_hint, T(t), fc.ret_what, s)
+    emit(fc, "RLC_SET(R, " + T(t) + "); " + T(t) + " = rl_none();")
+    fc.nt = t
+    emit(fc, "goto done;")
+
+fun fun_stmt(fc, s, b)
+    let cg = fc.cg
+    cg.nfun = cg.nfun + 1
+    let cname = "fn" + str(cg.nfun) + "_" + safe_name(s.text)
+    let params = s.kids[0].kids
+    let body = s.kids[1]
+    let sub = new_fc(cg, fc, has_fun(body), false)
+    sub.name = s.text
+    sub.fun_node = s
+    if len(s.kids) > 2
+        sub.ret_hint = s.kids[2].text
+    sub.ret_what = s.text + "() must return"
+    # What the new function sees of ours: our open blocks, then our outer.
+    let path = "E"
+    let hops = 0
+    let i = len(fc.blocks) - 1
+    while i >= 0
+        let ob = fc.blocks[i]
+        if ob.exists
+            append(sub.outer, {block: ob, cur: ob.cur, path: path})
+            path = path + "->parent"
+        i = i - 1
+    for o in fc.outer
+        append(sub.outer, {block: o.block, cur: o.cur, path: path + slice(o.path, 1, len(o.path))})
+    compile_function(sub, cname, params, body)
+    emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", rl_fun_new(" + c_string(s.text).lit + ", " + cname + ", " + str(len(params)) + ", " + env_expr(fc) + "));")
+
+fun safe_name(s)
+    let out = []
+    for ch in s
+        let n = ord(ch)
+        if (n >= 48 and n < 58) or (n >= 65 and n < 91) or (n >= 97 and n < 123) or ch == "_"
+            append(out, ch)
+        else
+            append(out, "_")
+    return strings.join(out, "")
+
+# Compiles one Relic function into cg.funs.
+fun compile_function(fc, cname, params, body)
+    let extras = []
+    let i = 0
+    for p in params
+        let h = ""
+        if len(p.kids) > 0
+            h = p.kids[0].text
+        append(extras, {name: p.text, hint: h, init: "rl_retain(argv[" + str(i) + "])"})
+        i = i + 1
+    let stmts = []
+    if body.kind == "Block"
+        stmts = body.kids
+    let b = open_block(fc, new_block(fc, stmts, extras), false)
+    i = 0
+    for p in params
+        if len(p.kids) > 0
+            emit(fc, "if (rl_check_type(cx, \"" + p.kids[0].text + "\", argv[" + str(i) + "], " + c_string(fc.name + "() argument '" + p.text + "' must be").lit + ")) goto fail;")
+            fc.used["fail"] = true
+        i = i + 1
+    for x in extras
+        emit(fc, "RLC_SET(" + slot_here(b, x.name) + ", " + x.init + ");")
+    if body.kind == "Block"
+        block(fc, stmts, b)
+        if fc.ret_hint != ""
+            hint_check(fc, fc.ret_hint, "rl_none()", fc.ret_what, fc.fun_node)
+    else
+        b.cur = 0
+        let t = temp(fc)
+        expr(fc, body, t)
+        hint_check(fc, fc.ret_hint, T(t), fc.ret_what, body)
+        emit(fc, "RLC_SET(R, " + T(t) + "); " + T(t) + " = rl_none();")
+        fc.nt = t
+    close_block(fc)
+    finish_function(fc, cname, false)
+
+# Wraps fc.lines in the C function: declarations, body, cleanup.
+fun finish_function(fc, cname, is_module)
+    let cg = fc.cg
+    let out = []
+    if is_module
+        append(out, "static int " + cname + "(rl_ctx *cx, rl_scope *top) " + LB)
+    else
+        append(cg.protos, "static int " + cname + "(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);")
+        append(out, "static int " + cname + "(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) " + LB)
+    let nt = fc.maxt
+    if nt < 1
+        nt = 1
+    append(out, "    rl_value T[" + str(nt) + "];")
+    if fc.nl > 0
+        append(out, "    rl_value L[" + str(fc.nl) + "];")
+    if fc.nv > 0
+        append(out, "    rl_value V[" + str(fc.nv) + "];")
+        append(out, "    size_t I[" + str(fc.nv) + "];")
+    if fc.ns > 0
+        append(out, "    rl_scope *S[" + str(fc.ns) + "];")
+    if not is_module
+        append(out, "    rl_scope *E = self->env;")
+    append(out, "    rl_value R = rl_none();")
+    append(out, "    int r = RL_OK, c_ = 0, i_;")
+    if not is_module
+        append(out, "    (void)argc; (void)argv; (void)E;")
+    append(out, "    (void)c_; (void)cx;")
+    if is_module
+        append(out, "    (void)top;")
+    append(out, "    for (i_ = 0; i_ < " + str(nt) + "; ++i_) T[i_] = rl_none();")
+    if fc.nl > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.nl) + "; ++i_) L[i_] = rl_unset();")
+    if fc.nv > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.nv) + "; ++i_) " + LB + " V[i_] = rl_none(); I[i_] = 0; " + RB)
+    if fc.ns > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.ns) + "; ++i_) S[i_] = NULL;")
+    for line in fc.lines
+        append(out, line)
+    append(out, "    goto done;")
+    if "fail" in fc.used
+        append(out, "fail:")
+        append(out, "    r = RL_ERR;")
+    append(out, "done:")
+    append(out, "    for (i_ = 0; i_ < " + str(nt) + "; ++i_) rl_release(T[i_]);")
+    if fc.nl > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.nl) + "; ++i_) rl_release(L[i_]);")
+    if fc.nv > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.nv) + "; ++i_) rl_release(V[i_]);")
+    if fc.ns > 0
+        append(out, "    for (i_ = 0; i_ < " + str(fc.ns) + "; ++i_) rl_scope_release(S[i_]);")
+    if is_module
+        append(out, "    rl_release(R);")
+    else
+        append(out, "    if (r == RL_OK) *out = R;")
+        append(out, "    else " + LB + " rl_release(R); *out = rl_none(); " + RB)
+    append(out, "    return r;")
+    append(out, RB)
+    append(cg.funs, strings.join(out, "\n"))
+
+# ---- the whole program ----
+
+fun compile_program(cg, tree)
+    let fc = new_fc(cg, none, true, true)
+    let b = open_block(fc, new_block(fc, tree.kids, []), true)
+    block(fc, tree.kids, b)
+    pop(fc.blocks)
+    finish_function(fc, "rlc_module", true)
+    let ntop = len(b.order)
+    let o = []
+    append(o, "/* Generated by selfhost/cgen.relic from " + safe_comment(cg.path) + ". Do not edit. */")
+    append(o, "#include \"relic.h\"")
+    append(o, "#include <stdlib.h>")
+    append(o, "")
+    append(o, "#define RLC_FILE " + c_string(cg.path).lit)
+    append(o, "#define RLC_IS(v) ((v).k != RL_UNSET)")
+    append(o, "#define RLC_DROP(v) do " + LB + " rl_release(v); (v) = rl_none(); " + RB + " while (0)")
+    append(o, "#define RLC_SET(slot, v) do " + LB + " rl_value o_ = (slot); (slot) = (v); rl_release(o_); " + RB + " while (0)")
+    append(o, "/* Error positions, option A: every call site that can fail marks its")
+    append(o, " * position. This macro and on_error() in cgen.relic are the only places")
+    append(o, " * that know how. */")
+    append(o, "#define RLC_ERR(l, c, l1, c1, l2, c2, target) do " + LB + " rl_at3(cx, RLC_FILE, l, c, l1, c1, l2, c2); goto target; " + RB + " while (0)")
+    append(o, "")
+    let nk = len(cg.consts)
+    let nb = len(cg.bnames)
+    append(o, "static rl_value K[" + str(max1(nk)) + "];")
+    append(o, "static rl_value B[" + str(max1(nb)) + "];")
+    for p in cg.protos
+        append(o, p)
+    append(o, "")
+    for f in cg.funs
+        append(o, f)
+        append(o, "")
+    append(o, "int main(int argc, char **argv) " + LB)
+    append(o, "    rl_ctx cx;")
+    append(o, "    rl_scope *top;")
+    append(o, "    int r, i;")
+    append(o, "    rl_ctx_init(&cx, argc - 1, argv + 1);")
+    let i = 0
+    for s in cg.consts
+        let c = c_string(s)
+        append(o, "    K[" + str(i) + "] = rl_str_new(" + c.lit + ", " + str(c.bytes) + ");")
+        i = i + 1
+    i = 0
+    for name in cg.bnames
+        append(o, "    rl_builtin(\"" + name + "\", &B[" + str(i) + "]);")
+        i = i + 1
+    append(o, "    top = rl_scope_new(NULL, " + str(ntop) + ");")
+    append(o, "    r = rlc_module(&cx, top);")
+    append(o, "    fflush(stdout);")
+    append(o, "    if (r) rl_report(&cx, stderr, NULL);")
+    append(o, "    rl_scope_release(top);")
+    append(o, "    for (i = 0; i < " + str(nk) + "; ++i) rl_release(K[i]);")
+    append(o, "    for (i = 0; i < " + str(nb) + "; ++i) rl_release(B[i]);")
+    append(o, "    rl_ctx_free(&cx);")
+    append(o, "    rl_gc_collect();")
+    append(o, "    if (getenv(\"RELIC_LEAK_CHECK\") && (rl_live_objects() || rl_live_strings())) " + LB)
+    append(o, "        fprintf(stderr, \"leak: %lu containers, %lu strings\\n\", (unsigned long)rl_live_objects(), (unsigned long)rl_live_strings());")
+    append(o, "        return 3;")
+    append(o, "    " + RB)
+    append(o, "    return r ? 1 : 0;")
+    append(o, RB)
+    return strings.join(o, "\n") + "\n"
+
+fun max1(n)
+    if n < 1
+        return 1
+    return n
+
+fun safe_comment(s) = strings.replace(s, "*/", "* /")
+
+# ---- stubs for --stub ----
+
+fun stub_skip(why)
+    let c = c_string("cgen-skip: " + why)
+    return "#include <stdio.h>\nint main(void) " + LB + "\n    puts(" + c.lit + ");\n    return 0;\n" + RB + "\n"
+
+# A program that prints a lex or parse error the way the host does.
+fun stub_error(path, err)
+    let lines = ["{path}:{err.line}:{err.col}: error: {err.msg}"]
+    let s = errfmt.snippet(path, err.line, err.col)
+    let parts = []
+    append(parts, "#include <stdio.h>")
+    append(parts, "int main(void) " + LB)
+    append(parts, "    fputs(" + c_string(lines[0] + "\n" + s).lit + ", stderr);")
+    append(parts, "    return 1;")
+    append(parts, RB)
+    return strings.join(parts, "\n") + "\n"
+
+# ---- driver ----
+
+let argv = args()
+let src = none
+let out_path = none
+let stub = false
+let i = 0
+let usage = false
+while i < len(argv)
+    let a = argv[i]
+    if a == "-o" and i + 1 < len(argv)
+        out_path = argv[i + 1]
+        i = i + 1
+    else if a == "--stub"
+        stub = true
+    else if src == none
+        src = a
+    else
+        usage = true
+    i = i + 1
+if usage or src == none or out_path == none
+    eprint("usage: relic selfhost/cgen.relic FILE -o OUT.c [--stub]")
+    host_exit(3)
+let lexed = lexer.lex(files.read(src))
+let err = lexed.err
+let tree = none
+if err == none
+    let parsed = parser.parse(lexed.tokens)
+    err = parsed.err
+    tree = parsed.tree
+if err != none
+    if stub
+        files.write(out_path, stub_error(src, err))
+        host_exit(0)
+    errfmt.show(src, err)
+    host_exit(1)
+let cg = new_cg(src)
+let text = compile_program(cg, tree)
+if cg.bad != none
+    let why = "{src}:{cg.bad.line}:{cg.bad.col}: not in the C2 subset: {cg.bad.what}"
+    if stub
+        files.write(out_path, stub_skip(why))
+        host_exit(0)
+    eprint("cgen: " + why)
+    host_exit(2)
+files.write(out_path, text)

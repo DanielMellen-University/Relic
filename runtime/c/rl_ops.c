@@ -1,6 +1,7 @@
 /* rl_ops.c: operators, indexing, fields, ranges, conditions and number
  * parsing. Messages match the host (src/interp/interp.cpp, op_*). */
 #include "relic.h"
+#include "rl_internal.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -244,11 +245,34 @@ static int no_key(rl_ctx *cx, rl_map *m, const char *k, size_t len) {
         if (strncmp(c->data, "host_", 5) == 0 && strncmp(k, "host_", 5) != 0) continue;
         if (lo > limit) continue;
         d = edit_distance(k, len, c->data, c->len);
-        if (d >= len) continue;
+        if (d >= len || d > limit) continue;
         if (d < best_d || (d == best_d && strcmp(c->data, pick->data) < 0)) { best_d = d; pick = c; }
     }
     if (pick) return rl_fail(cx, "map has no key '%s' (did you mean '%s'?)", k, pick->data);
     return rl_fail(cx, "map has no key '%s'", k);
+}
+
+/* op_suggest on the host: the closest name within a small edit distance. */
+static const char *suggest(const char *k, size_t len, const char *best, size_t *best_d, const char *c) {
+    size_t d, clen = strlen(c), lo = clen < len ? len - clen : clen - len, limit = len >= 5 ? 2 : 1;
+    if (clen == 0 || (clen == len && memcmp(c, k, len) == 0)) return best;
+    if (strncmp(c, "host_", 5) == 0 && strncmp(k, "host_", 5) != 0) return best;
+    if (lo > limit) return best;
+    d = edit_distance(k, len, c, clen);
+    if (d >= len || d > limit) return best;
+    if (d < *best_d || (d == *best_d && strcmp(c, best) < 0)) { *best_d = d; return c; }
+    return best;
+}
+
+int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *names, const rl_value *const *slots) {
+    size_t len = strlen(name), best_d = (size_t)-1, i, nb = rl_builtin_count();
+    const char *best = NULL;
+    int j;
+    for (j = 0; j < n; ++j)
+        if (!slots[j] || slots[j]->k != RL_UNSET) best = suggest(name, len, best, &best_d, names[j]);
+    for (i = 0; i < nb; ++i) best = suggest(name, len, best, &best_d, rl_builtin_at(i)->name);
+    if (best) return rl_fail(cx, "'%s' is not defined (did you mean '%s'?)", name, best);
+    return rl_fail(cx, "'%s' is not defined", name);
 }
 
 static size_t utf8_offset(const rl_str *s, size_t index) {
@@ -257,11 +281,14 @@ static size_t utf8_offset(const rl_str *s, size_t index) {
     return i;
 }
 
+/* Index and key errors point at the index (operand 2), as on the host. */
+static int at_index(rl_ctx *cx) { cx->err_arg = 2; return RL_ERR; }
+
 int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
     *out = rl_none();
     if (obj.k == RL_LIST) {
         size_t at = 0;
-        if (slot(cx, idx, L(obj)->n, "list index", &at)) return RL_ERR;
+        if (slot(cx, idx, L(obj)->n, "list index", &at)) return at_index(cx);
         *out = rl_retain(L(obj)->items[at]);
         return RL_OK;
     }
@@ -269,20 +296,21 @@ int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
         rl_str *s = S(obj);
         long long i;
         size_t at = 0;
-        if (whole(cx, idx, "string index", &i)) return RL_ERR;
+        if (whole(cx, idx, "string index", &i)) return at_index(cx);
         at = i < 0 ? s->len : utf8_offset(s, (size_t)i);
         if (at >= s->len) {
             size_t dummy;
-            return slot(cx, idx, rl_str_chars(s), "string index", &dummy);
+            slot(cx, idx, rl_str_chars(s), "string index", &dummy);
+            return at_index(cx);
         }
         *out = rl_str_new(s->data + at, rl_utf8_char_size(s->data, s->len, at));
         return RL_OK;
     }
     if (obj.k == RL_MAP) {
         rl_value *v;
-        if (idx.k != RL_STR) return rl_fail(cx, "map keys must be strings");
+        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings"); return at_index(cx); }
         v = rl_map_get(M(obj), S(idx)->data, S(idx)->len);
-        if (!v) return no_key(cx, M(obj), S(idx)->data, S(idx)->len);
+        if (!v) { no_key(cx, M(obj), S(idx)->data, S(idx)->len); return at_index(cx); }
         *out = rl_retain(*v);
         return RL_OK;
     }
@@ -293,14 +321,14 @@ int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v) {
     if (obj.k == RL_LIST) {
         size_t at = 0;
         rl_value old;
-        if (slot(cx, idx, L(obj)->n, "list index", &at)) return RL_ERR;
+        if (slot(cx, idx, L(obj)->n, "list index", &at)) return at_index(cx);
         old = L(obj)->items[at];
         L(obj)->items[at] = rl_retain(v);
         rl_release(old);
         return RL_OK;
     }
     if (obj.k == RL_MAP) {
-        if (idx.k != RL_STR) return rl_fail(cx, "map keys must be strings");
+        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings"); return at_index(cx); }
         rl_map_set(M(obj), S(idx), v);
         return RL_OK;
     }
@@ -341,7 +369,8 @@ int rl_range(rl_ctx *cx, rl_value av, rl_value bv, rl_value *out) {
     long long a = 0, b = 0, i;
     rl_value l;
     *out = rl_none();
-    if (whole(cx, av, "range start", &a) || whole(cx, bv, "range end", &b)) return RL_ERR;
+    if (whole(cx, av, "range start", &a)) { cx->err_arg = 1; return RL_ERR; }
+    if (whole(cx, bv, "range end", &b)) { cx->err_arg = 2; return RL_ERR; }
     if (b - a > 10000000) return rl_fail(cx, "range is too large");
     l = rl_list_new(b > a ? (size_t)(b - a) : 0);
     for (i = a; i < b; ++i) rl_list_push(L(l), rl_int(i));
