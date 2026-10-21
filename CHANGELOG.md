@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.5 (2026-10-20)
+
+Code generator, full language (milestones C3 and C4):
+
+- `selfhost/cgen.relic` now compiles `use`: the program's own modules and `std/`, compiled into the same C file (interim decision, pending Daniel's confirmation). First-use order, caching, cycles, a module using the main file back, modules that fail partway, missing modules, lex and parse errors in modules, private and "(yet)" names, and the std names at the boundary (`files.list(): ...`) match the host.
+- The last refused case compiles too: a name whose `as` hint changes between `let`s, assigned from a nested function. It follows the tree-walker; the VM differs there (listed as an open choice).
+- All 131 compiled goldens pass (106 before), clean under ASan, UBSan and LSan and the leak check, on Linux, macOS and Windows.
+- cgen compiles itself: stage 1 (cgen compiled by cgen) writes the same C as stage 0 (`cgen_fixed_point`). The lexer and parser compiled to C match `--tokens` and `--ast` on all 168 corpus files (`cgen_selfhost_lexer`, `cgen_selfhost_parser`).
+- Runtime: compiled modules (`rl_module_scoped`), the std boundary (`rl_std_boundary`, `rl_fun_std`); fixed `host_list_dir` sorting (crashed with more than one entry); direct string indexing when every character is one byte.
+- `std/strings.join` joins halves instead of growing one string, so long joins are no longer quadratic (same results).
+- Speed: cgen compiling itself takes about 0.2 s compiled against about 1.1 s on the host; the compiled lexer is about 12 times faster than running it on the host.
+- New goldens `use_cache` and `err_use_parse`; `ctest` has 283 cases.
+- PROJECT_PLAN records the C2 choices (decided by Engineer, Oct 20 2026, internal, no output change) and the interim module decision.
+
 ## 1.0.4 (2026-10-20)
 
 Code generator (milestone C2):
