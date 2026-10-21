@@ -6,9 +6,10 @@
 # and built-ins are maps tagged with the key chr(1), which Relic source cannot
 # write by accident, so type() and printing can tell them apart from user maps.
 #
-# Relic has no catchable errors: the first error is stored in rt.err, every
-# step after that is a no-op, and loops stop, so output after an error never
-# happens. Known limits are listed in docs/DESIGN.md (Self-host).
+# Errors: the first error is stored in rt.err, every step after that is a
+# no-op, and loops stop, so output after an error never happens (this was
+# written before Relic had try / catch). Known limits are listed in
+# docs/ARCHITECTURE.md (Self-host).
 use lexer
 use parser
 use tokens_fmt
