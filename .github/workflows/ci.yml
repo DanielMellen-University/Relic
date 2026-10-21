@@ -17,3 +17,38 @@ jobs:
         run: cmake --build build --config Release
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+
+  # The C runtime (runtime/c) built on its own with warnings as errors.
+  # gcc and clang use -std=c99 -Wall -Wextra -pedantic; MSVC uses /std:c11 /W4,
+  # its closest mode for C99 code. The Linux jobs also run ASan, UBSan and LSan.
+  c-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-gcc-sanitize
+            os: ubuntu-latest
+            cc: gcc
+            flags: -DRELIC_C_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug
+          - name: linux-clang-sanitize
+            os: ubuntu-latest
+            cc: clang
+            flags: -DRELIC_C_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug
+          - name: macos-clang
+            os: macos-latest
+            cc: clang
+            flags: -DCMAKE_BUILD_TYPE=Release
+          - name: windows-msvc
+            os: windows-latest
+            cc: cl
+            flags: ""
+    name: c-runtime (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S runtime/c -B build-c -DCMAKE_C_COMPILER=${{ matrix.cc }} -DRELIC_C_WERROR=ON ${{ matrix.flags }}
+      - name: Build
+        run: cmake --build build-c --config Release
+      - name: Test
+        run: ctest --test-dir build-c -C Release --output-on-failure
