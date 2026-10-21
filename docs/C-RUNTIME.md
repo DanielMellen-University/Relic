@@ -84,7 +84,7 @@ So `rl_list_push(l, v)` retains `v`, and `rl_index(cx, list, i, &out)` hands bac
 
 Every heap object starts with `rl_obj`: a kind, a reference count, and links for the collector.
 
-- **Strings** (`rl_str`) are immutable UTF-8 bytes with a trailing 0. The character count is worked out once and cached. A malformed byte counts as one character, as on the host. Strings are not interned (the host does not intern either).
+- **Strings** (`rl_str`) are immutable UTF-8 bytes with a trailing 0. The character count is worked out once and cached. A string whose characters are all one byte is indexed directly; a long one (256 bytes or more) with multi-byte characters gets, on its first index or slice, a table with the byte offset of every 64th character (`rl_str_offset`), so a lookup walks at most 63 characters. A malformed byte counts as one character, as on the host. Strings are not interned (the host does not intern either).
 - **Lists** (`rl_list`) are growable arrays of values.
 - **Maps** (`rl_map`) keep keys in insertion order, with a hash index on the side. Keys are strings. Removing a key keeps the order of the rest.
 - **Scopes** (`rl_scope`) are a block of slots plus a parent scope. Generated code puts a function's names in slots. They are not Relic values.
@@ -191,7 +191,7 @@ Added in C2 and C3 for `selfhost/cgen.relic`:
 
 | Test | What it checks |
 |---|---|
-| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, the calls for generated code (compiled modules, the std boundary), built-ins, files and clocks, sorted folder listings, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
+| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, the calls for generated code (compiled modules, the std boundary), built-ins, files and clocks, sorted folder listings, character offsets in long mixed-width strings, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
 | `cgen_*` | golden programs compiled by `selfhost/cgen.relic`, see [CGEN.md](CGEN.md#tests) |
 | `c_demo` | `tests/demo.c`: `tests/golden/c_demo.relic` compiled by hand the way C2 will: recursion (`fib`), a closure counter, `try` / `catch` with positions, the recursion limit, a loop over a UTF-8 string. Its output must equal `tests/golden/c_demo.out`, which the C++ host also checks as a golden test |
 

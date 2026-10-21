@@ -80,6 +80,7 @@ The default engine since M10 (`src/vm/`). `relic --bytecode FILE` prints the com
 - Each Relic call is one C++ call of the VM loop, so it is cheap on the host stack. The 800-call limit is the same as the tree-walker's.
 
 - Late names: a nested function can read or set a name that its enclosing function declares further down. The compiler reserves two slots for it, the value and a mark (`LOAD_LATE` / `STORE_LATE`), and the `let` sets the mark (`MARK`). Until the mark is set, the access falls back to the next instruction, which reaches the outer name. This gives the same result as the tree-walker's run-time lookup (golden `vm_late_local`).
+- Hints across functions: a name's `as` hint is known at compile time inside the function that declares it, since its `let`s run in order. A nested function can run after any of them, so it checks against the one hint all the name's declarations agree on. When they disagree, each `let` stores its hint in a hidden slot next to the name (`SET_HINT_GLOBAL` for a top-level name), and the nested function checks against that slot (`CHECK_HINT`, `CHECK_HINT_GLOBAL`). A store to a late name checks only once the `let` has run (`SKIP_UNLESS_LATE`). Same results as the tree-walker (golden `hint_relet`).
 
 The only difference left between the engines is that the REPL uses the tree-walker.
 

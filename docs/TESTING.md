@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. A default build has 283 ctest cases (148, plus 135 `cgen_*` cases for compiled programs); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
+How Relic is tested, and how to run it. A default build has 286 ctest cases (150, plus 136 `cgen_*` cases for compiled programs); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
 
 ## Running the tests
 
@@ -43,10 +43,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (168 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (171 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (132 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (136 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (134 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (138 today) |
 
 Two more self-host cases check the interpreter on real use:
 
@@ -74,7 +74,7 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (131 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 131 pass. `tests/cgen/*.relic` are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`). Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (133 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 133 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are none now. Details in [CGEN.md](CGEN.md#tests).
 
 Three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 

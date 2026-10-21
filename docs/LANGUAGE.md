@@ -1,6 +1,6 @@
 # Language reference
 
-The rules of Relic as the host runs them today (version 1.0.5). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
+The rules of Relic as the host runs them today (version 1.0.6). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
 
 ## Contents
 
@@ -135,6 +135,7 @@ fun greet(name as string) as string = "hello " + name
 - A hinted name is checked at `let`, at every later `x = ...`, at each call, and at return (falling off the end returns `none`).
 - Messages: `'count' must be int, got string`, `area() argument 'w' must be number, got string`, `greet() must return string, got int`.
 - A new `let` of the same name without a hint drops the hint.
+- The hint that counts is the one from the latest `let` that ran, also for an assignment from a nested function that runs after the name was declared again.
 
 ## Modules
 

@@ -87,7 +87,7 @@ There are two ways to keep the slots:
 
 A name is looked up at compile time where possible. If it is declared earlier in the same function, or in an enclosing function before the inner `fun` line, the slot is used directly. If an enclosing function declares it only further down, the code checks at run time whether that slot is set yet (`RLC_IS`) and otherwise falls back to the next scope out, then to a built-in, then to the error `'x' is not defined`. That matches the host for code like a nested function that reads a name before and after the outer `let` runs (golden `vm_late_local`).
 
-A `let` with an `as` hint makes later assignments check the type, until a `let` without one clears it. When a name's `let`s disagree about the hint and the name is in a scope a nested function can reach, the hint in effect is kept in a hidden slot next to it, so an assignment from the nested function checks against the latest `let` that ran. That is what the tree-walker (`relic --tree`) does. The VM checks the hint that was in effect where the nested function was defined instead, so the two engines differ there; `tests/cgen/hint_relet.relic` pins the tree-walker's answer (see [Open choices](#open-choices)).
+A `let` with an `as` hint makes later assignments check the type, until a `let` without one clears it. When a name's `let`s disagree about the hint and the name is in a scope a nested function can reach, the hint in effect is kept in a hidden slot next to it, so an assignment from the nested function checks against the latest `let` that ran. That is what the tree-walker (`relic --tree`) and the VM do (golden `hint_relet`). A hinted parameter starts its slot with the parameter's hint.
 
 ## Modules
 
@@ -116,7 +116,7 @@ Errors such as `'x' is not defined`, `'x' is not declared; use 'let x = ...'`, `
 
 Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
 
-Today: 131 cases, all pass. `tests/cgen/` holds cases for the compiled side only, with expected output from `relic --tree` (`cgen_only_hint_relet`). The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
+Today: 133 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
 
 The `cgen` CI job builds and runs these, and the three below, on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
 
@@ -126,7 +126,7 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 | Test | Checks |
 |---|---|
-| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/` and `selfhost/` file (168 today) |
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/` and `selfhost/` file (171 today) |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 
@@ -152,7 +152,7 @@ The Relic-written tools on `selfhost/cgen.relic` (about 1,000 lines), run on the
 | `ast.relic` | 655 ms | 72 ms |
 | `cgen.relic` compiling itself | 1,060 ms | 205 ms |
 
-Two fixes got there: indexing a string whose characters are all one byte is now direct (it used to walk from the start, which made the compiled lexer slower than the host), and `strings.join` joins halves instead of growing one string. A string with multi-byte characters still walks from the start on each index.
+Two fixes got there: indexing a string whose characters are all one byte is now direct (it used to walk from the start, which made the compiled lexer slower than the host), and `strings.join` joins halves instead of growing one string. A long string with multi-byte characters (256 bytes or more) gets a table of the byte offset of every 64th character on its first index, so an index walks at most 63 characters; a loop over 40,000 characters, half of them two bytes, went from 1.3 s to 17 ms (the host takes 0.8 s there).
 
 The hand-written C in `runtime/c/tests/demo.c` ran `fib(30)` in about 84 ms, so the generated code has room to improve: it copies more values than it needs to and calls through `rl_call` every time.
 
@@ -163,13 +163,14 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 - `gc()`'s count is approximate in compiled code (it makes fewer scopes than the host). Decided by Engineer, Oct 20 2026, internal; revisit with "count only Relic values" if anything depends on the number.
 - Locals in functions with no nested `fun` are released when their block starts again or the function returns, not at block end. Decided by Engineer, Oct 20 2026, internal.
 - A program with something cgen does not support is refused as a whole. Decided by Engineer, Oct 20 2026, internal.
+- Re-hinted names assigned from a nested function check the hint of the latest `let` that ran; the VM was fixed to do the same. Decided by Engineer, Oct 20 2026.
+- The std is compiled in from source each time (from `$RELIC_STD` or the build's `std/`). `host_std_root()` in the program still reports the runtime's folder. Decided by Engineer, Oct 20 2026.
+- Compiled errors name the file, line and column; `rl_report` prints the source line only if it can read the file when the error happens. No source text is embedded in the C for now. Decided by Engineer, Oct 20 2026.
 - Modules: one C file per program with every module it uses compiled in. **Interim, Oct 20 2026, pending Daniel's confirmation.** The emission is isolated so per-module C files are a contained change.
 - Error positions: a mark at each call site that can fail. **Interim, Oct 20 2026, pending Daniel's confirmation.**
 
 ## Open choices
 
-New in C3, not decided. The code does the recommended thing for now.
+The three C3 choices are decided (above). Open now:
 
-1. **Re-hinted names assigned from a nested function.** The tree-walker checks the hint of the latest `let` that ran; the VM checks the hint in effect where the nested function was defined, and for top-level names the last hinted `let` in the file. cgen follows the tree-walker. Options: (a) fix the VM to track the hint at run time, like the tree-walker; (b) make the rule static (the hint where the function was defined) and change the tree-walker and cgen; (c) make changing a name's hint with a second `let` an error. Recommendation: (a), since the tree-walker is the reference and the case is rare.
-2. **Where a compiled program's std comes from.** The std modules are compiled in from the std folder cgen saw (`$RELIC_STD` or the build's `std/`); `host_std_root()` in the program still reports the runtime's folder. Options: (a) compile time, as now; (b) load std modules at run time from `$RELIC_STD` (needs per-module C or an interpreter). Recommendation: (a).
-3. **Source lines in error messages.** File names in errors are baked in at compile time, and `rl_report` reads the source line from that file when the error happens, as the host does. A compiled program moved to another machine prints the error line but no source line. Options: (a) leave it; (b) embed each module's source in the C file for the snippet; (c) embed only the lines that can fail. Recommendation: (a) until compiled programs ship on their own (C5), then (b).
+1. **How C5 bootstraps without the host.** Pending Daniel. Options: (a) commit the generated C for cgen, with the host as an optional cross-check; (b) keep the host only as an optional stage 0 builder; (c) both, with CI checking that the committed C and the host's output match. C5 has not started.
