@@ -1,6 +1,6 @@
 # Relic guide
 
-A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.3. For the exact rules, see the [language reference](LANGUAGE.md).
+A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.4. For the exact rules, see the [language reference](LANGUAGE.md).
 
 You need a built `relic` first. See [Build](../README.md#build).
 

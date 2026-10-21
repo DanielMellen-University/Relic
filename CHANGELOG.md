@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.4 (2026-10-20)
+
+Code generator (milestone C2):
+
+- New `selfhost/cgen.relic`: a Relic-to-C compiler written in Relic. It reads a program with the Relic-written lexer and parser and writes C99 for `runtime/c/`: `relic selfhost/cgen.relic prog.relic -o prog.c`. It covers the whole language except `use`: literals, operators, strings and interpolation, lists, maps, `let` and assignment, `if` / `while` / `for`, functions, recursion, closures, `as` hints, `try` / `catch` and `fail`, and every built-in. The C program prints what `relic` prints and fails with the same message and position. See [CGEN.md](docs/CGEN.md).
+- Error positions: each call site that can fail marks its position, behind one helper so a line table can replace it later. Recorded in PROJECT_PLAN as an interim decision (Oct 20 2026), pending Daniel's confirmation.
+- Runtime additions for generated code: unset slots, `rl_at3` (index and range errors point at the operand, as on the host), `rl_fail_undefined` with the host's "did you mean" hint, `rl_interp`. Fixed a NULL compare in the runtime's map-key hint.
+- Tests: every golden except REPL and `.args` tests is also compiled and run as `cgen_name` with a leak check at exit: 106 of 129 pass, 23 skip (they use modules), none fail. `ctest` now has 275 cases.
+- CI: a `cgen` job builds the generated C with warnings as errors on gcc and clang (Linux, with ASan, UBSan and LSan), clang on macOS and MSVC on Windows.
+- Speed: `fib(30)` runs in 141 ms compiled, against 363 ms on the host VM and 947 ms on the tree-walker.
+
 ## 1.0.3 (2026-10-20)
 
 C runtime (milestone C1):
