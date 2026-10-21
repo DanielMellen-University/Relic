@@ -1,11 +1,20 @@
 # Self-host check (M9): the Relic lexer in selfhost/ must print exactly what
 # `relic --tokens` prints, for every golden .relic file (errors included).
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -P tools/compare_lexers.cmake
+# With -DTOOL=path, that program (selfhost/tokens.relic compiled to C) is
+# checked instead of running selfhost/tokens.relic on the host.
 file(GLOB files ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic ${SRC}/selfhost/*.relic)
 set(bad 0)
 foreach(f ${files})
   execute_process(COMMAND ${RELIC} --tokens ${f} OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err)
-  execute_process(COMMAND ${RELIC} ${SRC}/selfhost/tokens.relic ${f} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err)
+  if(TOOL)
+    execute_process(COMMAND ${TOOL} ${f} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err)
+  else()
+    execute_process(COMMAND ${RELIC} ${SRC}/selfhost/tokens.relic ${f} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err)
+  endif()
+  foreach(v a_out a_err b_out b_err)
+    string(REPLACE "\r\n" "\n" ${v} "${${v}}")
+  endforeach()
   if(NOT a_out STREQUAL b_out OR NOT a_err STREQUAL b_err)
     get_filename_component(n ${f} NAME)
     message("mismatch: ${n}\n--- host\n${a_out}${a_err}--- relic\n${b_out}${b_err}")

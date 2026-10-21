@@ -94,7 +94,8 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
   enable_language(C)
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/cgen)
   file(GLOB RELIC_CGEN_DEPS ${CMAKE_SOURCE_DIR}/selfhost/*.relic ${CMAKE_SOURCE_DIR}/std/*.relic)
-  function(relic_cgen_test name src)
+  # relic_cgen_exe(name src): src compiled to C and built as cgen_<name>.
+  function(relic_cgen_exe name src)
     set(c ${CMAKE_BINARY_DIR}/cgen/${name}.c)
     add_custom_command(OUTPUT ${c}
       COMMAND relic ${CMAKE_SOURCE_DIR}/selfhost/cgen.relic ${src} -o ${c} --stub
@@ -104,6 +105,9 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     add_executable(cgen_${name} ${c})
     target_link_libraries(cgen_${name} PRIVATE relic_rt)
     relic_c_target(cgen_${name})
+  endfunction()
+  function(relic_cgen_test name src)
+    relic_cgen_exe(${name} ${src})
     add_test(NAME cgen_${name}
       COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:cgen_${name}> -DTEST=${src}
         -P ${CMAKE_SOURCE_DIR}/tools/run_cgen.cmake)
@@ -122,6 +126,23 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     get_filename_component(name ${t} NAME_WE)
     relic_cgen_test(only_${name} ${t})
   endforeach()
+  # Toward C4: the Relic-written lexer, parser and code generator compiled
+  # to C. The compiled lexer and parser must match --tokens and --ast on
+  # every file; the compiled cgen must write exactly the C that cgen on the
+  # host wrote for it (stage 1 output equals stage 0 output: a fixed point).
+  relic_cgen_exe(selfhost_tokens ${CMAKE_SOURCE_DIR}/selfhost/tokens.relic)
+  relic_cgen_exe(selfhost_ast ${CMAKE_SOURCE_DIR}/selfhost/ast.relic)
+  relic_cgen_exe(selfhost_cgen ${CMAKE_SOURCE_DIR}/selfhost/cgen.relic)
+  add_test(NAME cgen_selfhost_lexer
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+      -DTOOL=$<TARGET_FILE:cgen_selfhost_tokens> -P ${CMAKE_SOURCE_DIR}/tools/compare_lexers.cmake)
+  add_test(NAME cgen_selfhost_parser
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
+      -DTOOL=$<TARGET_FILE:cgen_selfhost_ast> -P ${CMAKE_SOURCE_DIR}/tools/compare_parsers.cmake)
+  add_test(NAME cgen_fixed_point
+    COMMAND ${CMAKE_COMMAND} -DSTAGE1=$<TARGET_FILE:cgen_selfhost_cgen> -DSRC=${CMAKE_SOURCE_DIR}
+      -DSTAGE0_C=${CMAKE_BINARY_DIR}/cgen/selfhost_cgen.c -DOUT=${CMAKE_BINARY_DIR}/cgen/selfhost_cgen.stage2.c
+      -P ${CMAKE_SOURCE_DIR}/tools/cgen_fixed_point.cmake)
 endif()
 
 if(RELIC_SDL)

@@ -275,8 +275,11 @@ int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *na
     return rl_fail(cx, "'%s' is not defined", name);
 }
 
+/* Byte offset of character `index`. A string with as many characters as
+ * bytes is all one-byte characters, so that is direct; the count is cached. */
 static size_t utf8_offset(const rl_str *s, size_t index) {
     size_t i = 0, n = 0;
+    if (rl_str_chars((rl_str *)s) == s->len) return index < s->len ? index : s->len;
     while (i < s->len && n < index) { i += rl_utf8_char_size(s->data, s->len, i); ++n; }
     return i;
 }

@@ -94,6 +94,7 @@ BI(b_type) { UNUSED; (void)cx; *out = rl_str_c(rl_type_name(a[0])); return RL_OK
 static size_t clampi(long long i, size_t n) { return i < 0 ? 0 : ((unsigned long long)i > n ? n : (size_t)i); }
 static size_t offset_of(const rl_str *s, size_t index) {
     size_t i = 0, n = 0;
+    if (rl_str_chars((rl_str *)s) == s->len) return index < s->len ? index : s->len;  /* one byte per character */
     while (i < s->len && n < index) { i += rl_utf8_char_size(s->data, s->len, i); ++n; }
     return i;
 }
