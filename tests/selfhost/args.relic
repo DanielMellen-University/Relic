@@ -1,0 +1,3 @@
+# Run by the selfhost_args and selfhost_nested tests through selfhost/run.relic.
+use std/os
+print("args", args(), os.args())

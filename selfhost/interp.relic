@@ -5,6 +5,7 @@
 # Values are host values (numbers, strings, bools, none, lists, maps). Functions
 # and built-ins are maps tagged with the key chr(1), which Relic source cannot
 # write by accident, so type() and printing can tell them apart from user maps.
+# The tag is also checked by identity (see tagbox), so this file can run itself.
 #
 # Errors: the first error is stored in rt.err, every step after that is a
 # no-op, and loops stop, so output after an error never happens (this was
@@ -17,6 +18,16 @@ use std/files
 use std/strings
 
 let tag = chr(1)
+# Functions and modules also carry this list under chr(2). It is checked by
+# identity (host_same), so when this interpreter runs another copy of itself,
+# the inner copy's tagged maps are plain maps to the outer one.
+let tagbox = []
+let idkey = chr(2)
+
+fun tagged(v, kind)
+    v[tag] = kind
+    v[idkey] = tagbox
+    return v
 let max_depth = 800
 
 fun new_env(parent) = {vars: {}, parent: parent, hints: {}}
@@ -90,17 +101,13 @@ fun find(env, name)
     return none
 
 fun new_runtime()
-    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}}
+    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: []}
     let builtins = new_env(none)
     for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
-        let v = {name: b[0], arity: b[1]}
-        v[tag] = "builtin"
-        builtins.vars[b[0]] = v
+        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
     # host_* built-ins (files, clocks, math, graphics) are passed through to the host.
     for b in host_names()
-        let v = {name: b[0], arity: b[1]}
-        v[tag] = "builtin"
-        builtins.vars[b[0]] = v
+        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
     rt.globals = new_env(builtins)
     rt.builtins = builtins
     return rt
@@ -118,9 +125,7 @@ fun set_main(rt, path)
     rt.modules[norm_path(path)] = new_module(name, rt.globals)
 
 fun new_module(name, scope)
-    let m = {name: name, scope: scope}
-    m[tag] = "module"
-    return m
+    return tagged({name: name, scope: scope}, "module")
 
 fun last_slash(s)
     let cut = -1
@@ -205,7 +210,7 @@ fun a_type(v)
 
 fun type_of(v)
     let t = type(v)
-    if t == "map" and tag in v
+    if t == "map" and idkey in v and host_same(v[idkey], tagbox)
         if v[tag] == "module"
             return "module"
         return "function"
@@ -380,8 +385,7 @@ fun exec(rt, n, env)
         return "normal"
     if k == "Fun"
         rt.next_id = rt.next_id + 1
-        let f = {name: n.text, node: n, closure: env, id: rt.next_id, file: rt.file}
-        f[tag] = "fun"
+        let f = tagged({name: n.text, node: n, closure: env, id: rt.next_id, file: rt.file}, "fun")
         env.vars[n.text] = f
         return "normal"
     if k == "If"
@@ -826,7 +830,7 @@ fun builtin(rt, name, a)
             return bad("fail(): message must be a string, got " + t)
         return bad(a[0])
     if name == "args" or name == "host_args"
-        return ok([])
+        return ok(slice(rt.args, 0, len(rt.args)))
     if slice(name, 0, 5) == "host_"
         try
             return ok(host_call(name, a))
@@ -898,31 +902,9 @@ fun builtin(rt, name, a)
         return ok(remove(a[0], a[1]))
     return bad("cannot remove from " + a_type(a[0]))
 
-# num() on a string: digits with an optional sign, fraction and exponent.
-# Narrower than the host's strtod (no inf, nan or hex); see docs/ARCHITECTURE.md (Self-host).
+# num() on a string: the host's parser, so inf, nan, hex and range errors match.
 fun parse_number(s)
-    let i = 0
-    if i < len(s) and (s[i] == "-" or s[i] == "+")
-        i = i + 1
-    let digits = 0
-    while i < len(s) and lexer.is_digit(s[i])
-        i = i + 1
-        digits = digits + 1
-    if i < len(s) and s[i] == "."
-        i = i + 1
-        while i < len(s) and lexer.is_digit(s[i])
-            i = i + 1
-            digits = digits + 1
-    if digits > 0 and i < len(s) and (s[i] == "e" or s[i] == "E")
-        i = i + 1
-        if i < len(s) and (s[i] == "-" or s[i] == "+")
-            i = i + 1
-        let exp_digits = 0
-        while i < len(s) and lexer.is_digit(s[i])
-            i = i + 1
-            exp_digits = exp_digits + 1
-        if exp_digits == 0
-            digits = 0
-    if digits == 0 or i != len(s)
-        return bad("not a number: \"" + s + "\"")
-    return ok(num(s))
+    try
+        return ok(num(s))
+    catch e
+        return bad(slice(e.message, 7, len(e.message)))

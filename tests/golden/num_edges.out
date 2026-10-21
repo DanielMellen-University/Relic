@@ -1,0 +1,11 @@
+'+5' 5
+'-0' 0
+'.5' 0.5
+'5.' 5.0
+'2e3' 2000.0
+'1e' error: num(): not a number: "1e"
+' 1' error: num(): not a number: " 1"
+'1_0' error: num(): not a number: "1_0"
+'' error: num(): not a number: ""
+'1e400' error: num(): not a number: "1e400"
+'12abc' error: num(): not a number: "12abc"

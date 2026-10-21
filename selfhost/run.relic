@@ -1,6 +1,7 @@
 # selfhost/run.relic: runs a Relic file with the lexer, parser and interpreter
 # written in Relic. Same output and errors as `relic FILE`.
-#   relic selfhost/run.relic FILE
+#   relic selfhost/run.relic FILE [args...]
+# Words after FILE are what the program gets from args().
 use lexer
 use parser
 use interp
@@ -8,8 +9,8 @@ use std/files
 use errfmt
 
 let argv = args()
-if len(argv) != 1
-    eprint("usage: relic selfhost/run.relic FILE")
+if len(argv) < 1
+    eprint("usage: relic selfhost/run.relic FILE [args...]")
 else
     let path = argv[0]
     let lexed = lexer.lex(files.read(path))
@@ -19,6 +20,7 @@ else
         err = parsed.err
         if err == none
             let rt = interp.new_runtime()
+            rt.args = slice(argv, 1, len(argv))
             interp.set_main(rt, path)
             interp.run(rt, parsed.tree)
             err = rt.err

@@ -122,6 +122,16 @@ add_test(NAME selfhost_interp
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_interp.cmake)
 
+# Self-host: args reach the program, and run.relic can run itself (two levels).
+add_test(NAME selfhost_args
+  COMMAND relic ${CMAKE_SOURCE_DIR}/selfhost/run.relic ${CMAKE_SOURCE_DIR}/tests/selfhost/args.relic one --two)
+set_tests_properties(selfhost_args PROPERTIES
+  PASS_REGULAR_EXPRESSION "^args \\[\"one\", \"--two\"\\] \\[\"one\", \"--two\"\\]")
+add_test(NAME selfhost_nested
+  COMMAND relic ${CMAKE_SOURCE_DIR}/selfhost/run.relic ${CMAKE_SOURCE_DIR}/selfhost/run.relic ${CMAKE_SOURCE_DIR}/tests/selfhost/args.relic deep)
+set_tests_properties(selfhost_nested PROPERTIES
+  PASS_REGULAR_EXPRESSION "^args \\[\"deep\"\\] \\[\"deep\"\\]")
+
 add_test(NAME vm_matches_tree_walker
   COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_SOURCE_DIR}
     -P ${CMAKE_SOURCE_DIR}/tools/compare_vm.cmake)

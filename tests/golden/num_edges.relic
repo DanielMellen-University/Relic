@@ -1,0 +1,6 @@
+# num() edge cases; the self-hosted interpreter must give the same answers.
+for s in ["+5", "-0", ".5", "5.", "2e3", "1e", " 1", "1_0", "", "1e400", "12abc"]
+    try
+        print("'{s}'", num(s))
+    catch e
+        print("'{s}'", "error:", e.message)
