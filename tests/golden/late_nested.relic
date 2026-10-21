@@ -1,0 +1,58 @@
+# A nested function reads and assigns a name that several enclosing
+# functions declare after it. The nearest `let` that has run wins, and a
+# function's own earlier `let` beats a later one further out.
+fun outer()
+    fun middle()
+        fun inner()
+            return x + y
+        let y = 2
+        return inner()
+    let x = 1
+    return middle()
+print(outer())
+fun a()
+    fun b()
+        fun c()
+            fun d()
+                return v
+            return d()
+        let r = c()
+        let v = "b"
+        return r
+    let v = "a"
+    return b()
+try
+    print(a())
+catch e
+    print(e.message)
+fun p()
+    fun q()
+        fun r()
+            return w
+        let w = "q"
+        return r()
+    let w = "p"
+    return q()
+print(p())
+fun p()
+    fun q()
+        fun r()
+            w = w + "!"
+        let w = "q"
+        r()
+        return w
+    let w = "p"
+    let got = q()
+    return got + " " + w
+print(p())
+fun p2()
+    fun q2()
+        fun r2()
+            w = "set"
+        r2()
+        let w = "q"
+        return w
+    let w = "p"
+    let got = q2()
+    return got + " " + w
+print(p2())

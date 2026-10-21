@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- VM: a nested function that reads or assigns a name which more than one enclosing function declares after it now finds the nearest `let` that has run. Before, a read could skip past it to a "not defined" error, an assignment could fail with "not declared", and a function that had already declared the name itself could read the outer one instead. The tree-walker and compiled C were already right. New golden `late_nested`.
+- `ctest` has 288 cases.
+
 ## 1.0.6 (2026-10-20)
 
 - VM: a name whose `as` hint changes between `let`s is now checked against the hint of the latest `let` that ran, also when a nested function assigns to it, as on the tree-walker. Before, the VM used the hint where the function was defined, and for top-level names the last hinted `let` in the file, even for assignments above it. Stores from a nested function to a name its enclosing function declares later are now checked too. New golden `hint_relet` (tree-walker, VM and compiled C agree; it replaces the cgen-only case).

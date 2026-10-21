@@ -288,6 +288,9 @@ private:
     // the same function the `let` cannot have run yet when this code runs.
     int find_late(const std::string& name, size_t below) {
         size_t base = fns_.back().scope_base;
+        // Declared already in this function: that one wins.
+        for (size_t i = std::min(below, scopes_.size()); i-- > base;)
+            if (scopes_[i].names.count(name)) return -1;
         for (size_t i = std::min(below, base); i-- > 0;) {
             if (scopes_[i].names.count(name)) return -1;
             if (scopes_[i].pending.count(name)) return static_cast<int>(i);
@@ -350,8 +353,11 @@ private:
         int li = find_late(n.text, std::min(below, scopes_.size()));
         if (li >= 0) {
             int slot = reserve_late(scopes_[static_cast<size_t>(li)], n.text);
-            emit(Op::LoadLate, static_cast<int>(scopes_.size()) - 1 - li, slot, &n);
+            size_t ll = emit(Op::LoadLate, static_cast<int>(scopes_.size()) - 1 - li, slot, &n);
+            size_t from = here();
             load_name(n, static_cast<size_t>(li));
+            // The fallback can itself be a late read of a function further out.
+            cur().code[ll].c = static_cast<int>(here() - from) - 1;
             return;
         }
         int hops, slot;
@@ -366,6 +372,33 @@ private:
                 for (const auto& kv : sc.names) locals += kv.first + "\n";
             emit(Op::LoadBuiltin, str(n.text), str(locals), &n);
         }
+    }
+
+    // Stores the value on the stack to a name, looking in scopes below index
+    // `below`. A name declared later by an enclosing function gets
+    // SKIP_UNLESS_LATE, then STORE_LATE: once the outer `let` has run, check
+    // the late slot, store and skip the outward fallback; otherwise the
+    // fallback stores further out (itself maybe another late store).
+    void store_name(const Ast& t, const Ast& rhs, size_t below) {
+        int li = find_late(t.text, below);
+        if (li >= 0) {
+            int lhops = static_cast<int>(scopes_.size()) - 1 - li;
+            int lslot = reserve_late(scopes_[static_cast<size_t>(li)], t.text);
+            size_t skip = emit(Op::SkipUnlessLate, lhops, lslot, &t);
+            size_t from = here();
+            check_assign(t.text, li, lhops, rhs);
+            cur().code[skip].c = static_cast<int>(here() - from);
+            size_t store = emit(Op::StoreLate, lhops, lslot, &t);
+            from = here();
+            store_name(t, rhs, static_cast<size_t>(li));
+            cur().code[store].c = static_cast<int>(here() - from) - 1;
+            return;
+        }
+        int hops, slot;
+        bool local = resolve(t.text, hops, slot, below);
+        check_assign(t.text, local ? static_cast<int>(scopes_.size()) - 1 - hops : -1, hops, rhs);
+        if (local) emit(Op::Store, hops, slot, &t);
+        else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
     }
 
     // Leaves the loop: drops scopes opened inside it and its stack values.
@@ -412,32 +445,7 @@ private:
                 const Ast& t = *n.kids[0];
                 expr(*n.kids[1]);
                 if (t.kind == Node::Name) {
-                    int li = find_late(t.text, scopes_.size());
-                    if (li >= 0) {
-                        // SKIP_UNLESS_LATE skips the check of the late slot until the
-                        // outer `let` has run. STORE_LATE then stores and skips the
-                        // outward check and store; otherwise those store outward.
-                        int lhops = static_cast<int>(scopes_.size()) - 1 - li;
-                        int lslot = reserve_late(scopes_[static_cast<size_t>(li)], t.text);
-                        size_t skip = emit(Op::SkipUnlessLate, lhops, lslot, &t);
-                        size_t from = here();
-                        check_assign(t.text, li, lhops, *n.kids[1]);
-                        cur().code[skip].c = static_cast<int>(here() - from);
-                        size_t store = emit(Op::StoreLate, lhops, lslot, &t);
-                        from = here();
-                        int h2, s2;
-                        bool outer = resolve(t.text, h2, s2, static_cast<size_t>(li));
-                        check_assign(t.text, outer ? static_cast<int>(scopes_.size()) - 1 - h2 : -1, h2, *n.kids[1]);
-                        cur().code[store].c = static_cast<int>(here() - from);
-                        if (outer) emit(Op::Store, h2, s2, &t);
-                        else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
-                        return;
-                    }
-                    int hops, slot;
-                    bool local = resolve(t.text, hops, slot);
-                    check_assign(t.text, local ? static_cast<int>(scopes_.size()) - 1 - hops : -1, hops, *n.kids[1]);
-                    if (local) emit(Op::Store, hops, slot, &t);
-                    else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
+                    store_name(t, *n.kids[1], scopes_.size());
                 } else if (t.kind == Node::Field) {
                     expr(*t.kids[0]);
                     emit(Op::SetField, 0, 0, &t);
