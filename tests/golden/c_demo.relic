@@ -1,0 +1,45 @@
+# The program that runtime/c/tests/demo.c compiles by hand. Both must print
+# the same thing; the C runtime's demo test compares against c_demo.out.
+fun fib(n)
+    if n < 2
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(20))
+
+fun make_counter()
+    let n = 0
+    fun bump()
+        n = n + 1
+        return n
+    return bump
+
+let c = make_counter()
+c()
+print("count", c())
+
+fun risky(x)
+    if x > 2
+        fail("too big: " + str(x))
+    return x * 10
+
+for i in 0..5
+    try
+        print(risky(i))
+    catch err
+        print("caught", err.message, "at line", err.line)
+
+fun down(k) = down(k + 1)
+try
+    down(0)
+catch err
+    print(err.message, err.line)
+
+let parts = []
+for ch in "héllo"
+    append(parts, ch)
+print(parts, len(parts))
+try
+    print(parts[9])
+catch err
+    print(err.message, err.line, err.col)

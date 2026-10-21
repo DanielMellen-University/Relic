@@ -1,0 +1,11 @@
+# Runs EXE and checks its stdout equals the file EXPECTED (line endings ignored).
+execute_process(COMMAND ${EXE} OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE code)
+file(READ ${EXPECTED} want)
+string(REPLACE "\r\n" "\n" out "${out}")
+string(REPLACE "\r\n" "\n" want "${want}")
+if(NOT code EQUAL 0)
+  message(FATAL_ERROR "${EXE} exited with ${code}\n${err}")
+endif()
+if(NOT out STREQUAL want)
+  message(FATAL_ERROR "output differs from ${EXPECTED}\n--- got ---\n${out}\n--- want ---\n${want}")
+endif()

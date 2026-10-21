@@ -69,6 +69,12 @@ add_executable(relic_tests tests/unit/main.cpp)
 target_link_libraries(relic_tests PRIVATE relic_core)
 add_test(NAME unit COMMAND relic_tests)
 
+# The C runtime for compiled Relic (C1). Built next to the C++ host, not instead of it.
+option(RELIC_C_RUNTIME "Build the C runtime in runtime/c" ON)
+if(RELIC_C_RUNTIME)
+  add_subdirectory(runtime/c)
+endif()
+
 file(GLOB GOLDEN_TESTS ${CMAKE_SOURCE_DIR}/tests/golden/*.relic)
 foreach(t ${GOLDEN_TESTS})
   get_filename_component(name ${t} NAME_WE)

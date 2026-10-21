@@ -1,0 +1,10 @@
+6765
+count 2
+0
+10
+20
+caught too big: 3 at line 23
+caught too big: 4 at line 23
+too much recursion (more than 800 calls deep) 32
+["h", "é", "l", "l", "o"] 5
+list index 9 is out of range (size 5) 43 17
