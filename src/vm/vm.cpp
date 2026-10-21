@@ -7,6 +7,7 @@
 #include "parser/parser.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <fstream>
 
 #include <memory>
