@@ -2,7 +2,9 @@
 
 Small programs that show the language at work. They are examples, not the MONOLITH 2 environment, which lives in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-All three need a graphics build. Run the commands from the repo root unless the table says otherwise.
+`compiled/` is built with no graphics and no host: `relic_add_program` in the top-level `CMakeLists.txt` compiles `compiled/main.relic` to C, so a normal build makes `build/example_compiled`. Try `./build/example_compiled one two`.
+
+The other three need a graphics build. Run the commands from the repo root unless the table says otherwise.
 
 ```
 cmake -S . -B build-sdl -DRELIC_SDL=ON     # needs SDL2 (apt install libsdl2-dev, brew install sdl2)

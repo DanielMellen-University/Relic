@@ -1,6 +1,6 @@
 # Language reference
 
-The rules of Relic as the host runs them today (version 1.0.7). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
+The rules of Relic as the host runs them today (version 1.0.8). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
 
 ## Contents
 

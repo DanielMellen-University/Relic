@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 138 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh` and `bootstrap_fixed_point`. A host build (`-DRELIC_BUILD_HOST=ON`) has 292: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
+How Relic is tested, and how to run it. The default build (C only, no host) has 139 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 293: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
 
 ## Running the tests
 
@@ -116,12 +116,22 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 
 On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core`.
 
+## relic_add_program
+
+`example_compiled` builds `examples/compiled/main.relic` (a module in `lib/` and `std/strings`) with `relic_add_program` and checks its output and args. `tests/consumer/` is a separate CMake project that adds the Relic tree with `add_subdirectory` and builds `hello.relic` the same way:
+
+```
+cmake -S tests/consumer -B build-consumer
+cmake --build build-consumer
+ctest --test-dir build-consumer --output-on-failure
+```
+
 ## CI
 
 `.github/workflows/ci.yml` runs on every push and pull request, 15 jobs, none with SDL:
 
-- `build`: the default C-only build, Release, all tests, on Ubuntu (gcc), macOS (clang) and Windows (MSVC).
-- `no-cxx`: the same on Alpine Linux with only gcc installed. It first checks that `c++`, `g++` and `clang++` are all missing, so it proves a fresh checkout needs no C++ compiler.
+- `build`: the default C-only build, Release, all tests, on Ubuntu (gcc), macOS (clang) and Windows (MSVC), then the `tests/consumer` project.
+- `no-cxx`: the same on Alpine Linux with only gcc installed. It first checks that `c++`, `g++` and `clang++` are all missing, so it proves a fresh checkout needs no C++ compiler. It builds `tests/consumer` too.
 - `host`: `-DRELIC_BUILD_HOST=ON` on all three OSes, all tests, including the cross-checks against the host.
 - `c-runtime`: `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
 - `cgen`: the C-only build the same four ways, so `bootstrap/cgen.c`, `relicc` and every compiled golden are built with warnings as errors and run sanitized.

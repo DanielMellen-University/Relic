@@ -6,7 +6,7 @@ The rule is the same as for the other copies in `selfhost/`: the C program print
 
 ## Contents
 
-- [Using it](#using-it)
+- [Using it](#using-it) (and [in CMake](#in-cmake))
 - [What it covers](#what-it-covers)
 - [Shape of the generated C](#shape-of-the-generated-c)
 - [Names and scopes](#names-and-scopes)
@@ -34,6 +34,20 @@ Exit codes: 0 when the C was written, 1 when the file has a lex or parse error (
 `--stub` is for builds that compile every file in a folder. On a lex or parse error it writes a small C program that prints that same error and exits 1. On an unsupported program it writes one that prints `cgen-skip: <reason>` and exits 0. Either way cgen itself exits 0 and prints nothing.
 
 `--root DIR` writes the file names that go into the C (the comment at the top and `RLC_FILES`, used in error messages) relative to `DIR` when the file is inside it. `bootstrap/cgen.c` is written with `--root` set to the repo root, so it is the same wherever the checkout is.
+
+### In CMake
+
+`cmake/Relic.cmake` (Daniel's pick, Oct 21 2026) gives `relic_add_program(name file [DEPENDS files...])`. It runs `relicc` on `file` to write `relic_programs/name.c` in the build folder, builds that with `relic_rt` and the runtime's strict flags, and makes the executable target `name`. It is there after `add_subdirectory` of the Relic tree, or in the tree itself:
+
+```cmake
+add_subdirectory(relic)                       # the Relic checkout, e.g. a submodule
+relic_add_program(hello src/hello.relic)
+relic_add_program(tool tools/tool.relic DEPENDS ${CMAKE_SOURCE_DIR}/shared/util.relic)
+```
+
+When the C is written again: when `relicc` changes, when `file` changes, or when any `.relic` file under the folder of `file` (subfolders too) or in Relic's `std/` changes. That is a safe superset of what the program uses, since a module is usually in the program's folder or below it. A module somewhere else (`use ../shared/util`) is not seen on its own, so list it under `DEPENDS`. A new `.relic` file is picked up at the next build (the folder is globbed with `CONFIGURE_DEPENDS`), and files inside the build folder are left out.
+
+Added to another project, Relic builds `relicc` and the runtime but leaves out its own 134 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
 
 The generated program takes its command-line args like `relic FILE args...` does. With `RELIC_LEAK_CHECK` set in the environment it checks at exit that every container and string was freed, and exits 3 with `leak: ...` if not.
 
@@ -191,6 +205,8 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 - Modules: one C file per program with every module it uses compiled in. Decided by Daniel, Oct 21 2026. The emission is isolated, so per-module C files would still be a contained change.
 - Error positions: a mark at each call site that can fail. Decided by Daniel, Oct 21 2026.
 - C5: the C for cgen is committed in `bootstrap/`, and the C++ host is an optional cross-check. Decided by Daniel, Oct 21 2026.
+- Building a program in one step: the CMake helper `relic_add_program(name file)`, not a `relicc run` mode. Decided by Daniel, Oct 21 2026.
+- `relic_add_program` reruns relicc when anything under the program's folder or `std/` changes (a superset), with `DEPENDS` for modules elsewhere, instead of an exact list of the modules used. Decided by Engineer, Oct 21 2026, internal.
 - The committed C is one file with names relative to the repo root; a stale file fails `bootstrap_fresh` rather than being rewritten by the build; the default build compiles the goldens with `relicc`, a host build with the host plus `cgen_stage1_matches_host`; `-DRELIC_SDL=ON` turns the host on. Decided by Engineer, Oct 21 2026, internal.
 
 ## Open choices

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.8 (2026-10-21)
+
+- New CMake helper `relic_add_program(name file [DEPENDS files...])` in `cmake/Relic.cmake` (Daniel's pick, Oct 21 2026; no `relicc run` mode). It compiles a `.relic` program with `relicc`, builds the C with `runtime/c`, and makes the executable target `name`, in this tree or in a project that adds Relic with `add_subdirectory`. It reruns relicc when the file, any `.relic` under its folder, `std/` or relicc changes; `DEPENDS` adds modules from elsewhere.
+- The top-level `CMakeLists.txt` uses its own folder for paths, so it works as a subproject. There it leaves out the 134 compiled goldens by default.
+- New example `examples/compiled/` (ctest `example_compiled`) and a consuming project `tests/consumer/`, built in CI by the `build` jobs (Linux, macOS, MSVC) and `no-cxx`.
+- `ctest` has 139 cases in the default build and 293 with the host.
+
 ## 1.0.7 (2026-10-21)
 
 Bootstrap without the C++ host (milestone C5, Daniel's choice, Oct 21 2026):

@@ -4,7 +4,7 @@ Relic is the programming language for MONOLITH 2.
 
 This repo is the language only: the compiler to C and its C runtime, the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-> Status: **1.0.7**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM (M10), and optional SDL2 graphics (M11). Relic now compiles itself: a compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). Its own C is committed in `bootstrap/`, so the default build needs only a C compiler (C1 to C5). The C++ host (tree-walker, VM, REPL, graphics) is optional. See the [roadmap](docs/ROADMAP.md).
+> Status: **1.0.8**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM (M10), and optional SDL2 graphics (M11). Relic now compiles itself: a compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). Its own C is committed in `bootstrap/`, so the default build needs only a C compiler (C1 to C5). The C++ host (tree-walker, VM, REPL, graphics) is optional. See the [roadmap](docs/ROADMAP.md).
 
 ## A taste
 
@@ -35,6 +35,15 @@ cc -std=c99 -O2 -I runtime/c hello.c build/runtime/c/librelic_rt.a -lm -o hello
 ```
 
 On Windows, link `build\runtime\c\Release\relic_rt.lib` and leave out `-lm`.
+
+In a CMake project, add Relic (for example as a `relic/` submodule) and let `relic_add_program` do both steps:
+
+```cmake
+add_subdirectory(relic)
+relic_add_program(hello src/hello.relic)   # makes the executable target hello
+```
+
+It works the same inside this repo (`examples/compiled/` is built that way) and needs only a C compiler. Details are in [CGEN.md](docs/CGEN.md#in-cmake).
 
 ### The C++ host
 

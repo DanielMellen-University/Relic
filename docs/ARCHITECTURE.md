@@ -7,6 +7,7 @@ How Relic is built today: the build (C only by default, see [Build targets](#bui
 ```
 Relic/
   CMakeLists.txt
+  cmake/            Relic.cmake: relic_add_program(name file)
   bootstrap/        cgen.c: cgen compiled to C by itself (generated, committed), see bootstrap/README.md
   src/
     main.cpp        C++ host (built with RELIC_BUILD_HOST=ON); command line: picks REPL, file runner or a debug dump
@@ -40,12 +41,13 @@ The default build needs only a C compiler. The C++ host is built with `-DRELIC_B
 | `relic_rt` | all | the C runtime library from `runtime/c/` (plain C99), with `relic_rt_tests` and `relic_rt_demo` |
 | `relicc_stage0` | all | the compiler built from the committed `bootstrap/cgen.c` (stage 0) |
 | `relicc` | all | `selfhost/cgen.relic` from this checkout compiled by `relicc_stage0` (stage 1, C in `build/bootstrap/stage1.c`): the compiler to C |
+| `example_compiled` | all | `examples/compiled/main.relic` built with `relic_add_program` (`cmake/Relic.cmake`) |
 | `cgen_<name>` | all | a golden compiled to C and linked with `relic_rt`, sources in `build/cgen/`. Written by `relicc`, or in a host build by cgen on the host, which also adds `cgen_selfhost_tokens`, `cgen_selfhost_ast` and `cgen_selfhost_cgen` |
 | `relic_core` | host | static library: lexer, parser, AST, tree-walker, VM, built-ins |
 | `relic` | host | the command line program, links `relic_core` |
 | `relic_tests` | host | unit tests, links `relic_core` |
 
-Options: `-DRELIC_BUILD_HOST=ON` adds the C++ host and its tests (off by default). `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` and everything compiled (only allowed with the host); `-DRELIC_CGEN_TESTS=OFF` leaves out only the `cgen_*` targets. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins into the host and turns the host on (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
+Options: `-DRELIC_BUILD_HOST=ON` adds the C++ host and its tests (off by default). `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` and everything compiled (only allowed with the host); `-DRELIC_CGEN_TESTS=OFF` leaves out only the `cgen_*` targets; it defaults to off when Relic is added to another project with `add_subdirectory`. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins into the host and turns the host on (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
 
 ## Pipeline
 
