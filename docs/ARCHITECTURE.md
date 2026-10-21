@@ -1,14 +1,15 @@
 # Architecture
 
-How Relic is built today: the C++17 host, its two engines, memory, and the Relic-written copies in `selfhost/`. The C runtime for compiled Relic (`runtime/c/`) has its own page, [C-RUNTIME.md](C-RUNTIME.md). Everything here is **Default** unless marked **Open**. Built-ins and embedding are in [HOST.md](HOST.md).
+How Relic is built today: the build (C only by default, see [Build targets](#build-targets)), the C++17 host, its two engines, memory, and the Relic-written copies in `selfhost/`. The C runtime for compiled Relic (`runtime/c/`) has its own page, [C-RUNTIME.md](C-RUNTIME.md). Everything here is **Default** unless marked **Open**. Built-ins and embedding are in [HOST.md](HOST.md).
 
 ## Folders
 
 ```
 Relic/
   CMakeLists.txt
+  bootstrap/        cgen.c: cgen compiled to C by itself (generated, committed), see bootstrap/README.md
   src/
-    main.cpp        command line: picks REPL, file runner or a debug dump
+    main.cpp        C++ host (built with RELIC_BUILD_HOST=ON); command line: picks REPL, file runner or a debug dump
     core.*          Session (REPL and tree-walk runner), VM runner, dumps
     lexer/          source text to tokens, INDENT/DEDENT
     parser/         tokens to AST
@@ -26,21 +27,25 @@ Relic/
     golden/         .relic programs with expected output (helpers in modules/)
     sdl/            headless graphics tests, SDL builds only
     unit/           C++ tests
-  tools/            golden and cgen runners, comparison scripts, bench.sh, gen_font.py
+  tools/            golden and cgen runners, comparison scripts, bootstrap check and regen, bench.sh, gen_font.py
   docs/
 ```
 
 ## Build targets
 
-| Target | What it is |
-|---|---|
-| `relic_core` | static library: lexer, parser, AST, tree-walker, VM, built-ins |
-| `relic` | the command line program, links `relic_core` |
-| `relic_tests` | unit tests, links `relic_core` |
-| `relic_rt` | the C runtime library from `runtime/c/` (plain C99), with `relic_rt_tests` and `relic_rt_demo` |
-| `cgen_<name>` | a program compiled to C by `selfhost/cgen.relic` and linked with `relic_rt`: one per golden, plus `cgen_selfhost_tokens`, `cgen_selfhost_ast` and `cgen_selfhost_cgen` (stage 1); sources in `build/cgen/` |
+The default build needs only a C compiler. The C++ host is built with `-DRELIC_BUILD_HOST=ON`.
 
-Options: `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` (on by default), and with it the `cgen_*` targets; `-DRELIC_CGEN_TESTS=OFF` leaves out only those. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
+| Target | Build | What it is |
+|---|---|---|
+| `relic_rt` | all | the C runtime library from `runtime/c/` (plain C99), with `relic_rt_tests` and `relic_rt_demo` |
+| `relicc_stage0` | all | the compiler built from the committed `bootstrap/cgen.c` (stage 0) |
+| `relicc` | all | `selfhost/cgen.relic` from this checkout compiled by `relicc_stage0` (stage 1, C in `build/bootstrap/stage1.c`): the compiler to C |
+| `cgen_<name>` | all | a golden compiled to C and linked with `relic_rt`, sources in `build/cgen/`. Written by `relicc`, or in a host build by cgen on the host, which also adds `cgen_selfhost_tokens`, `cgen_selfhost_ast` and `cgen_selfhost_cgen` |
+| `relic_core` | host | static library: lexer, parser, AST, tree-walker, VM, built-ins |
+| `relic` | host | the command line program, links `relic_core` |
+| `relic_tests` | host | unit tests, links `relic_core` |
+
+Options: `-DRELIC_BUILD_HOST=ON` adds the C++ host and its tests (off by default). `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` and everything compiled (only allowed with the host); `-DRELIC_CGEN_TESTS=OFF` leaves out only the `cgen_*` targets. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins into the host and turns the host on (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
 
 ## Pipeline
 
@@ -154,4 +159,4 @@ What still comes from the C++ host: running all of it, reference counting and th
 
 ## Where this is going
 
-Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. The C++ host is stage 0 until that compiler compiles itself, and then leaves the default build. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap). C1, the C runtime, is done: see [C-RUNTIME.md](C-RUNTIME.md). C2 and C3, the code generator for the whole language, are done, and so is C4: cgen compiles itself to the same C it was compiled from. See [CGEN.md](CGEN.md). What is left is C5, taking the C++ host out of the default build. The Relic-written interpreter above stays as a testing aid.
+Daniel picked the bootstrap: a Relic compiler written in Relic that emits C, built by a normal C compiler. Milestones C1 to C5 are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap), and all five are done. C1 is the C runtime ([C-RUNTIME.md](C-RUNTIME.md)). C2 and C3 are the code generator for the whole language, and in C4 it compiled itself to the same C it was compiled from ([CGEN.md](CGEN.md)). In C5 that C was committed as `bootstrap/cgen.c` and the C++ host left the default build: a fresh checkout builds with only a C compiler, and the host is an optional cross-check ([CGEN.md](CGEN.md#bootstrap)). The Relic-written interpreter above stays as a testing aid.

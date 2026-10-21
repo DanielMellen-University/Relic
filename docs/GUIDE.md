@@ -1,8 +1,8 @@
 # Relic guide
 
-A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.6. For the exact rules, see the [language reference](LANGUAGE.md).
+A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.7. For the exact rules, see the [language reference](LANGUAGE.md).
 
-You need a built `relic` first. See [Build](../README.md#build).
+You need a built `relic` first: the C++ host, built with `-DRELIC_BUILD_HOST=ON`. See [The C++ host](../README.md#the-c-host). The default build makes `relicc` instead, which compiles the same programs to C.
 
 ## 1. Hello
 

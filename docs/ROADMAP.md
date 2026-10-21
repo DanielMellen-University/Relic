@@ -23,7 +23,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 ## Phase 3: Self-host
 
-The goal, approved by Daniel in October 2026: a Relic compiler written in Relic that emits C, built by a normal C compiler, so no C++ language code is left. The C++ host is stage 0 until the compiler can compile itself (C4). Milestone details are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap).
+The goal, approved by Daniel in October 2026: a Relic compiler written in Relic that emits C, built by a normal C compiler, so no C++ language code is left. The C++ host was stage 0 until the compiler could compile itself (C4); since C5 the committed C in `bootstrap/` is stage 0 and the host is optional. Milestone details are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap).
 
 Relic-written front end and interpreter. These run on the host today and are kept as a testing aid; the interpreter is not the end state.
 
@@ -41,7 +41,7 @@ Compiler to C:
 - [x] C2: Relic-to-C code generation, compiled and run in CI against golden outputs (`selfhost/cgen.relic`, [CGEN.md](CGEN.md)): everything but `use`, 106 of 129 goldens, `fib(30)` 2.6x faster than the host VM
 - [x] C3: full language coverage: modules and the std (closures, `try` / `catch` and hints came in C2); all 131 compiled goldens pass
 - [x] C4: stage 1: the compiler compiles itself to C, and stage 1 output equals stage 0 output (fixed point, `cgen_fixed_point`); the compiled lexer and parser match the host on every file
-- [ ] C5: the C++ host leaves the default build; it stays only as an optional reference
+- [x] C5: the C++ host leaves the default build; it stays only as an optional reference (`-DRELIC_BUILD_HOST=ON`). `bootstrap/cgen.c` is committed, a fresh checkout builds with only a C compiler (CI also checks this on Alpine with no C++ compiler), and CI fails if the committed C is stale
 
 ## Phase 4: Runtime and standard library
 

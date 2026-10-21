@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. A default build has 286 ctest cases (150, plus 136 `cgen_*` cases for compiled programs); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
+How Relic is tested, and how to run it. The default build (C only, no host) has 138 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh` and `bootstrap_fixed_point`. A host build (`-DRELIC_BUILD_HOST=ON`) has 292: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
 
 ## Running the tests
 
@@ -9,6 +9,8 @@ cmake -S . -B build
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+
+That is the C-only build. Add `-DRELIC_BUILD_HOST=ON` to the first line for the host and all of its tests. Every section below that runs `relic` needs it: the golden, comparison, unit and graphics tests. The C runtime, compiled golden and bootstrap tests run in both.
 
 - Add `-j8` to `ctest` to run cases in parallel.
 - With a multi-config generator (Visual Studio), pass `--config Release` to the build and `-C Release` to `ctest`.
@@ -74,15 +76,26 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (133 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 133 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are none now. Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (134 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 134 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are none now. Details in [CGEN.md](CGEN.md#tests).
 
-Three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
+In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 
 | Test | Checks |
 |---|---|
 | `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C against `relic --tokens`, on the same files as `selfhost_lexer` |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C against `relic --ast`, same files |
 | `cgen_fixed_point` | cgen compiled by cgen writes the same C for `cgen.relic` as cgen on the host |
+| `cgen_stage1_matches_host` | `relicc` writes the same C as the host for every compiled golden |
+
+## Bootstrap tests
+
+`bootstrap/cgen.c` is the committed C for cgen ([bootstrap/README.md](../bootstrap/README.md), [CGEN.md](CGEN.md#bootstrap)).
+
+| Test | Build | Checks |
+|---|---|---|
+| `bootstrap_fresh` | all | the committed C is what cgen writes from the current sources; if it fails, run `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` and commit `bootstrap/cgen.c` |
+| `bootstrap_fixed_point` | all | `relicc` compiling `cgen.relic` writes the C it was built from |
+| `bootstrap_matches_host` | host | the host running `cgen.relic` writes the committed C |
 
 To run only these: `ctest --test-dir build -R "^cgen_"`. To check them under ASan, UBSan and LSan: configure with `-DRELIC_C_SANITIZE=ON` (gcc or clang).
 
@@ -105,9 +118,13 @@ On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev 
 
 ## CI
 
-- `.github/workflows/ci.yml` builds Release and runs `ctest` on every push and pull request, on Ubuntu, macOS and Windows, without SDL.
-- A second job, `c-runtime`, builds `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
-- A third job, `cgen`, builds the whole project the same four ways and runs the `c_*` and `cgen_*` tests, so the generated C, the compiled lexer and parser and the fixed point are checked strict and sanitized on every OS.
+`.github/workflows/ci.yml` runs on every push and pull request, 15 jobs, none with SDL:
+
+- `build`: the default C-only build, Release, all tests, on Ubuntu (gcc), macOS (clang) and Windows (MSVC).
+- `no-cxx`: the same on Alpine Linux with only gcc installed. It first checks that `c++`, `g++` and `clang++` are all missing, so it proves a fresh checkout needs no C++ compiler.
+- `host`: `-DRELIC_BUILD_HOST=ON` on all three OSes, all tests, including the cross-checks against the host.
+- `c-runtime`: `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
+- `cgen`: the C-only build the same four ways, so `bootstrap/cgen.c`, `relicc` and every compiled golden are built with warnings as errors and run sanitized.
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
 

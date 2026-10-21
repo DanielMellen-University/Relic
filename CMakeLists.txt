@@ -7,11 +7,13 @@ project(relic VERSION 1.0.7 LANGUAGES C)
 # relicc compiles programs to C. The C++ host (relic: tree-walker, VM, REPL,
 # graphics) is optional and is used to cross-check the compiled side.
 option(RELIC_BUILD_HOST "Also build the C++ host (relic) and its tests" OFF)
-option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); needs RELIC_BUILD_HOST" OFF)
+option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); turns on RELIC_BUILD_HOST" OFF)
 option(RELIC_C_RUNTIME "Build the C runtime in runtime/c and the C compiler on it" ON)
 option(RELIC_CGEN_TESTS "Compile golden programs to C and run them" ON)
 if(RELIC_SDL AND NOT RELIC_BUILD_HOST)
-  message(FATAL_ERROR "RELIC_SDL needs -DRELIC_BUILD_HOST=ON")
+  # Graphics live in the host, so asking for them builds it.
+  message(STATUS "RELIC_SDL is on, so the C++ host is built too")
+  set(RELIC_BUILD_HOST ON)
 endif()
 if(NOT RELIC_C_RUNTIME AND NOT RELIC_BUILD_HOST)
   message(FATAL_ERROR "nothing to build: turn on RELIC_C_RUNTIME or RELIC_BUILD_HOST")

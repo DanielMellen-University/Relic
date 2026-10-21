@@ -11,10 +11,12 @@ How work gets into this repo. Relic is the language only. Desktop and app work g
 ## Build and test
 
 ```
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+
+Leave out `-DRELIC_BUILD_HOST=ON` to check the C-only build a fresh checkout gets (no C++ compiler needed). If you change `selfhost/` or `std/`, regenerate `bootstrap/cgen.c` with `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` and commit it; `bootstrap_fresh` fails until you do. See [bootstrap/README.md](bootstrap/README.md).
 
 For graphics work, also build with `-DRELIC_SDL=ON` into `build-sdl` and run its tests. Details: [TESTING.md](docs/TESTING.md).
 

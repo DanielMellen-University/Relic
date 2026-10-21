@@ -18,9 +18,9 @@ Everything Relic relies on that we did not write. Each piece has a planned repla
 
 | Piece | Used for | Target | Replace in |
 |---|---|---|---|
-| C++17 compiler and stdlib | the host: lexer, parser, tree-walker, VM | a Relic compiler written in Relic that emits C; the C++ host stays as stage 0 until then | phase 3 (C5) |
-| `host_*` built-ins | files, clocks, float math, process access under `std/` ([HOST.md](HOST.md)) | plain C primitives in the C runtime | written in C1 (`runtime/c/rl_host.c`); the host keeps its C++ ones until C5 |
-| `std::shared_ptr` reference counts | memory | the C runtime's own counts and collector | written in C1 (`runtime/c/rl_core.c`); the host keeps `shared_ptr` until C5 |
+| C++17 compiler and stdlib (optional since C5) | the host: tree-walker, VM, REPL, graphics; a cross-check for the compiled side | replaced in the default build by the Relic compiler in `bootstrap/` (C5); the host builds only with `-DRELIC_BUILD_HOST=ON` | done for the default build (C5); the REPL and graphics still need the host |
+| `host_*` built-ins | files, clocks, float math, process access under `std/` ([HOST.md](HOST.md)) | plain C primitives in the C runtime | written in C1 (`runtime/c/rl_host.c`); the optional host keeps its C++ ones |
+| `std::shared_ptr` reference counts | memory | the C runtime's own counts and collector | written in C1 (`runtime/c/rl_core.c`); the optional host keeps `shared_ptr` |
 | C99 compiler, C library and libm, POSIX or Win32 file calls | the C runtime and, from C2, generated C | stays: this is the floor of the bootstrap Daniel picked | |
 | SDL2, SDL2_image, SDL2_ttf (optional) | graphics, `-DRELIC_SDL=ON` | a Relic drawing layer | phase 5 |
 | CMake | build | **Open:** a Relic build tool | |

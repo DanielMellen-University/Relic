@@ -1,6 +1,6 @@
 # Bootstrap: empty repo to `print("hello")`
 
-How the host was started. Kept as a record; all steps are done.
+How the host was started. Kept as a record; all steps are done. Since 1.0.7 the default build no longer uses the host: it starts from the committed C in `bootstrap/` (see [bootstrap/README.md](../bootstrap/README.md) and [CGEN.md](CGEN.md#bootstrap)).
 
 ## Tools
 

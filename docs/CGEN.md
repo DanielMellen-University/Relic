@@ -1,6 +1,6 @@
 # The code generator
 
-`selfhost/cgen.relic` turns a Relic program, and every module it uses, into one C99 file that links against the C runtime in `runtime/c/` ([C-RUNTIME.md](C-RUNTIME.md)). It is milestones C2 and C3 of the plan to compile Relic to C ([PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap)). It is written in Relic and reads programs with the Relic-written lexer and parser in `selfhost/`. It runs on the C++ host (stage 0), and it also compiles itself: cgen compiled by cgen (stage 1) writes the same C as stage 0 (see [Compiling itself](#compiling-itself)).
+`selfhost/cgen.relic` turns a Relic program, and every module it uses, into one C99 file that links against the C runtime in `runtime/c/` ([C-RUNTIME.md](C-RUNTIME.md)). It is milestones C2 to C5 of the plan to compile Relic to C ([PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap)). It is written in Relic and reads programs with the Relic-written lexer and parser in `selfhost/`. It compiles itself, and its own C is committed as `bootstrap/cgen.c`, so the default build makes it with only a C compiler: that build's `build/relicc` is cgen (see [Bootstrap](#bootstrap)). It also still runs on the C++ host, which a host build uses to cross-check it.
 
 The rule is the same as for the other copies in `selfhost/`: the C program prints what `relic FILE` prints, and fails with the same message at the same line and column.
 
@@ -14,6 +14,7 @@ The rule is the same as for the other copies in `selfhost/`: the C program print
 - [Errors and positions](#errors-and-positions)
 - [Tests](#tests)
 - [Compiling itself](#compiling-itself)
+- [Bootstrap](#bootstrap)
 - [Speed](#speed)
 - [Decided choices](#decided-choices)
 - [Open choices](#open-choices)
@@ -21,16 +22,18 @@ The rule is the same as for the other copies in `selfhost/`: the C program print
 ## Using it
 
 ```sh
-relic selfhost/cgen.relic prog.relic -o prog.c
+build/relicc prog.relic -o prog.c
 cc -std=c99 -O2 -I runtime/c -o prog prog.c build/runtime/c/librelic_rt.a -lm
 ./prog
 ```
 
-With MSVC: `cl /std:c11 /O2 /I runtime\c prog.c build\runtime\c\Release\relic_rt.lib`. In CMake, link the `relic_rt` target and call `relic_c_target(name)` for the same strict flags the runtime uses.
+On the host the same is `relic selfhost/cgen.relic prog.relic -o prog.c`; both write the same C. With MSVC: `cl /std:c11 /O2 /I runtime\c prog.c build\runtime\c\Release\relic_rt.lib`. In CMake, link the `relic_rt` target and call `relic_c_target(name)` for the same strict flags the runtime uses.
 
 Exit codes: 0 when the C was written, 1 when the file has a lex or parse error (printed the way the host prints it), 2 when the program uses something not supported yet (the message names it, its file and position; nothing in the language is refused today), 3 for bad usage.
 
 `--stub` is for builds that compile every file in a folder. On a lex or parse error it writes a small C program that prints that same error and exits 1. On an unsupported program it writes one that prints `cgen-skip: <reason>` and exits 0. Either way cgen itself exits 0 and prints nothing.
+
+`--root DIR` writes the file names that go into the C (the comment at the top and `RLC_FILES`, used in error messages) relative to `DIR` when the file is inside it. `bootstrap/cgen.c` is written with `--root` set to the repo root, so it is the same wherever the checkout is.
 
 The generated program takes its command-line args like `relic FILE args...` does. With `RELIC_LEAK_CHECK` set in the environment it checks at exit that every container and string was freed, and exits 3 with `leak: ...` if not.
 
@@ -91,7 +94,7 @@ A `let` with an `as` hint makes later assignments check the type, until a `let` 
 
 ## Modules
 
-Modules are compiled into the same C file as the program (interim option 1, see [Decided choices](#decided-choices)). All the code that knows this is in the "modules" section of `cgen.relic`; per-module C files would change only that section.
+Modules are compiled into the same C file as the program (option 1, decided by Daniel, Oct 21 2026, see [Decided choices](#decided-choices)). All the code that knows this is in the "modules" section of `cgen.relic`; per-module C files would change only that section.
 
 - While compiling, each `use` is resolved the way the host resolves it: `std/name` is `host_std_root()` plus `name.relic`, anything else is relative to the folder of the file that has the `use`. The key is the absolute path with `.` and `dir/..` folded away. A file seen before is not compiled again.
 - The main file is module 0, registered before anything runs, so a module that uses it back gets the main scope instead of running the main file twice (golden `use_main_cycle`).
@@ -102,7 +105,7 @@ Modules are compiled into the same C file as the program (interim option 1, see 
 
 ## Errors and positions
 
-Positions use a mark at each call site that can fail (option A, an interim decision, see [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed)). The first argument says which module's file the code is in:
+Positions use a mark at each call site that can fail (option A, decided by Daniel, Oct 21 2026, see [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed)). The first argument says which module's file the code is in:
 
 ```c
 if (rl_sub(cx, L[0], rl_int(1LL), &T[2])) RLC_ERR(0, 5, 18, 5, 18, 5, 18, fail);
@@ -114,11 +117,11 @@ Errors such as `'x' is not defined`, `'x' is not declared; use 'let x = ...'`, `
 
 ## Tests
 
-Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
+Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`; `relicc` in the default build, cgen on the host in a host build), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
 
-Today: 133 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
+Today: 134 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
 
-The `cgen` CI job builds and runs these, and the three below, on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
+The `build`, `no-cxx` and `cgen` CI jobs build and run these with relicc, and the `host` jobs with the host. The `cgen` job does it strict (warnings as errors) on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
 
 ## Compiling itself
 
@@ -130,7 +133,26 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 
+These three need the host (`-DRELIC_BUILD_HOST=ON`). The C-only build has its own fixed point check, `bootstrap_fixed_point` (below).
+
 Also checked by hand: stage 1 writes the same C as stage 0 for all 131 compiled goldens, and `selfhost/run.relic` compiled to C runs 127 goldens (all but the REPL and `.args` ones and the four `selfhost_interp` skips) and matches the host on every one.
+
+## Bootstrap
+
+C5, Daniel's choice (Oct 21 2026): the C for cgen is committed, so a fresh checkout builds with only a C compiler, and the C++ host stays as an optional cross-check.
+
+- `bootstrap/cgen.c` is `selfhost/cgen.relic` with its five modules (`lexer`, `parser`, `errfmt`, `std/files`, `std/strings`) compiled to one C file by cgen with `--root` at the repo root, plus a comment on top (kept in `tools/bootstrap.cmake`). About 21,000 lines, 1 MB. [bootstrap/README.md](../bootstrap/README.md) has the short version.
+- The default build makes `relicc_stage0` from it and `runtime/c/`. `relicc_stage0` compiles `selfhost/cgen.relic` from the checkout to `build/bootstrap/stage1.c`, built as `relicc`. `relicc` compiles the goldens. A change to `selfhost/` or `std/` is in effect in the same build, before `bootstrap/cgen.c` is regenerated.
+- `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` rewrites `bootstrap/cgen.c`: it builds `relicc`, has it compile `cgen.relic` and writes that, round after round until nothing changes (one round, unless the change was to how cgen writes C, then two). If the committed C can no longer compile the new cgen, the host can write it: `relic selfhost/cgen.relic selfhost/cgen.relic --root . -o out.c`, then add the comment.
+
+| Test | Build | Checks |
+|---|---|---|
+| `bootstrap_fresh` | all | `relicc_stage0` writes, for `cgen.relic`, exactly the committed C (after its comment). Fails when `bootstrap/cgen.c` is stale |
+| `bootstrap_fixed_point` | all | `relicc` writes, for `cgen.relic`, exactly the C it was built from (stage 2 equals stage 1), with the leak check on |
+| `bootstrap_matches_host` | host | cgen on the host writes exactly the committed C |
+| `cgen_stage1_matches_host` | host | `relicc` writes exactly the C the host wrote, for every compiled golden (134) |
+
+CI runs the C-only build on Linux (gcc), macOS (clang) and Windows (MSVC) in the `build` job, strict with sanitizers in the `cgen` job, and on Alpine Linux with no C++ compiler installed in the `no-cxx` job, which first checks that `c++`, `g++` and `clang++` are all missing. The `host` job builds the host on all three and runs everything, cross-checks included.
 
 ## Speed
 
@@ -166,11 +188,11 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 - Re-hinted names assigned from a nested function check the hint of the latest `let` that ran; the VM was fixed to do the same. Decided by Engineer, Oct 20 2026.
 - The std is compiled in from source each time (from `$RELIC_STD` or the build's `std/`). `host_std_root()` in the program still reports the runtime's folder. Decided by Engineer, Oct 20 2026.
 - Compiled errors name the file, line and column; `rl_report` prints the source line only if it can read the file when the error happens. No source text is embedded in the C for now. Decided by Engineer, Oct 20 2026.
-- Modules: one C file per program with every module it uses compiled in. **Interim, Oct 20 2026, pending Daniel's confirmation.** The emission is isolated so per-module C files are a contained change.
-- Error positions: a mark at each call site that can fail. **Interim, Oct 20 2026, pending Daniel's confirmation.**
+- Modules: one C file per program with every module it uses compiled in. Decided by Daniel, Oct 21 2026. The emission is isolated, so per-module C files would still be a contained change.
+- Error positions: a mark at each call site that can fail. Decided by Daniel, Oct 21 2026.
+- C5: the C for cgen is committed in `bootstrap/`, and the C++ host is an optional cross-check. Decided by Daniel, Oct 21 2026.
+- The committed C is one file with names relative to the repo root; a stale file fails `bootstrap_fresh` rather than being rewritten by the build; the default build compiles the goldens with `relicc`, a host build with the host plus `cgen_stage1_matches_host`; `-DRELIC_SDL=ON` turns the host on. Decided by Engineer, Oct 21 2026, internal.
 
 ## Open choices
 
-The three C3 choices are decided (above). Open now:
-
-1. **How C5 bootstraps without the host.** Pending Daniel. Options: (a) commit the generated C for cgen, with the host as an optional cross-check; (b) keep the host only as an optional stage 0 builder; (c) both, with CI checking that the committed C and the host's output match. C5 has not started.
+None right now.

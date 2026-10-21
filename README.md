@@ -2,9 +2,9 @@
 
 Relic is the programming language for MONOLITH 2.
 
-This repo is the language only: the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
+This repo is the language only: the compiler to C and its C runtime, the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-> Status: **1.0.6**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM that is the default engine (M10), and optional SDL2 graphics with input, text, images and fonts (M11). The language itself is feature complete: catchable errors, int and float, type hints, private names, UTF-8 strings and a cycle collector. Next up is self-hosting by compiling Relic to C. The C runtime for that (C1) is in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)), and a code generator written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) compiles the whole language, modules and std included, and compiles itself to the same C (C2 to C4). See the [roadmap](docs/ROADMAP.md).
+> Status: **1.0.7**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM (M10), and optional SDL2 graphics (M11). Relic now compiles itself: a compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). Its own C is committed in `bootstrap/`, so the default build needs only a C compiler (C1 to C5). The C++ host (tree-walker, VM, REPL, graphics) is optional. See the [roadmap](docs/ROADMAP.md).
 
 ## A taste
 
@@ -18,16 +18,35 @@ for name in ["Ada", "Linus", "Grace"]
 
 ## Build
 
-Needs a C++17 compiler and CMake 3.16 or newer. Nothing else.
+Needs a C99 compiler (gcc, clang or MSVC) and CMake 3.16 or newer. No C++ compiler and nothing else.
 
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-./build/relic --version
 ctest --test-dir build --output-on-failure
 ```
 
-Then run a file with `./build/relic hello.relic`, or start the REPL with `./build/relic`. For graphics, build again with `-DRELIC_SDL=ON` (needs SDL2); see [examples/](examples/README.md).
+That builds the compiler from the committed C in `bootstrap/`, has it compile `selfhost/cgen.relic` from this checkout into `build/relicc`, and compiles and runs every golden program. To compile your own program:
+
+```
+./build/relicc hello.relic -o hello.c
+cc -std=c99 -O2 -I runtime/c hello.c build/runtime/c/librelic_rt.a -lm -o hello
+./hello
+```
+
+On Windows, link `build\runtime\c\Release\relic_rt.lib` and leave out `-lm`.
+
+### The C++ host
+
+The host runs programs directly, has the REPL and the SDL2 graphics, and is the reference the compiled side is checked against. It needs a C++17 compiler:
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
+cmake --build build
+./build/relic hello.relic
+```
+
+Run `./build/relic` alone for the REPL. For graphics add `-DRELIC_SDL=ON` (needs SDL2; it turns the host on); see [examples/](examples/README.md). The host build runs the host's own tests too and checks that the host and the compiled compiler write the same C.
 
 ## Relic in five minutes
 
@@ -87,7 +106,7 @@ More: the [guide](docs/GUIDE.md) walks through all of it, and the [reference](do
 - **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and the planned Relic IDE do not go there.
 - **MONOLITH 2** is the next version. Its desktop shell and apps are written in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2). That repo pins a Relic commit as a submodule and builds it.
 - Language work lands here; desktop and app work lands in M0N0LITH-2.
-- The long-term goal is a stack where nothing is borrowed. The C++ host is a scaffold: it goes away once Relic can run itself. See [VISION.md](docs/VISION.md).
+- The long-term goal is a stack where nothing is borrowed. The C++ host was the scaffold: since 1.0.7 the default build no longer needs it. See [VISION.md](docs/VISION.md).
 
 ## Docs
 

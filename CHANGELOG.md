@@ -1,10 +1,23 @@
 # Changelog
 
-## Unreleased
+## 1.0.7 (2026-10-21)
+
+Bootstrap without the C++ host (milestone C5, Daniel's choice, Oct 21 2026):
+
+- `bootstrap/cgen.c` is committed: `selfhost/cgen.relic` and the modules it uses, compiled to C by cgen itself. The default build now needs only a C compiler and CMake. It builds `relicc_stage0` from that file and `runtime/c/`, then `relicc` from `selfhost/cgen.relic` in the checkout, and compiles and runs every golden with `relicc`. No C++ compiler is looked for.
+- The C++ host (`relic`: tree-walker, VM, REPL, graphics) is optional: `-DRELIC_BUILD_HOST=ON` builds it with all its tests, as before. `-DRELIC_SDL=ON` turns it on.
+- New tests: `bootstrap_fresh` (the committed C matches what cgen writes from the current sources), `bootstrap_fixed_point` (`relicc` writes the C it was built from), and with the host, `bootstrap_matches_host` and `cgen_stage1_matches_host` (`relicc` and the host write the same C for all 134 compiled goldens).
+- `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` rewrites `bootstrap/cgen.c` after a change to `selfhost/` or `std/`.
+- cgen: new `--root DIR` flag writes file names relative to `DIR`, so the committed C does not depend on where the checkout is. No other change to the C it writes.
+- CI: 15 jobs. `build` is now the C-only build on Linux, macOS and MSVC; new `no-cxx` builds and tests on Alpine with no C++ compiler installed; new `host` runs the host build with the cross-checks on all three; `cgen` runs the C-only build strict and sanitized.
+- From scratch on an 8-core Linux box (gcc, Release): about 27 s with `-j8` (24 s to get `relicc`, most of it compiling the 1 MB C file twice) and 46 s with `-j1`.
+- PROJECT_PLAN and CGEN record Daniel's decisions (Oct 21 2026): C5 as above, one C file per program for modules, and an error position mark at each failing call site. The last two were interim.
+
+Also in this release:
 
 - VM: a nested function that reads or assigns a name which more than one enclosing function declares after it now finds the nearest `let` that has run. Before, a read could skip past it to a "not defined" error, an assignment could fail with "not declared", and a function that had already declared the name itself could read the outer one instead. The tree-walker and compiled C were already right. New golden `late_nested`.
 - Host: indexing and slicing a long string (256 bytes or more) with multi-byte characters uses the same table of every 64th character offset as the C runtime, kept for the last four strings indexed. The new `bench/utf8.relic` (40,000 mixed characters, every one indexed) went from 1.36 s to 0.19 s on the VM. No output change.
-- `ctest` has 288 cases.
+- `ctest` has 138 cases in the default build and 292 with the host.
 
 ## 1.0.6 (2026-10-20)
 

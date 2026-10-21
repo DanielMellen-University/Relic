@@ -1,6 +1,6 @@
 # Command line and REPL
 
-Everything the `relic` program does. Build it first ([README](../README.md#build)); the program ends up at `build/relic` (or `build/Release/relic.exe` with Visual Studio).
+Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC_BUILD_HOST=ON` ([README](../README.md#the-c-host)); the program ends up at `build/relic` (or `build/Release/relic.exe` with Visual Studio). The default build makes only `relicc`, the compiler to C; its use is at the end of this page.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Everything the `relic` program does. Build it first ([README](../README.md#build
 | `relic --tokens FILE` | prints the tokens, one per line as `line:col KIND text` |
 | `relic --ast FILE` | prints the syntax tree |
 | `relic --bytecode FILE` | prints the compiled bytecode |
-| `relic --version` | prints `relic 1.0.6` |
+| `relic --version` | prints `relic 1.0.7` |
 | `relic --help` | prints the usage lines |
 
 - `--vm` is still accepted and means the same as the default.
@@ -58,7 +58,7 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 
 ```
 $ ./build/relic
-relic 1.0.6. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.7. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42
@@ -96,3 +96,14 @@ $ relic --tokens hello.relic
 1:7 STRING "hello"
 ...
 ```
+
+## relicc
+
+The default build (no C++ host) makes `build/relicc`, cgen compiled to C:
+
+```
+relicc FILE -o OUT.c [--stub] [--root DIR]
+```
+
+It writes one C99 file for `FILE` and every module it uses, to be built with `runtime/c/` (see the [README](../README.md#build)). Exit codes: 0 written, 1 a lex or parse error (printed like the host prints it), 2 something not supported, 3 bad usage. `--stub` writes a small C program in place of a refused file, so a build can compile every file. `--root DIR` writes file names inside `DIR` relative to it, which is how `bootstrap/cgen.c` is made. Details are in [CGEN.md](CGEN.md).
+
