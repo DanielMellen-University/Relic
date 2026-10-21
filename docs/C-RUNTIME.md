@@ -89,7 +89,7 @@ Every heap object starts with `rl_obj`: a kind, a reference count, and links for
 - **Maps** (`rl_map`) keep keys in insertion order, with a hash index on the side. Keys are strings. Removing a key keeps the order of the rest.
 - **Scopes** (`rl_scope`) are a block of slots plus a parent scope. Generated code puts a function's names in slots. They are not Relic values.
 - **Functions** (`rl_fun`) are a name, a C function pointer (`rl_code`), an arity (`-1` for any), and the scope they were made in. A closure captures by reference: it keeps its whole defining scope alive and sees later changes to it, which is how the host's environments work.
-- **Modules** (`rl_module`) are a name and a map of top-level names. `rl_field` on a module enforces private `_names`, with the host's messages.
+- **Modules** (`rl_module`) are a name plus either a map of top-level names (`rl_module_new`) or, for compiled modules, the module's top-level scope and the names of its slots (`rl_module_scoped`). A slot still unset is a name the module has not reached yet. `rl_field` on a module enforces private `_names` and gives `module 'm' has no 'x' (yet)`, with the host's messages.
 
 ## Calling convention
 
@@ -175,12 +175,15 @@ The plan for the module, after C2:
 
 ## Calls for generated code
 
-Added in C2 for `selfhost/cgen.relic`:
+Added in C2 and C3 for `selfhost/cgen.relic`:
 
 | Call | What it does |
 |---|---|
 | `rl_unset()` | a value of kind `RL_UNSET`: a slot whose `let` has not run yet. New scope slots start unset. It never reaches Relic code |
-| `rl_at3(cx, file, l, c, l1, c1, l2, c2)` | sets the error position to the node (`l`, `c`), or to its first or second operand when the failing call said the error is about that one. Calls say so in `cx->err_arg` (0 node, 1 first, 2 second): index and key errors point at the index, a bad range start or end at that end, as on the host. `rl_fail` resets it |
+| `rl_at3(cx, file, in_std, l, c, l1, c1, l2, c2)` | sets the error position to the node (`l`, `c`), or to its first or second operand when the failing call said the error is about that one. Calls say so in `cx->err_arg` (0 node, 1 first, 2 second): index and key errors point at the index, a bad range start or end at that end, as on the host. `rl_fail` resets it. `in_std` says the code is in a `std/` module; it is kept in `cx->err_std` with the position |
+| `rl_module_scoped(name, scope, n, names)` | a module value over a compiled module's top-level scope (see Objects) |
+| `rl_fun_std(f, stem)` | marks a function as defined in the std module `stem` (`"files"`); returns `f` |
+| `rl_std_boundary(cx, f)` | called by code outside `std/` after a call to `f` failed. If `f` is a std function and the error happened inside `std/`, a `host_*` message gets the std name (`host_list_dir(): x` becomes `files.list(): x`) and the position is cleared, so the caller marks its call site, as the host does |
 | `rl_fail_undefined(cx, name, n, names, slots)` | the error `'x' is not defined`, with the host's `(did you mean 'y'?)` hint chosen from the visible names whose slot is set (or NULL, meaning always visible) and every built-in |
 | `rl_interp(n, parts, &out)` | string interpolation: joins `rl_show` of each part |
 
@@ -188,7 +191,7 @@ Added in C2 for `selfhost/cgen.relic`:
 
 | Test | What it checks |
 |---|---|
-| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, the calls for generated code, built-ins, files and clocks, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
+| `c_runtime` | `tests/test_runtime.c`: numbers and overflow, number text, UTF-8, maps and order, lists, errors and their exact messages, the calls for generated code (compiled modules, the std boundary), built-ins, files and clocks, sorted folder listings, cycle collection (self-holding lists and maps, a closure in its own scope, the call-site threshold), a million-deep list, and that every container and string is freed at the end |
 | `cgen_*` | golden programs compiled by `selfhost/cgen.relic`, see [CGEN.md](CGEN.md#tests) |
 | `c_demo` | `tests/demo.c`: `tests/golden/c_demo.relic` compiled by hand the way C2 will: recursion (`fib`), a closure counter, `try` / `catch` with positions, the recursion limit, a loop over a UTF-8 string. Its output must equal `tests/golden/c_demo.out`, which the C++ host also checks as a golden test |
 
@@ -196,7 +199,6 @@ The expected strings in `test_runtime.c` were taken from the C++ host. CI builds
 
 ## Not in the runtime yet
 
-These belong to later milestones, mostly because they need the code generator:
+Left for later:
 
-- Loading modules: finding a `use` file, caching it, running it once, and renaming errors that leave a std module (`files.list(): ...`). The runtime has the module object; C3 decides how compiled modules link (options in [CGEN.md](CGEN.md#open-choices)).
 - The SDL2 graphics module (above).

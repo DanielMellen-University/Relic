@@ -34,7 +34,7 @@
 | [TESTING.md](TESTING.md) | contributors | how each kind of test works and how to run it |
 | [HOST.md](HOST.md) | contributors | the C++ built-ins under `std/`, and running Relic from C++ |
 | [C-RUNTIME.md](C-RUNTIME.md) | contributors | `runtime/c/`: values, ownership, calling convention, errors, built-ins, cycle collector, tests |
-| [CGEN.md](CGEN.md) | contributors | `selfhost/cgen.relic`: using it, what it covers, the generated C, scopes, error positions, tests, speed, open choices |
+| [CGEN.md](CGEN.md) | contributors | `selfhost/cgen.relic`: using it, what it covers, the generated C, scopes, modules, error positions, tests, compiling itself, speed, decided and open choices |
 | [DESIGN.md](DESIGN.md) | both | the reasons behind the language, the syntax freeze, open questions |
 | [VISION.md](VISION.md) | both | the goal, principles, non-goals, and the borrowed pieces list |
 | [ROADMAP.md](ROADMAP.md) | both | phases with tickable outcomes |

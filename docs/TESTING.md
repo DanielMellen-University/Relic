@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. A default build has 275 ctest cases (146 plus 129 `cgen_*` cases); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
+How Relic is tested, and how to run it. A default build has 283 ctest cases (148, plus 135 `cgen_*` cases for compiled programs); an SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
 
 ## Running the tests
 
@@ -43,10 +43,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (163 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (168 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (130 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (134 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (132 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (136 today) |
 
 Two more self-host cases check the interpreter on real use:
 
@@ -74,7 +74,15 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (129 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet prints `cgen-skip: <reason>` and ctest reports it as skipped. Today 106 pass and 23 skip, all for `use`. Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (131 cases). At build time `selfhost/cgen.relic` writes `build/cgen/name.c`, CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 131 pass. `tests/cgen/*.relic` are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`). Details in [CGEN.md](CGEN.md#tests).
+
+Three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
+
+| Test | Checks |
+|---|---|
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C against `relic --tokens`, on the same files as `selfhost_lexer` |
+| `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C against `relic --ast`, same files |
+| `cgen_fixed_point` | cgen compiled by cgen writes the same C for `cgen.relic` as cgen on the host |
 
 To run only these: `ctest --test-dir build -R "^cgen_"`. To check them under ASan, UBSan and LSan: configure with `-DRELIC_C_SANITIZE=ON` (gcc or clang).
 
@@ -99,7 +107,7 @@ On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev 
 
 - `.github/workflows/ci.yml` builds Release and runs `ctest` on every push and pull request, on Ubuntu, macOS and Windows, without SDL.
 - A second job, `c-runtime`, builds `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
-- A third job, `cgen`, builds the whole project the same four ways and runs the `c_*` and `cgen_*` tests, so the generated C is checked strict and sanitized on every OS.
+- A third job, `cgen`, builds the whole project the same four ways and runs the `c_*` and `cgen_*` tests, so the generated C, the compiled lexer and parser and the fixed point are checked strict and sanitized on every OS.
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
 

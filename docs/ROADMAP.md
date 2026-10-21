@@ -39,8 +39,8 @@ Compiler to C:
 
 - [x] C1: C runtime: values, strings, lists and maps, reference counts plus cycle collection, errors, `host_*` primitives in plain C99 (`runtime/c/`, [C-RUNTIME.md](C-RUNTIME.md))
 - [x] C2: Relic-to-C code generation, compiled and run in CI against golden outputs (`selfhost/cgen.relic`, [CGEN.md](CGEN.md)): everything but `use`, 106 of 129 goldens, `fib(30)` 2.6x faster than the host VM
-- [ ] C3: full language coverage: modules and the std (closures, `try` / `catch` and hints are done in C2)
-- [ ] C4: stage 1: the compiler compiles itself to C, and stage 1 output equals stage 0 output (fixed point)
+- [x] C3: full language coverage: modules and the std (closures, `try` / `catch` and hints came in C2); all 131 compiled goldens pass
+- [x] C4: stage 1: the compiler compiles itself to C, and stage 1 output equals stage 0 output (fixed point, `cgen_fixed_point`); the compiled lexer and parser match the host on every file
 - [ ] C5: the C++ host leaves the default build; it stays only as an optional reference
 
 ## Phase 4: Runtime and standard library
