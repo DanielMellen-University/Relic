@@ -52,3 +52,39 @@ jobs:
         run: cmake --build build-c --config Release
       - name: Test
         run: ctest --test-dir build-c -C Release --output-on-failure
+
+  # C2: golden programs compiled to C by selfhost/cgen.relic (run on the
+  # stage 0 host), built with the runtime's strict flags and warnings as
+  # errors, run and compared with the goldens (cgen_* tests, plus the c_*
+  # runtime tests). The Linux jobs run ASan, UBSan and LSan on them.
+  cgen:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-gcc-sanitize
+            os: ubuntu-latest
+            cc: gcc
+            flags: -DRELIC_C_SANITIZE=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          - name: linux-clang-sanitize
+            os: ubuntu-latest
+            cc: clang
+            flags: -DRELIC_C_SANITIZE=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          - name: macos-clang
+            os: macos-latest
+            cc: clang
+            flags: -DCMAKE_BUILD_TYPE=Release
+          - name: windows-msvc
+            os: windows-latest
+            cc: cl
+            flags: ""
+    name: cgen (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cc }} -DRELIC_C_WERROR=ON ${{ matrix.flags }}
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -R "^c(gen)?_"
