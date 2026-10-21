@@ -23,6 +23,7 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+enable_testing()
 file(GLOB GOLDEN_TESTS ${CMAKE_SOURCE_DIR}/tests/golden/*.relic)
 
 if(RELIC_BUILD_HOST)
