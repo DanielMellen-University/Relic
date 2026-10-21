@@ -342,7 +342,14 @@ int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out) {
     if (obj.k == RL_MODULE) {
         rl_module *m = (rl_module *)obj.u.o;
         if (name[0] == '_') return rl_fail(cx, "'%s' is private to module '%s'", name, m->name->data);
-        v = m->names ? rl_map_get(m->names, name, len) : NULL;
+        v = NULL;
+        if (m->scope) {
+            size_t i;
+            for (i = 0; i < m->nnames && i < m->scope->n; ++i)
+                if (strcmp(m->snames[i], name) == 0 && m->scope->slots[i].k != RL_UNSET) v = &m->scope->slots[i];
+        } else if (m->names) {
+            v = rl_map_get(m->names, name, len);
+        }
         if (!v) return rl_fail(cx, "module '%s' has no '%s' (yet)", m->name->data, name);
         *out = rl_retain(*v);
         return RL_OK;

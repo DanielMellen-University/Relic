@@ -1,0 +1,16 @@
+# A module runs the first time it is used, from anywhere, and never again.
+fun go()
+    use modules/counter
+    return counter.bump()
+print(go(), go())
+# A module that fails while loading stays loaded as far as it got.
+try
+    use modules/half
+catch e
+    print("first use:", e.message, e.line)
+use modules/half as again
+print(again.a)
+try
+    print(again.b)
+catch e
+    print(e.message)

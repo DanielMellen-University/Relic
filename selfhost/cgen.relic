@@ -1,11 +1,12 @@
-# selfhost/cgen.relic: the Relic-to-C code generator (milestone C2).
+# selfhost/cgen.relic: the Relic-to-C code generator (milestones C2, C3).
 #   relic selfhost/cgen.relic FILE -o OUT.c [--stub]
-# Reads FILE with the Relic-written lexer and parser and writes C99 that
-# links against runtime/c (see docs/C-RUNTIME.md). The generated program
-# prints what `relic FILE` prints and fails the same way.
+# Reads FILE, and every module it uses, with the Relic-written lexer and
+# parser and writes one C99 file that links against runtime/c (see
+# docs/CGEN.md and docs/C-RUNTIME.md). The generated program prints what
+# `relic FILE` prints and fails the same way.
 #
 # Exit codes: 0 written, 1 FILE has a lex or parse error (printed like the
-# host does), 2 FILE uses something outside the C2 subset, 3 bad usage.
+# host does), 2 FILE uses something not supported yet, 3 bad usage.
 # With --stub, a lex or parse error or an unsupported program still writes
 # OUT.c: a small program that prints the same error, or that only prints
 # "cgen-skip: <reason>", and exits 0, so a build can compile every file.
@@ -60,11 +61,11 @@ fun c_string(s)
 # ---- compiler state ----
 
 fun new_cg(path)
-    return {path: path, funs: [], protos: [], consts: [], const_ix: {}, bnames: [], bix: {}, nfun: 0, bad: none, nlabel: 0}
+    return {path: path, funs: [], protos: [], uses: [], consts: [], const_ix: {}, bnames: [], bix: {}, nfun: 0, bad: none, nlabel: 0, mods: [], mod_ix: {}, std_key: none, cur_file: path}
 
 fun unsupported(cg, n, what)
     if cg.bad == none
-        cg.bad = {line: n.line, col: n.col, what: what}
+        cg.bad = {file: cg.cur_file, line: n.line, col: n.col, what: what}
 
 let builtin_names = ["print", "eprint", "len", "append", "str", "keys", "fail", "gc", "type", "slice", "ord", "chr", "num", "int", "float", "pop", "insert", "remove", "args", "host_args", "host_read_file", "host_write_file", "host_file_exists", "host_clock", "host_now", "host_floor", "host_sqrt", "host_sin", "host_cos", "host_exp", "host_log", "host_pow", "host_list_dir", "host_is_dir", "host_make_dir", "host_remove", "host_rename", "host_file_size", "host_cwd", "host_env", "host_exit", "host_sleep", "host_same", "host_std_root", "host_names", "host_call", "host_gfx_available", "host_gfx_has_png", "host_gfx_has_fonts", "host_gfx_open", "host_gfx_close", "host_gfx_clear", "host_gfx_rect", "host_gfx_pixel", "host_gfx_present", "host_gfx_quit_requested", "host_gfx_wait", "host_gfx_key_down", "host_gfx_next_key", "host_gfx_mouse_x", "host_gfx_mouse_y", "host_gfx_mouse_down", "host_gfx_text", "host_gfx_image_load", "host_gfx_image", "host_gfx_image_width", "host_gfx_image_height", "host_gfx_font_load", "host_gfx_font_text", "host_gfx_font_size", "host_gfx_next_event", "host_gfx_simulate", "host_gfx_size", "host_gfx_line", "host_gfx_outline", "host_gfx_rect_alpha", "host_gfx_clip", "host_gfx_canvas", "host_gfx_draw_to", "host_clipboard_set", "host_clipboard_get"]
 let is_builtin = {}
@@ -103,8 +104,8 @@ fun has_fun(n)
             return true
     return false
 
-fun new_fc(cg, parent, heap, is_module)
-    return {cg: cg, parent: parent, heap: heap, module: is_module, lines: [], nt: 0, maxt: 0, nl: 0, nv: 0, ns: 0, blocks: [], loops: [], targets: ["fail"], used: {}, fun_node: none, outer: [], chain: [], ret_hint: "", ret_what: "", name: ""}
+fun new_fc(cg, parent, heap, is_module, mod)
+    return {cg: cg, parent: parent, heap: heap, module: is_module, mod: mod, lines: [], nt: 0, maxt: 0, nl: 0, nv: 0, ns: 0, blocks: [], loops: [], targets: ["fail"], used: {}, fun_node: none, outer: [], chain: [], ret_hint: "", ret_what: "", name: ""}
 
 fun emit(fc, line)
     append(fc.lines, "    " + line)
@@ -141,8 +142,33 @@ fun new_block(fc, stmts, extras)
             declare(b, s.text, i, h)
         else if s.kind == "Fun"
             declare(b, s.text, i, "-")
+        else if s.kind == "Use"
+            declare(b, use_name(s), i, "-")
         i = i + 1
+    # A name whose hint changes from one `let` to the next keeps its hint in
+    # a hidden slot, for assignments from nested functions (see hint_slot).
+    for name in b.order
+        if fc.heap and mixed_hints(b.decls[name])
+            declare(b, hint_name(name), -1, "-")
     return b
+
+fun hint_name(name) = chr(1) + "hint " + name
+
+fun mixed_hints(decls)
+    let seen = {}
+    let count = 0
+    let plain = false
+    let hinted = false
+    for d in decls
+        if d.hint == "-"
+            plain = true
+        else
+            if not (d.hint in seen)
+                seen[d.hint] = true
+                count = count + 1
+            if d.hint != ""
+                hinted = true
+    return count > 1 or (plain and hinted)
 
 fun declare(b, name, idx, hint)
     if not (name in b.names)
@@ -207,19 +233,13 @@ fun last_hint(decls, before)
                 h = d.hint
     return h
 
-fun same_hint(cg, n, decls)
-    let h = none
+# The hint of a name declared in an enclosing function, when all its lets
+# agree; otherwise it has a hidden hint slot and this gives "".
+fun same_hint(decls)
     for d in decls
-        let x = d.hint
-        if x == "-"
-            x = ""
-        if h == none
-            h = x
-        else if h != x
-            unsupported(cg, n, "a name with different 'as' hints on its lets, used from a nested function")
-    if h == none
-        return ""
-    return h
+        if d.hint != "-"
+            return d.hint
+    return ""
 
 # Gives a list of {slot, static, hint}; the last one is static, or the list
 # ends without one (then: built-in or not defined).
@@ -234,7 +254,7 @@ fun resolve(fc, n, name)
                 if d.idx < b.cur
                     ok = true
             if ok
-                append(out, {slot: slot_here(b, name), static: true, hint: last_hint(b.decls[name], b.cur)})
+                append(out, {slot: slot_here(b, name), static: true, hint: last_hint(b.decls[name], b.cur), hslot: none})
                 return out
         i = i - 1
     for o in fc.outer
@@ -244,12 +264,16 @@ fun resolve(fc, n, name)
             for d in b.decls[name]
                 if d.idx <= o.cur
                     ok = true
-            let hint = same_hint(fc.cg, n, b.decls[name])
+            let hint = same_hint(b.decls[name])
+            let hslot = none
+            if hint_name(name) in b.names
+                hint = ""
+                hslot = o.path + "->slots[" + str(b.names[hint_name(name)]) + "]"
             let s = o.path + "->slots[" + str(b.names[name]) + "]"
             if ok
-                append(out, {slot: s, static: true, hint: hint})
+                append(out, {slot: s, static: true, hint: hint, hslot: hslot})
                 return out
-            append(out, {slot: s, static: false, hint: hint})
+            append(out, {slot: s, static: false, hint: hint, hslot: hslot})
     return out
 
 # Names for "did you mean": {names, slots} as C initializers.
@@ -261,7 +285,7 @@ fun visible_names(fc)
     while i >= 0
         let b = fc.blocks[i]
         for name in b.order
-            if not (name in seen)
+            if not (name in seen) and name[0] != chr(1)
                 let ok = false
                 for d in b.decls[name]
                     if d.idx < b.cur
@@ -274,7 +298,7 @@ fun visible_names(fc)
     for o in fc.outer
         let b = o.block
         for name in b.order
-            if not (name in seen)
+            if not (name in seen) and name[0] != chr(1)
                 seen[name] = true
                 append(names, name)
                 append(slots, "&" + o.path + "->slots[" + str(b.names[name]) + "]")
@@ -296,7 +320,7 @@ fun on_error(fc, n, a, b)
         pa = str(a.line) + ", " + str(a.col)
     if b != none
         pb = str(b.line) + ", " + str(b.col)
-    return "RLC_ERR(" + p + ", " + pa + ", " + pb + ", " + target + ")"
+    return "RLC_ERR(" + str(fc.mod.ix) + ", " + p + ", " + pa + ", " + pb + ", " + target + ")"
 
 fun check(fc, call, n)
     emit(fc, "if (" + call + ") " + on_error(fc, n, none, none) + ";")
@@ -505,7 +529,12 @@ fun call(fc, n, d)
     let argv = "NULL"
     if argc > 0
         argv = "&T[" + str(base) + "]"
-    check(fc, "rl_call(cx, " + callee.expr + ", " + str(argc) + ", " + argv + ", &" + T(d) + ")", n)
+    let c = "rl_call(cx, " + callee.expr + ", " + str(argc) + ", " + argv + ", &" + T(d) + ")"
+    if fc.mod.std
+        check(fc, c, n)
+    else
+        # A failing std function gets its std name here (see modules below).
+        emit(fc, "if (" + c + ") " + LB + " rl_std_boundary(cx, " + callee.expr + "); " + on_error(fc, n, none, none) + "; " + RB)
 
 # ---- statements ----
 
@@ -542,6 +571,11 @@ fun statement(fc, s)
         if len(s.kids) > 1
             hint_check(fc, s.kids[1].text, T(t), "'" + s.text + "' must be", s.kids[0])
         emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", " + T(t) + "); " + T(t) + " = rl_none();")
+        if hint_name(s.text) in b.names
+            let h = "rl_none()"
+            if len(s.kids) > 1 and s.kids[1].text != "any"
+                h = "rl_retain(K[" + str(konst(cg, s.kids[1].text)) + "])"
+            emit(fc, "RLC_SET(" + slot_here(b, hint_name(s.text)) + ", " + h + ");")
         fc.nt = t
     else if k == "Assign"
         assign(fc, s)
@@ -571,7 +605,7 @@ fun statement(fc, s)
                 emit(fc, "goto " + l.cont + ";")
                 fc.used[l.cont] = true
     else if k == "Use"
-        unsupported(cg, s, "'use' (modules come in C3)")
+        use_stmt(fc, s, b)
     else
         unsupported(cg, s, "a " + k + " statement")
 
@@ -592,6 +626,9 @@ fun assign(fc, s)
             else
                 emit(fc, pre + "if (RLC_IS(" + c.slot + ")) " + LB)
             hint_check(fc, c.hint, T(t), "'" + target.text + "' must be", s.kids[1])
+            if c.hslot != none
+                let what = c_string("'" + target.text + "' must be").lit
+                emit(fc, "if (" + c.hslot + ".k == RL_STR && rl_check_type(cx, ((rl_str *)" + c.hslot + ".u.o)->data, " + T(t) + ", " + what + ")) " + on_error(fc, s.kids[1], none, none) + ";")
             emit(fc, "RLC_SET(" + c.slot + ", " + T(t) + "); " + T(t) + " = rl_none(); " + RB)
             first = false
             if c.static
@@ -655,7 +692,7 @@ fun while_stmt(fc, s)
         emit(fc, l.cont + ":")
     release_from(fc, s_mark, 0)
     emit(fc, "goto " + top + ";")
-    emit(fc, l.brk + ":")
+    emit(fc, l.brk + ": ;")
     release_from(fc, s_mark, 0)
 
 fun for_stmt(fc, s)
@@ -682,7 +719,7 @@ fun for_stmt(fc, s)
     release_from(fc, s_mark, 0)
     emit(fc, "++" + ix + ";")
     emit(fc, "goto " + top + ";")
-    emit(fc, l.brk + ":")
+    emit(fc, l.brk + ": ;")
     release_from(fc, s_mark, 0)
     emit(fc, "RLC_DROP(" + items + ");")
 
@@ -741,7 +778,7 @@ fun fun_stmt(fc, s, b)
     let cname = "fn" + str(cg.nfun) + "_" + safe_name(s.text)
     let params = s.kids[0].kids
     let body = s.kids[1]
-    let sub = new_fc(cg, fc, has_fun(body), false)
+    let sub = new_fc(cg, fc, has_fun(body), false, fc.mod)
     sub.name = s.text
     sub.fun_node = s
     if len(s.kids) > 2
@@ -760,7 +797,10 @@ fun fun_stmt(fc, s, b)
     for o in fc.outer
         append(sub.outer, {block: o.block, cur: o.cur, path: path + slice(o.path, 1, len(o.path))})
     compile_function(sub, cname, params, body)
-    emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", rl_fun_new(" + c_string(s.text).lit + ", " + cname + ", " + str(len(params)) + ", " + env_expr(fc) + "));")
+    let f = "rl_fun_new(" + c_string(s.text).lit + ", " + cname + ", " + str(len(params)) + ", " + env_expr(fc) + ")"
+    if fc.mod.std
+        f = "rl_fun_std(" + f + ", " + c_string(fc.mod.name).lit + ")"
+    emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", " + f + ");")
 
 fun safe_name(s)
     let out = []
@@ -867,15 +907,177 @@ fun finish_function(fc, cname, is_module)
     append(out, RB)
     append(cg.funs, strings.join(out, "\n"))
 
+# ---- modules ----
+# Interim decision (PROJECT_PLAN, Oct 20 2026, pending Daniel): one C file
+# per program, with every module it uses compiled in. Everything that knows
+# that is in this section: finding and parsing module files, the C
+# functions that run a module once and hand out its value, and the module
+# tables in main. Per-module C files would change this section only.
+#
+# A module record: {ix, key, file, name, std, tree, err, names}. ix 0 is
+# the main file, registered first, so a module that uses it back gets the
+# main scope instead of a second copy (as on the host).
+
+fun last_slash(p)
+    let cut = -1
+    for i in 0..len(p)
+        if p[i] == "/" or p[i] == "\\"
+            cut = i
+    return cut
+
+fun folder_of(file) = slice(file, 0, last_slash(file) + 1)
+
+fun use_name(s)
+    if len(s.kids) > 0
+        return s.kids[0].text
+    return slice(s.text, last_slash(s.text) + 1, len(s.text))
+
+fun is_absolute(p)
+    if len(p) > 0 and (p[0] == "/" or p[0] == "\\")
+        return true
+    return len(p) > 2 and p[1] == ":"
+
+# A cache key for a file: absolute, with "." and "dir/.." folded away.
+fun path_key(p)
+    let x = p
+    if not is_absolute(x)
+        x = host_cwd() + "/" + x
+    let parts = []
+    let cur = ""
+    for c in x + "/"
+        if c == "/" or c == "\\"
+            if cur == ".." and len(parts) > 0 and parts[len(parts) - 1] != ".." and parts[len(parts) - 1] != ""
+                pop(parts)
+            else if cur != "." and not (cur == "" and len(parts) > 0)
+                append(parts, cur)
+            cur = ""
+        else
+            cur = cur + c
+    return strings.join(parts, "/")
+
+fun in_std(cg, key)
+    if cg.std_key == none
+        cg.std_key = path_key(host_std_root()) + "/"
+    return len(key) > len(cg.std_key) and slice(key, 0, len(cg.std_key)) == cg.std_key
+
+fun file_stem(p)
+    let b = slice(p, last_slash(p) + 1, len(p))
+    let i = len(b) - 1
+    while i > 0
+        if b[i] == "."
+            return slice(b, 0, i)
+        i = i - 1
+    return b
+
+# Registers a file as a module and compiles it, unless it is known already.
+fun add_module(cg, file, name)
+    let key = path_key(file)
+    if key in cg.mod_ix
+        return cg.mods[cg.mod_ix[key]]
+    let m = {ix: len(cg.mods), key: key, file: file, name: name, std: in_std(cg, key), tree: none, err: none, names: []}
+    append(cg.mods, m)
+    cg.mod_ix[key] = m.ix
+    let lexed = lexer.lex(files.read(file))
+    m.err = lexed.err
+    if m.err == none
+        let parsed = parser.parse(lexed.tokens)
+        m.err = parsed.err
+        m.tree = parsed.tree
+    if m.err == none
+        compile_module(cg, m)
+    return m
+
+fun compile_module(cg, m)
+    let saved = cg.cur_file
+    cg.cur_file = m.file
+    let fc = new_fc(cg, none, true, true, m)
+    let b = open_block(fc, new_block(fc, m.tree.kids, []), true)
+    block(fc, m.tree.kids, b)
+    pop(fc.blocks)
+    m.names = b.order
+    append(cg.protos, "static int rlc_mod_" + str(m.ix) + "(rl_ctx *cx, rl_scope *top);")
+    finish_function(fc, "rlc_mod_" + str(m.ix), true)
+    cg.cur_file = saved
+
+# `use path [as name]`: runs the module the first time, then binds it.
+fun use_stmt(fc, s, b)
+    let cg = fc.cg
+    let file = folder_of(fc.mod.file) + s.text + ".relic"
+    if len(s.text) >= 4 and slice(s.text, 0, 4) == "std/"
+        file = host_std_root() + slice(s.text, 4, len(s.text)) + ".relic"
+    let key = path_key(file)
+    if not (key in cg.mod_ix) and not files.exists(file)
+        fail_here(fc, s, "cannot find module '{s.text}' (no file {s.text}.relic)")
+        return
+    let m = add_module(cg, file, slice(s.text, last_slash(s.text) + 1, len(s.text)))
+    if not (m.ix in cg.uses)
+        append(cg.uses, m.ix)
+    let t = temp(fc)
+    check(fc, "rlc_use_" + str(m.ix) + "(cx, &" + T(t) + ")", s)
+    emit(fc, "RLC_SET(" + slot_here(b, use_name(s)) + ", " + T(t) + "); " + T(t) + " = rl_none();")
+    fc.nt = t
+
+# The module tables: MOD[i] is module i's value once it has started, MS[i]
+# its top-level scope, RLC_FILES[i] and RLC_STD[i] its file for errors.
+fun module_tables(cg, o)
+    let n = len(cg.mods)
+    let files_c = []
+    let std_c = []
+    for m in cg.mods
+        append(files_c, c_string(m.file).lit)
+        if m.std
+            append(std_c, "1")
+        else
+            append(std_c, "0")
+    append(o, "static const char *const RLC_FILES[] = " + LB + strings.join(files_c, ", ") + RB + ";")
+    append(o, "static const int RLC_STD[] = " + LB + strings.join(std_c, ", ") + RB + ";")
+    append(o, "static rl_value MOD[" + str(n) + "];")
+    append(o, "static rl_scope *MS[" + str(n) + "];")
+    for m in cg.mods
+        let names = []
+        for x in m.names
+            append(names, c_string(x).lit)
+        if len(names) == 0
+            append(names, "NULL")
+        append(o, "static const char *const NM" + str(m.ix) + "[] = " + LB + strings.join(names, ", ") + RB + ";")
+    for ix in cg.uses
+        append(o, "static int rlc_use_" + str(ix) + "(rl_ctx *cx, rl_value *out);")
+
+# rlc_use_i: module i's value, running the module first if it has not
+# started yet. A module that is still running (a cycle) is handed out as it
+# is, so its later names are not there "(yet)".
+fun module_uses(cg, o)
+    for ix in cg.uses
+        let m = cg.mods[ix]
+        let i = str(ix)
+        append(o, "static int rlc_use_" + i + "(rl_ctx *cx, rl_value *out) " + LB)
+        append(o, "    *out = rl_none();")
+        append(o, "    if (MOD[" + i + "].k == RL_NONE) " + LB)
+        append(o, "        MS[" + i + "] = rl_scope_new(NULL, " + str(max1(len(m.names))) + ");")
+        append(o, "        MOD[" + i + "] = rl_module_scoped(" + c_string(m.name).lit + ", MS[" + i + "], " + str(len(m.names)) + ", NM" + i + ");")
+        if m.err != none
+            let k = konst(cg, m.err.msg)
+            let p = str(m.err.line) + ", " + str(m.err.col)
+            append(o, "        rl_fail_str(cx, (rl_str *)K[" + str(k) + "].u.o);")
+            append(o, "        rl_at3(cx, RLC_FILES[" + i + "], RLC_STD[" + i + "], " + p + ", " + p + ", " + p + ");")
+            append(o, "        return RL_ERR;")
+        else
+            append(o, "        if (rlc_mod_" + i + "(cx, MS[" + i + "])) return RL_ERR;")
+        append(o, "    " + RB)
+        append(o, "    *out = rl_retain(MOD[" + i + "]);")
+        append(o, "    return RL_OK;")
+        append(o, RB)
+        append(o, "")
+
 # ---- the whole program ----
 
 fun compile_program(cg, tree)
-    let fc = new_fc(cg, none, true, true)
-    let b = open_block(fc, new_block(fc, tree.kids, []), true)
-    block(fc, tree.kids, b)
-    pop(fc.blocks)
-    finish_function(fc, "rlc_module", true)
-    let ntop = len(b.order)
+    let main = {ix: 0, key: path_key(cg.path), file: cg.path, name: file_stem(cg.path), std: false, tree: tree, err: none, names: []}
+    main.std = in_std(cg, main.key)
+    append(cg.mods, main)
+    cg.mod_ix[main.key] = 0
+    compile_module(cg, main)
+    let ntop = len(main.names)
     let o = []
     append(o, "/* Generated by selfhost/cgen.relic from " + safe_comment(cg.path) + ". Do not edit. */")
     append(o, "#include \"relic.h\"")
@@ -888,15 +1090,18 @@ fun compile_program(cg, tree)
     append(o, "#pragma warning(disable: 4702)")
     append(o, "#endif")
     append(o, "")
-    append(o, "#define RLC_FILE " + c_string(cg.path).lit)
     append(o, "#define RLC_IS(v) ((v).k != RL_UNSET)")
     append(o, "#define RLC_DROP(v) do " + LB + " rl_release(v); (v) = rl_none(); " + RB + " while (0)")
     append(o, "#define RLC_SET(slot, v) do " + LB + " rl_value o_ = (slot); (slot) = (v); rl_release(o_); " + RB + " while (0)")
     append(o, "/* Error positions, option A: every call site that can fail marks its")
-    append(o, " * position. This macro and on_error() in cgen.relic are the only places")
-    append(o, " * that know how. */")
-    append(o, "#define RLC_ERR(l, c, l1, c1, l2, c2, target) do " + LB + " rl_at3(cx, RLC_FILE, l, c, l1, c1, l2, c2); goto target; " + RB + " while (0)")
+    append(o, " * position (m is the module, for its file). This macro and on_error() in")
+    append(o, " * cgen.relic are the only places that know how. */")
+    append(o, "#define RLC_ERR(m, l, c, l1, c1, l2, c2, target) do " + LB + " rl_at3(cx, RLC_FILES[m], RLC_STD[m], l, c, l1, c1, l2, c2); goto target; " + RB + " while (0)")
     append(o, "")
+    module_tables(cg, o)
+    for m in cg.mods
+        if m.err != none
+            konst(cg, m.err.msg)
     let nk = len(cg.consts)
     let nb = len(cg.bnames)
     append(o, "static rl_value K[" + str(max1(nk)) + "];")
@@ -904,14 +1109,17 @@ fun compile_program(cg, tree)
     for p in cg.protos
         append(o, p)
     append(o, "")
+    module_uses(cg, o)
     for f in cg.funs
         append(o, f)
         append(o, "")
+    let nm = len(cg.mods)
+    nk = len(cg.consts)
     append(o, "int main(int argc, char **argv) " + LB)
     append(o, "    rl_ctx cx;")
-    append(o, "    rl_scope *top;")
     append(o, "    int r, i;")
     append(o, "    rl_ctx_init(&cx, argc - 1, argv + 1);")
+    append(o, "    (void)RLC_FILES; (void)RLC_STD;")
     let i = 0
     for s in cg.consts
         let c = c_string(s)
@@ -921,11 +1129,13 @@ fun compile_program(cg, tree)
     for name in cg.bnames
         append(o, "    rl_builtin(\"" + name + "\", &B[" + str(i) + "]);")
         i = i + 1
-    append(o, "    top = rl_scope_new(NULL, " + str(ntop) + ");")
-    append(o, "    r = rlc_module(&cx, top);")
+    append(o, "    for (i = 0; i < " + str(nm) + "; ++i) " + LB + " MOD[i] = rl_none(); MS[i] = NULL; " + RB)
+    append(o, "    MS[0] = rl_scope_new(NULL, " + str(max1(ntop)) + ");")
+    append(o, "    MOD[0] = rl_module_scoped(" + c_string(main.name).lit + ", MS[0], " + str(ntop) + ", NM0);")
+    append(o, "    r = rlc_mod_0(&cx, MS[0]);")
     append(o, "    fflush(stdout);")
     append(o, "    if (r) rl_report(&cx, stderr, NULL);")
-    append(o, "    rl_scope_release(top);")
+    append(o, "    for (i = 0; i < " + str(nm) + "; ++i) " + LB + " rl_release(MOD[i]); if (MS[i]) rl_scope_release(MS[i]); " + RB)
     append(o, "    for (i = 0; i < " + str(nk) + "; ++i) rl_release(K[i]);")
     append(o, "    for (i = 0; i < " + str(nb) + "; ++i) rl_release(B[i]);")
     append(o, "    rl_ctx_free(&cx);")
@@ -1002,7 +1212,7 @@ if err != none
 let cg = new_cg(src)
 let text = compile_program(cg, tree)
 if cg.bad != none
-    let why = "{src}:{cg.bad.line}:{cg.bad.col}: not in the C2 subset: {cg.bad.what}"
+    let why = "{cg.bad.file}:{cg.bad.line}:{cg.bad.col}: not supported yet: {cg.bad.what}"
     if stub
         files.write(out_path, stub_skip(why))
         host_exit(0)

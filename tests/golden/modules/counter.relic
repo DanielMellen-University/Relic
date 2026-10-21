@@ -1,0 +1,6 @@
+# helper for use_cache: runs once, however many times it is used
+print("counter runs")
+let n = 0
+fun bump()
+    n = n + 1
+    return n

@@ -1,0 +1,3 @@
+# helper for err_use_parse
+let x = 1
+let y = (2

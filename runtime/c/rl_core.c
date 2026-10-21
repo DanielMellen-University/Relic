@@ -142,8 +142,11 @@ static void clear_refs(rl_obj *o) {
         case RL_MODULE: {
             rl_module *m = (rl_module *)o;
             rl_map *n = m->names;
+            rl_scope *s = m->scope;
             m->names = NULL;
+            m->scope = NULL;
             if (n) release_obj(&n->h);
+            if (s) release_obj(&s->h);
             break;
         }
         default: break;
@@ -212,7 +215,10 @@ static void children(rl_obj *o, objvec *out) {
             break;
         }
         case RL_FUN: if (((rl_fun *)o)->env) ov_push(out, &((rl_fun *)o)->env->h); break;
-        case RL_MODULE: if (((rl_module *)o)->names) ov_push(out, &((rl_module *)o)->names->h); break;
+        case RL_MODULE:
+            if (((rl_module *)o)->names) ov_push(out, &((rl_module *)o)->names->h);
+            if (((rl_module *)o)->scope) ov_push(out, &((rl_module *)o)->scope->h);
+            break;
         default: break;
     }
 }
@@ -532,8 +538,14 @@ rl_value rl_fun_new(const char *name, rl_code code, int arity, rl_scope *env) {
     f->arity = arity;
     f->builtin = 0;
     f->env = env;
+    f->std_module = NULL;
     if (env) ++env->h.rc;
     return rl_obj_value(&f->h);
+}
+
+rl_value rl_fun_std(rl_value f, const char *stem) {
+    if (f.k == RL_FUN) ((rl_fun *)f.u.o)->std_module = stem;
+    return f;
 }
 
 rl_value rl_module_new(const char *name) {
@@ -542,6 +554,22 @@ rl_value rl_module_new(const char *name) {
     track(&m->h, RL_MODULE);
     m->name = (rl_str *)n.u.o;
     m->names = (rl_map *)names.u.o;
+    m->scope = NULL;
+    m->nnames = 0;
+    m->snames = NULL;
+    return rl_obj_value(&m->h);
+}
+
+rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const char *const *names) {
+    rl_module *m = (rl_module *)xmalloc(sizeof *m);
+    rl_value nm = rl_str_c(name);
+    track(&m->h, RL_MODULE);
+    m->name = (rl_str *)nm.u.o;
+    m->names = NULL;
+    m->scope = scope;
+    ++scope->h.rc;
+    m->nnames = n;
+    m->snames = names;
     return rl_obj_value(&m->h);
 }
 
@@ -600,6 +628,7 @@ int rl_fail_str(rl_ctx *cx, rl_str *msg) {
     cx->err_line = cx->err_col = 0;
     cx->err_arg = 0;
     cx->err_file = NULL;
+    cx->err_std = 0;
     return RL_ERR;
 }
 
@@ -633,7 +662,8 @@ void rl_at(rl_ctx *cx, const char *file, int line, int col) {
     cx->err_col = col;
 }
 
-void rl_at3(rl_ctx *cx, const char *file, int l, int c, int l1, int c1, int l2, int c2) {
+void rl_at3(rl_ctx *cx, const char *file, int in_std, int l, int c, int l1, int c1, int l2, int c2) {
+    if (cx->has_err && !cx->err_line) cx->err_std = in_std;
     if (cx->err_arg == 1) rl_at(cx, file, l1, c1);
     else if (cx->err_arg == 2) rl_at(cx, file, l2, c2);
     else rl_at(cx, file, l, c);
@@ -781,6 +811,32 @@ int rl_call(rl_ctx *cx, rl_value fv, int argc, const rl_value *argv, rl_value *o
     return r;
 }
 
+void rl_std_boundary(rl_ctx *cx, rl_value fv) {
+    rl_fun *f;
+    const char *msg;
+    if (!cx->has_err || fv.k != RL_FUN) return;
+    f = (rl_fun *)fv.u.o;
+    if (!f->std_module || !cx->err_std || !cx->err_line) return;
+    msg = cx->err_msg->data;
+    if (strncmp(msg, "host_", 5) == 0 && strstr(msg, "(): ")) {
+        rl_value m;
+        buf b = {0, 0, 0};
+        b_cstr(&b, f->std_module);
+        b_cstr(&b, ".");
+        b_add(&b, f->name->data, f->name->len);
+        b_cstr(&b, "(): ");
+        b_cstr(&b, strstr(msg, "(): ") + 4);
+        m = b_done(&b);
+        rl_fail_str(cx, (rl_str *)m.u.o);   /* also clears the position */
+        rl_release(m);
+        return;
+    }
+    cx->err_line = cx->err_col = 0;
+    cx->err_arg = 0;
+    cx->err_file = NULL;
+    cx->err_std = 0;
+}
+
 void rl_ctx_init(rl_ctx *cx, int argc, char **argv) {
     cx->out = stdout;
     cx->has_err = 0;
@@ -788,6 +844,7 @@ void rl_ctx_init(rl_ctx *cx, int argc, char **argv) {
     cx->err_line = cx->err_col = 0;
     cx->err_arg = 0;
     cx->err_file = NULL;
+    cx->err_std = 0;
     cx->depth = 0;
     cx->argc = argc;
     cx->argv = argv;

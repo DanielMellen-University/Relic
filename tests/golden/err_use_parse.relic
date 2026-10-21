@@ -1,0 +1,2 @@
+print("before")
+use modules/bad_syntax

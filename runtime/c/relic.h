@@ -92,12 +92,16 @@ typedef struct rl_fun {
     int arity;                /* -1: any number */
     int builtin;              /* errors get a "name(): " prefix */
     rl_scope *env;            /* captured scope, or NULL */
+    const char *std_module;   /* "files" for a function from std/files, else NULL */
 } rl_fun;
 
 typedef struct rl_module {
     rl_obj h;
     rl_str *name;
-    rl_map *names;            /* the module's top-level names */
+    rl_map *names;            /* the module's top-level names, or NULL ... */
+    rl_scope *scope;          /* ... a compiled module's top-level scope */
+    size_t nnames;            /* and the names of its slots */
+    const char *const *snames;
 } rl_module;
 
 /* Per-program state: output, the current error, call depth, args. */
@@ -108,6 +112,7 @@ struct rl_ctx {
     int err_line, err_col;    /* 0 until rl_at sets them */
     int err_arg;              /* which operand the error is about: 0 the operation, 1 the first, 2 the second */
     const char *err_file;
+    int err_std;              /* the position is in a std module */
     int depth;
     int argc;
     char **argv;
@@ -144,6 +149,11 @@ rl_scope *rl_scope_new(rl_scope *parent, size_t n);  /* owned; retains parent; s
 void rl_scope_release(rl_scope *s);
 rl_value rl_fun_new(const char *name, rl_code code, int arity, rl_scope *env);
 rl_value rl_module_new(const char *name);
+/* A module over a compiled scope: slot i is the name names[i] (static
+ * strings); a slot still unset is not there "(yet)". Retains scope. */
+rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const char *const *names);
+/* Marks a function value as defined in std module `stem`; returns f. */
+rl_value rl_fun_std(rl_value f, const char *stem);
 
 /* ---- errors ---- */
 int rl_fail(rl_ctx *cx, const char *fmt, ...);   /* sets the error, returns RL_ERR */
@@ -152,7 +162,12 @@ void rl_at(rl_ctx *cx, const char *file, int line, int col); /* first position w
 /* Like rl_at, but picks (l1, c1) or (l2, c2) when the error is about the
  * first or second operand (cx->err_arg), as the host does for index,
  * range and key errors. */
-void rl_at3(rl_ctx *cx, const char *file, int l, int c, int l1, int c1, int l2, int c2);
+void rl_at3(rl_ctx *cx, const char *file, int in_std, int l, int c, int l1, int c1, int l2, int c2);
+/* After a call to f from code outside std/ failed: if f is a std function
+ * and the error happened inside std/, give it the host's std name
+ * ("host_list_dir(): x" becomes "files.list(): x") and clear the position,
+ * so the caller marks its own call site. */
+void rl_std_boundary(rl_ctx *cx, rl_value f);
 /* "'name' is not defined", with the host's "did you mean" over the names
  * given (a NULL slot means always declared; otherwise only if set) and the
  * built-ins. */

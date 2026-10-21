@@ -1,0 +1,26 @@
+# A name whose `as` hint changes between its lets, assigned from a nested
+# function: the hint of the latest `let` that ran applies, as on the
+# tree-walker (relic --tree). The VM differs here; see docs/CGEN.md.
+fun outer()
+    let x as int = 1
+    fun set(v)
+        x = v
+    set(2)
+    print(x)
+    let x = "free now"
+    set("text")
+    print(x)
+    let x as string = "s"
+    try
+        set(5)
+    catch e
+        print(e.message)
+    print(x)
+outer()
+let y as int = 1
+fun sety(v)
+    y = v
+sety(3)
+let y = "a"
+sety([1])
+print(y)

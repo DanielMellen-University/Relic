@@ -116,6 +116,12 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
       relic_cgen_test(${name} ${t})
     endif()
   endforeach()
+  # Cases for the compiled side only (expected output from relic --tree).
+  file(GLOB CGEN_ONLY_TESTS ${CMAKE_SOURCE_DIR}/tests/cgen/*.relic)
+  foreach(t ${CGEN_ONLY_TESTS})
+    get_filename_component(name ${t} NAME_WE)
+    relic_cgen_test(only_${name} ${t})
+  endforeach()
 endif()
 
 if(RELIC_SDL)

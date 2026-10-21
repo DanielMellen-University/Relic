@@ -151,7 +151,8 @@ BI(h_file_size) {
 }
 
 static int cmp_names(const void *x, const void *y) {
-    const rl_str *a = *(rl_str *const *)x, *b = *(rl_str *const *)y;
+    /* the list holds rl_value items, each a string */
+    const rl_str *a = (const rl_str *)((const rl_value *)x)->u.o, *b = (const rl_str *)((const rl_value *)y)->u.o;
     size_t n = a->len < b->len ? a->len : b->len;
     int c = memcmp(a->data, b->data, n);
     if (c) return c;

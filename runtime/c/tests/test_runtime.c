@@ -341,6 +341,24 @@ static void test_host(void) {
     rl_release(a[0]);
     a[0] = S(dir);
     SHOW(call1("host_list_dir", a[0]), "[\"a.txt\"]");
+    {
+        /* several names come back sorted by bytes */
+        rl_value w[3];
+        const char *more[2] = {"rl_test_tmp/c.txt", "rl_test_tmp/Z.txt"};
+        int k;
+        for (k = 0; k < 2; ++k) {
+            w[0] = S(more[k]); w[1] = S(""); w[2] = rl_bool(0);
+            CHECK(call("host_write_file", 3, w, &r) == RL_OK);
+            rl_release(w[1]);
+            rl_release(w[0]);
+        }
+        SHOW(call1("host_list_dir", a[0]), "[\"Z.txt\", \"a.txt\", \"c.txt\"]");
+        for (k = 0; k < 2; ++k) {
+            w[0] = S(more[k]);
+            CHECK(call("host_remove", 1, w, &r) == RL_OK);
+            rl_release(w[0]);
+        }
+    }
     CHECK(call("host_remove", 1, &a[1], &r) == RL_OK);
     CHECK(call("host_remove", 1, &a[0], &r) == RL_OK);
     SHOW(call1("host_file_exists", a[0]), "false");
@@ -435,12 +453,12 @@ static void test_codegen_support(void) {
        the index, range errors at the bad end, others at the node. */
     l = rl_list_new(0);
     CHECK(rl_index(&cx, l, rl_int(4), &r) == RL_ERR);
-    rl_at3(&cx, "t.relic", 1, 5, 1, 1, 1, 7);
+    rl_at3(&cx, "t.relic", 0, 1, 5, 1, 1, 1, 7);
     CHECK(rl_catch(&cx, &r));
     SHOW(r, "{message: \"list index 4 is out of range (size 0)\", line: 1, col: 7}");
     rl_release(l);
     CHECK(rl_add(&cx, rl_int(1), T("a"), &r) == RL_ERR);
-    rl_at3(&cx, "t.relic", 2, 3, 2, 1, 2, 5);
+    rl_at3(&cx, "t.relic", 0, 2, 3, 2, 1, 2, 5);
     CHECK(rl_catch(&cx, &r));
     SHOW(r, "{message: \"cannot add an int and a string\", line: 2, col: 3}");
     /* undefined names suggest a close visible name or built-in; an unset
@@ -457,6 +475,42 @@ static void test_codegen_support(void) {
     rl_interp(3, parts, &r);
     SHOW(r, "n=3!");
     CHECK(unset.k == RL_UNSET);
+
+    /* a compiled module: names are its scope's slots, unset ones not there yet */
+    {
+        static const char *const nm[2] = {"pi", "later"};
+        rl_scope *sc = rl_scope_new(NULL, 2);
+        rl_value m = rl_module_scoped("geo", sc, 2, nm), f, list_fn, arg;
+        sc->slots[0] = rl_float(3.5);
+        CHECK(rl_field(&cx, m, "pi", &r) == RL_OK && r.u.f == 3.5);
+        ERR(rl_field(&cx, m, "later", &r), "module 'geo' has no 'later' (yet)");
+        ERR(rl_field(&cx, m, "_x", &r), "'_x' is private to module 'geo'");
+        SHOW(rl_retain(m), "<module geo>");
+        rl_scope_release(sc);
+        rl_release(m);
+
+        /* the std boundary: a host_ error inside std/files' list() gets the
+           std name, and the position is cleared for the caller to set */
+        f = rl_fun_std(rl_fun_new("list", NULL, 1, NULL), "files");
+        rl_builtin("host_list_dir", &list_fn);
+        arg = S("no_such_dir_rl");
+        CHECK(rl_call(&cx, list_fn, 1, &arg, &r) == RL_ERR);
+        rl_at3(&cx, "/std/files.relic", 1, 4, 5, 4, 5, 4, 5);
+        rl_std_boundary(&cx, f);
+        CHECK(cx.err_line == 0);
+        rl_at3(&cx, "main.relic", 0, 2, 7, 2, 7, 2, 7);
+        CHECK(rl_catch(&cx, &r));
+        SHOW(r, "{message: \"files.list(): cannot list no_such_dir_rl\", line: 2, col: 7}");
+        /* an error from user code (not in std) is left alone */
+        CHECK(rl_fail(&cx, "boom") == RL_ERR);
+        rl_at3(&cx, "main.relic", 0, 9, 1, 9, 1, 9, 1);
+        rl_std_boundary(&cx, f);
+        CHECK(rl_catch(&cx, &r));
+        SHOW(r, "{message: \"boom\", line: 9, col: 1}");
+        rl_release(arg);
+        rl_release(list_fn);
+        rl_release(f);
+    }
 }
 
 int main(void) {

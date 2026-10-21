@@ -1,0 +1,5 @@
+# helper for use_cache: fails halfway through loading
+let a = 1
+print("half loading")
+fail("half broke")
+let b = 2
