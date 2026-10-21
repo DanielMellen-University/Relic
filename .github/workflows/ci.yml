@@ -6,7 +6,8 @@ jobs:
   # The default build (C5): only a C compiler. bootstrap/cgen.c builds
   # relicc_stage0, which builds relicc from selfhost/cgen.relic; relicc
   # compiles the goldens. Also checks bootstrap/cgen.c is not stale
-  # (bootstrap_fresh) and that relicc compiles itself to the same C.
+  # (bootstrap_fresh) and that relicc compiles itself to the same C, then
+  # builds tests/consumer, a project that adds Relic with add_subdirectory.
   build:
     strategy:
       fail-fast: false
@@ -21,6 +22,11 @@ jobs:
         run: cmake --build build --config Release
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Consuming project (relic_add_program through add_subdirectory)
+        run: |
+          cmake -S tests/consumer -B build-consumer -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-consumer --config Release
+          ctest --test-dir build-consumer -C Release --output-on-failure
 
   # A fresh checkout on a system with no C++ compiler at all (Alpine: gcc
   # without g++). Proves the default build needs only C.
@@ -43,6 +49,11 @@ jobs:
         run: cmake --build build -j 4
       - name: Test
         run: ctest --test-dir build --output-on-failure
+      - name: Consuming project (relic_add_program through add_subdirectory)
+        run: |
+          cmake -S tests/consumer -B build-consumer -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-consumer -j 4
+          ctest --test-dir build-consumer --output-on-failure
 
   # The C++ host (tree-walker, VM, REPL) and all its tests, plus the
   # cross-checks: cgen on the host writes bootstrap/cgen.c exactly
