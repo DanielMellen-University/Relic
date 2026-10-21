@@ -1,0 +1,12 @@
+# indexing a long string of mixed-width characters
+use std/strings
+let parts = []
+for i in 0..40000
+    append(parts, ["a", "é", "€", "😀"][i % 4])
+let s = strings.join(parts, "")
+let n = 0
+for i in 0..len(s)
+    if s[i] == "€"
+        n = n + 1
+print(n)
+print(len(slice(s, 1000, 39000)))

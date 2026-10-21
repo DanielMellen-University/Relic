@@ -211,8 +211,7 @@ static size_t ascii_prefix(const std::string& s, size_t limit) {
     return i;
 }
 
-size_t utf8_len(const std::string& s) {
-    size_t i = ascii_prefix(s, s.size()), n = i;
+static size_t utf8_count_from(const std::string& s, size_t i, size_t n) {
     while (i < s.size()) {
         i += utf8_char_size(s, i);
         ++n;
@@ -220,11 +219,61 @@ size_t utf8_len(const std::string& s) {
     return n;
 }
 
+// Offsets for long strings with multi-byte characters, like the C runtime's
+// table: the byte offset of every 64th character, so an index walks at most
+// 63 characters. Host strings are plain std::string values with nowhere to
+// keep the table, so the last few strings indexed keep theirs here, matched
+// by content (a compare is much cheaper than a walk from the start).
+namespace {
+constexpr size_t kMarkEvery = 64;
+constexpr size_t kMarkMin = 256;          // shorter strings just walk
+constexpr size_t kMarkMax = 64u << 20;    // longer strings are not copied
+struct Marks {
+    std::string text;
+    std::vector<size_t> at;  // at[k] = byte offset of character k * 64
+    size_t count = 0;        // characters in text
+};
+Marks g_marks[4];
+size_t g_marks_next = 0;
+
+const Marks* marks_for(const std::string& s) {
+    for (const Marks& m : g_marks)
+        if (m.text.size() == s.size() && !m.at.empty() && std::memcmp(m.text.data(), s.data(), s.size()) == 0)
+            return &m;
+    Marks& m = g_marks[g_marks_next];
+    g_marks_next = (g_marks_next + 1) % 4;
+    m.text = s;
+    m.at.clear();
+    size_t i = 0, n = 0;
+    while (i < s.size()) {
+        if (n % kMarkEvery == 0) m.at.push_back(i);
+        i += utf8_char_size(s, i);
+        ++n;
+    }
+    if (m.at.empty()) m.at.push_back(0);
+    m.count = n;
+    return &m;
+}
+}  // namespace
+
+size_t utf8_len(const std::string& s) {
+    size_t i = ascii_prefix(s, s.size());
+    if (i == s.size()) return i;
+    if (s.size() >= kMarkMin && s.size() <= kMarkMax) return marks_for(s)->count;
+    return utf8_count_from(s, i, i);
+}
+
 size_t utf8_offset(const std::string& s, size_t index) {
     size_t limit = index < s.size() ? index + 1 : s.size();
     size_t i = ascii_prefix(s, limit);
     if (i == limit) return index < s.size() ? index : s.size();
     size_t n = i;
+    if (s.size() >= kMarkMin && s.size() <= kMarkMax) {
+        const Marks* m = marks_for(s);
+        if (index >= m->count) return s.size();
+        i = m->at[index / kMarkEvery];
+        n = index - index % kMarkEvery;
+    }
     while (i < s.size() && n < index) {
         i += utf8_char_size(s, i);
         ++n;

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - VM: a nested function that reads or assigns a name which more than one enclosing function declares after it now finds the nearest `let` that has run. Before, a read could skip past it to a "not defined" error, an assignment could fail with "not declared", and a function that had already declared the name itself could read the outer one instead. The tree-walker and compiled C were already right. New golden `late_nested`.
+- Host: indexing and slicing a long string (256 bytes or more) with multi-byte characters uses the same table of every 64th character offset as the C runtime, kept for the last four strings indexed. The new `bench/utf8.relic` (40,000 mixed characters, every one indexed) went from 1.36 s to 0.19 s on the VM. No output change.
 - `ctest` has 288 cases.
 
 ## 1.0.6 (2026-10-20)

@@ -152,7 +152,7 @@ The Relic-written tools on `selfhost/cgen.relic` (about 1,000 lines), run on the
 | `ast.relic` | 655 ms | 72 ms |
 | `cgen.relic` compiling itself | 1,060 ms | 205 ms |
 
-Two fixes got there: indexing a string whose characters are all one byte is now direct (it used to walk from the start, which made the compiled lexer slower than the host), and `strings.join` joins halves instead of growing one string. A long string with multi-byte characters (256 bytes or more) gets a table of the byte offset of every 64th character on its first index, so an index walks at most 63 characters; a loop over 40,000 characters, half of them two bytes, went from 1.3 s to 17 ms (the host takes 0.8 s there).
+Two fixes got there: indexing a string whose characters are all one byte is now direct (it used to walk from the start, which made the compiled lexer slower than the host), and `strings.join` joins halves instead of growing one string. A long string with multi-byte characters (256 bytes or more) gets a table of the byte offset of every 64th character on its first index, so an index walks at most 63 characters; a loop over 40,000 characters, half of them two bytes, went from 1.3 s to 17 ms (the host took 0.8 s there; it now keeps the same table for the last few strings it indexed).
 
 The hand-written C in `runtime/c/tests/demo.c` ran `fib(30)` in about 84 ms, so the generated code has room to improve: it copies more values than it needs to and calls through `rl_call` every time.
 
