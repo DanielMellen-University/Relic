@@ -834,6 +834,10 @@ fun compile_function(fc, cname, params, body)
         i = i + 1
     for x in extras
         emit(fc, "RLC_SET(" + slot_here(b, x.name) + ", " + x.init + ");")
+    # A hinted parameter that a later `let` re-hints starts its hint slot.
+    for p in params
+        if len(p.kids) > 0 and p.kids[0].text != "any" and hint_name(p.text) in b.names
+            emit(fc, "RLC_SET(" + slot_here(b, hint_name(p.text)) + ", rl_retain(K[" + str(konst(fc.cg, p.kids[0].text)) + "]));")
     if body.kind == "Block"
         block(fc, stmts, b)
         if fc.ret_hint != ""

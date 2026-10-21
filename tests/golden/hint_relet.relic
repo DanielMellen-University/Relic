@@ -1,0 +1,105 @@
+# A name whose `as` hint changes between its lets, assigned from a nested
+# function: the hint of the latest `let` that ran applies. The tree-walker,
+# the VM and compiled C agree.
+fun outer()
+    let x as int = 1
+    fun set(v)
+        x = v
+    set(2)
+    print(x)
+    let x = "free now"
+    set("text")
+    print(x)
+    let x as string = "s"
+    try
+        set(5)
+    catch e
+        print(e.message)
+    print(x)
+outer()
+let y as int = 1
+fun sety(v)
+    y = v
+sety(3)
+let y = "a"
+sety([1])
+print(y)
+
+fun t(name, f, v)
+    try
+        f(v)
+        print(name + " ok")
+    catch e
+        print(name + ": " + e.message)
+
+# A hinted parameter, re-hinted by lets.
+fun p(x as int)
+    fun set(v)
+        x = v
+    t("p1", set, "s")
+    let x = 1
+    t("p2", set, "s")
+    let x as float = 1.5
+    t("p3", set, 2)
+    t("p4", set, 2.5)
+    print(x)
+p(1)
+
+# A loop name, then a hinted let in the same turn.
+fun q()
+    for i in 0..2
+        fun set(v)
+            i = v
+        t("q" + str(i), set, "s")
+        let i as int = 5
+        t("q" + str(i), set, "s")
+q()
+
+# A fun keeps the hint of the let before it.
+fun w()
+    fun g()
+        return 1
+    fun set(v)
+        g = v
+    t("w1", set, "s")
+    let g as int = 2
+    t("w2", set, "s")
+    fun g()
+        return 3
+    t("w3", set, "s")
+    t("w4", set, 4)
+w()
+
+# A function defined before the let it assigns to.
+fun late()
+    fun mk()
+        fun set(v)
+            z = v
+        return set
+    let s = mk()
+    let z as string = "a"
+    t("l1", s, 1)
+    t("l2", s, "b")
+    let z = 0
+    t("l3", s, 1)
+    print(z)
+late()
+
+# Top level, assigned directly: only the lets above count.
+let a as int = 1
+let a = "a"
+a = [1]
+print(a)
+let b = "b"
+b = 2
+let b as string = "c"
+fun setb(v)
+    b = v
+t("b1", setb, 3)
+
+# The same in a module.
+use modules/rehint
+t("m1", rehint.set, "s")
+t("m2", rehint.set, [2])
+print(rehint.level)
+print(rehint.note)

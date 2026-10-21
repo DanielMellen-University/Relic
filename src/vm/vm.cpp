@@ -28,6 +28,7 @@ enum class Op {
     List, Map, Interp, Call, Closure, Return, ReturnNone,
     ForPrep, ForNext, ForRangePrep, ForRangeNext, Fail, Use, TryBegin, TryEnd, CheckType,
     LoadLate, StoreLate, Mark,
+    SetHintGlobal, CheckHint, CheckHintGlobal, SkipUnlessLate,
 };
 
 const char* op_name(Op o) {
@@ -40,6 +41,7 @@ const char* op_name(Op o) {
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
         "FOR_PREP", "FOR_NEXT", "FOR_RANGE_PREP", "FOR_RANGE_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
         "LOAD_LATE", "STORE_LATE", "MARK",
+        "SET_HINT_GLOBAL", "CHECK_HINT", "CHECK_HINT_GLOBAL", "SKIP_UNLESS_LATE",
     };
     return names[static_cast<int>(o)];
 }
@@ -64,6 +66,7 @@ struct Instr {
     int a = 0;
     int b = 0;
     const Ast* at = nullptr;  // where errors point
+    int c = 0;  // a third operand, for the few ops that need one
 };
 
 struct Program;
@@ -104,6 +107,9 @@ struct Program {
     std::vector<std::string> global_names;
     std::vector<Value> globals;
     std::vector<char> defined;
+    // The `as` hint in force for top-level names whose lets mix hints
+    // (none, or a string), for assignments from functions.
+    std::vector<Value> hint_globals;
     std::shared_ptr<Module> value;
 
     const Value* lookup(const std::string& name) const {
@@ -120,10 +126,11 @@ public:
     explicit Compiler(Program& prog) : prog_(prog) {}
 
     void compile_main(const Ast& program) {
-        for (const auto& s : program.kids) {
+        for (const auto& s : program.kids)
             if (s->kind == Node::Let || s->kind == Node::Fun) global(s->text);
-            if (s->kind == Node::Let && !op_hint(*s).empty()) global_hints_[s->text] = op_hint(*s);
-        }
+        std::unordered_map<std::string, int> mixed;
+        hint_plan(program, {}, global_fixed_, mixed);
+        for (const auto& kv : mixed) global_hint_slot_[kv.first] = static_cast<int>(global_hint_slot_.size());
         auto p = std::make_unique<Proto>();
         p->name = "<main>";
         p->mod = &prog_;
@@ -137,6 +144,7 @@ public:
         fns_.pop_back();
         prog_.globals.resize(prog_.global_names.size());
         prog_.defined.assign(prog_.global_names.size(), 0);
+        prog_.hint_globals.resize(global_hint_slot_.size());
     }
 
 private:
@@ -147,6 +155,11 @@ private:
         // before the `let` reads them through a reserved slot (late).
         std::unordered_map<std::string, char> pending;
         std::unordered_map<std::string, int> late;
+        // `as` hints for assignments from nested functions, which can run
+        // after any of the block's lets: the one hint all its declarations
+        // agree on, or else a slot holding the hint of the latest `let`.
+        std::unordered_map<std::string, std::string> fixed;
+        std::unordered_map<std::string, int> hint_slot;
         int count = 0;
         size_t enter_ip = 0;     // ENTER_SCOPE to patch with the slot count
         bool fn_scope = false;   // a function's own scope: its Proto holds the count
@@ -167,7 +180,9 @@ private:
     };
 
     Program& prog_;
-    std::unordered_map<std::string, std::string> global_hints_;
+    std::unordered_map<std::string, std::string> top_hints_;     // top-level hints so far, in order
+    std::unordered_map<std::string, std::string> global_fixed_;  // as CScope::fixed, for top-level names
+    std::unordered_map<std::string, int> global_hint_slot_;      // index into Program::hint_globals
     std::vector<CScope> scopes_;
     std::vector<FnState> fns_;
 
@@ -202,18 +217,55 @@ private:
     }
 
     // Scopes: only blocks that declare names get one at run time.
-    void open_scope(const Ast* body = nullptr) {
+    // `pre`: names the scope declares before the body (a loop or catch
+    // name, without a hint).
+    void open_scope(const Ast* body = nullptr, const std::vector<std::pair<std::string, std::string>>& pre = {}) {
         CScope s;
         s.enter_ip = emit(Op::EnterScope);
-        if (body) pend(s, *body);
+        if (body) pend(s, *body, pre);
         scopes_.push_back(std::move(s));
     }
-    static void pend(CScope& s, const Ast& body) {
+    static std::string use_name(const Ast& st) {
+        return st.kids.empty() ? st.text.substr(st.text.find_last_of('/') + 1) : st.kids[0]->text;
+    }
+    // `pre` lists the names declared before the body, with their hints.
+    static void pend(CScope& s, const Ast& body, const std::vector<std::pair<std::string, std::string>>& pre = {}) {
         for (const auto& st : body.kids) {
             if (st->kind == Node::Let || st->kind == Node::Fun) s.pending[st->text] = 1;
-            else if (st->kind == Node::Use)
-                s.pending[st->kids.empty() ? st->text.substr(st->text.find_last_of('/') + 1) : st->kids[0]->text] = 1;
+            else if (st->kind == Node::Use) s.pending[use_name(*st)] = 1;
         }
+        std::unordered_map<std::string, int> mixed;
+        hint_plan(body, pre, s.fixed, mixed);
+        for (const auto& kv : mixed) {
+            s.hint_slot[kv.first] = s.count++;
+        }
+    }
+    // For each name the block declares: the hint every declaration agrees
+    // on (into fixed), or the name into mixed when they differ. A `let`
+    // without a hint clears it; `fun` and `use` leave it as it is.
+    static void hint_plan(const Ast& body, const std::vector<std::pair<std::string, std::string>>& pre,
+                          std::unordered_map<std::string, std::string>& fixed,
+                          std::unordered_map<std::string, int>& mixed) {
+        std::unordered_map<std::string, std::string> first;
+        std::unordered_map<std::string, char> kept;  // a fun or use that keeps the hint
+        auto see = [&](const std::string& name, const std::string& hint) {
+            auto it = first.find(name);
+            if (it == first.end()) first[name] = hint;
+            else if (it->second != hint) mixed[name] = 1;
+        };
+        for (const auto& p : pre) see(p.first, p.second);
+        for (const auto& st : body.kids) {
+            if (st->kind == Node::Let) see(st->text, op_hint(*st));
+            else if (st->kind == Node::Fun) kept[st->text] = 1;
+            else if (st->kind == Node::Use) kept[use_name(*st)] = 1;
+        }
+        for (const auto& kv : kept) {
+            auto it = first.find(kv.first);
+            if (it == first.end()) first[kv.first] = "";
+            else if (!it->second.empty()) mixed[kv.first] = 1;
+        }
+        for (const auto& kv : first)
+            if (!mixed.count(kv.first)) fixed[kv.first] = kv.second;
     }
     int reserve_late(CScope& s, const std::string& name) {
         auto it = s.late.find(name);
@@ -338,11 +390,11 @@ private:
                 const std::string& hint = op_hint(n);
                 if (!hint.empty())
                     emit(Op::CheckType, str(hint), str("'" + n.text + "' must be"), n.kids[0].get());
-                if (!scopes_.empty()) {
-                    if (hint.empty()) scopes_.back().hints.erase(n.text);
-                    else scopes_.back().hints[n.text] = hint;
-                }
+                auto& hints = scopes_.empty() ? top_hints_ : scopes_.back().hints;
+                if (hint.empty()) hints.erase(n.text);
+                else hints[n.text] = hint;
                 declare(n.text, n);
+                set_hint(n.text, hint);
                 return;
             }
             case Node::Fun: {
@@ -362,21 +414,28 @@ private:
                 if (t.kind == Node::Name) {
                     int li = find_late(t.text, scopes_.size());
                     if (li >= 0) {
-                        // STORE_LATE stores and skips the next instruction once the
-                        // outer `let` has run; otherwise the next one stores outward.
+                        // SKIP_UNLESS_LATE skips the check of the late slot until the
+                        // outer `let` has run. STORE_LATE then stores and skips the
+                        // outward check and store; otherwise those store outward.
+                        int lhops = static_cast<int>(scopes_.size()) - 1 - li;
                         int lslot = reserve_late(scopes_[static_cast<size_t>(li)], t.text);
-                        emit(Op::StoreLate, static_cast<int>(scopes_.size()) - 1 - li, lslot, &t);
+                        size_t skip = emit(Op::SkipUnlessLate, lhops, lslot, &t);
+                        size_t from = here();
+                        check_assign(t.text, li, lhops, *n.kids[1]);
+                        cur().code[skip].c = static_cast<int>(here() - from);
+                        size_t store = emit(Op::StoreLate, lhops, lslot, &t);
+                        from = here();
                         int h2, s2;
-                        if (resolve(t.text, h2, s2, static_cast<size_t>(li))) emit(Op::Store, h2, s2, &t);
+                        bool outer = resolve(t.text, h2, s2, static_cast<size_t>(li));
+                        check_assign(t.text, outer ? static_cast<int>(scopes_.size()) - 1 - h2 : -1, h2, *n.kids[1]);
+                        cur().code[store].c = static_cast<int>(here() - from);
+                        if (outer) emit(Op::Store, h2, s2, &t);
                         else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
                         return;
                     }
                     int hops, slot;
                     bool local = resolve(t.text, hops, slot);
-                    const auto& hints = local ? scopes_[scopes_.size() - 1 - hops].hints : global_hints_;
-                    auto h = hints.find(t.text);
-                    if (h != hints.end())
-                        emit(Op::CheckType, str(h->second), str("'" + t.text + "' must be"), n.kids[1].get());
+                    check_assign(t.text, local ? static_cast<int>(scopes_.size()) - 1 - hops : -1, hops, *n.kids[1]);
                     if (local) emit(Op::Store, hops, slot, &t);
                     else emit(Op::StoreGlobal, global_or_new(t.text), str(t.text), &t);
                 } else if (t.kind == Node::Field) {
@@ -438,7 +497,7 @@ private:
                 size_t fn = emit(range ? Op::ForRangeNext : Op::ForNext);
                 fns_.back().loops.push_back({scopes_.size(), 2, top, {}, {}, fns_.back().try_depth});
                 // Each turn gets a scope holding the loop name and the body's names.
-                open_scope(n.kids[1].get());
+                open_scope(n.kids[1].get(), {{n.text, ""}});
                 declare(n.text, n);
                 for (const auto& s : n.kids[1]->kids) stmt(*s);
                 Loop loop = std::move(fns_.back().loops.back());
@@ -496,7 +555,7 @@ private:
                     emit(Op::Pop);
                     block(*n.kids[1], true);
                 } else {
-                    open_scope(n.kids[1].get());
+                    open_scope(n.kids[1].get(), {{n.text, ""}});
                     declare(n.text, n);
                     for (const auto& s : n.kids[1]->kids) stmt(*s);
                     close_scope();
@@ -511,6 +570,46 @@ private:
             default:
                 emit(Op::Fail, str(std::string("cannot run a ") + node_name(n.kind) + " here"), 0, &n);
         }
+    }
+
+    // After a `let`: a name whose lets mix hints keeps the new one in its slot.
+    void set_hint(const std::string& name, const std::string& hint) {
+        if (scopes_.empty()) {
+            auto it = global_hint_slot_.find(name);
+            if (it != global_hint_slot_.end()) emit(Op::SetHintGlobal, it->second, hint.empty() ? -1 : str(hint));
+            return;
+        }
+        auto it = scopes_.back().hint_slot.find(name);
+        if (it == scopes_.back().hint_slot.end()) return;
+        if (hint.empty()) emit(Op::None);
+        else emit(Op::Const, constant(Value(hint)));
+        emit(Op::Store, 0, it->second);
+    }
+
+    // The `as` check for assigning to name, declared in scope index si (-1:
+    // a top-level name), hops scopes out. In the declaring function the hint
+    // is known here, since its lets run in order; a nested function can run
+    // after any of them.
+    void check_assign(const std::string& name, int si, int hops, const Ast& value) {
+        const std::string what = "'" + name + "' must be";
+        bool same_fn = si < 0 ? fns_.size() == 1 : static_cast<size_t>(si) >= fns_.back().scope_base;
+        const auto& known = si < 0 ? top_hints_ : scopes_[static_cast<size_t>(si)].hints;
+        const auto& fixed = si < 0 ? global_fixed_ : scopes_[static_cast<size_t>(si)].fixed;
+        const auto& slots = si < 0 ? global_hint_slot_ : scopes_[static_cast<size_t>(si)].hint_slot;
+        if (same_fn) {
+            auto h = known.find(name);
+            if (h != known.end()) emit(Op::CheckType, str(h->second), str(what), &value);
+            return;
+        }
+        auto sl = slots.find(name);
+        if (sl != slots.end()) {
+            size_t ip = si < 0 ? emit(Op::CheckHintGlobal, sl->second, 0, &value)
+                               : emit(Op::CheckHint, hops, sl->second, &value);
+            cur().code[ip].c = str(what);
+            return;
+        }
+        auto f = fixed.find(name);
+        if (f != fixed.end() && !f->second.empty()) emit(Op::CheckType, str(f->second), str(what), &value);
     }
 
     // Checks the value on the stack against the current function's `as` return type.
@@ -543,10 +642,17 @@ private:
             proto->param_hints.push_back(prm->kids.empty() ? "" : prm->kids[0]->text);
             if (!prm->kids.empty()) s.hints[prm->text] = prm->kids[0]->text;
         }
-        proto->nslots = s.count;
         const Ast& body = *n.kids[1];
-        if (body.kind == Node::Block) pend(s, body);
+        if (body.kind == Node::Block) {
+            std::vector<std::pair<std::string, std::string>> pre;
+            for (const auto& prm : params.kids) pre.push_back({prm->text, prm->kids.empty() ? "" : prm->kids[0]->text});
+            pend(s, body, pre);
+        }
+        proto->nslots = s.count;
         scopes_.push_back(std::move(s));
+        // A hinted parameter that a later `let` re-hints starts its hint slot.
+        for (const auto& prm : params.kids)
+            if (!prm->kids.empty()) set_hint(prm->text, prm->kids[0]->text);
         if (body.kind == Node::Block) {
             for (const auto& st : body.kids) stmt(*st);
             if (op_hint(n).empty()) {
@@ -837,6 +943,21 @@ private:
         return true;
     }
     RELIC_NOINLINE void mark(const Instr& in, Scope* s) { s->slots[static_cast<size_t>(in.a)] = Value(true); }
+    RELIC_NOINLINE bool late_ran(const Instr& in, Scope* s) {
+        for (int h = 0; h < in.a; ++h) s = s->parent.get();
+        return s->slots[static_cast<size_t>(in.b) + 1].is<bool>();
+    }
+    // CHECK_HINT / CHECK_HINT_GLOBAL: the check against the hint in a slot, if any.
+    RELIC_NOINLINE void check_hint(const Proto& p, const Instr& in, Scope* s, std::vector<Value>& st) {
+        const Value* h;
+        if (in.op == Op::CheckHintGlobal) {
+            h = &p.mod->hint_globals[static_cast<size_t>(in.a)];
+        } else {
+            for (int k = 0; k < in.a; ++k) s = s->parent.get();
+            h = &s->slots[static_cast<size_t>(in.b)];
+        }
+        if (h->is<std::string>()) op_check_type(*in.at, h->as<std::string>(), st.back(), p.strings[in.c]);
+    }
 
     [[noreturn]] RELIC_NOINLINE void undefined_name(const Proto& p, const Instr& in, const std::string& name) {
         std::vector<std::string> names;
@@ -1084,9 +1205,17 @@ private:
                 case Op::CheckType: op_check_type(*in.at, p.strings[in.a], st.back(), p.strings[in.b]); break;
                 case Op::LoadLate:
                 case Op::StoreLate:
-                    if (late(in, sc.get(), st)) ++ip;  // skip the outward fallback
+                    if (late(in, sc.get(), st)) ip += 1 + static_cast<size_t>(in.c);  // skip the outward fallback
                     break;
                 case Op::Mark: mark(in, sc.get()); break;
+                case Op::SetHintGlobal:
+                    p.mod->hint_globals[static_cast<size_t>(in.a)] = in.b < 0 ? Value() : Value(p.strings[in.b]);
+                    break;
+                case Op::CheckHint:
+                case Op::CheckHintGlobal: check_hint(p, in, sc.get(), st); break;
+                case Op::SkipUnlessLate:
+                    if (!late_ran(in, sc.get())) ip += static_cast<size_t>(in.c);
+                    break;
             }
         }
         return Value();

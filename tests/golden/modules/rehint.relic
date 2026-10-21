@@ -1,0 +1,11 @@
+# Helper for hint_relet: a top-level name whose lets change its hint.
+let level as int = 1
+fun set(v)
+    level = v
+    return level
+let note = "no error"
+try
+    set("s")
+catch e
+    note = e.message
+let level = "free"

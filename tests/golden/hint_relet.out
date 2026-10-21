@@ -1,0 +1,28 @@
+2
+text
+'x' must be string, got int
+s
+[1]
+p1: 'x' must be int, got string
+p2 ok
+p3: 'x' must be float, got int
+p4 ok
+2.5
+q0 ok
+q5: 'i' must be int, got string
+q1 ok
+q5: 'i' must be int, got string
+w1 ok
+w2: 'g' must be int, got string
+w3: 'g' must be int, got string
+w4 ok
+l1: 'z' must be string, got int
+l2 ok
+l3 ok
+1
+[1]
+b1: 'b' must be string, got int
+m1 ok
+m2 ok
+[2]
+'level' must be int, got string
