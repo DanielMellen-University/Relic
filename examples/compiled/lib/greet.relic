@@ -1,0 +1,1 @@
+fun hello(who) = "hello {who}"

@@ -1,0 +1,10 @@
+# Built with relic_add_program (see CMakeLists.txt at the repo root and
+# docs/CGEN.md): compiled to C and run as a normal program.
+use lib/greet
+use std/strings
+
+let names = ["Ada", "Linus", "Grace"]
+for name in names
+    print(greet.hello(name))
+print(strings.join(names, ", "))
+print("args: {args()}")

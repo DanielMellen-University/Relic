@@ -1,0 +1,4 @@
+use std/strings
+
+print("hello from a consuming project")
+print(strings.upper("hello"))
