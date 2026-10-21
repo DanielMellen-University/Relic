@@ -47,6 +47,4 @@ The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic
 
 ## Phase 6: Apps as proof
 
-Terminal, text editor, file browser, drawing app and a game are tracked in M0N0LITH-2. Relic's job here is to fix whatever those apps run into.
-
-- [ ] Relic IDE
+The apps (terminal, text editor, file browser, drawing app, a game and the Relic IDE) are tracked in the [M0N0LITH-2 roadmap](https://github.com/DanielMellen-University/M0N0LITH-2/blob/main/docs/ROADMAP.md). Relic's job here is to fix whatever those apps run into.

@@ -323,7 +323,7 @@ Relic code that rebuilds the host, one stage at a time, lives in `selfhost/`.
 - Without SDL, `available()` is `false` and every other call stops with a message saying how to rebuild.
 - Full API (drawing, events, `simulate`, key names, clipboard, canvas, headless): **[STDLIB.md](STDLIB.md#stdgraphics)**.
 - Host side: `host_gfx_*` built-ins in `src/builtins/graphics.cpp`.
-- Try it: `build-sdl/relic examples/hello_window.relic`, `examples/input_demo.relic`, or `examples/mini_desktop/desktop.relic`.
+- Try it: `build-sdl/relic examples/hello_window.relic`, `examples/input_demo.relic`, or `examples/mini_desktop/desktop.relic` (a small language example, not the real desktop, which lives in M0N0LITH-2).
 - Headless tests: `SDL_VIDEODRIVER=dummy` (see STDLIB.md).
 - **Open:** more than one window.
 

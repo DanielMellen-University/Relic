@@ -18,7 +18,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in DESIGN.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; VM in Relic open |
 | M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done. The desktop shell moved to M0N0LITH-2 |
-| M12 | Apps and IDE | M11 | apps moved to M0N0LITH-2; IDE not started |
+| M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
 
 Phases in the roadmap map to milestones like this: phase 1 is M1, phase 2 is M2 to M6, phase 3 is M9, phase 4 is M7, M8 and M10, phase 5 is M11, phase 6 is M12.
 
@@ -72,7 +72,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Slice 3: **done.** PNG and JPG via optional SDL2_image, TrueType text via optional SDL2_ttf.
   - Shell: started here (window model, Start menu, drag, resize, Terminal, Files, Editor), then moved with its history and the `shell_wm` test to [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) in 1.0.1. In-memory `std/vfs` (golden `std_vfs`) stays in Relic.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
-- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. The apps are built in M0N0LITH-2; Relic fixes what they find.
+- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. All of these, the IDE included, are apps built in M0N0LITH-2; Relic fixes what they find.
 
 ## Risks
 

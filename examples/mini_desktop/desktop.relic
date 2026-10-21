@@ -1,4 +1,5 @@
-# Mini desktop: taskbar, Notes, Terminal, JSON settings.
+# Mini desktop: a small language example with a taskbar, Notes, Terminal and
+# JSON settings. The real MONOLITH 2 desktop lives in the M0N0LITH-2 repo.
 # Layout is the pattern MONOLITH 2 apps can follow: modules as values,
 # one event loop, focus, and a short simulate script for headless runs.
 #

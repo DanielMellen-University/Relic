@@ -76,7 +76,7 @@ print(box.title, box["version"])
 - The sample above is checked by the `readme_sample` golden test.
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. `use lib/mathx as m` renames it. Names starting with `_` stay private to their file. Two files can use each other.
 - Standard library: `use std/strings`, `std/lists`, `std/maps`, `std/math`, `std/files`, `std/paths`, `std/json`, `std/os`, `std/time`, `std/graphics`. For example `strings.split("a,b", ",")` or `lists.sort(xs)`. Most of it is written in Relic itself. Full tables: [STDLIB.md](docs/STDLIB.md).
-- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. App-shaped example: `examples/mini_desktop/`. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The MONOLITH 2 desktop now lives in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
+- Graphics (optional): build with `cmake -S . -B build-sdl -DRELIC_SDL=ON` (needs SDL2), then `build-sdl/relic examples/hello_window.relic` or `examples/input_demo.relic`. Programs use `use std/graphics`. `examples/mini_desktop/` is a small language example shaped like a desktop (taskbar, Notes, Terminal, JSON settings). It shows how an app uses std/graphics, std/files and std/json. It is not the real environment. Headless GUI tests: [Running headless](docs/STDLIB.md#running-headless--testing-gui-apps) (`SDL_VIDEODRIVER=dummy`). The MONOLITH 2 desktop now lives in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 - Engines: `relic FILE` runs on the bytecode VM. `relic --tree FILE` uses the original tree-walker, and `relic --bytecode FILE` shows the compiled code.
 - Self-host: `relic selfhost/tokens.relic FILE` runs the lexer written in Relic; `relic selfhost/ast.relic FILE` runs the Relic-written parser; `relic selfhost/run.relic FILE` runs a program on the interpreter written in Relic.
 - Built-ins: `print`, `len`, `append`, `str`, `keys`, `type`, plus `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `fail`, `gc`, `args`, `eprint`. The full rules are in [DESIGN.md](docs/DESIGN.md).
@@ -141,7 +141,7 @@ hello Daniel
 
 ## How it relates to MONOLITH
 
-- **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and its IDE do not go there.
+- **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and the planned Relic IDE do not go there.
 - **MONOLITH 2** is the next version. Its desktop shell and apps are written in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2). That repo pins a Relic commit as a submodule and builds it.
 - Relic lives here so the language can grow on its own schedule. Language work lands here, desktop and app work lands in M0N0LITH-2.
 

@@ -26,4 +26,4 @@ Build a language, and then a whole desktop, from scratch. Relic is the base laye
 - Our own CPU, kernel, GPU driver or network stack.
 - Compatibility with any existing language.
 - Speed before correctness. The bytecode VM had to match the tree-walker on every test before it became the default.
-- Putting Relic or its IDE into the MONOLITH 1.0 repo.
+- Putting Relic or the Relic IDE into the MONOLITH 1.0 repo. The IDE is a planned app in M0N0LITH-2.
