@@ -1,5 +1,6 @@
-# std/graphics: one window to draw in (M11). Backed by SDL2 in the host for now;
-# build with cmake -DRELIC_SDL=ON. Colors are 0 to 255 per channel.
+# std/graphics: one window to draw in (M11). Backed by SDL2: in the host with
+# cmake -DRELIC_SDL=ON, in compiled programs with -DRELIC_C_SDL=ON and
+# relic_add_program(... GRAPHICS). Colors are 0 to 255 per channel.
 
 fun available() = host_gfx_available()   # false when the host was built without SDL
 fun open(width, height, title) = host_gfx_open(width, height, title)

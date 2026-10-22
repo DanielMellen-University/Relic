@@ -173,7 +173,7 @@ Graphics is an optional C module over SDL2 (Daniel, Oct 20 2026). The runtime ha
 `rl_gfx_sdl.c` (1.0.9) is the SDL2 module, in `relic_rt_gfx`. `relic_add_program(name file GRAPHICS)` links a program with it; everything else, `relicc` included, links `relic_rt` and never needs SDL2. It needs SDL2 (`find_package(SDL2)`, required once the option is on), and uses SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) when CMake finds them, like the host. It does not need the C++ host.
 
 - It is a C99 port of `src/builtins/graphics.cpp`: the same 35 names and arity, the same results and the same error messages (`graphics.clear(): no window is open; call open first`, `red must be 0 to 255`, ...). A side-by-side run of every error case gives the same output on both.
-- One window at a time. Events and pressed keys are queued as Relic maps and strings, up to 512 events and 64 keys, oldest dropped first.
+- One window at a time. Events and pressed keys are queued as Relic maps and strings, up to 512 events and 64 keys, oldest dropped first. `simulate` adds to that queue directly rather than through `SDL_PushEvent` (1.0.10), as the host does, so it works on sdl2-compat too.
 - The built-in 8x12 text font is the host's `src/builtins/font8x12.inc`, included as is.
 - `rl_gfx_release()` runs at exit (from `rl_builtins_release`). It closes a window the program left open, so queued events do not trip the leak check.
 
@@ -183,7 +183,7 @@ cmake --build build-csdl
 cd tests/sdl && SDL_VIDEODRIVER=dummy ../../build-csdl/c_gfx_events
 ```
 
-`c_gfx_events` is built with `relic_add_program(c_gfx_events tests/sdl/gfx_events.relic GRAPHICS)`. The compiled SDL tests are listed in [TESTING.md](TESTING.md#graphics-tests); the CI job `sdl` runs them on Ubuntu.
+`c_gfx_events` is built with `relic_add_program(c_gfx_events tests/sdl/gfx_events.relic GRAPHICS)`. The compiled SDL tests are listed in [TESTING.md](TESTING.md#graphics-tests); the CI job `sdl` runs them on Ubuntu, macOS and Windows.
 
 ## Calls for generated code
 

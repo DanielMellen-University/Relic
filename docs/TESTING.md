@@ -112,13 +112,21 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 | `gfx_simulate` | `simulate` for keys with mods, mouse, move, quit | SDL2 |
 | `mini_desktop` | the `examples/mini_desktop` example, driven by its own simulated input | SDL2 |
 | `gfx_png` | loading a PNG | SDL2_image |
-| `gfx_ttf` | TrueType text size | SDL2_ttf and a DejaVuSans.ttf |
+| `gfx_ttf` | TrueType text size | SDL2_ttf and a font: DejaVuSans.ttf, else Arial (macOS, Windows), or `-DRELIC_TEST_FONT=path` |
 
 `-DRELIC_C_SDL=ON` (no host needed) builds `relic_rt_gfx`, the C runtime with the SDL2 module, and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program(... GRAPHICS)`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. Everything else, `relicc` and the `cgen_*` goldens included, still links `relic_rt` with the stub, so `c_runtime` and `cgen_std_graphics` are the same in every build.
 
-On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core`.
+`mini_desktop` and `c_mini_desktop` both write `examples/mini_desktop/data`, so they share a ctest lock and never run at the same time.
 
-The CI job `sdl` (Ubuntu) installs SDL2, SDL2_image, SDL2_ttf and DejaVu fonts and runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON`: 305 cases, all 12 graphics tests included, headless with `SDL_VIDEODRIVER=dummy`.
+`simulate` puts its event straight into Relic's own queue, after whatever SDL already holds, instead of going through `SDL_PushEvent`. Homebrew's `sdl2` is sdl2-compat (SDL2 over SDL3), which crashes on a pushed text event and loses a pushed wheel's distance.
+
+Getting SDL2:
+
+- Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core`.
+- macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
+- Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
+
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 305 cases each, headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 12 graphics tests is missing.
 
 ## relic_add_program
 
@@ -132,13 +140,14 @@ ctest --test-dir build-consumer --output-on-failure
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every push and pull request, 15 jobs, none with SDL:
+`.github/workflows/ci.yml` runs on every push and pull request, 18 jobs:
 
 - `build`: the default C-only build, Release, all tests, on Ubuntu (gcc), macOS (clang) and Windows (MSVC), then the `tests/consumer` project.
 - `no-cxx`: the same on Alpine Linux with only gcc installed. It first checks that `c++`, `g++` and `clang++` are all missing, so it proves a fresh checkout needs no C++ compiler. It builds `tests/consumer` too.
 - `host`: `-DRELIC_BUILD_HOST=ON` on all three OSes, all tests, including the cross-checks against the host.
 - `c-runtime`: `runtime/c/` on its own with warnings as errors: gcc and clang on Linux with ASan, UBSan and LSan, clang on macOS, MSVC (`/std:c11 /W4`) on Windows.
 - `cgen`: the C-only build the same four ways, so `bootstrap/cgen.c`, `relicc` and every compiled golden are built with warnings as errors and run sanitized.
+- `sdl`: the host and compiled graphics tests, headless, on Ubuntu 24.04, macOS and Windows (see [Graphics tests](#graphics-tests)).
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
 

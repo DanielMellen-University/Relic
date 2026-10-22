@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.10 (2026-10-22)
+
+- CI: the `sdl` job runs on macOS (Homebrew `sdl2`, `sdl2_image`, `sdl2_ttf`) and Windows (vcpkg with MSVC, packages cached between runs) as well as Ubuntu 24.04. Each builds with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` and warnings as errors for the C, runs all 305 tests headless, and fails if any of the 12 graphics tests is missing. 18 jobs.
+- Graphics fix (host and compiled): `simulate` puts its event straight into Relic's own event queue, after what SDL already holds, instead of calling `SDL_PushEvent`. Homebrew's `sdl2` is now sdl2-compat (SDL2 over SDL3), which crashed on a pushed text event (`gfx_events`, `mini_desktop` and their compiled twins segfaulted on macOS) and dropped a pushed wheel's distance. Output is the same as before on SDL2.
+- Tests: `gfx_ttf` and `c_gfx_ttf` fall back to Arial when DejaVu Sans is not installed (macOS and Windows ship it); `-DRELIC_TEST_FONT=path` picks a font by hand.
+- Tests: `mini_desktop` and `c_mini_desktop` share a ctest lock. Both write `examples/mini_desktop/data`, and run side by side with `ctest -j` they failed most of the time.
+- Docs: how to get SDL2 on macOS and Windows (TESTING.md); the `std/graphics` header names both ways to build it.
+- `ctest` counts are unchanged: 139 default, 293 with the host, 145 with `-DRELIC_C_SDL=ON`, 305 with both SDL options.
+
 ## 1.0.9 (2026-10-21)
 
 - Graphics for compiled programs (M11): `runtime/c/rl_gfx_sdl.c` is the optional C module over SDL2 that Daniel picked on Oct 20 2026. It is a C99 port of the host's `src/builtins/graphics.cpp` with the same names, arity, results and error messages, so `std/graphics` works the same compiled. SDL2_image and SDL2_ttf are used when found.
