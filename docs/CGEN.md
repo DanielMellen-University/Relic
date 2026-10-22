@@ -37,13 +37,16 @@ Exit codes: 0 when the C was written, 1 when the file has a lex or parse error (
 
 ### In CMake
 
-`cmake/Relic.cmake` (Daniel's pick, Oct 21 2026) gives `relic_add_program(name file [DEPENDS files...])`. It runs `relicc` on `file` to write `relic_programs/name.c` in the build folder, builds that with `relic_rt` and the runtime's strict flags, and makes the executable target `name`. It is there after `add_subdirectory` of the Relic tree, or in the tree itself:
+`cmake/Relic.cmake` (Daniel's pick, Oct 21 2026) gives `relic_add_program(name file [GRAPHICS] [DEPENDS files...])`. It runs `relicc` on `file` to write `relic_programs/name.c` in the build folder, builds that with `relic_rt` and the runtime's strict flags, and makes the executable target `name`. It is there after `add_subdirectory` of the Relic tree, or in the tree itself:
 
 ```cmake
 add_subdirectory(relic)                       # the Relic checkout, e.g. a submodule
 relic_add_program(hello src/hello.relic)
 relic_add_program(tool tools/tool.relic DEPENDS ${CMAKE_SOURCE_DIR}/shared/util.relic)
+relic_add_program(paint apps/paint.relic GRAPHICS)   # links relic_rt_gfx (SDL2)
 ```
+
+`GRAPHICS` links the program with `relic_rt_gfx`, the runtime with the SDL2 graphics module, which exists when Relic is configured with `-DRELIC_C_SDL=ON`. Without that option the program links `relic_rt` with a status message: `std/graphics` loads and `available()` is false, so a program that checks it still runs. Programs without `GRAPHICS` never link SDL2.
 
 When the C is written again: when `relicc` changes, when `file` changes, or when any `.relic` file under the folder of `file` (subfolders too) or in Relic's `std/` changes. That is a safe superset of what the program uses, since a module is usually in the program's folder or below it. A module somewhere else (`use ../shared/util`) is not seen on its own, so list it under `DEPENDS`. A new `.relic` file is picked up at the next build (the folder is globbed with `CONFIGURE_DEPENDS`), and files inside the build folder are left out.
 
@@ -64,7 +67,7 @@ The whole language:
 - every built-in in the runtime: `print`, `len`, `str`, `gc`, the `host_*` primitives and the rest
 - `use` for the program's own files and for `std/`, `use ... as`, module values and their fields, cycles between modules, a module that uses the main file back (see [Modules](#modules))
 
-Graphics: by default the runtime's stub answers, so `std/graphics` loads and reports that graphics are not available, as a non-SDL host does. With `-DRELIC_C_SDL=ON` the runtime has the SDL2 module and compiled programs open windows, draw and take input like the host ([C-RUNTIME.md](C-RUNTIME.md#graphics)). cgen writes the same C either way; the choice is made when the runtime is built.
+Graphics: by default the runtime's stub answers, so `std/graphics` loads and reports that graphics are not available, as a non-SDL host does. A program built with `relic_add_program(... GRAPHICS)` in a build with `-DRELIC_C_SDL=ON` links the SDL2 module and opens windows, draws and takes input like the host ([C-RUNTIME.md](C-RUNTIME.md#graphics)). cgen writes the same C either way; the choice is made when the program is linked.
 
 ## Shape of the generated C
 
@@ -211,4 +214,4 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 
 ## Open choices
 
-- How compiled programs get graphics in the build (`-DRELIC_C_SDL` today: the SDL2 module replaces the stub in `relic_rt` for the whole build). Pending Daniel; options in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed).
+None right now.

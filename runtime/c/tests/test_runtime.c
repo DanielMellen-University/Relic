@@ -355,11 +355,7 @@ static void test_errors_and_builtins(void) {
     CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 62);
     rl_release(r);
     rl_release(f);
-#ifdef RL_TEST_SDL
-    SHOW((call("host_gfx_available", 0, NULL, &r), r), "true");   /* built with rl_gfx_sdl.c */
-#else
-    SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");
-#endif
+    SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");   /* relic_rt has the stub */
     ERR(call("host_gfx_open", 0, NULL, &r), "host_gfx_open() takes 3 arguments, got 0");
 }
 

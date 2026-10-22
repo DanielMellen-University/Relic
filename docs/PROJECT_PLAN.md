@@ -17,7 +17,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M8 | Standard library core | M7 | done |
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in ARCHITECTURE.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; a VM in Relic is no longer planned (see C1 to C5) |
-| M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done; C module over SDL2 for compiled programs done (1.0.9, build shape open). The desktop shell moved to M0N0LITH-2 |
+| M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done; C module over SDL2 for compiled programs done (1.0.9). The desktop shell moved to M0N0LITH-2 |
 | M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
 | SH1 | Self-hosted interpreter runs programs with args | M9 | done |
 | SH2 | Self-hosted interpreter runs itself | SH1 | done |
@@ -79,7 +79,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - Slice 1: **done.** `std/graphics` (open, clear, rect, pixel, present, quit_requested, wait) on SDL2 behind `-DRELIC_SDL=ON`; `examples/hello_window.relic`. 
   - Slice 2: **done.** Keyboard and mouse input, built-in bitmap text, BMP images; `examples/input_demo.relic`; headless `gfx_smoke` ctest in SDL builds.
   - Slice 3: **done.** PNG and JPG via optional SDL2_image, TrueType text via optional SDL2_ttf.
-  - C module: **done (1.0.9).** `runtime/c/rl_gfx_sdl.c` gives compiled programs the same `std/graphics` as the host, over SDL2, behind `-DRELIC_C_SDL=ON` (off by default; no host needed). The headless SDL tests and the mini desktop also run compiled (`c_gfx_*`, `c_mini_desktop`) with the same expected output and the leak check. How the build hands the module to programs is an open decision (below). No SDL job in CI yet.
+  - C module: **done (1.0.9).** `runtime/c/rl_gfx_sdl.c` gives compiled programs the same `std/graphics` as the host, over SDL2, in `relic_rt_gfx`, built with `-DRELIC_C_SDL=ON` (off by default; no host needed) and linked by `relic_add_program(name file GRAPHICS)`. The headless SDL tests and the mini desktop also run compiled (`c_gfx_*`, `c_mini_desktop`) with the same expected output and the leak check, in the CI job `sdl` on Ubuntu (with the host's SDL tests).
   - Shell: started here (window model, Start menu, drag, resize, Terminal, Files, Editor), then moved with its history and the `shell_wm` test to [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) in 1.0.1. In-memory `std/vfs` (golden `std_vfs`) stays in Relic.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
 - M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. All of these, the IDE included, are apps built in M0N0LITH-2; Relic fixes what they find.
@@ -152,4 +152,6 @@ Struck-through rows are decided. The rest are **Open** and block the milestone s
 | ~~Building a compiled program in one step~~ a CMake helper, `relic_add_program(name file)` in `cmake/Relic.cmake`, usable in this tree and through `add_subdirectory`; no `relicc run` mode (Decided by Daniel, Oct 21 2026) | done |
 | ~~What makes `relic_add_program` rerun relicc~~ the file, every `.relic` under its folder and `std/`, plus `DEPENDS` for modules elsewhere; not an exact module list from relicc (Decided by Engineer, Oct 21 2026, internal; an exact list would need a depfile flag in cgen and CMake 3.21) | done |
 | ~~`-DRELIC_SDL=ON` without the host~~ it turns the host on, since graphics live there (Decided by Engineer, Oct 21 2026, internal) | done |
-| **Open:** how compiled programs get graphics in the build. In 1.0.9, `-DRELIC_C_SDL=ON` swaps the SDL2 module in for the stub inside `relic_rt`, so every C program in that build links SDL2, `relicc` included. Options: (A) keep that; (B) a separate `relic_rt_gfx` library and `relic_add_program(name file GRAPHICS)`, so only programs that ask link SDL2 (recommended); (C) one switch, `-DRELIC_SDL=ON`, for both the host and compiled programs, no longer turning the host on; (D) build the module whenever CMake finds SDL2, with no switch. Pending Daniel | M11 (C graphics) |
+| ~~How compiled programs get graphics in the build~~ option B: a separate `relic_rt_gfx` library (`-DRELIC_C_SDL=ON`) and `relic_add_program(name file GRAPHICS)`, so only programs that ask link SDL2; `relicc` and the rest link `relic_rt` with the stub. Not chosen: the module inside `relic_rt` for the whole build (A), one switch for host and compiled (C), building it whenever SDL2 is found (D) (Decided by Daniel, Oct 21 2026) | done |
+| ~~`GRAPHICS` in a build without `-DRELIC_C_SDL`~~ the program links the stub with a status message, so `available()` is false, rather than a configure error (Decided by Engineer, Oct 21 2026, internal) | done |
+| ~~SDL in CI~~ one Ubuntu job, `sdl`, with the host and compiled graphics tests headless (Approved by Daniel, Oct 21 2026) | done |

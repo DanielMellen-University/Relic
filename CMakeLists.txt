@@ -9,7 +9,7 @@ project(relic VERSION 1.0.9 LANGUAGES C)
 option(RELIC_BUILD_HOST "Also build the C++ host (relic) and its tests" OFF)
 option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); turns on RELIC_BUILD_HOST" OFF)
 option(RELIC_C_RUNTIME "Build the C runtime in runtime/c and the C compiler on it" ON)
-option(RELIC_C_SDL "Build the SDL2 graphics module into the C runtime, for compiled programs (needs SDL2)" OFF)
+option(RELIC_C_SDL "Also build relic_rt_gfx, the C runtime with SDL2 graphics, for relic_add_program(... GRAPHICS) (needs SDL2)" OFF)
 # Added to another project with add_subdirectory, Relic leaves out its own
 # compiled goldens by default (134 extra targets) and keeps relicc and
 # relic_add_program (cmake/Relic.cmake).
@@ -206,8 +206,8 @@ if(RELIC_C_RUNTIME)
       "^hello Ada\nhello Linus\nhello Grace\nAda, Linus, Grace\nargs: \\[\"one\", \"two\"\\]\n$")
   endif()
 
-  # RELIC_C_SDL: the headless SDL tests again, compiled to C and run on the
-  # SDL2 module in runtime/c (rl_gfx_sdl.c). Same expected output as the host.
+  # RELIC_C_SDL: the headless SDL tests again, compiled to C and linked with
+  # relic_rt_gfx (GRAPHICS). Same expected output as the host.
   if(RELIC_C_SDL AND RELIC_TOP_LEVEL)
     set(sdl ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
     set(gfx_c_tests gfx_smoke gfx_events gfx_simulate)
@@ -216,18 +216,18 @@ if(RELIC_C_RUNTIME)
     endif()
     foreach(t ${gfx_c_tests})
       string(TOUPPER ${t} up)
-      relic_add_program(c_${t} ${sdl}/${t}.relic)
+      relic_add_program(c_${t} ${sdl}/${t}.relic GRAPHICS)
       add_test(NAME c_${t} COMMAND c_${t} WORKING_DIRECTORY ${sdl})
       set_tests_properties(c_${t} PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
         PASS_REGULAR_EXPRESSION "${${up}_OUT}")
     endforeach()
     if(RELIC_C_SDL_TTF AND RELIC_TEST_FONT)
-      relic_add_program(c_gfx_ttf ${sdl}/gfx_ttf.relic)
+      relic_add_program(c_gfx_ttf ${sdl}/gfx_ttf.relic GRAPHICS)
       add_test(NAME c_gfx_ttf COMMAND c_gfx_ttf ${RELIC_TEST_FONT} WORKING_DIRECTORY ${sdl})
       set_tests_properties(c_gfx_ttf PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
         PASS_REGULAR_EXPRESSION "${GFX_TTF_OUT}")
     endif()
-    relic_add_program(c_mini_desktop examples/mini_desktop/desktop.relic)
+    relic_add_program(c_mini_desktop examples/mini_desktop/desktop.relic GRAPHICS)
     add_test(NAME c_mini_desktop COMMAND c_mini_desktop WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
     set_tests_properties(c_mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
       PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}")

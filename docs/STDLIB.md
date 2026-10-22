@@ -178,7 +178,8 @@ draw then `limit`.
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C
-runtime built with `-DRELIC_C_SDL=ON`. Both give the same results and errors.
+runtime built with `-DRELIC_C_SDL=ON` and a program built with
+`relic_add_program(name file GRAPHICS)`. Both give the same results and errors.
 `available()` is `false` otherwise; every other call then fails with a rebuild
 message.
 
@@ -345,7 +346,7 @@ read it with `next_event`, and assert on your app state (see the
 tests automatically.
 
 A compiled program works the same way. Configure with `-DRELIC_C_SDL=ON`,
-build it with `relic_add_program`, and run it with `SDL_VIDEODRIVER=dummy`.
+build it with `relic_add_program(name file GRAPHICS)`, and run it with `SDL_VIDEODRIVER=dummy`.
 
 Window drag and resize inside a Relic desktop (like M0N0LITH-2) are built from `mouse_down`,
 `mouse_move` and `mouse_up`; the host window itself sends `resize`.

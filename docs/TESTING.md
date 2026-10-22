@@ -114,11 +114,11 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 | `gfx_png` | loading a PNG | SDL2_image |
 | `gfx_ttf` | TrueType text size | SDL2_ttf and a DejaVuSans.ttf |
 
-`-DRELIC_C_SDL=ON` (no host needed) builds the SDL2 module into the C runtime and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. `c_runtime` then expects `host_gfx_available()` to be true.
+`-DRELIC_C_SDL=ON` (no host needed) builds `relic_rt_gfx`, the C runtime with the SDL2 module, and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program(... GRAPHICS)`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. Everything else, `relicc` and the `cgen_*` goldens included, still links `relic_rt` with the stub, so `c_runtime` and `cgen_std_graphics` are the same in every build.
 
 On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core`.
 
-CI has no SDL job yet, so all of these run locally only.
+The CI job `sdl` (Ubuntu) installs SDL2, SDL2_image, SDL2_ttf and DejaVu fonts and runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON`: 305 cases, all 12 graphics tests included, headless with `SDL_VIDEODRIVER=dummy`.
 
 ## relic_add_program
 
