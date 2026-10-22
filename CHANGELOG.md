@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.12 (2026-10-22)
+
+High-DPI drawing, Daniel's pick A (Oct 22 2026). The same in the host and in compiled programs:
+
+- Windows open with `SDL_WINDOW_ALLOW_HIGHDPI` (on Windows also SDL's DPI scaling hint), and the renderer is scaled by `scale()`, so every drawing call, clip rectangle and mouse position stays in window units. Programs need no change. On a high-DPI screen shapes and the built-in font are drawn at full resolution.
+- TrueType fonts open at `size * scale()` pixels and are drawn back at window-unit size, so text is sharp. `font_size` gives window units, rounded up. `load_font` sizes are window units.
+- Images and canvases are drawn at their normal size in window units (stretched on a high-DPI screen). Drawing into a canvas stays one unit per texel.
+- `scale()` follows the window: it is checked on every input call, `present`, `set_window_size`, `set_fullscreen` and `draw_to(none)`, the renderer scale is updated, and fonts are opened again at the new size. While a canvas is the target, `scale()` gives the window's scale (SDL reports the canvas size as the output size then; without this it gave 0.25 in a test).
+- The rounding lives in `src/builtins/gfx_scale.h`, shared by both, with unit tests in `c_runtime` for scales other than 1.0, which headless SDL cannot produce.
+- Tests: `gfx_window` checks the scale is 1.0 headless, also while a canvas is the target, and `gfx_ttf` checks `font_size` gives whole numbers. Every existing output is unchanged. `ctest` counts as before: 139, 293, 147 with `-DRELIC_C_SDL=ON`, 309 with both.
+- The "Windowing and drawing API" roadmap item is closed.
+
 ## 1.0.11 (2026-10-22)
 
 The last slice of the windowing and drawing item (Daniel's pick B, Oct 22 2026). In `std/graphics`, with the same names, results and errors in the host and in compiled programs (`relic_rt_gfx`); the stub and the host without SDL fail with the usual rebuild message:

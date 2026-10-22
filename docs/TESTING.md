@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 139 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 293: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more, and `-DRELIC_C_SDL=ON` adds 6 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 139 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 293: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -69,7 +69,7 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 | Test | Checks |
 |---|---|
-| `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, and that nothing leaks |
+| `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, the high-DPI rounding (`src/builtins/gfx_scale.h`), and that nothing leaks |
 | `c_demo` | the hand-compiled `tests/demo.c` prints exactly `tests/golden/c_demo.out` |
 
 `golden_c_demo` runs the same program on the C++ host, so a change to either side shows up. `c_demo` is skipped by `selfhost_interp` because it recurses 800 calls deep.
@@ -110,11 +110,11 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 | `gfx_smoke` | input, text and image calls run | SDL2 |
 | `gfx_events` | the event queue: keys, text, clicks, wheel, resize; drawing; clipboard | SDL2 |
 | `gfx_simulate` | `simulate` for keys with mods, mouse, move, quit | SDL2 |
-| `gfx_window` | title, window size, scale, fullscreen, cursor, vsync, `ticks`, `frame_time`, `present_capped`. What the dummy driver cannot do (real cursors, vsync) is checked by type | SDL2 |
+| `gfx_window` | title, window size, scale (1.0 headless, also while a canvas is the target), fullscreen, cursor, vsync, `ticks`, `frame_time`, `present_capped`. What the dummy driver cannot do (real cursors, vsync) is checked by type | SDL2 |
 | `gfx_window_errors` | every error those calls give, in order | SDL2 |
 | `mini_desktop` | the `examples/mini_desktop` example, driven by its own simulated input | SDL2 |
 | `gfx_png` | loading a PNG | SDL2_image |
-| `gfx_ttf` | TrueType text size | SDL2_ttf and a font: DejaVuSans.ttf, else Arial (macOS, Windows), or `-DRELIC_TEST_FONT=path` |
+| `gfx_ttf` | TrueType text size, in whole window units | SDL2_ttf and a font: DejaVuSans.ttf, else Arial (macOS, Windows), or `-DRELIC_TEST_FONT=path` |
 
 `-DRELIC_C_SDL=ON` (no host needed) builds `relic_rt_gfx`, the C runtime with the SDL2 module, and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_gfx_window`, `c_gfx_window_errors`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program(... GRAPHICS)`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. Everything else, `relicc` and the `cgen_*` goldens included, still links `relic_rt` with the stub, so `c_runtime` and `cgen_std_graphics` are the same in every build.
 

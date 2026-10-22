@@ -203,9 +203,19 @@ Colors are 0 to 255 per channel. One window at a time.
 | `fullscreen()` / `set_fullscreen(on)` | bool | bool / none | no window; `on` must be true or false; the system can refuse |
 
 `set_window_size` and `set_fullscreen` change the drawing area, and the change
-comes back as a `resize` event like one the user makes. `scale()` is 1.0
-today: windows are not opened in high-DPI mode yet (see
-[PROJECT_PLAN.md](PROJECT_PLAN.md), the open high-DPI call).
+comes back as a `resize` event like one the user makes.
+
+High-DPI screens (1.0.12, Daniel's pick A): windows open in high-DPI mode and
+the renderer is scaled by `scale()`, so every drawing call, clip rectangle and
+mouse position stays in window units and programs need no change. Shapes and
+the built-in font are drawn at full resolution. TrueType fonts are opened at
+`size * scale()` pixels, so text is sharp, and `font_size` gives window units
+(rounded up). Images and canvases are drawn at their normal size in window
+units, so on a high-DPI screen they are stretched; a canvas is drawn into one
+unit per texel. `scale()` follows the window when it is resized or moves to a
+screen with another scale (checked on every input call and `present`), and
+fonts are opened again at the new size when that happens. On Windows Relic
+asks SDL for DPI scaling, so window sizes are in scaled units there too.
 
 ### Cursor
 
@@ -258,9 +268,9 @@ a window.
 | `text(x, y, s, r, g, b)` | | none | built-in 8x12 ASCII; other chars draw as `?` |
 | `text_scaled(x, y, s, scale, r, g, b)` | scale >= 1 | none | each glyph is `8*scale` wide, `12*scale` tall |
 | `has_fonts()` | | bool | true when built with SDL2_ttf |
-| `load_font(path, size)` | string, int >= 1 | font id (int) | needs fonts; bad path |
+| `load_font(path, size)` | string, int >= 1 (window units) | font id (int) | needs fonts; bad path |
 | `font_text(font, x, y, s, r, g, b)` | | none | UTF-8; needs fonts |
-| `font_size(font, s)` | | `[w, h]` | needs fonts |
+| `font_size(font, s)` | | `[w, h]` in window units | needs fonts |
 
 ### Images and canvas
 

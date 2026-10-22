@@ -22,7 +22,7 @@ Reference: [STDLIB.md](STDLIB.md).
 | Canvas to draw into (paint) | done | std/graphics |
 | Clipboard | done | std/graphics |
 | Window title, size, fullscreen; cursor shapes; vsync and frame timing | done (1.0.11) | std/graphics |
-| Sharp drawing on high-DPI screens | open: a call for Daniel (PROJECT_PLAN) | std/graphics |
+| Sharp drawing on high-DPI screens, coordinates in window units | done (1.0.12) | std/graphics |
 | 60fps redraw on the VM | done, see below | bench/redraw.relic |
 | `use std/...` in the self-hosted interpreter | done | selfhost/ |
 | Stdlib reference docs | done | docs/STDLIB.md |

@@ -175,6 +175,7 @@ Graphics is an optional C module over SDL2 (Daniel, Oct 20 2026). The runtime ha
 - It is a C99 port of `src/builtins/graphics.cpp`: the same 50 names and arity, the same results and the same error messages (`graphics.clear(): no window is open; call open first`, `red must be 0 to 255`, ...). A side-by-side run of every error case gives the same output on both.
 - One window at a time. Events and pressed keys are queued as Relic maps and strings, up to 512 events and 64 keys, oldest dropped first. `simulate` adds to that queue directly rather than through `SDL_PushEvent` (1.0.10), as the host does, so it works on sdl2-compat too.
 - The built-in 8x12 text font is the host's `src/builtins/font8x12.inc`, included as is.
+- High-DPI (1.0.12): like the host, windows open in high-DPI mode and the renderer is scaled by `scale()`, so coordinates stay in window units; fonts open at `size * scale()` pixels. The rounding is `src/builtins/gfx_scale.h`, shared with the host.
 - `rl_gfx_release()` runs at exit (from `rl_builtins_release`). It closes a window the program left open, so queued events do not trip the leak check.
 
 ```sh
