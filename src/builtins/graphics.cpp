@@ -64,6 +64,20 @@ std::deque<std::string> g_keys;      // keys pressed since the last next_key()
 std::vector<SDL_Texture*> g_images;  // index = image id; freed on close
 std::vector<std::pair<int, int>> g_sizes;
 std::deque<Value> g_events;          // event maps since the last next_event()
+Uint64 g_opened = 0;                 // performance counter when the window opened
+Uint64 g_last_present = 0;           // performance counter at the last present, 0 before the first
+double g_frame_time = 0;             // seconds between the last two presents
+
+// System cursors for set_cursor, made on first use and freed on close.
+struct CursorName { const char* name; SDL_SystemCursor id; };
+const CursorName kCursors[] = {
+    {"arrow", SDL_SYSTEM_CURSOR_ARROW}, {"text", SDL_SYSTEM_CURSOR_IBEAM}, {"wait", SDL_SYSTEM_CURSOR_WAIT},
+    {"crosshair", SDL_SYSTEM_CURSOR_CROSSHAIR}, {"hand", SDL_SYSTEM_CURSOR_HAND}, {"move", SDL_SYSTEM_CURSOR_SIZEALL},
+    {"no", SDL_SYSTEM_CURSOR_NO}, {"resize_ew", SDL_SYSTEM_CURSOR_SIZEWE}, {"resize_ns", SDL_SYSTEM_CURSOR_SIZENS},
+    {"resize_nwse", SDL_SYSTEM_CURSOR_SIZENWSE}, {"resize_nesw", SDL_SYSTEM_CURSOR_SIZENESW},
+};
+constexpr int kNumCursors = sizeof(kCursors) / sizeof(kCursors[0]);
+SDL_Cursor* g_cursors[kNumCursors] = {};
 #ifdef RELIC_HAVE_SDL_TTF
 std::vector<TTF_Font*> g_fonts;  // index = font id; freed on close
 
@@ -149,6 +163,26 @@ SDL_Renderer* need_window() {
     return g_renderer;
 }
 
+bool on_off(const Value& v, const char* what) {
+    if (!v.is<bool>()) throw std::string(what) + " must be true or false, got " + type_name(v);
+    return v.as<bool>();
+}
+
+Value pair(int a, int b) {
+    auto l = std::make_shared<List>();
+    l->push_back(Value(static_cast<long long>(a)));
+    l->push_back(Value(static_cast<long long>(b)));
+    return Value(l);
+}
+
+// Shows the frame and notes how long it was since the last one.
+void present_frame() {
+    SDL_RenderPresent(g_renderer);
+    Uint64 now = SDL_GetPerformanceCounter();
+    if (g_last_present) g_frame_time = static_cast<double>(now - g_last_present) / static_cast<double>(SDL_GetPerformanceFrequency());
+    g_last_present = now;
+}
+
 void close_window() {
     for (SDL_Texture* t : g_images)
         if (t) SDL_DestroyTexture(t);
@@ -162,6 +196,12 @@ void close_window() {
     g_keys.clear();
     g_events.clear();
     g_quit = false;
+    g_opened = g_last_present = 0;
+    g_frame_time = 0;
+    for (SDL_Cursor*& c : g_cursors) {
+        if (c) SDL_FreeCursor(c);
+        c = nullptr;
+    }
     if (g_renderer) SDL_DestroyRenderer(g_renderer);
     if (g_window) SDL_DestroyWindow(g_window);
     g_renderer = nullptr;
@@ -201,6 +241,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         }
         SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
         SDL_StartTextInput();
+        g_opened = SDL_GetPerformanceCounter();
         return Value();
     });
     add("host_gfx_close", 0, [](std::vector<Value>&) {
@@ -227,7 +268,8 @@ void add_graphics_builtins(const AddBuiltin& add) {
         return Value();
     });
     add("host_gfx_present", 0, [](std::vector<Value>&) {
-        SDL_RenderPresent(need_window());
+        need_window();
+        present_frame();
         return Value();
     });
     // Handles pending window events. true once the user asked to close the window.
@@ -551,6 +593,112 @@ void add_graphics_builtins(const AddBuiltin& add) {
         if (SDL_SetRenderTarget(r, t) != 0) throw std::string("cannot draw into that image: ") + SDL_GetError();
         return Value();
     });
+    // ---- the window: title, size, fullscreen, pixel scale ----
+    add("host_gfx_title", 0, [](std::vector<Value>&) {
+        need_window();
+        return Value(std::string(SDL_GetWindowTitle(g_window)));
+    });
+    add("host_gfx_set_title", 1, [](std::vector<Value>& a) {
+        need_window();
+        if (!a[0].is<std::string>()) throw std::string("title must be a string, got ") + type_name(a[0]);
+        SDL_SetWindowTitle(g_window, a[0].as<std::string>().c_str());
+        return Value();
+    });
+    // In window units, which mouse positions use. size() is in pixels.
+    add("host_gfx_window_size", 0, [](std::vector<Value>&) {
+        need_window();
+        int w = 0, h = 0;
+        SDL_GetWindowSize(g_window, &w, &h);
+        return pair(w, h);
+    });
+    add("host_gfx_set_window_size", 2, [](std::vector<Value>& a) {
+        need_window();
+        int w = whole(a[0], "width"), h = whole(a[1], "height");
+        if (w <= 0 || h <= 0) throw std::string("width and height must be above 0");
+        SDL_SetWindowSize(g_window, w, h);
+        return Value();
+    });
+    // Pixels per window unit across: size()[0] / window_size()[0].
+    add("host_gfx_scale", 0, [](std::vector<Value>&) {
+        need_window();
+        int pw = 0, ph = 0, ww = 0, wh = 0;
+        SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
+        SDL_GetWindowSize(g_window, &ww, &wh);
+        return Value(ww > 0 && pw > 0 ? static_cast<double>(pw) / ww : 1.0);
+    });
+    add("host_gfx_fullscreen", 0, [](std::vector<Value>&) {
+        need_window();
+        return Value((SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN) != 0);
+    });
+    add("host_gfx_set_fullscreen", 1, [](std::vector<Value>& a) {
+        need_window();
+        bool on = on_off(a[0], "on");
+        if (SDL_SetWindowFullscreen(g_window, on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0)
+            throw std::string("cannot change fullscreen: ") + SDL_GetError();
+        return Value();
+    });
+    // ---- the mouse cursor ----
+    // true once the cursor is set; false when this system cannot show that shape.
+    add("host_gfx_set_cursor", 1, [](std::vector<Value>& a) {
+        need_window();
+        std::string name = str(a[0], "cursor");
+        for (int i = 0; i < kNumCursors; i++) {
+            if (name != kCursors[i].name) continue;
+            if (!g_cursors[i]) g_cursors[i] = SDL_CreateSystemCursor(kCursors[i].id);
+            if (!g_cursors[i]) return Value(false);
+            SDL_SetCursor(g_cursors[i]);
+            return Value(true);
+        }
+        throw std::string("unknown cursor: ") + name +
+            "; use arrow, text, wait, crosshair, hand, move, no, resize_ew, resize_ns, resize_nwse or resize_nesw";
+    });
+    add("host_gfx_show_cursor", 1, [](std::vector<Value>& a) {
+        need_window();
+        SDL_ShowCursor(on_off(a[0], "on") ? SDL_ENABLE : SDL_DISABLE);
+        return Value();
+    });
+    add("host_gfx_cursor_visible", 0, [](std::vector<Value>&) {
+        need_window();
+        return Value(SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE);
+    });
+    // ---- frames: vsync and timing ----
+    // true when the renderer took the setting.
+    add("host_gfx_set_vsync", 1, [](std::vector<Value>& a) {
+        SDL_Renderer* r = need_window();
+        return Value(SDL_RenderSetVSync(r, on_off(a[0], "on") ? 1 : 0) == 0);
+    });
+    add("host_gfx_vsync", 0, [](std::vector<Value>&) {
+        SDL_Renderer* r = need_window();
+        SDL_RendererInfo info{};
+        if (SDL_GetRendererInfo(r, &info) != 0) return Value(false);
+        return Value((info.flags & SDL_RENDERER_PRESENTVSYNC) != 0);
+    });
+    // Whole milliseconds since open.
+    add("host_gfx_ticks", 0, [](std::vector<Value>&) {
+        need_window();
+        double d = static_cast<double>(SDL_GetPerformanceCounter() - g_opened);
+        return Value(static_cast<long long>(d * 1000.0 / static_cast<double>(SDL_GetPerformanceFrequency())));
+    });
+    // Seconds between the last two presents; 0 until there have been two.
+    add("host_gfx_frame_time", 0, [](std::vector<Value>&) {
+        need_window();
+        return Value(g_frame_time);
+    });
+    // present() that first waits until 1/fps seconds have passed since the last one.
+    add("host_gfx_present_capped", 1, [](std::vector<Value>& a) {
+        need_window();
+        double fps = num(a[0], "fps");
+        if (!(fps > 0)) throw std::string("fps must be above 0");
+        if (g_last_present) {
+            double freq = static_cast<double>(SDL_GetPerformanceFrequency());
+            double left = 1.0 / fps - static_cast<double>(SDL_GetPerformanceCounter() - g_last_present) / freq;
+            if (left > 0) SDL_Delay(static_cast<Uint32>(left * 1000));
+            while (static_cast<double>(SDL_GetPerformanceCounter() - g_last_present) / freq < 1.0 / fps) {
+            }
+        }
+        present_frame();
+        return Value();
+    });
     add("host_gfx_wait", 1, [](std::vector<Value>& a) {
         int ms = whole(a[0], "milliseconds");
         if (ms > 0) SDL_Delay(static_cast<Uint32>(ms));
@@ -570,6 +718,11 @@ void add_graphics_builtins(const AddBuiltin& add) {
         {"host_gfx_next_event", 0}, {"host_gfx_simulate", 3}, {"host_gfx_size", 0}, {"host_gfx_line", 7},
         {"host_gfx_outline", 7}, {"host_gfx_rect_alpha", 8}, {"host_gfx_clip", 4},
         {"host_gfx_canvas", 2}, {"host_gfx_draw_to", 1},
+        {"host_gfx_title", 0}, {"host_gfx_set_title", 1}, {"host_gfx_window_size", 0},
+        {"host_gfx_set_window_size", 2}, {"host_gfx_scale", 0}, {"host_gfx_fullscreen", 0},
+        {"host_gfx_set_fullscreen", 1}, {"host_gfx_set_cursor", 1}, {"host_gfx_show_cursor", 1},
+        {"host_gfx_cursor_visible", 0}, {"host_gfx_set_vsync", 1}, {"host_gfx_vsync", 0},
+        {"host_gfx_ticks", 0}, {"host_gfx_frame_time", 0}, {"host_gfx_present_capped", 1},
     };
     for (const auto& s : stubs) add(s.first, s.second, [](std::vector<Value>&) -> Value { missing(); });
     (void)channel;

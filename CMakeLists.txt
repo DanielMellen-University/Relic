@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(relic VERSION 1.0.10 LANGUAGES C)
+project(relic VERSION 1.0.11 LANGUAGES C)
 
 # C5: the default build needs only a C compiler. bootstrap/cgen.c (cgen
 # compiled to C by itself) is built with runtime/c into relicc_stage0, which
@@ -45,6 +45,10 @@ set(GFX_SIMULATE_OUT "^key_down a true true false\nkey_up a true false false\nmo
 set(MINI_DESKTOP_OUT "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
 set(GFX_PNG_OUT "^true\n5 4\n")
 set(GFX_TTF_OUT "^true\nwide true\ntall true\ndone")
+set(GFX_WINDOW_OUT "^first\nsecond [^\n]+\n\\[120, 80\\]\nfloat true\ntrue\n\\[160, 100\\]\nfalse\nfalse\nbool bool\nfalse\ntrue\nbool bool\nint true\n0\\.0\ntrue\nfloat true\ntrue\ntrue\ndone")
+# Every error message, in order; host and compiled must print the same.
+# (";" is written "." here: ctest would split the pattern at a ";".)
+set(GFX_WINDOW_ERRORS_OUT "^graphics\\.title\\(\\): no window is open. call open first\ngraphics\\.ticks\\(\\): no window is open. call open first\ngraphics\\.present_capped\\(\\): no window is open. call open first\ngraphics\\.set_title\\(\\): title must be a string, got int\ngraphics\\.set_window_size\\(\\): width and height must be above 0\ngraphics\\.set_window_size\\(\\): width must be a whole number\ngraphics\\.set_window_size\\(\\): height must be a number, got string\ngraphics\\.set_fullscreen\\(\\): on must be true or false, got int\ngraphics\\.set_fullscreen\\(\\): on must be true or false, got none\ngraphics\\.set_cursor\\(\\): unknown cursor: spinner. use arrow, text, wait, crosshair, hand, move, no, resize_ew, resize_ns, resize_nwse or resize_nesw\ngraphics\\.set_cursor\\(\\): cursor must be a string, got int\ngraphics\\.show_cursor\\(\\): on must be true or false, got string\ngraphics\\.set_vsync\\(\\): on must be true or false, got int\ngraphics\\.present_capped\\(\\): fps must be above 0\ngraphics\\.present_capped\\(\\): fps must be above 0\ngraphics\\.present_capped\\(\\): fps must be a number, got string\ngraphics\\.window_size\\(\\): no window is open. call open first\ndone")
 if(RELIC_SDL OR RELIC_C_SDL)
   # A TrueType font for gfx_ttf: DejaVu Sans where it is installed (Linux),
   # else Arial, which macOS and Windows ship. -DRELIC_TEST_FONT=path overrides.
@@ -136,6 +140,13 @@ if(RELIC_BUILD_HOST)
     add_test(NAME gfx_simulate COMMAND relic gfx_simulate.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_simulate PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
       PASS_REGULAR_EXPRESSION "${GFX_SIMULATE_OUT}")
+    # Window title and size, fullscreen, cursor, vsync and frame timing, and their errors.
+    foreach(t gfx_window gfx_window_errors)
+      string(TOUPPER ${t} up)
+      add_test(NAME ${t} COMMAND relic ${t}.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
+      set_tests_properties(${t} PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
+        PASS_REGULAR_EXPRESSION "${${up}_OUT}")
+    endforeach()
     # Mini desktop example: multi-app event loop, headless.
     add_test(NAME mini_desktop COMMAND relic desktop.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
     # It writes examples/mini_desktop/data, as c_mini_desktop does, so the two
@@ -215,7 +226,7 @@ if(RELIC_C_RUNTIME)
   # relic_rt_gfx (GRAPHICS). Same expected output as the host.
   if(RELIC_C_SDL AND RELIC_TOP_LEVEL)
     set(sdl ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
-    set(gfx_c_tests gfx_smoke gfx_events gfx_simulate)
+    set(gfx_c_tests gfx_smoke gfx_events gfx_simulate gfx_window gfx_window_errors)
     if(RELIC_C_SDL_IMAGE)
       list(APPEND gfx_c_tests gfx_png)
     endif()

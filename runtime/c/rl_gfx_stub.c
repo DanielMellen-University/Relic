@@ -61,6 +61,14 @@ static const rl_builtin_def g_gfx[] = {
     {"host_gfx_simulate", 3, g_missing}, {"host_gfx_size", 0, g_missing}, {"host_gfx_line", 7, g_missing},
     {"host_gfx_outline", 7, g_missing}, {"host_gfx_rect_alpha", 8, g_missing},
     {"host_gfx_clip", 4, g_missing}, {"host_gfx_canvas", 2, g_missing}, {"host_gfx_draw_to", 1, g_missing},
+    {"host_gfx_title", 0, g_missing}, {"host_gfx_set_title", 1, g_missing},
+    {"host_gfx_window_size", 0, g_missing}, {"host_gfx_set_window_size", 2, g_missing},
+    {"host_gfx_scale", 0, g_missing}, {"host_gfx_fullscreen", 0, g_missing},
+    {"host_gfx_set_fullscreen", 1, g_missing}, {"host_gfx_set_cursor", 1, g_missing},
+    {"host_gfx_show_cursor", 1, g_missing}, {"host_gfx_cursor_visible", 0, g_missing},
+    {"host_gfx_set_vsync", 1, g_missing}, {"host_gfx_vsync", 0, g_missing},
+    {"host_gfx_ticks", 0, g_missing}, {"host_gfx_frame_time", 0, g_missing},
+    {"host_gfx_present_capped", 1, g_missing},
     {"host_clipboard_set", 1, g_clip_set}, {"host_clipboard_get", 0, g_clip_get},
     {NULL, 0, NULL}};
 

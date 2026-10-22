@@ -76,3 +76,33 @@ fun clipboard() = host_clipboard_get()
 # with image(c, x, y) like any other image.
 fun canvas(width, height) = host_gfx_canvas(width, height)
 fun draw_to(c) = host_gfx_draw_to(c)
+
+# The window. window_size() is in window units, the ones mouse positions use;
+# size() is in pixels. scale() is pixels per window unit (1.0 unless the
+# system gives the window more pixels than units). set_window_size and
+# set_fullscreen send a resize event when the drawing area changes.
+fun title() = host_gfx_title()
+fun set_title(s) = host_gfx_set_title(s)
+fun window_size() = host_gfx_window_size()
+fun set_window_size(width, height) = host_gfx_set_window_size(width, height)
+fun scale() = host_gfx_scale()
+fun fullscreen() = host_gfx_fullscreen()            # true while fullscreen
+fun set_fullscreen(on) = host_gfx_set_fullscreen(on)  # fills the screen at its own resolution
+
+# The mouse cursor. set_cursor(name) gives true once set, false when the
+# system cannot show that shape. Names: arrow, text, wait, crosshair, hand,
+# move, no, resize_ew, resize_ns, resize_nwse, resize_nesw.
+fun set_cursor(name) = host_gfx_set_cursor(name)
+fun show_cursor(on) = host_gfx_show_cursor(on)
+fun cursor_visible() = host_gfx_cursor_visible()
+
+# Frames. set_vsync(on) gives true when the renderer took it; with vsync on,
+# present() waits for the screen. ticks() is whole milliseconds since open.
+# frame_time() is seconds between the last two presents (0.0 before that).
+# present_capped(fps) is present() that first waits so frames come no faster
+# than fps a second.
+fun set_vsync(on) = host_gfx_set_vsync(on)
+fun vsync() = host_gfx_vsync()
+fun ticks() = host_gfx_ticks()
+fun frame_time() = host_gfx_frame_time()
+fun present_capped(fps) = host_gfx_present_capped(fps)

@@ -352,7 +352,7 @@ static void test_errors_and_builtins(void) {
     SHOW(call1("type", rl_none()), "none");
     SHOW(call1("type", rl_float(1.5)), "float");
     CHECK(rl_builtin("host_names", &f));
-    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 62);
+    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 77);
     rl_release(r);
     rl_release(f);
     SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");   /* relic_rt has the stub */

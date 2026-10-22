@@ -33,6 +33,19 @@
 static SDL_Window *g_window = NULL;
 static SDL_Renderer *g_renderer = NULL;
 static int g_quit = 0;
+static Uint64 g_opened = 0;            /* performance counter when the window opened */
+static Uint64 g_last_present = 0;      /* performance counter at the last present, 0 before the first */
+static double g_frame_time = 0;        /* seconds between the last two presents */
+
+/* System cursors for set_cursor, made on first use and freed on close. */
+typedef struct { const char *name; SDL_SystemCursor id; } cursor_name;
+static const cursor_name k_cursors[] = {
+    {"arrow", SDL_SYSTEM_CURSOR_ARROW}, {"text", SDL_SYSTEM_CURSOR_IBEAM}, {"wait", SDL_SYSTEM_CURSOR_WAIT},
+    {"crosshair", SDL_SYSTEM_CURSOR_CROSSHAIR}, {"hand", SDL_SYSTEM_CURSOR_HAND}, {"move", SDL_SYSTEM_CURSOR_SIZEALL},
+    {"no", SDL_SYSTEM_CURSOR_NO}, {"resize_ew", SDL_SYSTEM_CURSOR_SIZEWE}, {"resize_ns", SDL_SYSTEM_CURSOR_SIZENS},
+    {"resize_nwse", SDL_SYSTEM_CURSOR_SIZENWSE}, {"resize_nesw", SDL_SYSTEM_CURSOR_SIZENESW}};
+#define NUM_CURSORS ((int)(sizeof(k_cursors) / sizeof(k_cursors[0])))
+static SDL_Cursor *g_cursors[NUM_CURSORS];
 
 #define MAX_KEYS 64
 #define MAX_EVENTS 512
@@ -88,6 +101,28 @@ static int rect_of(rl_ctx *cx, const rl_value *a, SDL_Rect *r) {
 static int need_window(rl_ctx *cx) {
     if (!g_renderer) return rl_fail(cx, "no window is open; call open first");
     return RL_OK;
+}
+
+static int on_off(rl_ctx *cx, rl_value v, const char *what, int *on) {
+    if (v.k != RL_BOOL) return rl_fail(cx, "%s must be true or false, got %s", what, rl_type_name(v));
+    *on = v.u.b != 0;
+    return RL_OK;
+}
+
+static rl_value pair(int a, int b) {
+    rl_value l = rl_list_new(2);
+    rl_list_push((rl_list *)l.u.o, rl_int(a));
+    rl_list_push((rl_list *)l.u.o, rl_int(b));
+    return l;
+}
+
+/* Shows the frame and notes how long it was since the last one. */
+static void present_frame(void) {
+    Uint64 now;
+    SDL_RenderPresent(g_renderer);
+    now = SDL_GetPerformanceCounter();
+    if (g_last_present) g_frame_time = (double)(now - g_last_present) / (double)SDL_GetPerformanceFrequency();
+    g_last_present = now;
 }
 
 static rl_value lower_str(const char *s) {
@@ -247,6 +282,12 @@ static void close_window(void) {
     for (i = 0; i < g_nevents; ++i) rl_release(g_events[i]);
     g_nevents = 0;
     g_quit = 0;
+    g_opened = g_last_present = 0;
+    g_frame_time = 0;
+    for (i = 0; i < NUM_CURSORS; ++i) {
+        if (g_cursors[i]) SDL_FreeCursor(g_cursors[i]);
+        g_cursors[i] = NULL;
+    }
     if (g_renderer) SDL_DestroyRenderer(g_renderer);
     if (g_window) SDL_DestroyWindow(g_window);
     g_renderer = NULL;
@@ -283,6 +324,7 @@ BI(g_open) {
     }
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
     SDL_StartTextInput();
+    g_opened = SDL_GetPerformanceCounter();
     return RL_OK;
 }
 
@@ -374,7 +416,7 @@ BI(g_present) {
     UNUSED;
     *out = rl_none();
     if (need_window(cx)) return RL_ERR;
-    SDL_RenderPresent(g_renderer);
+    present_frame();
     return RL_OK;
 }
 
@@ -387,6 +429,181 @@ BI(g_size) {
     *out = rl_list_new(2);
     rl_list_push((rl_list *)out->u.o, rl_int(w));
     rl_list_push((rl_list *)out->u.o, rl_int(h));
+    return RL_OK;
+}
+
+/* ---- the window: title, size, fullscreen, pixel scale ---- */
+
+BI(g_title) {
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    *out = rl_str_c(SDL_GetWindowTitle(g_window));
+    return RL_OK;
+}
+
+BI(g_set_title) {
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    if (a[0].k != RL_STR) return rl_fail(cx, "title must be a string, got %s", rl_type_name(a[0]));
+    SDL_SetWindowTitle(g_window, S(a[0])->data);
+    return RL_OK;
+}
+
+/* In window units, which mouse positions use. size() is in pixels. */
+BI(g_window_size) {
+    int w = 0, h = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    SDL_GetWindowSize(g_window, &w, &h);
+    *out = pair(w, h);
+    return RL_OK;
+}
+
+BI(g_set_window_size) {
+    int w = 0, h = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    if (whole(cx, a[0], "width", &w) || whole(cx, a[1], "height", &h)) return RL_ERR;
+    if (w <= 0 || h <= 0) return rl_fail(cx, "width and height must be above 0");
+    SDL_SetWindowSize(g_window, w, h);
+    return RL_OK;
+}
+
+/* Pixels per window unit across: size()[0] / window_size()[0]. */
+BI(g_scale) {
+    int pw = 0, ph = 0, ww = 0, wh = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
+    SDL_GetWindowSize(g_window, &ww, &wh);
+    *out = rl_float(ww > 0 && pw > 0 ? (double)pw / ww : 1.0);
+    return RL_OK;
+}
+
+BI(g_fullscreen) {
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    *out = rl_bool((SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN) != 0);
+    return RL_OK;
+}
+
+BI(g_set_fullscreen) {
+    int on = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx) || on_off(cx, a[0], "on", &on)) return RL_ERR;
+    if (SDL_SetWindowFullscreen(g_window, on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0)
+        return rl_fail(cx, "cannot change fullscreen: %s", SDL_GetError());
+    return RL_OK;
+}
+
+/* ---- the mouse cursor ---- */
+
+/* true once the cursor is set; false when this system cannot show that shape. */
+BI(g_set_cursor) {
+    int i;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx) || rl_arg_str(cx, a[0], "cursor")) return RL_ERR;
+    for (i = 0; i < NUM_CURSORS; ++i) {
+        if (strcmp(S(a[0])->data, k_cursors[i].name) != 0) continue;
+        if (!g_cursors[i]) g_cursors[i] = SDL_CreateSystemCursor(k_cursors[i].id);
+        if (!g_cursors[i]) {
+            *out = rl_bool(0);
+            return RL_OK;
+        }
+        SDL_SetCursor(g_cursors[i]);
+        *out = rl_bool(1);
+        return RL_OK;
+    }
+    return rl_fail(cx, "unknown cursor: %s; use arrow, text, wait, crosshair, hand, move, no, resize_ew, "
+                       "resize_ns, resize_nwse or resize_nesw", S(a[0])->data);
+}
+
+BI(g_show_cursor) {
+    int on = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx) || on_off(cx, a[0], "on", &on)) return RL_ERR;
+    SDL_ShowCursor(on ? SDL_ENABLE : SDL_DISABLE);
+    return RL_OK;
+}
+
+BI(g_cursor_visible) {
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    *out = rl_bool(SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE);
+    return RL_OK;
+}
+
+/* ---- frames: vsync and timing ---- */
+
+/* true when the renderer took the setting. */
+BI(g_set_vsync) {
+    int on = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx) || on_off(cx, a[0], "on", &on)) return RL_ERR;
+    *out = rl_bool(SDL_RenderSetVSync(g_renderer, on) == 0);
+    return RL_OK;
+}
+
+BI(g_vsync) {
+    SDL_RendererInfo info;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    memset(&info, 0, sizeof info);
+    if (SDL_GetRendererInfo(g_renderer, &info) != 0) {
+        *out = rl_bool(0);
+        return RL_OK;
+    }
+    *out = rl_bool((info.flags & SDL_RENDERER_PRESENTVSYNC) != 0);
+    return RL_OK;
+}
+
+/* Whole milliseconds since open. */
+BI(g_ticks) {
+    double d;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    d = (double)(SDL_GetPerformanceCounter() - g_opened);
+    *out = rl_int((long long)(d * 1000.0 / (double)SDL_GetPerformanceFrequency()));
+    return RL_OK;
+}
+
+/* Seconds between the last two presents; 0 until there have been two. */
+BI(g_frame_time_get) {
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx)) return RL_ERR;
+    *out = rl_float(g_frame_time);
+    return RL_OK;
+}
+
+/* present() that first waits until 1/fps seconds have passed since the last one. */
+BI(g_present_capped) {
+    double fps = 0;
+    UNUSED;
+    *out = rl_none();
+    if (need_window(cx) || rl_arg_num(cx, a[0], "fps", &fps)) return RL_ERR;
+    if (!(fps > 0)) return rl_fail(cx, "fps must be above 0");
+    if (g_last_present) {
+        double freq = (double)SDL_GetPerformanceFrequency();
+        double left = 1.0 / fps - (double)(SDL_GetPerformanceCounter() - g_last_present) / freq;
+        if (left > 0) SDL_Delay((Uint32)(left * 1000));
+        while ((double)(SDL_GetPerformanceCounter() - g_last_present) / freq < 1.0 / fps) {
+        }
+    }
+    present_frame();
     return RL_OK;
 }
 
@@ -869,6 +1086,14 @@ static const rl_builtin_def g_gfx[] = {
     {"host_gfx_simulate", 3, g_simulate}, {"host_gfx_size", 0, g_size}, {"host_gfx_line", 7, g_line},
     {"host_gfx_outline", 7, g_outline}, {"host_gfx_rect_alpha", 8, g_rect_alpha},
     {"host_gfx_clip", 4, g_clip_rect}, {"host_gfx_canvas", 2, g_canvas}, {"host_gfx_draw_to", 1, g_draw_to},
+    {"host_gfx_title", 0, g_title}, {"host_gfx_set_title", 1, g_set_title},
+    {"host_gfx_window_size", 0, g_window_size}, {"host_gfx_set_window_size", 2, g_set_window_size},
+    {"host_gfx_scale", 0, g_scale}, {"host_gfx_fullscreen", 0, g_fullscreen},
+    {"host_gfx_set_fullscreen", 1, g_set_fullscreen}, {"host_gfx_set_cursor", 1, g_set_cursor},
+    {"host_gfx_show_cursor", 1, g_show_cursor}, {"host_gfx_cursor_visible", 0, g_cursor_visible},
+    {"host_gfx_set_vsync", 1, g_set_vsync}, {"host_gfx_vsync", 0, g_vsync},
+    {"host_gfx_ticks", 0, g_ticks}, {"host_gfx_frame_time", 0, g_frame_time_get},
+    {"host_gfx_present_capped", 1, g_present_capped},
     {"host_clipboard_set", 1, g_clip_set}, {"host_clipboard_get", 0, g_clip_get},
     {NULL, 0, NULL}};
 

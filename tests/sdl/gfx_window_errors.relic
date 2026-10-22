@@ -1,0 +1,41 @@
+# SDL-only: every error the window, cursor and frame calls give, so the host
+# and compiled runs can be compared line by line (ctest gfx_window_errors).
+use std/graphics
+fun check0(f)
+    try
+        f()
+        print("ok")
+    catch err
+        print(err.message)
+fun check1(f, a)
+    try
+        f(a)
+        print("ok")
+    catch err
+        print(err.message)
+fun check2(f, a, b)
+    try
+        f(a, b)
+        print("ok")
+    catch err
+        print(err.message)
+check0(graphics.title)
+check0(graphics.ticks)
+check1(graphics.present_capped, 30)
+graphics.open(40, 30, "errors")
+check1(graphics.set_title, 5)
+check2(graphics.set_window_size, 0, 10)
+check2(graphics.set_window_size, 10.5, 10)
+check2(graphics.set_window_size, 10, "x")
+check1(graphics.set_fullscreen, 1)
+check1(graphics.set_fullscreen, none)
+check1(graphics.set_cursor, "spinner")
+check1(graphics.set_cursor, 3)
+check1(graphics.show_cursor, "yes")
+check1(graphics.set_vsync, 0)
+check1(graphics.present_capped, 0)
+check1(graphics.present_capped, -5)
+check1(graphics.present_capped, "fast")
+graphics.close()
+check0(graphics.window_size)
+print("done")
