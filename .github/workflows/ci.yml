@@ -74,6 +74,39 @@ jobs:
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
 
+  # Graphics, headless: the host's SDL2 built-ins (-DRELIC_SDL=ON) and the
+  # C runtime's SDL2 module, relic_rt_gfx (-DRELIC_C_SDL=ON), with SDL2_image,
+  # SDL2_ttf and a DejaVu font so every graphics test runs (gfx_*, c_gfx_*,
+  # mini_desktop, c_mini_desktop). ctest sets SDL_VIDEODRIVER=dummy. Pinned to
+  # 24.04 so the SDL2 packages do not move under it.
+  sdl:
+    runs-on: ubuntu-24.04
+    env:
+      SDL_VIDEODRIVER: dummy
+    steps:
+      - uses: actions/checkout@v4
+      # Bound the package install so a stalled mirror connection fails fast
+      # instead of burning the whole job timeout; apt retries stalled fetches.
+      - name: Install SDL2
+        timeout-minutes: 10
+        run: |
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 update
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 install --yes --no-install-recommends \
+            cmake g++ pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_SDL=ON -DRELIC_C_SDL=ON -DRELIC_C_WERROR=ON
+      - name: All 12 graphics tests are there
+        run: |
+          n=$(ctest --test-dir build -N -R "gfx_|mini_desktop" | grep -c "Test *#")
+          echo "$n graphics tests"
+          test "$n" -eq 12
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --parallel 4
+
   # The C runtime (runtime/c) built on its own with warnings as errors.
   # gcc and clang use -std=c99 -Wall -Wextra -pedantic; MSVC uses /std:c11 /W4,
   # its closest mode for C99 code. The Linux jobs also run ASan, UBSan and LSan.
