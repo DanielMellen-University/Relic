@@ -4,8 +4,9 @@
  * not part of C1. This file gives the same answers as the C++ host built
  * without -DRELIC_SDL=ON: host_gfx_available, host_gfx_has_png and
  * host_gfx_has_fonts give false, every other host_gfx_* fails with the
- * same message, and the clipboard is kept in this process. The plan for
- * the real module is in docs/C-RUNTIME.md, "Graphics". */
+ * same message, and the clipboard is kept in this process. The SDL2
+ * module is rl_gfx_sdl.c (-DRELIC_C_SDL=ON); see docs/C-RUNTIME.md,
+ * "Graphics". */
 #include "relic.h"
 #include "rl_internal.h"
 
@@ -64,3 +65,9 @@ static const rl_builtin_def g_gfx[] = {
     {NULL, 0, NULL}};
 
 const rl_builtin_def *rl_gfx_defs(void) { return g_gfx; }
+
+void rl_gfx_release(void) {
+    free(g_clip);
+    g_clip = NULL;
+    g_clip_len = 0;
+}

@@ -6,7 +6,8 @@
 typedef struct { const char *name; int arity; rl_code code; } rl_builtin_def;
 
 const rl_builtin_def *rl_host_defs(void);   /* rl_host.c */
-const rl_builtin_def *rl_gfx_defs(void);    /* rl_gfx_stub.c or the SDL2 module */
+const rl_builtin_def *rl_gfx_defs(void);    /* rl_gfx_stub.c or rl_gfx_sdl.c */
+void rl_gfx_release(void);                  /* at exit: close the window, free the clipboard */
 size_t rl_builtin_count(void);
 const rl_builtin_def *rl_builtin_at(size_t i);
 void rl_builtins_release(void);

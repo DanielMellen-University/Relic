@@ -306,4 +306,5 @@ void rl_builtins_release(void) {
     free(g_cache);
     g_cache = NULL;
     g_cache_n = 0;
+    rl_gfx_release();
 }

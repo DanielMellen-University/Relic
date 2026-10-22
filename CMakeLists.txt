@@ -9,6 +9,7 @@ project(relic VERSION 1.0.8 LANGUAGES C)
 option(RELIC_BUILD_HOST "Also build the C++ host (relic) and its tests" OFF)
 option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); turns on RELIC_BUILD_HOST" OFF)
 option(RELIC_C_RUNTIME "Build the C runtime in runtime/c and the C compiler on it" ON)
+option(RELIC_C_SDL "Build the SDL2 graphics module into the C runtime, for compiled programs (needs SDL2)" OFF)
 # Added to another project with add_subdirectory, Relic leaves out its own
 # compiled goldens by default (134 extra targets) and keeps relicc and
 # relic_add_program (cmake/Relic.cmake).
@@ -35,6 +36,19 @@ endif()
 
 enable_testing()
 file(GLOB GOLDEN_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/*.relic)
+
+# Expected output of the headless SDL tests (tests/sdl, examples/mini_desktop),
+# shared by the host (RELIC_SDL) and compiled (RELIC_C_SDL) runs.
+set(GFX_SMOKE_OUT "4 3\nnone\nbool bool\nint false\ndone")
+set(GFX_EVENTS_OUT "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34\nmouse_up 1 12 34\nwheel -2\nresize 100 70\na\n30 20\nstring\ndone")
+set(GFX_SIMULATE_OUT "^key_down a true true false\nkey_up a true false false\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
+set(MINI_DESKTOP_OUT "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
+set(GFX_PNG_OUT "^true\n5 4\n")
+set(GFX_TTF_OUT "^true\nwide true\ntall true\ndone")
+if(RELIC_SDL OR RELIC_C_SDL)
+  find_file(RELIC_TEST_FONT NAMES DejaVuSans.ttf
+    PATHS /usr/share/fonts/truetype/dejavu /usr/share/fonts/TTF /Library/Fonts C:/Windows/Fonts NO_DEFAULT_PATH)
+endif()
 
 if(RELIC_BUILD_HOST)
   enable_language(CXX)
@@ -110,30 +124,28 @@ if(RELIC_BUILD_HOST)
     # Headless SDL smoke test: input, text and image calls run without a display.
     add_test(NAME gfx_smoke COMMAND relic gfx_smoke.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_smoke PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-      PASS_REGULAR_EXPRESSION "4 3\nnone\nbool bool\nint false\ndone")
+      PASS_REGULAR_EXPRESSION "${GFX_SMOKE_OUT}")
     # Event queue (simulated keys, text, clicks, wheel, resize), extra drawing, clipboard.
     add_test(NAME gfx_events COMMAND relic gfx_events.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_events PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-      PASS_REGULAR_EXPRESSION "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34\nmouse_up 1 12 34\nwheel -2\nresize 100 70\na\n30 20\nstring\ndone")
+      PASS_REGULAR_EXPRESSION "${GFX_EVENTS_OUT}")
 
     add_test(NAME gfx_simulate COMMAND relic gfx_simulate.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
     set_tests_properties(gfx_simulate PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-      PASS_REGULAR_EXPRESSION "^key_down a true true false\nkey_up a true false false\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
+      PASS_REGULAR_EXPRESSION "${GFX_SIMULATE_OUT}")
     # Mini desktop example: multi-app event loop, headless.
     add_test(NAME mini_desktop COMMAND relic desktop.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
     set_tests_properties(mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-      PASS_REGULAR_EXPRESSION "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
+      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}")
     if(TARGET SDL2_image::SDL2_image)
       add_test(NAME gfx_png COMMAND relic gfx_png.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
       set_tests_properties(gfx_png PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-        PASS_REGULAR_EXPRESSION "^true\n5 4\n")
+        PASS_REGULAR_EXPRESSION "${GFX_PNG_OUT}")
     endif()
-    find_file(RELIC_TEST_FONT NAMES DejaVuSans.ttf
-      PATHS /usr/share/fonts/truetype/dejavu /usr/share/fonts/TTF /Library/Fonts C:/Windows/Fonts NO_DEFAULT_PATH)
     if(TARGET SDL2_ttf::SDL2_ttf AND RELIC_TEST_FONT)
       add_test(NAME gfx_ttf COMMAND relic gfx_ttf.relic ${RELIC_TEST_FONT} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
       set_tests_properties(gfx_ttf PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-        PASS_REGULAR_EXPRESSION "^true\nwide true\ntall true\ndone")
+        PASS_REGULAR_EXPRESSION "${GFX_TTF_OUT}")
     endif()
   endif()
 
@@ -192,6 +204,33 @@ if(RELIC_C_RUNTIME)
     add_test(NAME example_compiled COMMAND example_compiled one two)
     set_tests_properties(example_compiled PROPERTIES PASS_REGULAR_EXPRESSION
       "^hello Ada\nhello Linus\nhello Grace\nAda, Linus, Grace\nargs: \\[\"one\", \"two\"\\]\n$")
+  endif()
+
+  # RELIC_C_SDL: the headless SDL tests again, compiled to C and run on the
+  # SDL2 module in runtime/c (rl_gfx_sdl.c). Same expected output as the host.
+  if(RELIC_C_SDL AND RELIC_TOP_LEVEL)
+    set(sdl ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
+    set(gfx_c_tests gfx_smoke gfx_events gfx_simulate)
+    if(RELIC_C_SDL_IMAGE)
+      list(APPEND gfx_c_tests gfx_png)
+    endif()
+    foreach(t ${gfx_c_tests})
+      string(TOUPPER ${t} up)
+      relic_add_program(c_${t} ${sdl}/${t}.relic)
+      add_test(NAME c_${t} COMMAND c_${t} WORKING_DIRECTORY ${sdl})
+      set_tests_properties(c_${t} PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
+        PASS_REGULAR_EXPRESSION "${${up}_OUT}")
+    endforeach()
+    if(RELIC_C_SDL_TTF AND RELIC_TEST_FONT)
+      relic_add_program(c_gfx_ttf ${sdl}/gfx_ttf.relic)
+      add_test(NAME c_gfx_ttf COMMAND c_gfx_ttf ${RELIC_TEST_FONT} WORKING_DIRECTORY ${sdl})
+      set_tests_properties(c_gfx_ttf PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
+        PASS_REGULAR_EXPRESSION "${GFX_TTF_OUT}")
+    endif()
+    relic_add_program(c_mini_desktop examples/mini_desktop/desktop.relic)
+    add_test(NAME c_mini_desktop COMMAND c_mini_desktop WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
+    set_tests_properties(c_mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
+      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}")
   endif()
 
   # bootstrap/cgen.c must be what cgen writes from the current sources.
