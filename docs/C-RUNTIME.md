@@ -143,7 +143,7 @@ At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: t
 - Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_std_root`, `host_names`, `host_call`.
 - Graphics stubs and the clipboard: see below.
 
-`host_names()` lists the same 62 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
+`host_names()` lists the same 77 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
 `num("...")` follows the host: digits that fit give an int, otherwise the whole text must read as a float through `strtod`, so hex floats, `inf` and `nan` work and an out-of-range number is not a number.
 
@@ -172,7 +172,7 @@ Graphics is an optional C module over SDL2 (Daniel, Oct 20 2026). The runtime ha
 
 `rl_gfx_sdl.c` (1.0.9) is the SDL2 module, in `relic_rt_gfx`. `relic_add_program(name file GRAPHICS)` links a program with it; everything else, `relicc` included, links `relic_rt` and never needs SDL2. It needs SDL2 (`find_package(SDL2)`, required once the option is on), and uses SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) when CMake finds them, like the host. It does not need the C++ host.
 
-- It is a C99 port of `src/builtins/graphics.cpp`: the same 35 names and arity, the same results and the same error messages (`graphics.clear(): no window is open; call open first`, `red must be 0 to 255`, ...). A side-by-side run of every error case gives the same output on both.
+- It is a C99 port of `src/builtins/graphics.cpp`: the same 50 names and arity, the same results and the same error messages (`graphics.clear(): no window is open; call open first`, `red must be 0 to 255`, ...). A side-by-side run of every error case gives the same output on both.
 - One window at a time. Events and pressed keys are queued as Relic maps and strings, up to 512 events and 64 keys, oldest dropped first. `simulate` adds to that queue directly rather than through `SDL_PushEvent` (1.0.10), as the host does, so it works on sdl2-compat too.
 - The built-in 8x12 text font is the host's `src/builtins/font8x12.inc`, included as is.
 - `rl_gfx_release()` runs at exit (from `rl_builtins_release`). It closes a window the program left open, so queued events do not trip the leak check.

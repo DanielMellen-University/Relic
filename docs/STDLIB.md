@@ -192,10 +192,51 @@ Colors are 0 to 255 per channel. One window at a time.
 | `available()` | | bool | |
 | `open(w, h, title)` | int, int, string | none | size must be > 0; title must be string |
 | `close()` | | none | |
-| `size()` | | `[w, h]` | no window open |
+| `size()` | | `[w, h]` | no window open; in pixels |
 | `present()` | | none | no window |
 | `quit_requested()` | | bool | no window; also pumps events |
 | `wait(ms)` | number | none | |
+| `title()` / `set_title(s)` | string | string / none | no window; title must be a string |
+| `window_size()` | | `[w, h]` | no window; in window units, the ones mouse positions use |
+| `set_window_size(w, h)` | ints > 0 | none | no window; size must be > 0 |
+| `scale()` | | float | no window; pixels per window unit, `size()[0] / window_size()[0]` |
+| `fullscreen()` / `set_fullscreen(on)` | bool | bool / none | no window; `on` must be true or false; the system can refuse |
+
+`set_window_size` and `set_fullscreen` change the drawing area, and the change
+comes back as a `resize` event like one the user makes. `scale()` is 1.0
+today: windows are not opened in high-DPI mode yet (see
+[PROJECT_PLAN.md](PROJECT_PLAN.md), the open high-DPI call).
+
+### Cursor
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `set_cursor(name)` | string | bool | no window; unknown name. `false` when the system cannot show that shape (the headless dummy driver never can) |
+| `show_cursor(on)` | bool | none | no window |
+| `cursor_visible()` | | bool | no window |
+
+Cursor names: `arrow`, `text`, `wait`, `crosshair`, `hand`, `move`, `no`,
+`resize_ew`, `resize_ns`, `resize_nwse`, `resize_nesw`.
+
+### Frames
+
+| Call | Args | Returns | Errors |
+|---|---|---|---|
+| `set_vsync(on)` | bool | bool | no window; `true` when the renderer took it |
+| `vsync()` | | bool | no window |
+| `ticks()` | | int | no window; whole milliseconds since `open` |
+| `frame_time()` | | float | no window; seconds between the last two presents, 0.0 before two |
+| `present_capped(fps)` | number > 0 | none | no window; `present()` that first waits so frames come no faster than `fps` a second |
+
+```
+while not graphics.quit_requested()
+    let dt = graphics.frame_time()   # move things by speed * dt
+    draw()
+    graphics.present_capped(60)
+```
+
+`std/time` has a frame timer too (`timer`, `tick`, `limit`) that works without
+a window.
 
 ### Drawing
 

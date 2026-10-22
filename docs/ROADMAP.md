@@ -56,7 +56,7 @@ Compiler to C:
 
 The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) and tracked in its roadmap. This phase covers what the language gives it.
 
-- [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11). Compiled programs have it too since 1.0.9 (`runtime/c/rl_gfx_sdl.c` in `relic_rt_gfx`, `-DRELIC_C_SDL=ON`, `relic_add_program(... GRAPHICS)`), tested headless in the CI job `sdl` on Linux, macOS and Windows (1.0.10)
+- [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11). Compiled programs have it too since 1.0.9 (`runtime/c/rl_gfx_sdl.c` in `relic_rt_gfx`, `-DRELIC_C_SDL=ON`, `relic_add_program(... GRAPHICS)`), tested headless in the CI job `sdl` on Linux, macOS and Windows (1.0.10). 1.0.11 added the last slice Daniel picked (option B): window title, size and fullscreen, cursor shapes and visibility, vsync and frame timing, and the pixel scale. Still open: how high-DPI drawing works, a call for Daniel (PROJECT_PLAN, "Decisions needed")
 - [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`)
 - [x] Desktop shell moved out to M0N0LITH-2 with its history (1.0.1)
 

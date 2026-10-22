@@ -110,11 +110,13 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 | `gfx_smoke` | input, text and image calls run | SDL2 |
 | `gfx_events` | the event queue: keys, text, clicks, wheel, resize; drawing; clipboard | SDL2 |
 | `gfx_simulate` | `simulate` for keys with mods, mouse, move, quit | SDL2 |
+| `gfx_window` | title, window size, scale, fullscreen, cursor, vsync, `ticks`, `frame_time`, `present_capped`. What the dummy driver cannot do (real cursors, vsync) is checked by type | SDL2 |
+| `gfx_window_errors` | every error those calls give, in order | SDL2 |
 | `mini_desktop` | the `examples/mini_desktop` example, driven by its own simulated input | SDL2 |
 | `gfx_png` | loading a PNG | SDL2_image |
 | `gfx_ttf` | TrueType text size | SDL2_ttf and a font: DejaVuSans.ttf, else Arial (macOS, Windows), or `-DRELIC_TEST_FONT=path` |
 
-`-DRELIC_C_SDL=ON` (no host needed) builds `relic_rt_gfx`, the C runtime with the SDL2 module, and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program(... GRAPHICS)`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. Everything else, `relicc` and the `cgen_*` goldens included, still links `relic_rt` with the stub, so `c_runtime` and `cgen_std_graphics` are the same in every build.
+`-DRELIC_C_SDL=ON` (no host needed) builds `relic_rt_gfx`, the C runtime with the SDL2 module, and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_gfx_window`, `c_gfx_window_errors`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program(... GRAPHICS)`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. Everything else, `relicc` and the `cgen_*` goldens included, still links `relic_rt` with the stub, so `c_runtime` and `cgen_std_graphics` are the same in every build.
 
 `mini_desktop` and `c_mini_desktop` both write `examples/mini_desktop/data`, so they share a ctest lock and never run at the same time.
 
@@ -126,7 +128,7 @@ Getting SDL2:
 - macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 - Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
 
-The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 305 cases each, headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 12 graphics tests is missing.
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 309 cases each, headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing.
 
 ## relic_add_program
 

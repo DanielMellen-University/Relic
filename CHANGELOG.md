@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.11 (2026-10-22)
+
+The last slice of the windowing and drawing item (Daniel's pick B, Oct 22 2026). In `std/graphics`, with the same names, results and errors in the host and in compiled programs (`relic_rt_gfx`); the stub and the host without SDL fail with the usual rebuild message:
+
+- Window: `title()`, `set_title(s)`, `window_size()` (window units, the ones mouse positions use), `set_window_size(w, h)`, `scale()` (pixels per window unit), `fullscreen()`, `set_fullscreen(on)` (the desktop's own resolution). A size change comes back as the usual `resize` event.
+- Cursor: `set_cursor(name)` with 11 system shapes (`arrow`, `text`, `wait`, `crosshair`, `hand`, `move`, `no`, `resize_ew`, `resize_ns`, `resize_nwse`, `resize_nesw`); it gives false when the system cannot show the shape. `show_cursor(on)`, `cursor_visible()`.
+- Frames: `set_vsync(on)` (true when the renderer took it), `vsync()`, `ticks()` (whole milliseconds since `open`), `frame_time()` (seconds between the last two presents), `present_capped(fps)` (waits so frames come no faster than `fps`).
+- Not done: sharp drawing on high-DPI screens. Windows still open without high-DPI mode, so `scale()` is 1.0. How drawing coordinates should work there is a call for Daniel (PROJECT_PLAN, "Decisions needed"), so the roadmap item stays open.
+- `host_names()` lists 77 built-ins (was 62); `selfhost/cgen.relic` knows the new names and `bootstrap/cgen.c` is regenerated.
+- New tests `gfx_window` and `gfx_window_errors`, host and compiled (`c_gfx_window`, `c_gfx_window_errors`): every new call headless, and every error message in order, the same on both. What the dummy driver cannot do (real cursors, vsync) is checked by type. The CI `sdl` job now expects 16 graphics tests.
+- `ctest`: 139 default and 293 with the host, as before; 147 with `-DRELIC_C_SDL=ON`, 309 with both SDL options.
+
 ## 1.0.10 (2026-10-22)
 
 - CI: the `sdl` job runs on macOS (Homebrew `sdl2`, `sdl2_image`, `sdl2_ttf`) and Windows (vcpkg with MSVC, packages cached between runs) as well as Ubuntu 24.04. Each builds with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` and warnings as errors for the C, runs all 305 tests headless, and fails if any of the 12 graphics tests is missing. 18 jobs.
