@@ -1,6 +1,6 @@
 # Relic guide
 
-A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.8. For the exact rules, see the [language reference](LANGUAGE.md).
+A walk through the language, from the first line to modules and errors. Every example here runs as shown on `relic` 1.0.9. For the exact rules, see the [language reference](LANGUAGE.md).
 
 You need a built `relic` first: the C++ host, built with `-DRELIC_BUILD_HOST=ON`. See [The C++ host](../README.md#the-c-host). The default build makes `relicc` instead, which compiles the same programs to C.
 
@@ -224,7 +224,7 @@ print(lists.sort([3, 1, 2]))
 
 - `relic tool.relic a b` passes `a` and `b` to the program. `os.args()` (or the built-in `args()`) gives `["a", "b"]`.
 - `std/files` reads and writes text files, `std/json` reads and writes JSON, `std/os` has `env`, `cwd` and `exit`.
-- Windows, drawing and input come from `std/graphics` in a build made with `-DRELIC_SDL=ON`. Start with `examples/hello_window.relic`. See [examples/](../examples/README.md).
+- Windows, drawing and input come from `std/graphics` in a build made with `-DRELIC_SDL=ON` (the host) or `-DRELIC_C_SDL=ON` (compiled programs). Start with `examples/hello_window.relic`. See [examples/](../examples/README.md).
 
 ## Where next
 

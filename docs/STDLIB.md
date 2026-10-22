@@ -177,8 +177,10 @@ draw then `limit`.
 
 ## std/graphics
 
-Needs a host built with `-DRELIC_SDL=ON`. `available()` is `false` otherwise;
-every other call then fails with a rebuild message.
+Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C
+runtime built with `-DRELIC_C_SDL=ON`. Both give the same results and errors.
+`available()` is `false` otherwise; every other call then fails with a rebuild
+message.
 
 Colors are 0 to 255 per channel. One window at a time.
 
@@ -341,6 +343,9 @@ read it with `next_event`, and assert on your app state (see the
 
 `ctest --test-dir build-sdl` sets `SDL_VIDEODRIVER=dummy` for the graphics
 tests automatically.
+
+A compiled program works the same way. Configure with `-DRELIC_C_SDL=ON`,
+build it with `relic_add_program`, and run it with `SDL_VIDEODRIVER=dummy`.
 
 Window drag and resize inside a Relic desktop (like M0N0LITH-2) are built from `mouse_down`,
 `mouse_move` and `mouse_up`; the host window itself sends `resize`.

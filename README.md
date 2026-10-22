@@ -4,7 +4,7 @@ Relic is the programming language for MONOLITH 2.
 
 This repo is the language only: the compiler to C and its C runtime, the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-> Status: **1.0.8**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM (M10), and optional SDL2 graphics (M11). Relic now compiles itself: a compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). Its own C is committed in `bootstrap/`, so the default build needs only a C compiler (C1 to C5). The C++ host (tree-walker, VM, REPL, graphics) is optional. See the [roadmap](docs/ROADMAP.md).
+> Status: **1.0.9**. Relic 1.0 was tagged `v1.0.0` (MIT). Since then it gained modules (M7), a standard library (M8), a lexer, parser and interpreter written in Relic (M9), a bytecode VM (M10), and optional SDL2 graphics (M11), now for compiled programs too (`-DRELIC_C_SDL=ON`). Relic now compiles itself: a compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). Its own C is committed in `bootstrap/`, so the default build needs only a C compiler (C1 to C5). The C++ host (tree-walker, VM, REPL, graphics) is optional. See the [roadmap](docs/ROADMAP.md).
 
 ## A taste
 
@@ -55,7 +55,7 @@ cmake --build build
 ./build/relic hello.relic
 ```
 
-Run `./build/relic` alone for the REPL. For graphics add `-DRELIC_SDL=ON` (needs SDL2; it turns the host on); see [examples/](examples/README.md). The host build runs the host's own tests too and checks that the host and the compiled compiler write the same C.
+Run `./build/relic` alone for the REPL. For graphics add `-DRELIC_SDL=ON` (needs SDL2; it turns the host on); see [examples/](examples/README.md). Compiled programs get the same `std/graphics` with `-DRELIC_C_SDL=ON`, which needs SDL2 but not the host ([C-RUNTIME.md](docs/C-RUNTIME.md#graphics)). The host build runs the host's own tests too and checks that the host and the compiled compiler write the same C.
 
 ## Relic in five minutes
 

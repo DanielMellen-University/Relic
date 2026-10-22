@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.9 (2026-10-21)
+
+- Graphics for compiled programs (M11): `runtime/c/rl_gfx_sdl.c` is the optional C module over SDL2 that Daniel picked on Oct 20 2026. It is a C99 port of the host's `src/builtins/graphics.cpp` with the same names, arity, results and error messages, so `std/graphics` works the same compiled. SDL2_image and SDL2_ttf are used when found.
+- New CMake option `-DRELIC_C_SDL=ON` builds it into `relic_rt` in place of `rl_gfx_stub.c`. It is off by default, so the default build, the no-C++ build and CI need no SDL2. It does not need the host.
+- With it, the headless SDL tests and the mini desktop example are compiled with `relic_add_program` and run with the leak check: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` and `c_gfx_ttf`, with the same expected output as the host's tests.
+- C runtime: a window left open at exit is closed (`rl_gfx_release`), so its queued events are freed before the leak check.
+- Open for Daniel: how the build hands the module to programs (PROJECT_PLAN, "Decisions needed"). Until then it is the opt-in switch above.
+- `ctest` has 139 cases in the default build and 293 with the host, as before; 145 with `-DRELIC_C_SDL=ON` and SDL2_image, SDL2_ttf and DejaVu fonts installed.
+
 ## 1.0.8 (2026-10-21)
 
 - New CMake helper `relic_add_program(name file [DEPENDS files...])` in `cmake/Relic.cmake` (Daniel's pick, Oct 21 2026; no `relicc run` mode). It compiles a `.relic` program with `relicc`, builds the C with `runtime/c`, and makes the executable target `name`, in this tree or in a project that adds Relic with `add_subdirectory`. It reruns relicc when the file, any `.relic` under its folder, `std/` or relicc changes; `DEPENDS` adds modules from elsewhere.

@@ -6,7 +6,7 @@ How the host was started. Kept as a record; all steps are done. Since 1.0.7 the 
 
 - C++17 compiler (GCC, Clang or MSVC)
 - CMake 3.16 or newer
-- No other libraries. **Default:** the C++ standard library is the only borrowed dependency in the default build. SDL2 is an optional borrowed dependency for graphics (`-DRELIC_SDL=ON`, M11).
+- No other libraries. **Default:** the C++ standard library is the only borrowed dependency in the default build. SDL2 is an optional borrowed dependency for graphics (`-DRELIC_SDL=ON` for the host, `-DRELIC_C_SDL=ON` for compiled programs, M11).
 
 ## Status
 

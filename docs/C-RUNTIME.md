@@ -42,7 +42,8 @@ Where a smaller choice came up (map order, int overflow, closure capture, number
 | `rl_ops.c` | operators, indexing, fields, ranges, conditions, loop items, type hints, number parsing |
 | `rl_builtins.c` | the language built-ins (`print`, `len`, `str`, `num`, ...) and the shared built-in table |
 | `rl_host.c` | the `host_*` primitives: files, folders, clocks, float math, process |
-| `rl_gfx_stub.c` | graphics in a build without the SDL2 module |
+| `rl_gfx_stub.c` | graphics in a build without the SDL2 module (the default) |
+| `rl_gfx_sdl.c` | the SDL2 graphics module, built instead of the stub with `-DRELIC_C_SDL=ON` |
 | `rl_internal.h` | shared by the runtime's own files only |
 | `tests/` | unit tests, the hand-compiled demo, the output compare script |
 
@@ -54,7 +55,7 @@ cmake --build build-c
 ctest --test-dir build-c
 ```
 
-Options: `RELIC_C_WERROR` turns warnings into errors, `RELIC_C_SANITIZE` adds ASan and UBSan on gcc and clang (LSan comes with ASan on Linux). The library is `relic_rt`. It needs only the C library and libm.
+Options: `RELIC_C_WERROR` turns warnings into errors, `RELIC_C_SANITIZE` adds ASan and UBSan on gcc and clang (LSan comes with ASan on Linux), `RELIC_C_SDL` builds the SDL2 graphics module (see [Graphics](#graphics)). The library is `relic_rt`. By default it needs only the C library and libm.
 
 ## Values
 
@@ -142,7 +143,7 @@ At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: t
 - Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_std_root`, `host_names`, `host_call`.
 - Graphics stubs and the clipboard: see below.
 
-`host_names()` lists the same 62 host built-ins as a non-SDL C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
+`host_names()` lists the same 62 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
 `num("...")` follows the host: digits that fit give an int, otherwise the whole text must read as a float through `strtod`, so hex floats, `inf` and `nan` work and an out-of-range number is not a number.
 
@@ -165,13 +166,25 @@ The runtime keeps the collector list and the built-in table in process-wide vari
 
 ## Graphics
 
-Graphics stays an optional C module over SDL2. It is not part of C1. `rl_gfx_stub.c` answers like the C++ host built without `-DRELIC_SDL=ON`: `host_gfx_available()`, `host_gfx_has_png()` and `host_gfx_has_fonts()` give false, every other `host_gfx_*` fails with `graphics are not built in; rebuild with cmake -DRELIC_SDL=ON (needs SDL2)`, and `host_clipboard_set` / `host_clipboard_get` keep text in the process.
+Graphics is an optional C module over SDL2 (Daniel, Oct 20 2026). The runtime has two versions of the `host_gfx_*` table (`rl_gfx_defs()`), and a build links one of them.
 
-The plan for the module, after C2:
+`rl_gfx_stub.c`, the default, answers like the C++ host built without `-DRELIC_SDL=ON`: `host_gfx_available()`, `host_gfx_has_png()` and `host_gfx_has_fonts()` give false, every other `host_gfx_*` fails with `graphics are not built in; rebuild with cmake -DRELIC_SDL=ON (needs SDL2)`, and `host_clipboard_set` / `host_clipboard_get` keep text in the process.
 
-- A file `rl_gfx_sdl.c` that defines the same `host_gfx_*` table (`rl_gfx_defs()`) over SDL2, with SDL2_image and SDL2_ttf optional, as in `src/builtins/graphics.cpp`.
-- A CMake option that builds it in place of the stub. Builds without SDL2 keep the stub.
-- The headless `gfx_smoke` and `SDL_VIDEODRIVER=dummy` tests run against it too.
+`rl_gfx_sdl.c` (1.0.9) is the SDL2 module. `-DRELIC_C_SDL=ON` builds it into `relic_rt` in place of the stub. It needs SDL2 (`find_package(SDL2)`, required once the option is on), and uses SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) when CMake finds them, like the host. It does not need the C++ host.
+
+- It is a C99 port of `src/builtins/graphics.cpp`: the same 35 names and arity, the same results and the same error messages (`graphics.clear(): no window is open; call open first`, `red must be 0 to 255`, ...). A side-by-side run of every error case gives the same output on both.
+- One window at a time. Events and pressed keys are queued as Relic maps and strings, up to 512 events and 64 keys, oldest dropped first.
+- The built-in 8x12 text font is the host's `src/builtins/font8x12.inc`, included as is.
+- `rl_gfx_release()` runs at exit (from `rl_builtins_release`). It closes a window the program left open, so queued events do not trip the leak check.
+- Everything in the build that links `relic_rt` gets the module, `relicc` included. Whether to keep it that way is an open question for Daniel (see [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed)).
+
+```sh
+cmake -S . -B build-csdl -DRELIC_C_SDL=ON
+cmake --build build-csdl
+cd tests/sdl && SDL_VIDEODRIVER=dummy ../../build-csdl/c_gfx_events
+```
+
+The compiled SDL tests are listed in [TESTING.md](TESTING.md#graphics-tests). CI has no SDL job yet.
 
 ## Calls for generated code
 
@@ -201,4 +214,4 @@ The expected strings in `test_runtime.c` were taken from the C++ host. CI builds
 
 Left for later:
 
-- The SDL2 graphics module (above).
+- An SDL job in CI for the graphics module (above). Today it is tested locally only.

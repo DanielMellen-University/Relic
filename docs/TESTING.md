@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 139 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 293: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more.
+How Relic is tested, and how to run it. The default build (C only, no host) has 139 ctest cases: 134 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 293: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and DejaVu fonts adds 6 more, and `-DRELIC_C_SDL=ON` adds 6 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -114,7 +114,11 @@ An SDL build (`-DRELIC_SDL=ON`) adds headless cases. ctest sets `SDL_VIDEODRIVER
 | `gfx_png` | loading a PNG | SDL2_image |
 | `gfx_ttf` | TrueType text size | SDL2_ttf and a DejaVuSans.ttf |
 
+`-DRELIC_C_SDL=ON` (no host needed) builds the SDL2 module into the C runtime and runs the same programs compiled: `c_gfx_smoke`, `c_gfx_events`, `c_gfx_simulate`, `c_mini_desktop`, `c_gfx_png` (with SDL2_image) and `c_gfx_ttf` (with SDL2_ttf and the font). Each is built with `relic_add_program`, runs with the leak check on (`RELIC_LEAK_CHECK=1`) and must print what the host test prints. `c_runtime` then expects `host_gfx_available()` to be true.
+
 On Debian or Ubuntu: `apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core`.
+
+CI has no SDL job yet, so all of these run locally only.
 
 ## relic_add_program
 

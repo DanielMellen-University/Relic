@@ -64,7 +64,7 @@ The whole language:
 - every built-in in the runtime: `print`, `len`, `str`, `gc`, the `host_*` primitives and the rest
 - `use` for the program's own files and for `std/`, `use ... as`, module values and their fields, cycles between modules, a module that uses the main file back (see [Modules](#modules))
 
-Graphics still go through the runtime's stub (no SDL2 module in C yet), so `std/graphics` loads and reports that graphics are not available, as a non-SDL host does.
+Graphics: by default the runtime's stub answers, so `std/graphics` loads and reports that graphics are not available, as a non-SDL host does. With `-DRELIC_C_SDL=ON` the runtime has the SDL2 module and compiled programs open windows, draw and take input like the host ([C-RUNTIME.md](C-RUNTIME.md#graphics)). cgen writes the same C either way; the choice is made when the runtime is built.
 
 ## Shape of the generated C
 
@@ -211,4 +211,4 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 
 ## Open choices
 
-None right now.
+- How compiled programs get graphics in the build (`-DRELIC_C_SDL` today: the SDL2 module replaces the stub in `relic_rt` for the whole build). Pending Daniel; options in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed).

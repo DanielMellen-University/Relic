@@ -17,7 +17,7 @@ Relic/
     ast/            AST node types and the --ast dump
     interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations), gc.cpp (cycle collector)
     vm/             bytecode compiler and stack VM (the default engine)
-    builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones (font8x12.inc is its generated font)
+    builtins/       built-in functions; graphics.cpp holds the optional SDL2 ones (font8x12.inc is its generated font, shared with runtime/c/rl_gfx_sdl.c)
     diag/           error messages with file, line, column
   runtime/c/        C99 runtime for compiled Relic (C1), see C-RUNTIME.md
   std/              standard library, written in Relic
@@ -47,7 +47,7 @@ The default build needs only a C compiler. The C++ host is built with `-DRELIC_B
 | `relic` | host | the command line program, links `relic_core` |
 | `relic_tests` | host | unit tests, links `relic_core` |
 
-Options: `-DRELIC_BUILD_HOST=ON` adds the C++ host and its tests (off by default). `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` and everything compiled (only allowed with the host); `-DRELIC_CGEN_TESTS=OFF` leaves out only the `cgen_*` targets; it defaults to off when Relic is added to another project with `add_subdirectory`. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins into the host and turns the host on (off by default). With it, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
+Options: `-DRELIC_BUILD_HOST=ON` adds the C++ host and its tests (off by default). `-DRELIC_C_RUNTIME=OFF` leaves out `runtime/c/` and everything compiled (only allowed with the host); `-DRELIC_CGEN_TESTS=OFF` leaves out only the `cgen_*` targets; it defaults to off when Relic is added to another project with `add_subdirectory`. `-DRELIC_SDL=ON` builds the SDL2 graphics built-ins into the host and turns the host on (off by default). `-DRELIC_C_SDL=ON` builds the SDL2 module (`runtime/c/rl_gfx_sdl.c`) into the C runtime in place of the stub, for compiled programs, without the host (off by default). With either, SDL2_image (PNG, JPG) and SDL2_ttf (TrueType) are used when CMake finds them. `RELIC_STD_DIR` is set to the source tree's `std/` at build time; `$RELIC_STD` overrides it at run time. The version comes from `project(relic VERSION ...)` in `CMakeLists.txt` through `src/version.hpp.in`.
 
 ## Pipeline
 

@@ -56,7 +56,7 @@ Compiler to C:
 
 The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) and tracked in its roadmap. This phase covers what the language gives it.
 
-- [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11)
+- [ ] Windowing and drawing API for Relic programs (started: SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11). Compiled programs have it too since 1.0.9 (`runtime/c/rl_gfx_sdl.c`, `-DRELIC_C_SDL=ON`); how the build hands it to programs is open
 - [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`)
 - [x] Desktop shell moved out to M0N0LITH-2 with its history (1.0.1)
 
