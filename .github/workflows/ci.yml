@@ -76,18 +76,27 @@ jobs:
 
   # Graphics, headless: the host's SDL2 built-ins (-DRELIC_SDL=ON) and the
   # C runtime's SDL2 module, relic_rt_gfx (-DRELIC_C_SDL=ON), with SDL2_image,
-  # SDL2_ttf and a DejaVu font so every graphics test runs (gfx_*, c_gfx_*,
-  # mini_desktop, c_mini_desktop). ctest sets SDL_VIDEODRIVER=dummy. Pinned to
-  # 24.04 so the SDL2 packages do not move under it.
+  # SDL2_ttf and a TrueType font so every graphics test runs (gfx_*, c_gfx_*,
+  # mini_desktop, c_mini_desktop); the job fails if any of the 12 is missing.
+  # ctest sets SDL_VIDEODRIVER=dummy. SDL2 comes from apt on Ubuntu (pinned to
+  # 24.04 so the packages do not move under it), Homebrew on macOS (sdl2 there
+  # is sdl2-compat over SDL3) and vcpkg with MSVC on Windows.
   sdl:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     env:
       SDL_VIDEODRIVER: dummy
+      # SDL3's name for the same setting (sdl2-compat on macOS).
+      SDL_VIDEO_DRIVER: dummy
     steps:
       - uses: actions/checkout@v4
       # Bound the package install so a stalled mirror connection fails fast
       # instead of burning the whole job timeout; apt retries stalled fetches.
-      - name: Install SDL2
+      - name: Install SDL2 (Ubuntu)
+        if: runner.os == 'Linux'
         timeout-minutes: 10
         run: |
           sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
@@ -95,17 +104,45 @@ jobs:
           sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
             -o Acquire::https::Timeout=30 install --yes --no-install-recommends \
             cmake g++ pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev fonts-dejavu-core
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_SDL=ON -DRELIC_C_SDL=ON -DRELIC_C_WERROR=ON
-      - name: All 12 graphics tests are there
+          echo "RELIC_CMAKE_EXTRA=" >> "$GITHUB_ENV"
+      - name: Install SDL2 (macOS)
+        if: runner.os == 'macOS'
+        timeout-minutes: 15
         run: |
-          n=$(ctest --test-dir build -N -R "gfx_|mini_desktop" | grep -c "Test *#")
+          brew install sdl2 sdl2_image sdl2_ttf
+          echo "RELIC_CMAKE_EXTRA=-DCMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
+      # vcpkg ships on the Windows runner. Built packages are cached between
+      # runs; the toolchain file copies the SDL2 DLLs next to every program.
+      - name: Cache vcpkg packages (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-sdl2-x64-windows-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: vcpkg-sdl2-x64-windows-
+      - name: Install SDL2 (Windows)
+        if: runner.os == 'Windows'
+        timeout-minutes: 40
+        shell: bash
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/vcpkg-cache"
+          export VCPKG_DEFAULT_BINARY_CACHE="$GITHUB_WORKSPACE/vcpkg-cache"
+          "$VCPKG_INSTALLATION_ROOT/vcpkg" install sdl2 sdl2-image sdl2-ttf --triplet x64-windows
+          tc=$(cygpath -m "$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake")
+          echo "RELIC_CMAKE_EXTRA=-DCMAKE_TOOLCHAIN_FILE=$tc -DVCPKG_TARGET_TRIPLET=x64-windows" >> "$GITHUB_ENV"
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_SDL=ON -DRELIC_C_SDL=ON -DRELIC_C_WERROR=ON $RELIC_CMAKE_EXTRA
+      - name: All 12 graphics tests are there
+        shell: bash
+        run: |
+          n=$(ctest --test-dir build -C Release -N -R "gfx_|mini_desktop" | grep -c "Test *#")
           echo "$n graphics tests"
           test "$n" -eq 12
       - name: Build
-        run: cmake --build build --parallel 4
+        run: cmake --build build --config Release --parallel 4
       - name: Test
-        run: ctest --test-dir build --output-on-failure --parallel 4
+        run: ctest --test-dir build -C Release --output-on-failure --parallel 4
 
   # The C runtime (runtime/c) built on its own with warnings as errors.
   # gcc and clang use -std=c99 -Wall -Wextra -pedantic; MSVC uses /std:c11 /W4,
