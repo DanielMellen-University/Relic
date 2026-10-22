@@ -75,42 +75,54 @@ std::string lower(std::string s) {
     return s;
 }
 
+// Turns one SDL event into our state: an event map, a key press, quit.
+void take(const SDL_Event& e) {
+    using I = long long;
+    if (e.type == SDL_QUIT) {
+        g_quit = true;
+        g_events.push_back(event("quit", {}));
+    } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+        std::string k = lower(SDL_GetKeyName(e.key.keysym.sym));
+        if (e.type == SDL_KEYDOWN && !e.key.repeat) {
+            g_keys.push_back(k);
+            if (g_keys.size() > 64) g_keys.pop_front();
+        }
+        Uint16 mod = e.key.keysym.mod;
+        g_events.push_back(event(e.type == SDL_KEYDOWN ? "key_down" : "key_up",
+            {{"key", Value(k)}, {"repeat", Value(e.key.repeat != 0)}, {"shift", Value((mod & KMOD_SHIFT) != 0)},
+             {"ctrl", Value((mod & KMOD_CTRL) != 0)}, {"alt", Value((mod & KMOD_ALT) != 0)}}));
+    } else if (e.type == SDL_TEXTINPUT) {
+        g_events.push_back(event("text", {{"text", Value(std::string(e.text.text))}}));
+    } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+        g_events.push_back(event(e.type == SDL_MOUSEBUTTONDOWN ? "mouse_down" : "mouse_up",
+            {{"button", Value(I(e.button.button))}, {"x", Value(I(e.button.x))}, {"y", Value(I(e.button.y))},
+             {"clicks", Value(I(e.button.clicks))}}));
+    } else if (e.type == SDL_MOUSEMOTION) {
+        g_events.push_back(event("mouse_move", {{"x", Value(I(e.motion.x))}, {"y", Value(I(e.motion.y))},
+            {"dx", Value(I(e.motion.xrel))}, {"dy", Value(I(e.motion.yrel))}}));
+    } else if (e.type == SDL_MOUSEWHEEL) {
+        int dy = e.wheel.y, dx = e.wheel.x;
+        if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) { dx = -dx; dy = -dy; }
+        g_events.push_back(event("wheel", {{"dx", Value(I(dx))}, {"dy", Value(I(dy))}}));
+    } else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        g_events.push_back(event("resize", {{"width", Value(I(e.window.data1))}, {"height", Value(I(e.window.data2))}}));
+    }
+    if (g_events.size() > 512) g_events.pop_front();
+}
+
 // Drains SDL's queue into our state. Every input call runs this first.
 void pump() {
     SDL_Event e;
-    while (SDL_PollEvent(&e)) {
-        using I = long long;
-        if (e.type == SDL_QUIT) {
-            g_quit = true;
-            g_events.push_back(event("quit", {}));
-        } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
-            std::string k = lower(SDL_GetKeyName(e.key.keysym.sym));
-            if (e.type == SDL_KEYDOWN && !e.key.repeat) {
-                g_keys.push_back(k);
-                if (g_keys.size() > 64) g_keys.pop_front();
-            }
-            Uint16 mod = e.key.keysym.mod;
-            g_events.push_back(event(e.type == SDL_KEYDOWN ? "key_down" : "key_up",
-                {{"key", Value(k)}, {"repeat", Value(e.key.repeat != 0)}, {"shift", Value((mod & KMOD_SHIFT) != 0)},
-                 {"ctrl", Value((mod & KMOD_CTRL) != 0)}, {"alt", Value((mod & KMOD_ALT) != 0)}}));
-        } else if (e.type == SDL_TEXTINPUT) {
-            g_events.push_back(event("text", {{"text", Value(std::string(e.text.text))}}));
-        } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
-            g_events.push_back(event(e.type == SDL_MOUSEBUTTONDOWN ? "mouse_down" : "mouse_up",
-                {{"button", Value(I(e.button.button))}, {"x", Value(I(e.button.x))}, {"y", Value(I(e.button.y))},
-                 {"clicks", Value(I(e.button.clicks))}}));
-        } else if (e.type == SDL_MOUSEMOTION) {
-            g_events.push_back(event("mouse_move", {{"x", Value(I(e.motion.x))}, {"y", Value(I(e.motion.y))},
-                {"dx", Value(I(e.motion.xrel))}, {"dy", Value(I(e.motion.yrel))}}));
-        } else if (e.type == SDL_MOUSEWHEEL) {
-            int dy = e.wheel.y, dx = e.wheel.x;
-            if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) { dx = -dx; dy = -dy; }
-            g_events.push_back(event("wheel", {{"dx", Value(I(dx))}, {"dy", Value(I(dy))}}));
-        } else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            g_events.push_back(event("resize", {{"width", Value(I(e.window.data1))}, {"height", Value(I(e.window.data2))}}));
-        }
-        if (g_events.size() > 512) g_events.pop_front();
-    }
+    while (SDL_PollEvent(&e)) take(e);
+}
+
+// A simulated event goes after what SDL already holds, straight into our
+// state. It does not go through SDL_PushEvent: sdl2-compat (SDL2 over SDL3,
+// which is what Homebrew's sdl2 is) crashes on a pushed SDL_TEXTINPUT and
+// loses a pushed wheel's distance.
+void simulated(const SDL_Event& e) {
+    pump();
+    take(e);
 }
 
 std::string str(const Value& v, const char* what) {
@@ -433,13 +445,13 @@ void add_graphics_builtins(const AddBuiltin& add) {
             e.key.keysym.sym = SDL_GetKeyFromName(str(a[1], "key").c_str());
             if (e.key.keysym.sym == SDLK_UNKNOWN) throw std::string("unknown key name");
             e.key.keysym.mod = parse_mods(a[2]);
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "text") {
             std::string t = str(a[1], "text");
             if (t.size() >= sizeof(e.text.text)) throw std::string("text is too long");
             e.type = SDL_TEXTINPUT;
             std::copy(t.begin(), t.end(), e.text.text);
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "click") {
             for (Uint32 t : {SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP}) {
                 SDL_Event b{};
@@ -448,7 +460,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
                 b.button.clicks = 1;
                 b.button.x = whole(a[1], "x");
                 b.button.y = whole(a[2], "y");
-                SDL_PushEvent(&b);
+                simulated(b);
             }
         } else if (kind == "mousedown" || kind == "mouseup") {
             e.type = kind == "mousedown" ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
@@ -456,28 +468,28 @@ void add_graphics_builtins(const AddBuiltin& add) {
             e.button.clicks = 1;
             e.button.x = whole(a[1], "x");
             e.button.y = whole(a[2], "y");
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "move") {
             e.type = SDL_MOUSEMOTION;
             e.motion.x = whole(a[1], "x");
             e.motion.y = whole(a[2], "y");
             e.motion.xrel = 0;
             e.motion.yrel = 0;
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "wheel") {
             e.type = SDL_MOUSEWHEEL;
             e.wheel.x = whole(a[1], "dx");
             e.wheel.y = whole(a[2], "dy");
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "resize") {
             e.type = SDL_WINDOWEVENT;
             e.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;
             e.window.data1 = whole(a[1], "width");
             e.window.data2 = whole(a[2], "height");
-            SDL_PushEvent(&e);
+            simulated(e);
         } else if (kind == "quit") {
             e.type = SDL_QUIT;
-            SDL_PushEvent(&e);
+            simulated(e);
         } else {
             throw std::string("unknown event kind: ") + kind;
         }

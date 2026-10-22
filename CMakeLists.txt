@@ -46,8 +46,11 @@ set(MINI_DESKTOP_OUT "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files
 set(GFX_PNG_OUT "^true\n5 4\n")
 set(GFX_TTF_OUT "^true\nwide true\ntall true\ndone")
 if(RELIC_SDL OR RELIC_C_SDL)
-  find_file(RELIC_TEST_FONT NAMES DejaVuSans.ttf
-    PATHS /usr/share/fonts/truetype/dejavu /usr/share/fonts/TTF /Library/Fonts C:/Windows/Fonts NO_DEFAULT_PATH)
+  # A TrueType font for gfx_ttf: DejaVu Sans where it is installed (Linux),
+  # else Arial, which macOS and Windows ship. -DRELIC_TEST_FONT=path overrides.
+  find_file(RELIC_TEST_FONT NAMES DejaVuSans.ttf Arial.ttf arial.ttf
+    PATHS /usr/share/fonts/truetype/dejavu /usr/share/fonts/TTF /Library/Fonts
+      /System/Library/Fonts/Supplemental C:/Windows/Fonts NO_DEFAULT_PATH)
 endif()
 
 if(RELIC_BUILD_HOST)
@@ -135,8 +138,10 @@ if(RELIC_BUILD_HOST)
       PASS_REGULAR_EXPRESSION "${GFX_SIMULATE_OUT}")
     # Mini desktop example: multi-app event loop, headless.
     add_test(NAME mini_desktop COMMAND relic desktop.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
+    # It writes examples/mini_desktop/data, as c_mini_desktop does, so the two
+    # never run at the same time.
     set_tests_properties(mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
-      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}")
+      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}" RESOURCE_LOCK mini_desktop_data)
     if(TARGET SDL2_image::SDL2_image)
       add_test(NAME gfx_png COMMAND relic gfx_png.relic WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/sdl)
       set_tests_properties(gfx_png PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy"
@@ -230,7 +235,7 @@ if(RELIC_C_RUNTIME)
     relic_add_program(c_mini_desktop examples/mini_desktop/desktop.relic GRAPHICS)
     add_test(NAME c_mini_desktop COMMAND c_mini_desktop WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/mini_desktop)
     set_tests_properties(c_mini_desktop PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy;RELIC_LEAK_CHECK=1"
-      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}")
+      PASS_REGULAR_EXPRESSION "${MINI_DESKTOP_OUT}" RESOURCE_LOCK mini_desktop_data)
   endif()
 
   # bootstrap/cgen.c must be what cgen writes from the current sources.

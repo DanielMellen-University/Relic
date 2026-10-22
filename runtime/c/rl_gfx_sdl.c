@@ -134,57 +134,70 @@ static void push_key(rl_value k) {
     g_keys[g_nkeys++] = k;
 }
 
+/* Turns one SDL event into our state: an event map, a key press, quit. */
+static void take(const SDL_Event *ep) {
+    const SDL_Event e = *ep;
+    rl_value ev;
+    if (e.type == SDL_QUIT) {
+        g_quit = 1;
+        push_event(event_new("quit"));
+    } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+        rl_value k = lower_str(SDL_GetKeyName(e.key.keysym.sym));
+        Uint16 mod = e.key.keysym.mod;
+        if (e.type == SDL_KEYDOWN && !e.key.repeat) push_key(rl_retain(k));
+        ev = event_new(e.type == SDL_KEYDOWN ? "key_down" : "key_up");
+        F(ev, "key", k);
+        F(ev, "repeat", rl_bool(e.key.repeat != 0));
+        F(ev, "shift", rl_bool((mod & KMOD_SHIFT) != 0));
+        F(ev, "ctrl", rl_bool((mod & KMOD_CTRL) != 0));
+        F(ev, "alt", rl_bool((mod & KMOD_ALT) != 0));
+        push_event(ev);
+    } else if (e.type == SDL_TEXTINPUT) {
+        ev = event_new("text");
+        F(ev, "text", rl_str_c(e.text.text));
+        push_event(ev);
+    } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+        ev = event_new(e.type == SDL_MOUSEBUTTONDOWN ? "mouse_down" : "mouse_up");
+        F(ev, "button", rl_int(e.button.button));
+        F(ev, "x", rl_int(e.button.x));
+        F(ev, "y", rl_int(e.button.y));
+        F(ev, "clicks", rl_int(e.button.clicks));
+        push_event(ev);
+    } else if (e.type == SDL_MOUSEMOTION) {
+        ev = event_new("mouse_move");
+        F(ev, "x", rl_int(e.motion.x));
+        F(ev, "y", rl_int(e.motion.y));
+        F(ev, "dx", rl_int(e.motion.xrel));
+        F(ev, "dy", rl_int(e.motion.yrel));
+        push_event(ev);
+    } else if (e.type == SDL_MOUSEWHEEL) {
+        int dx = e.wheel.x, dy = e.wheel.y;
+        if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) { dx = -dx; dy = -dy; }
+        ev = event_new("wheel");
+        F(ev, "dx", rl_int(dx));
+        F(ev, "dy", rl_int(dy));
+        push_event(ev);
+    } else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        ev = event_new("resize");
+        F(ev, "width", rl_int(e.window.data1));
+        F(ev, "height", rl_int(e.window.data2));
+        push_event(ev);
+    }
+}
+
 /* Drains SDL's queue into our state. Every input call runs this first. */
 static void pump(void) {
     SDL_Event e;
-    while (SDL_PollEvent(&e)) {
-        rl_value ev;
-        if (e.type == SDL_QUIT) {
-            g_quit = 1;
-            push_event(event_new("quit"));
-        } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
-            rl_value k = lower_str(SDL_GetKeyName(e.key.keysym.sym));
-            Uint16 mod = e.key.keysym.mod;
-            if (e.type == SDL_KEYDOWN && !e.key.repeat) push_key(rl_retain(k));
-            ev = event_new(e.type == SDL_KEYDOWN ? "key_down" : "key_up");
-            F(ev, "key", k);
-            F(ev, "repeat", rl_bool(e.key.repeat != 0));
-            F(ev, "shift", rl_bool((mod & KMOD_SHIFT) != 0));
-            F(ev, "ctrl", rl_bool((mod & KMOD_CTRL) != 0));
-            F(ev, "alt", rl_bool((mod & KMOD_ALT) != 0));
-            push_event(ev);
-        } else if (e.type == SDL_TEXTINPUT) {
-            ev = event_new("text");
-            F(ev, "text", rl_str_c(e.text.text));
-            push_event(ev);
-        } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
-            ev = event_new(e.type == SDL_MOUSEBUTTONDOWN ? "mouse_down" : "mouse_up");
-            F(ev, "button", rl_int(e.button.button));
-            F(ev, "x", rl_int(e.button.x));
-            F(ev, "y", rl_int(e.button.y));
-            F(ev, "clicks", rl_int(e.button.clicks));
-            push_event(ev);
-        } else if (e.type == SDL_MOUSEMOTION) {
-            ev = event_new("mouse_move");
-            F(ev, "x", rl_int(e.motion.x));
-            F(ev, "y", rl_int(e.motion.y));
-            F(ev, "dx", rl_int(e.motion.xrel));
-            F(ev, "dy", rl_int(e.motion.yrel));
-            push_event(ev);
-        } else if (e.type == SDL_MOUSEWHEEL) {
-            int dx = e.wheel.x, dy = e.wheel.y;
-            if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) { dx = -dx; dy = -dy; }
-            ev = event_new("wheel");
-            F(ev, "dx", rl_int(dx));
-            F(ev, "dy", rl_int(dy));
-            push_event(ev);
-        } else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            ev = event_new("resize");
-            F(ev, "width", rl_int(e.window.data1));
-            F(ev, "height", rl_int(e.window.data2));
-            push_event(ev);
-        }
-    }
+    while (SDL_PollEvent(&e)) take(&e);
+}
+
+/* A simulated event goes after what SDL already holds, straight into our
+ * state. It does not go through SDL_PushEvent: sdl2-compat (SDL2 over SDL3,
+ * which is what Homebrew's sdl2 is) crashes on a pushed SDL_TEXTINPUT and
+ * loses a pushed wheel's distance. */
+static void simulated(const SDL_Event *e) {
+    pump();
+    take(e);
 }
 
 static int image_id(rl_ctx *cx, rl_value v, int *id) {
@@ -549,7 +562,7 @@ static int button_event(rl_ctx *cx, Uint32 type, rl_value x, rl_value y) {
     e.button.clicks = 1;
     e.button.x = bx;
     e.button.y = by;
-    SDL_PushEvent(&e);
+    simulated(&e);
     return RL_OK;
 }
 
@@ -572,13 +585,13 @@ BI(g_simulate) {
         if (e.key.keysym.sym == SDLK_UNKNOWN) return rl_fail(cx, "unknown key name");
         if (parse_mods(cx, a[2], &mod)) return RL_ERR;
         e.key.keysym.mod = mod;
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else if (!strcmp(kind, "text")) {
         if (rl_arg_str(cx, a[1], "text")) return RL_ERR;
         if (S(a[1])->len >= sizeof(e.text.text)) return rl_fail(cx, "text is too long");
         e.type = SDL_TEXTINPUT;
         memcpy(e.text.text, S(a[1])->data, S(a[1])->len);
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else if (!strcmp(kind, "click")) {
         if (button_event(cx, SDL_MOUSEBUTTONDOWN, a[1], a[2])) return RL_ERR;
         if (button_event(cx, SDL_MOUSEBUTTONUP, a[1], a[2])) return RL_ERR;
@@ -591,14 +604,14 @@ BI(g_simulate) {
         e.type = SDL_MOUSEMOTION;
         e.motion.x = x;
         e.motion.y = y;
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else if (!strcmp(kind, "wheel")) {
         int dx = 0, dy = 0;
         if (whole(cx, a[1], "dx", &dx) || whole(cx, a[2], "dy", &dy)) return RL_ERR;
         e.type = SDL_MOUSEWHEEL;
         e.wheel.x = dx;
         e.wheel.y = dy;
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else if (!strcmp(kind, "resize")) {
         int w = 0, h = 0;
         if (whole(cx, a[1], "width", &w) || whole(cx, a[2], "height", &h)) return RL_ERR;
@@ -606,10 +619,10 @@ BI(g_simulate) {
         e.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;
         e.window.data1 = w;
         e.window.data2 = h;
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else if (!strcmp(kind, "quit")) {
         e.type = SDL_QUIT;
-        SDL_PushEvent(&e);
+        simulated(&e);
     } else {
         return rl_fail(cx, "unknown event kind: %s", kind);
     }
