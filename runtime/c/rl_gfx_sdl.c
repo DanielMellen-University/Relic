@@ -276,7 +276,7 @@ BI(g_open) {
 BI(g_close) { (void)cx; UNUSED; *out = rl_none(); close_window(); return RL_OK; }
 
 BI(g_clear) {
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rgb(cx, a, &r, &g, &b)) return RL_ERR;
@@ -287,7 +287,7 @@ BI(g_clear) {
 
 BI(g_rect) {
     SDL_Rect rect;
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rect_of(cx, a, &rect) || rgb(cx, a + 4, &r, &g, &b)) return RL_ERR;
@@ -298,7 +298,7 @@ BI(g_rect) {
 
 BI(g_outline) {
     SDL_Rect rect;
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rect_of(cx, a, &rect) || rgb(cx, a + 4, &r, &g, &b)) return RL_ERR;
@@ -310,7 +310,7 @@ BI(g_outline) {
 /* Rect with alpha 0 (clear) to 255 (solid), blended over what is there. */
 BI(g_rect_alpha) {
     SDL_Rect rect;
-    Uint8 r, g, b, al;
+    Uint8 r = 0, g = 0, b = 0, al = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rect_of(cx, a, &rect) || rgb(cx, a + 4, &r, &g, &b) ||
@@ -323,7 +323,7 @@ BI(g_rect_alpha) {
 
 BI(g_pixel) {
     int x = 0, y = 0;
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rgb(cx, a + 2, &r, &g, &b)) return RL_ERR;
@@ -335,7 +335,7 @@ BI(g_pixel) {
 
 BI(g_line) {
     int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || rgb(cx, a + 4, &r, &g, &b)) return RL_ERR;
@@ -389,7 +389,7 @@ BI(g_wait) {
 /* Built-in 8x12 font, ASCII only; other bytes draw as '?'. */
 BI(g_text) {
     int x = 0, y = 0, sc = 0, cxp, row, col;
-    Uint8 r, g, b;
+    Uint8 r = 0, g = 0, b = 0;
     size_t i;
     rl_str *t;
     UNUSED;
@@ -745,7 +745,7 @@ BI(g_font_load) {
 BI(g_font_text) {
     TTF_Font *f = NULL;
     int x = 0, y = 0;
-    SDL_Color c;
+    SDL_Color c = {0, 0, 0, 255};
     SDL_Surface *s;
     SDL_Texture *tex;
     SDL_Rect dst;
