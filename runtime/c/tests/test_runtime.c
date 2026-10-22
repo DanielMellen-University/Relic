@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gfx_scale.h"   /* src/builtins: the high-DPI math of both graphics modules */
+
 static int g_pass = 0, g_fail = 0;
 static rl_ctx cx;
 
@@ -552,6 +554,25 @@ static void test_codegen_support(void) {
     }
 }
 
+/* The high-DPI math (src/builtins/gfx_scale.h). Headless SDL always has a
+ * scale of 1, so the other scales are checked here. */
+static void test_gfx_scale(void) {
+    CHECK(gfx_scale_of(1600, 800) == 2.0);
+    CHECK(gfx_scale_of(1500, 1000) == 1.5);
+    CHECK(gfx_scale_of(800, 800) == 1.0);
+    CHECK(gfx_scale_of(0, 800) == 1.0 && gfx_scale_of(800, 0) == 1.0);
+    CHECK(gfx_font_pixels(18, 1.0) == 18);
+    CHECK(gfx_font_pixels(18, 2.0) == 36);
+    CHECK(gfx_font_pixels(18, 1.5) == 27);
+    CHECK(gfx_font_pixels(7, 1.25) == 9);      /* 8.75 rounds to 9 */
+    CHECK(gfx_font_pixels(1, 0.25) == 1);      /* never below 1 */
+    CHECK(gfx_units_up(10, 1.0) == 10);
+    CHECK(gfx_units_up(36, 2.0) == 18);
+    CHECK(gfx_units_up(27, 1.5) == 18);
+    CHECK(gfx_units_up(25, 1.5) == 17);        /* 16.67 rounds up */
+    CHECK(gfx_units_up(0, 2.0) == 0);
+}
+
 int main(void) {
     char *argv[2];
     argv[0] = (char *)"one";
@@ -566,6 +587,7 @@ int main(void) {
     test_codegen_support();
     test_host();
     test_cycles();
+    test_gfx_scale();
     drop_temps();
     CHECK(!cx.has_err);
     rl_ctx_free(&cx);

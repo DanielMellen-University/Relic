@@ -23,6 +23,7 @@
 #endif
 
 #include "font8x12.inc"
+#include "gfx_scale.h"
 
 #define S(v) ((rl_str *)(v).u.o)
 #define BI(name) static int name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a, rl_value *out)
@@ -59,7 +60,15 @@ static image *g_images = NULL;         /* index = image id; freed on close */
 static int g_nimages = 0, g_capimages = 0;
 
 #ifdef RL_HAVE_SDL_TTF
-static TTF_Font **g_fonts = NULL;      /* index = font id; freed on close */
+/* A font is opened at size * scale() pixels; when the scale changes it is
+ * opened again at the new size. */
+typedef struct {
+    TTF_Font *f;
+    char *path;
+    int size;        /* in window units, as asked for */
+    double scale;    /* the scale f was opened at */
+} font;
+static font *g_fonts = NULL;           /* index = font id; freed on close */
 static int g_nfonts = 0, g_capfonts = 0;
 #endif
 
@@ -103,6 +112,30 @@ static int need_window(rl_ctx *cx) {
     return RL_OK;
 }
 
+/* Pixels per window unit: the drawable size over the window size. While a
+ * canvas is the target SDL reports the canvas size as the output size, so
+ * the last value seen with the window as the target is used then. */
+static double g_win_scale = 1;
+static double current_scale(void) {
+    int pw = 0, ph = 0, ww = 0, wh = 0;
+    if (SDL_GetRenderTarget(g_renderer)) return g_win_scale;
+    SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
+    SDL_GetWindowSize(g_window, &ww, &wh);
+    g_win_scale = gfx_scale_of(pw, ww);
+    return g_win_scale;
+}
+
+/* Scales the renderer by scale(), so drawing stays in window units on a
+ * high-DPI screen. Canvases keep scale 1 (SDL saves the window's scale while
+ * one is the target), so this waits until drawing is back on the window. */
+static void sync_scale(void) {
+    float s, sx = 1, sy = 1;
+    if (!g_renderer || SDL_GetRenderTarget(g_renderer)) return;
+    s = (float)current_scale();
+    SDL_RenderGetScale(g_renderer, &sx, &sy);
+    if (sx != s || sy != s) SDL_RenderSetScale(g_renderer, s, s);
+}
+
 static int on_off(rl_ctx *cx, rl_value v, const char *what, int *on) {
     if (v.k != RL_BOOL) return rl_fail(cx, "%s must be true or false, got %s", what, rl_type_name(v));
     *on = v.u.b != 0;
@@ -123,6 +156,7 @@ static void present_frame(void) {
     now = SDL_GetPerformanceCounter();
     if (g_last_present) g_frame_time = (double)(now - g_last_present) / (double)SDL_GetPerformanceFrequency();
     g_last_present = now;
+    sync_scale();   /* the window may have moved to a screen with another scale */
 }
 
 static rl_value lower_str(const char *s) {
@@ -168,6 +202,8 @@ static void push_key(rl_value k) {
     }
     g_keys[g_nkeys++] = k;
 }
+
+static void sync_scale(void);
 
 /* Turns one SDL event into our state: an event map, a key press, quit. */
 static void take(const SDL_Event *ep) {
@@ -224,6 +260,7 @@ static void take(const SDL_Event *ep) {
 static void pump(void) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) take(&e);
+    sync_scale();
 }
 
 /* A simulated event goes after what SDL already holds, straight into our
@@ -256,9 +293,22 @@ static int add_image(SDL_Texture *t, int w, int h) {
 #ifdef RL_HAVE_SDL_TTF
 static int font_of(rl_ctx *cx, rl_value v, TTF_Font **f) {
     int id = 0;
+    double sc;
+    font *fo;
     if (whole(cx, v, "font", &id)) return RL_ERR;
-    if (id < 0 || id >= g_nfonts || !g_fonts[id]) return rl_fail(cx, "not an open font");
-    *f = g_fonts[id];
+    if (id < 0 || id >= g_nfonts || !g_fonts[id].f) return rl_fail(cx, "not an open font");
+    fo = &g_fonts[id];
+    sc = current_scale();
+    if (sc != fo->scale) {
+        /* Opened again for the new scale; the old one stays if that fails. */
+        TTF_Font *nf = TTF_OpenFont(fo->path, gfx_font_pixels(fo->size, sc));
+        if (nf) {
+            TTF_CloseFont(fo->f);
+            fo->f = nf;
+            fo->scale = sc;
+        }
+    }
+    *f = fo->f;
     return RL_OK;
 }
 #endif
@@ -271,8 +321,10 @@ static void close_window(void) {
     g_images = NULL;
     g_nimages = g_capimages = 0;
 #ifdef RL_HAVE_SDL_TTF
-    for (i = 0; i < g_nfonts; ++i)
-        if (g_fonts[i]) TTF_CloseFont(g_fonts[i]);
+    for (i = 0; i < g_nfonts; ++i) {
+        if (g_fonts[i].f) TTF_CloseFont(g_fonts[i].f);
+        free(g_fonts[i].path);
+    }
     free(g_fonts);
     g_fonts = NULL;
     g_nfonts = g_capfonts = 0;
@@ -284,6 +336,7 @@ static void close_window(void) {
     g_quit = 0;
     g_opened = g_last_present = 0;
     g_frame_time = 0;
+    g_win_scale = 1;
     for (i = 0; i < NUM_CURSORS; ++i) {
         if (g_cursors[i]) SDL_FreeCursor(g_cursors[i]);
         g_cursors[i] = NULL;
@@ -307,9 +360,13 @@ BI(g_open) {
     if (a[2].k != RL_STR) return rl_fail(cx, "title must be a string, got %s", rl_type_name(a[2]));
     if (w <= 0 || h <= 0) return rl_fail(cx, "width and height must be above 0");
     if (g_window) close_window();
+#ifdef SDL_HINT_WINDOWS_DPI_SCALING
+    /* Windows: window sizes in scaled units and the drawable in pixels, as on macOS. */
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+#endif
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) return rl_fail(cx, "cannot start video: %s", SDL_GetError());
     g_window = SDL_CreateWindow(S(a[2])->data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h,
-                                SDL_WINDOW_RESIZABLE);
+                                SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     if (!g_window) {
         int r = rl_fail(cx, "cannot open a window: %s", SDL_GetError());
         close_window();
@@ -324,6 +381,7 @@ BI(g_open) {
     }
     SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
     SDL_StartTextInput();
+    sync_scale();
     g_opened = SDL_GetPerformanceCounter();
     return RL_OK;
 }
@@ -470,18 +528,16 @@ BI(g_set_window_size) {
     if (whole(cx, a[0], "width", &w) || whole(cx, a[1], "height", &h)) return RL_ERR;
     if (w <= 0 || h <= 0) return rl_fail(cx, "width and height must be above 0");
     SDL_SetWindowSize(g_window, w, h);
+    sync_scale();
     return RL_OK;
 }
 
 /* Pixels per window unit across: size()[0] / window_size()[0]. */
 BI(g_scale) {
-    int pw = 0, ph = 0, ww = 0, wh = 0;
     UNUSED;
     *out = rl_none();
     if (need_window(cx)) return RL_ERR;
-    SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
-    SDL_GetWindowSize(g_window, &ww, &wh);
-    *out = rl_float(ww > 0 && pw > 0 ? (double)pw / ww : 1.0);
+    *out = rl_float(current_scale());
     return RL_OK;
 }
 
@@ -500,6 +556,7 @@ BI(g_set_fullscreen) {
     if (need_window(cx) || on_off(cx, a[0], "on", &on)) return RL_ERR;
     if (SDL_SetWindowFullscreen(g_window, on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0)
         return rl_fail(cx, "cannot change fullscreen: %s", SDL_GetError());
+    sync_scale();
     return RL_OK;
 }
 
@@ -943,6 +1000,7 @@ BI(g_draw_to) {
         t = g_images[id].tex;
     }
     if (SDL_SetRenderTarget(g_renderer, t) != 0) return rl_fail(cx, "cannot draw into that image: %s", SDL_GetError());
+    sync_scale();
     return RL_OK;
 }
 
@@ -951,6 +1009,7 @@ BI(g_draw_to) {
 #ifdef RL_HAVE_SDL_TTF
 BI(g_font_load) {
     int size = 0;
+    double sc;
     const char *path;
     TTF_Font *f;
     UNUSED;
@@ -960,14 +1019,20 @@ BI(g_font_load) {
     if (whole(cx, a[1], "size", &size)) return RL_ERR;
     if (size < 1) return rl_fail(cx, "size must be 1 or more");
     if (!TTF_WasInit() && TTF_Init() != 0) return rl_fail(cx, "cannot start fonts: %s", TTF_GetError());
-    f = TTF_OpenFont(path, size);
+    sc = current_scale();
+    f = TTF_OpenFont(path, gfx_font_pixels(size, sc));
     if (!f) return rl_fail(cx, "cannot load font %s: %s", path, TTF_GetError());
     if (g_nfonts == g_capfonts) {
         g_capfonts = g_capfonts ? g_capfonts * 2 : 4;
-        g_fonts = (TTF_Font **)realloc(g_fonts, sizeof(TTF_Font *) * (size_t)g_capfonts);
+        g_fonts = (font *)realloc(g_fonts, sizeof(font) * (size_t)g_capfonts);
         if (!g_fonts) abort();
     }
-    g_fonts[g_nfonts] = f;
+    g_fonts[g_nfonts].f = f;
+    g_fonts[g_nfonts].path = (char *)malloc(S(a[0])->len + 1);
+    if (!g_fonts[g_nfonts].path) abort();
+    memcpy(g_fonts[g_nfonts].path, path, S(a[0])->len + 1);
+    g_fonts[g_nfonts].size = size;
+    g_fonts[g_nfonts].scale = sc;
     *out = rl_int(g_nfonts++);
     return RL_OK;
 }
@@ -978,7 +1043,8 @@ BI(g_font_text) {
     SDL_Color c = {0, 0, 0, 255};
     SDL_Surface *s;
     SDL_Texture *tex;
-    SDL_Rect dst;
+    SDL_FRect dst;
+    double sc;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || font_of(cx, a[0], &f)) return RL_ERR;
@@ -990,13 +1056,15 @@ BI(g_font_text) {
     s = TTF_RenderUTF8_Blended(f, S(a[3])->data, c);
     if (!s) return rl_fail(cx, "cannot draw text: %s", TTF_GetError());
     tex = SDL_CreateTextureFromSurface(g_renderer, s);
-    dst.x = x;
-    dst.y = y;
-    dst.w = s->w;
-    dst.h = s->h;
+    /* The text is s->w by s->h pixels; in window units that is 1/scale of it. */
+    sc = current_scale();
+    dst.x = (float)x;
+    dst.y = (float)y;
+    dst.w = (float)(s->w / sc);
+    dst.h = (float)(s->h / sc);
     SDL_FreeSurface(s);
     if (tex) {
-        SDL_RenderCopy(g_renderer, tex, NULL, &dst);
+        SDL_RenderCopyF(g_renderer, tex, NULL, &dst);
         SDL_DestroyTexture(tex);
     }
     return RL_OK;
@@ -1005,6 +1073,7 @@ BI(g_font_text) {
 BI(g_font_size) {
     TTF_Font *f = NULL;
     int w = 0, h;
+    double sc;
     UNUSED;
     *out = rl_none();
     if (need_window(cx) || font_of(cx, a[0], &f)) return RL_ERR;
@@ -1012,9 +1081,8 @@ BI(g_font_size) {
     h = TTF_FontHeight(f);
     if (S(a[1])->len && TTF_SizeUTF8(f, S(a[1])->data, &w, &h) != 0)
         return rl_fail(cx, "cannot measure text: %s", TTF_GetError());
-    *out = rl_list_new(2);
-    rl_list_push((rl_list *)out->u.o, rl_int(w));
-    rl_list_push((rl_list *)out->u.o, rl_int(h));
+    sc = current_scale();
+    *out = pair(gfx_units_up(w, sc), gfx_units_up(h, sc));
     return RL_OK;
 }
 #else

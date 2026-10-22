@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(relic VERSION 1.0.11 LANGUAGES C)
+project(relic VERSION 1.0.12 LANGUAGES C)
 
 # C5: the default build needs only a C compiler. bootstrap/cgen.c (cgen
 # compiled to C by itself) is built with runtime/c into relicc_stage0, which
@@ -44,8 +44,8 @@ set(GFX_EVENTS_OUT "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34
 set(GFX_SIMULATE_OUT "^key_down a true true false\nkey_up a true false false\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
 set(MINI_DESKTOP_OUT "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
 set(GFX_PNG_OUT "^true\n5 4\n")
-set(GFX_TTF_OUT "^true\nwide true\ntall true\ndone")
-set(GFX_WINDOW_OUT "^first\nsecond [^\n]+\n\\[120, 80\\]\nfloat true\ntrue\n\\[160, 100\\]\nfalse\nfalse\nbool bool\nfalse\ntrue\nbool bool\nint true\n0\\.0\ntrue\nfloat true\ntrue\ntrue\ndone")
+set(GFX_TTF_OUT "^true\nwide true\ntall true\nint int 0\ndone")
+set(GFX_WINDOW_OUT "^first\nsecond [^\n]+\n\\[120, 80\\]\nfloat true\n1\\.0\n1\\.0 30 20\ntrue\n\\[160, 100\\]\nfalse\nfalse\nbool bool\nfalse\ntrue\nbool bool\nint true\n0\\.0\ntrue\nfloat true\ntrue\ntrue\ndone")
 # Every error message, in order; host and compiled must print the same.
 # (";" is written "." here: ctest would split the pattern at a ";".)
 set(GFX_WINDOW_ERRORS_OUT "^graphics\\.title\\(\\): no window is open. call open first\ngraphics\\.ticks\\(\\): no window is open. call open first\ngraphics\\.present_capped\\(\\): no window is open. call open first\ngraphics\\.set_title\\(\\): title must be a string, got int\ngraphics\\.set_window_size\\(\\): width and height must be above 0\ngraphics\\.set_window_size\\(\\): width must be a whole number\ngraphics\\.set_window_size\\(\\): height must be a number, got string\ngraphics\\.set_fullscreen\\(\\): on must be true or false, got int\ngraphics\\.set_fullscreen\\(\\): on must be true or false, got none\ngraphics\\.set_cursor\\(\\): unknown cursor: spinner. use arrow, text, wait, crosshair, hand, move, no, resize_ew, resize_ns, resize_nwse or resize_nesw\ngraphics\\.set_cursor\\(\\): cursor must be a string, got int\ngraphics\\.show_cursor\\(\\): on must be true or false, got string\ngraphics\\.set_vsync\\(\\): on must be true or false, got int\ngraphics\\.present_capped\\(\\): fps must be above 0\ngraphics\\.present_capped\\(\\): fps must be above 0\ngraphics\\.present_capped\\(\\): fps must be a number, got string\ngraphics\\.window_size\\(\\): no window is open. call open first\ndone")

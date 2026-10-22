@@ -13,6 +13,7 @@
 #ifdef RELIC_HAVE_SDL
 #include <SDL.h>
 #include "builtins/font8x12.inc"
+#include "builtins/gfx_scale.h"
 #ifdef RELIC_HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #endif
@@ -79,10 +80,21 @@ const CursorName kCursors[] = {
 constexpr int kNumCursors = sizeof(kCursors) / sizeof(kCursors[0]);
 SDL_Cursor* g_cursors[kNumCursors] = {};
 #ifdef RELIC_HAVE_SDL_TTF
-std::vector<TTF_Font*> g_fonts;  // index = font id; freed on close
+// A font is opened at size * scale() pixels; when the scale changes it is
+// opened again at the new size.
+struct Font {
+    TTF_Font* f;
+    std::string path;
+    int size;      // in window units, as asked for
+    double scale;  // the scale f was opened at
+};
+std::vector<Font> g_fonts;  // index = font id; freed on close
 
 TTF_Font* font_of(const Value& v);
 #endif
+
+double current_scale();
+void sync_scale();
 
 std::string lower(std::string s) {
     for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
@@ -128,6 +140,7 @@ void take(const SDL_Event& e) {
 void pump() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) take(e);
+    sync_scale();
 }
 
 // A simulated event goes after what SDL already holds, straight into our
@@ -153,14 +166,48 @@ int image_id(const Value& v) {
 #ifdef RELIC_HAVE_SDL_TTF
 TTF_Font* font_of(const Value& v) {
     int id = whole(v, "font");
-    if (id < 0 || id >= static_cast<int>(g_fonts.size()) || !g_fonts[id]) throw std::string("not an open font");
-    return g_fonts[id];
+    if (id < 0 || id >= static_cast<int>(g_fonts.size()) || !g_fonts[id].f) throw std::string("not an open font");
+    Font& font = g_fonts[id];
+    double sc = current_scale();
+    if (sc != font.scale) {
+        // Opened again for the new scale; the old one stays if that fails.
+        TTF_Font* f = TTF_OpenFont(font.path.c_str(), gfx_font_pixels(font.size, sc));
+        if (f) {
+            TTF_CloseFont(font.f);
+            font.f = f;
+            font.scale = sc;
+        }
+    }
+    return font.f;
 }
 #endif
 
 SDL_Renderer* need_window() {
     if (!g_renderer) throw std::string("no window is open; call open first");
     return g_renderer;
+}
+
+// Pixels per window unit: the drawable size over the window size. While a
+// canvas is the target SDL reports the canvas size as the output size, so
+// the last value seen with the window as the target is used then.
+double g_win_scale = 1;
+double current_scale() {
+    if (SDL_GetRenderTarget(g_renderer)) return g_win_scale;
+    int pw = 0, ph = 0, ww = 0, wh = 0;
+    SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
+    SDL_GetWindowSize(g_window, &ww, &wh);
+    g_win_scale = gfx_scale_of(pw, ww);
+    return g_win_scale;
+}
+
+// Scales the renderer by scale(), so drawing stays in window units on a
+// high-DPI screen. Canvases keep scale 1 (SDL saves the window's scale while
+// one is the target), so this waits until drawing is back on the window.
+void sync_scale() {
+    if (!g_renderer || SDL_GetRenderTarget(g_renderer)) return;
+    float s = static_cast<float>(current_scale()), sx = 1, sy = 1;
+    SDL_RenderGetScale(g_renderer, &sx, &sy);
+    if (sx != s || sy != s) SDL_RenderSetScale(g_renderer, s, s);
 }
 
 bool on_off(const Value& v, const char* what) {
@@ -181,6 +228,7 @@ void present_frame() {
     Uint64 now = SDL_GetPerformanceCounter();
     if (g_last_present) g_frame_time = static_cast<double>(now - g_last_present) / static_cast<double>(SDL_GetPerformanceFrequency());
     g_last_present = now;
+    sync_scale();  // the window may have moved to a screen with another scale
 }
 
 void close_window() {
@@ -189,8 +237,8 @@ void close_window() {
     g_images.clear();
     g_sizes.clear();
 #ifdef RELIC_HAVE_SDL_TTF
-    for (TTF_Font* f : g_fonts)
-        if (f) TTF_CloseFont(f);
+    for (Font& f : g_fonts)
+        if (f.f) TTF_CloseFont(f.f);
     g_fonts.clear();
 #endif
     g_keys.clear();
@@ -198,6 +246,7 @@ void close_window() {
     g_quit = false;
     g_opened = g_last_present = 0;
     g_frame_time = 0;
+    g_win_scale = 1;
     for (SDL_Cursor*& c : g_cursors) {
         if (c) SDL_FreeCursor(c);
         c = nullptr;
@@ -224,9 +273,13 @@ void add_graphics_builtins(const AddBuiltin& add) {
         if (!a[2].is<std::string>()) throw std::string("title must be a string, got ") + type_name(a[2]);
         if (w <= 0 || h <= 0) throw std::string("width and height must be above 0");
         if (g_window) close_window();
+#ifdef SDL_HINT_WINDOWS_DPI_SCALING
+        // Windows: window sizes in scaled units and the drawable in pixels, as on macOS.
+        SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1");
+#endif
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) throw std::string("cannot start video: ") + SDL_GetError();
         g_window = SDL_CreateWindow(a[2].as<std::string>().c_str(), SDL_WINDOWPOS_CENTERED,
-                                    SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_RESIZABLE);
+                                    SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
         if (!g_window) {
             std::string err = SDL_GetError();
             close_window();
@@ -241,6 +294,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         }
         SDL_SetRenderDrawBlendMode(g_renderer, SDL_BLENDMODE_BLEND);
         SDL_StartTextInput();
+        sync_scale();
         g_opened = SDL_GetPerformanceCounter();
         return Value();
     });
@@ -399,9 +453,10 @@ void add_graphics_builtins(const AddBuiltin& add) {
         int size = whole(a[1], "size");
         if (size < 1) throw std::string("size must be 1 or more");
         if (!TTF_WasInit() && TTF_Init() != 0) throw std::string("cannot start fonts: ") + TTF_GetError();
-        TTF_Font* f = TTF_OpenFont(path.c_str(), size);
+        double sc = current_scale();
+        TTF_Font* f = TTF_OpenFont(path.c_str(), gfx_font_pixels(size, sc));
         if (!f) throw std::string("cannot load font ") + path + ": " + TTF_GetError();
-        g_fonts.push_back(f);
+        g_fonts.push_back(Font{f, path, size, sc});
         return Value(static_cast<long long>(g_fonts.size() - 1));
     });
     add("host_gfx_font_text", 7, [](std::vector<Value>& a) {
@@ -415,10 +470,13 @@ void add_graphics_builtins(const AddBuiltin& add) {
         SDL_Surface* s = TTF_RenderUTF8_Blended(f, t.c_str(), c);
         if (!s) throw std::string("cannot draw text: ") + TTF_GetError();
         SDL_Texture* tex = SDL_CreateTextureFromSurface(r, s);
-        SDL_Rect dst{x, y, s->w, s->h};
+        // The text is s->w by s->h pixels; in window units that is 1/scale of it.
+        double sc = current_scale();
+        SDL_FRect dst{static_cast<float>(x), static_cast<float>(y), static_cast<float>(s->w / sc),
+                      static_cast<float>(s->h / sc)};
         SDL_FreeSurface(s);
         if (tex) {
-            SDL_RenderCopy(r, tex, nullptr, &dst);
+            SDL_RenderCopyF(r, tex, nullptr, &dst);
             SDL_DestroyTexture(tex);
         }
         return Value();
@@ -429,10 +487,8 @@ void add_graphics_builtins(const AddBuiltin& add) {
         std::string t = str(a[1], "text");
         int w = 0, h = TTF_FontHeight(f);
         if (!t.empty() && TTF_SizeUTF8(f, t.c_str(), &w, &h) != 0) throw std::string("cannot measure text: ") + TTF_GetError();
-        auto l = std::make_shared<List>();
-        l->push_back(Value(static_cast<long long>(w)));
-        l->push_back(Value(static_cast<long long>(h)));
-        return Value(l);
+        double sc = current_scale();
+        return pair(gfx_units_up(w, sc), gfx_units_up(h, sc));
     });
 #else
     const std::pair<const char*, int> no_fonts[] = {{"host_gfx_font_load", 2}, {"host_gfx_font_text", 7}, {"host_gfx_font_size", 2}};
@@ -591,6 +647,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         SDL_Renderer* r = need_window();
         SDL_Texture* t = a[0].is<NoneV>() ? nullptr : g_images[image_id(a[0])];
         if (SDL_SetRenderTarget(r, t) != 0) throw std::string("cannot draw into that image: ") + SDL_GetError();
+        sync_scale();
         return Value();
     });
     // ---- the window: title, size, fullscreen, pixel scale ----
@@ -616,15 +673,13 @@ void add_graphics_builtins(const AddBuiltin& add) {
         int w = whole(a[0], "width"), h = whole(a[1], "height");
         if (w <= 0 || h <= 0) throw std::string("width and height must be above 0");
         SDL_SetWindowSize(g_window, w, h);
+        sync_scale();
         return Value();
     });
     // Pixels per window unit across: size()[0] / window_size()[0].
     add("host_gfx_scale", 0, [](std::vector<Value>&) {
         need_window();
-        int pw = 0, ph = 0, ww = 0, wh = 0;
-        SDL_GetRendererOutputSize(g_renderer, &pw, &ph);
-        SDL_GetWindowSize(g_window, &ww, &wh);
-        return Value(ww > 0 && pw > 0 ? static_cast<double>(pw) / ww : 1.0);
+        return Value(current_scale());
     });
     add("host_gfx_fullscreen", 0, [](std::vector<Value>&) {
         need_window();
@@ -635,6 +690,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
         bool on = on_off(a[0], "on");
         if (SDL_SetWindowFullscreen(g_window, on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0)
             throw std::string("cannot change fullscreen: ") + SDL_GetError();
+        sync_scale();
         return Value();
     });
     // ---- the mouse cursor ----

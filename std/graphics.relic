@@ -24,7 +24,8 @@ fun text(x, y, s, r, g, b) = host_gfx_text(x, y, s, 1, r, g, b)
 fun text_scaled(x, y, s, scale, r, g, b) = host_gfx_text(x, y, s, scale, r, g, b)
 
 # Fonts: the built-in font above is the default. With SDL2_ttf, load a .ttf
-# at a pixel size and draw with it. font_size gives [width, height] of a string.
+# at a size in window units and draw with it. font_size gives [width, height]
+# of a string in window units.
 fun has_fonts() = host_gfx_has_fonts()
 fun load_font(path, size) = host_gfx_font_load(path, size)
 fun font_text(font, x, y, s, r, g, b) = host_gfx_font_text(font, x, y, s, r, g, b)
@@ -77,9 +78,10 @@ fun clipboard() = host_clipboard_get()
 fun canvas(width, height) = host_gfx_canvas(width, height)
 fun draw_to(c) = host_gfx_draw_to(c)
 
-# The window. window_size() is in window units, the ones mouse positions use;
-# size() is in pixels. scale() is pixels per window unit (1.0 unless the
-# system gives the window more pixels than units). set_window_size and
+# The window. Every drawing call and mouse position is in window units, the
+# ones window_size() gives. size() is in pixels. scale() is pixels per window
+# unit: 1.0 on a normal screen, 2.0 on a typical high-DPI one, where shapes and
+# TrueType text are drawn at full resolution. set_window_size and
 # set_fullscreen send a resize event when the drawing area changes.
 fun title() = host_gfx_title()
 fun set_title(s) = host_gfx_set_title(s)

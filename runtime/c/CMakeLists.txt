@@ -102,6 +102,7 @@ set(RELIC_C_SDL_TTF ${RL_C_SDL_TTF} CACHE INTERNAL "C graphics have SDL2_ttf")
 
 add_executable(relic_rt_tests tests/test_runtime.c)
 target_link_libraries(relic_rt_tests PRIVATE relic_rt)
+target_include_directories(relic_rt_tests PRIVATE ${RELIC_ROOT}/src/builtins)
 relic_c_target(relic_rt_tests)
 add_test(NAME c_runtime COMMAND relic_rt_tests WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
