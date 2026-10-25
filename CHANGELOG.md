@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.13 (2026-10-24)
+
+Self-host parity (SH3), one more step:
+
+- `selfhost/interp.relic` has `gc()`. It runs the host's cycle collector, since the interpreter's values live on the host heap, and gives the number freed. The count includes the interpreter's own containers, so it is approximate, like `gc()` in compiled code. Arity errors match the host.
+- `gc_cycles` is no longer skipped in `selfhost_interp`, which now compares 136 programs (was 135). Still skipped: `rt_recursion`, `try_recursion` and `c_demo` (deep recursion, the open part of SH3) and the REPL tests.
+- `ctest` counts are unchanged: 139 default, 293 with the host.
+
 ## 1.0.12 (2026-10-22)
 
 High-DPI drawing, Daniel's pick A (Oct 22 2026). The same in the host and in compiled programs:

@@ -149,11 +149,11 @@ What works:
 - `relic selfhost/run.relic FILE args...` passes the args to the program (`selfhost_args`).
 - It can run itself: `relic selfhost/run.relic selfhost/run.relic FILE` works (`selfhost_nested`, about 0.7 s). To make that possible, tagged maps also carry a list under `chr(2)` that is checked by identity (`host_same`), so the inner copy's functions look like plain maps to the outer copy.
 - `num()` hands the string to the host's `num()`, so the answers and errors are the same (golden `num_edges`).
+- `gc()` runs the host's collector, since the interpreter's values live on the host heap. The count includes the interpreter's own containers, but `gc_cycles` gives the same output (1.0.13).
 
 Limits today:
 
 - Every Relic call inside it costs several host calls, so recursion stops at about 130 levels instead of 800, and the error comes from the interpreter itself, so the program cannot catch it. `rt_recursion` and `try_recursion` are skipped in the comparison for that reason. A third nested level of `run.relic` hits the same limit.
-- No `gc()`; the host collector already covers its maps. `gc_cycles` is skipped.
 - No REPL, no VM, no `check`.
 - It is slow: `bench/fib.relic` takes about 5.4 s on it against about 35 ms on the host VM (Release).
 

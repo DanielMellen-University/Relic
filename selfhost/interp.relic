@@ -103,7 +103,7 @@ fun find(env, name)
 fun new_runtime()
     let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: []}
     let builtins = new_env(none)
-    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1]]
+    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1], ["gc", 0]]
         builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
     # host_* built-ins (files, clocks, math, graphics) are passed through to the host.
     for b in host_names()
@@ -862,6 +862,9 @@ fun builtin(rt, name, a)
         if a[0] < 0 or a[0] > 1114111 or (a[0] >= 55296 and a[0] <= 57343)
             return bad("code must be 0 to 1114111 and not 55296 to 57343 (surrogates)")
         return ok(chr(a[0]))
+    if name == "gc"
+        # Its values live on the host heap, so the host's collector runs and counts them.
+        return ok(gc())
     if name == "num"
         if is_num(t)
             return ok(a[0])

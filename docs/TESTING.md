@@ -47,7 +47,7 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 |---|---|---|
 | `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/` and `selfhost/` file (171 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion`, `gc_cycles` and `c_demo` (134 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*`, `rt_recursion`, `try_recursion` and `c_demo` (136 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (138 today) |
 
 Two more self-host cases check the interpreter on real use:

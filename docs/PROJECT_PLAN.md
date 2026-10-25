@@ -21,7 +21,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
 | SH1 | Self-hosted interpreter runs programs with args | M9 | done |
 | SH2 | Self-hosted interpreter runs itself | SH1 | done |
-| SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; rest open, low priority |
+| SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; `gc()` done (1.0.13); deep recursion open, low priority |
 | SH4 | `check` and REPL in Relic | SH2 | not started, low priority |
 | C1 | C runtime | M9 | done: `runtime/c/`, tests `c_runtime` and `c_demo` |
 | C2 | Relic-to-C codegen, core subset, in CI | C1 | done (1.0.4): `selfhost/cgen.relic`, 106 of 129 goldens, the other 23 need modules |
@@ -70,7 +70,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 130 golden programs, `std_*` included, with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see ARCHITECTURE.md: REPL tests, `rt_recursion`, `try_recursion` and `gc_cycles`.
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs 130 golden programs, `std_*` included, with the same stdout and stderr as the host (`selfhost_interp` test). Skipped, see ARCHITECTURE.md: REPL tests, `rt_recursion`, `try_recursion` and `c_demo` (`gc_cycles` runs since 1.0.13).
   - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs a faster runtime (M10). `use std/...` works in the self-hosted interpreter too, since the MONOLITH 2 host pieces added `host_call`.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 133 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
@@ -96,7 +96,7 @@ A testing aid that checks the Relic-written front end on real programs. Not the 
 
 - SH1 exit: `relic selfhost/run.relic FILE args...` passes the args through. **Done:** `selfhost_args`.
 - SH2 exit: `run.relic` runs `run.relic` running a test program. **Done:** `selfhost_nested`, about 0.7 s. A third level runs out of host recursion.
-- SH3 exit: no skipped comparison tests. `num()` now gives the host's answers (golden `num_edges`). Still open: recursion stops at about 130 Relic calls (the host's 800-call limit, with several host calls per Relic call), and `gc()` is missing.
+- SH3 exit: no skipped comparison tests. `num()` now gives the host's answers (golden `num_edges`). `gc()` runs the host's collector and `gc_cycles` matches (1.0.13). Still open: recursion stops at about 130 Relic calls (the host's 800-call limit, with several host calls per Relic call).
 - SH4 exit: `relic check` and the REPL run as Relic programs and match the host.
 
 ### C1 to C5: the compiler to C
