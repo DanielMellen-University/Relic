@@ -477,7 +477,7 @@ fun assign(rt, target, v, env, value_at)
                 return
         e.vars[target.text] = v
         return
-    let obj = eval(rt, target.kids[0], env)
+    let obj = eval_rec(rt, target.kids[0], env)
     if rt.err != none
         return
     let t = type_of(obj)
@@ -488,7 +488,7 @@ fun assign(rt, target, v, env, value_at)
             return fail(rt, target, "cannot set a field on " + a_type(obj))
         obj[target.text] = v
         return
-    let idx = eval(rt, target.kids[1], env)
+    let idx = eval_rec(rt, target.kids[1], env)
     if rt.err != none
         return
     if t == "list"
@@ -504,7 +504,48 @@ fun assign(rt, target, v, env, value_at)
 
 # ---- expressions ----
 
+# The frame stack (SH3, option C, Daniel's pick, Oct 24 2026). eval runs an
+# expression on its own stack instead of the host's, so a deep Relic program
+# does not run out of host calls before it reaches max_depth. Leaves are
+# answered at once, with no frame. Any other node gets a frame: a small list
+# [step, node, env], where step is one of the codes below. Values go on vals.
+# Slice 1 (1.0.14): the only step is step_eval, which hands the node to the
+# recursive code (eval_rec, call, binary). Later slices move kinds onto the stack.
+let step_eval = 0
+
 fun eval(rt, n, env)
+    if rt.err != none
+        return none
+    let k = n.kind
+    if k == "Name"
+        let e = find(env, n.text)
+        if e != none
+            return e.vars[n.text]
+        return eval_rec(rt, n, env)
+    if k == "String"
+        return n.text
+    if k == "Number" or k == "True" or k == "False" or k == "None"
+        return eval_rec(rt, n, env)
+    let stack = [[step_eval, n, env]]
+    let vals = []
+    while len(stack) > 0
+        let fr = pop(stack)
+        if fr[0] == step_eval
+            # Not on the stack yet: the old code runs it. Calls and binaries
+            # go straight to their functions, which keeps host depth as before.
+            let m = fr[1]
+            if m.kind == "Call"
+                append(vals, call(rt, m, fr[2]))
+            else if m.kind == "Binary"
+                append(vals, binary(rt, m, fr[2]))
+            else
+                append(vals, eval_rec(rt, m, fr[2]))
+        if rt.err != none
+            return none
+    return vals[0]
+
+# The recursive evaluator. Its own sub-expressions still recurse on the host.
+fun eval_rec(rt, n, env)
     if rt.err != none
         return none
     let k = n.kind
@@ -535,28 +576,28 @@ fun eval(rt, n, env)
     if k == "Interp"
         let s = ""
         for part in n.kids
-            s = s + show(eval(rt, part, env))
+            s = s + show(eval_rec(rt, part, env))
         return s
     if k == "List"
         let l = []
         for x in n.kids
-            append(l, eval(rt, x, env))
+            append(l, eval_rec(rt, x, env))
         return l
     if k == "Map"
         let m = {}
         for p in n.kids
-            m[p.text] = eval(rt, p.kids[0], env)
+            m[p.text] = eval_rec(rt, p.kids[0], env)
         return m
     if k == "Range"
-        let a = whole(rt, n.kids[0], eval(rt, n.kids[0], env), "range start")
-        let b = whole(rt, n.kids[1], eval(rt, n.kids[1], env), "range end")
+        let a = whole(rt, n.kids[0], eval_rec(rt, n.kids[0], env), "range start")
+        let b = whole(rt, n.kids[1], eval_rec(rt, n.kids[1], env), "range end")
         if rt.err != none
             return none
         if b - a > 10000000
             return fail(rt, n, "range is too large")
         return a..b
     if k == "Unary"
-        let v = eval(rt, n.kids[0], env)
+        let v = eval_rec(rt, n.kids[0], env)
         if rt.err != none
             return none
         if n.text == "-"
@@ -573,7 +614,7 @@ fun eval(rt, n, env)
     if k == "Call"
         return call(rt, n, env)
     if k == "Field"
-        let obj = eval(rt, n.kids[0], env)
+        let obj = eval_rec(rt, n.kids[0], env)
         if rt.err != none
             return none
         if type_of(obj) == "module"
@@ -588,8 +629,8 @@ fun eval(rt, n, env)
             return fail(rt, n, "map has no key '{n.text}'" + suggest(n.text, keys(obj)))
         return obj[n.text]
     if k == "Index"
-        let obj = eval(rt, n.kids[0], env)
-        let idx = eval(rt, n.kids[1], env)
+        let obj = eval_rec(rt, n.kids[0], env)
+        let idx = eval_rec(rt, n.kids[1], env)
         if rt.err != none
             return none
         let t = type_of(obj)
@@ -626,8 +667,8 @@ fun binary(rt, n, env)
         if op == "or" and left
             return true
         return condition(rt, n.kids[1], env, what)
-    let a = eval(rt, n.kids[0], env)
-    let b = eval(rt, n.kids[1], env)
+    let a = eval_rec(rt, n.kids[0], env)
+    let b = eval_rec(rt, n.kids[1], env)
     if rt.err != none
         return none
     let ta = type_of(a)
@@ -698,10 +739,10 @@ fun plural(n)
     return "s"
 
 fun call(rt, n, env)
-    let callee = eval(rt, n.kids[0], env)
+    let callee = eval_rec(rt, n.kids[0], env)
     let argv = []
     for i in 1..len(n.kids)
-        append(argv, eval(rt, n.kids[i], env))
+        append(argv, eval_rec(rt, n.kids[i], env))
     if rt.err != none
         return none
     if type_of(callee) != "function"

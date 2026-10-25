@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.14 (2026-10-24)
+
+Deep recursion in the self-hosted interpreter (SH3), slice 1 of 6. Daniel picked option C on Oct 24 2026: move `eval` in `selfhost/interp.relic` onto an explicit frame stack, so it can reach the host's 800-call limit.
+
+- `eval` is now a driver loop over a frame stack. Leaves (names, strings, numbers, `true`, `false`, `none`) are answered at once with no frame. Any other node gets a small list frame `[step, node, env]` with a whole-number step code. The only step so far, `step_eval`, hands the node to the recursive code (`eval_rec`, `call`, `binary`), so nothing changes for programs. No flag; the next slices move kinds onto the stack.
+- Host depth per Relic call is unchanged (about 131 levels for a function with a block body, 157 for one with an expression body), and the depth limit and its error text are still the host's.
+- New golden `deep_nesting`: 40 levels of brackets, a 150-term chain, nested lists, maps, calls, `and` / `or` and interpolation. It passes on the VM, the tree-walker, compiled to C and on the self-hosted interpreter. `selfhost_interp` compares 137 programs.
+- Speed on this box against 1.0.13: `selfhost_interp` 7.3 s (was 6.1 s, with one more program), `selfhost_nested` 0.74 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` 6.3 s (was 5.8 s). The budget is under 2x.
+- `ctest`: 140 default (was 139), 295 with the host (was 293), 311 in the `sdl` CI job (was 309). Test counts in TESTING.md and CGEN.md that had drifted are corrected.
+
 ## 1.0.13 (2026-10-24)
 
 Self-host parity (SH3), one more step:

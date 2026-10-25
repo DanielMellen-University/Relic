@@ -1,0 +1,30 @@
+# deeply nested expressions give the same answers on every engine
+# (written for the self-hosted interpreter's frame stack, SH3)
+
+# 40 levels of brackets, each adding one
+print(((((((((((((((((((((((((((((((((((((((((1 + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1))
+
+# a long left-leaning chain: 150 terms
+print(1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)
+
+# mixed operators, nested 30 deep
+let x = 1
+print(((((((((((((((((((((((((((((((x * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3) * 2 - 1) + 3))
+
+# 30 nested lists, then read back the innermost item
+let deep = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[["core"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+print(deep[0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0][0])
+
+# 25 nested maps
+let nest = {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: {k: 7}}}}}}}}}}}}}}}}}}}}}}}}}
+print(nest.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k.k)
+
+# 30 nested calls
+fun inc(n) = n + 1
+print(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(inc(0)))))))))))))))))))))))))))))))
+
+# nested short-circuit and comparisons
+print(((((((((((((((((((((true and not false) or 1 < 2) and 1 < 2) or not false) and 1 < 2) or 1 < 2) and not false) or 1 < 2) and 1 < 2) or not false) and 1 < 2) or 1 < 2) and not false) or 1 < 2) and 1 < 2) or not false) and 1 < 2) or 1 < 2) and not false) or 1 < 2))
+
+# interpolation with nested expressions inside
+print("sum {inc(inc(1 + (2 * (3 + 4))))} and {len([[1, [2, [3]]], 4])}")
