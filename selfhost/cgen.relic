@@ -101,10 +101,16 @@ fun label(cg, what)
 # capture its names, so they live in a C array L ("stack" mode). Otherwise
 # each block with names is an rl_scope ("heap" mode), so closures keep it.
 
+# A loop over a list of nodes still to visit, not recursion, so a long
+# flat chain like 1 + 1 + ... cannot run relicc out of stack.
 fun has_fun(n)
-    for k in n.kids
-        if k.kind == "Fun" or has_fun(k)
-            return true
+    let todo = [n]
+    while len(todo) > 0
+        let m = pop(todo)
+        for k in m.kids
+            if k.kind == "Fun"
+                return true
+            append(todo, k)
     return false
 
 fun new_fc(cg, parent, heap, is_module, mod)
@@ -492,11 +498,33 @@ fun name_value(fc, n, dst)
     emit(fc, "    const rl_value *const sl_[] = " + LB + strings.join(v.slots, ", ") + RB + ";")
     emit(fc, "    rl_fail_undefined(cx, " + c_string(n.text).lit + ", " + str(cnt) + ", nm_, sl_); " + on_error(fc, n, none, none) + "; " + RB)
 
+# A left-leaning chain (a + b + c ..., any mix of binary operators down the
+# left side) is walked with a loop instead of recursion, so a long flat chain
+# cannot run relicc out of stack (Windows gives it 1 MB). It writes exactly the
+# C the recursive version wrote: each left operand below the top gets a temp,
+# as operand() gave it, and its temps are freed where expr() freed them.
 fun binary(fc, n, dst)
+    let spine = [{n: n, dst: dst, mark: 0, temp: -1}]
+    let m = n
+    while m.kids[0].kind == "Binary"
+        m = m.kids[0]
+        let t = temp(fc)
+        append(spine, {n: m, dst: T(t), mark: fc.nt, temp: t})
+    let a = operand(fc, m.kids[0])
+    let i = len(spine) - 1
+    while i >= 0
+        let lv = spine[i]
+        binary_op(fc, lv.n, lv.dst, a)
+        if i > 0
+            free_to(fc, lv.mark)
+            a = {expr: lv.dst, temp: lv.temp}
+        i = i - 1
+
+# One binary operator, with its left operand a already computed.
+fun binary_op(fc, n, dst, a)
     let op = n.text
     if op == "and" or op == "or"
         let what = c_string("'" + op + "' operand").lit
-        let a = operand(fc, n.kids[0])
         check(fc, "rl_cond(cx, " + a.expr + ", " + what + ", &c_)", n.kids[0])
         if a.temp >= 0
             free_to(fc, a.temp)
@@ -512,7 +540,6 @@ fun binary(fc, n, dst)
             free_to(fc, b.temp)
         emit(fc, RB)
         return
-    let a = operand(fc, n.kids[0])
     let b = operand(fc, n.kids[1])
     if op in arith
         check(fc, arith[op] + "(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n)

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.18 (2026-10-24)
+
+Long flat chains no longer crash `relicc` (option A, decided Oct 24 2026). Crash fix only; no language change.
+
+- cgen walks a left-leaning chain (`a + b + c ...`, any binary operators down the left side, `and` / `or` too) with a loop instead of recursion. It writes exactly the C it wrote before: the generated C for every golden is byte for byte the same. Before, about 200 terms overflowed Windows' 1 MB stack and about 400 stopped `relicc` with "too much recursion" elsewhere. A 520-term chain now needs about 37 KB of stack on Linux, about what `hello` needs.
+- `has_fun` (does a function body hold a nested `fun`) walks the body with a loop too, for the same reason.
+- `bootstrap/cgen.c` is regenerated. `selfhost/interp.relic` is not touched.
+- New golden `long_chain`: 520 terms of `+`, 300 of `+` and `-` with names, 200 of `*` and `/`, 400 strings, 300 of `and` and of `or`, a 250-term chain inside a function with a nested `fun`, and an error late in a chain with its line and column. The same output on the VM, the tree-walker, compiled C and the self-hosted interpreter. The compiled AST printer needs about 230 KB of stack for it on Linux, under Windows' 1 MB; the host links with a 16 MB stack on Windows.
+- This closes the open item about chains from 1.0.16 (CGEN.md).
+- `ctest`: 145 default, 305 with the host, 321 in the `sdl` CI job. `selfhost_interp` compares 142 programs, 7.79 s median on this box (1.0.13: 6.1 s).
+
 ## 1.0.17 (2026-10-24)
 
 Range evaluation order is the same on every engine (option A, decided Oct 24 2026).
