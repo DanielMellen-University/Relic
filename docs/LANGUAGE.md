@@ -1,6 +1,6 @@
 # Language reference
 
-The rules of Relic as the host runs them today (version 1.0.15). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
+The rules of Relic as the host runs them today (version 1.0.16). The [guide](GUIDE.md) teaches the same things with examples. Why things are this way, and what is still undecided, is in [DESIGN.md](DESIGN.md).
 
 ## Contents
 
@@ -248,5 +248,5 @@ Names starting with `host_` are the host's own pieces (files, clocks, float math
 ## Limits
 
 - Calls: 800 deep.
-- Source nesting (brackets, `-`, `not`, blocks): 100 levels (`too deeply nested (more than 100 levels)`).
+- Source nesting (brackets, `-`, `not`, blocks): 32 levels (`too deeply nested (more than 32 levels)`), the same in every engine and in `relicc`. It was 100 before 1.0.16; see [CGEN.md](CGEN.md#decided-choices) for why.
 - One graphics window at a time.

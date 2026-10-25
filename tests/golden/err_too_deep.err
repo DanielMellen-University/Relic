@@ -1,0 +1,3 @@
+err_too_deep.relic:3:38: error: too deeply nested (more than 32 levels)
+    print((((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))))
+                                         ^

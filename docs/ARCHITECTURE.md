@@ -74,7 +74,7 @@ source -> lexer -> tokens -> parser -> AST -> compiler -> bytecode -> VM   (defa
 - Recursive descent with the precedence table in [LANGUAGE.md](LANGUAGE.md#operators).
 - `else if` chains are stored as an `If` inside the `else` slot.
 - `return` is accepted anywhere by the parser; using it outside a function is a runtime error (and a `relic check` warning).
-- Nesting is capped at 100 levels so hostile input cannot overflow the C++ stack.
+- Nesting is capped at 32 levels (100 before 1.0.16) so deep input cannot overflow the stack. `selfhost/parser.relic` has the same cap, so `relicc` (that parser compiled to C) stops with the same error before Windows' 1 MB stack runs out.
 
 ## Bytecode VM
 

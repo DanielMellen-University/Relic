@@ -13,7 +13,21 @@ fun add(n, kid)
     append(n.kids, kid)
     return n
 
-fun new_parser(tokens) = {toks: tokens, pos: 0, err: none, dead: {kind: "ERR", text: "", line: 0, col: 0}}
+fun new_parser(tokens) = {toks: tokens, pos: 0, err: none, dead: {kind: "ERR", text: "", line: 0, col: 0}, nest: 0}
+
+# Nesting of expressions, `-`, `not` and blocks, counted like the host's
+# parser (kMaxNesting in src/parser/parser.cpp; keep the two the same). At 32
+# levels relicc, this parser compiled to C, needs about 290 KB of C stack on
+# Linux and about half of Windows' 1 MB with MSVC; it overflowed there near 65.
+let max_nesting = 32
+
+fun nest_in(p)
+    p.nest = p.nest + 1
+    if p.nest > max_nesting
+        fail(p, peek(p), "too deeply nested (more than {max_nesting} levels)")
+
+fun nest_out(p)
+    p.nest = p.nest - 1
 
 fun peek(p)
     if p.err != none
@@ -113,6 +127,7 @@ fun statement(p)
     return expr_stmt(p)
 
 fun block(p)
+    nest_in(p)
     let start = peek(p)
     if not at(p, "NEWLINE")
         fail_expected(p, "end of line before the block")
@@ -124,6 +139,7 @@ fun block(p)
     while not at(p, "DEDENT") and not at(p, "EOF") and p.err == none
         add(b, statement(p))
     match(p, "DEDENT")
+    nest_out(p)
     return b
 
 fun try_stmt(p)
@@ -265,7 +281,11 @@ fun expr_stmt(p)
 
 # ---- expressions, lowest precedence first ----
 
-fun expression(p) = or_expr(p)
+fun expression(p)
+    nest_in(p)
+    let e = or_expr(p)
+    nest_out(p)
+    return e
 
 fun binary(left, op, right)
     let n = node("Binary", op, op.text)
@@ -289,7 +309,10 @@ fun and_expr(p)
 fun not_expr(p)
     if at(p, "NOT")
         let op = advance(p)
-        return add(node("Unary", op, "not"), not_expr(p))
+        nest_in(p)
+        let n = add(node("Unary", op, "not"), not_expr(p))
+        nest_out(p)
+        return n
     return compare(p)
 
 let compare_ops = {EQ_EQ: true, BANG_EQ: true, LESS: true, LESS_EQ: true, GREATER: true, GREATER_EQ: true, IN: true}
@@ -328,7 +351,10 @@ fun multiplicative(p)
 fun unary(p)
     if at(p, "MINUS")
         let op = advance(p)
-        return add(node("Unary", op, "-"), unary(p))
+        nest_in(p)
+        let n = add(node("Unary", op, "-"), unary(p))
+        nest_out(p)
+        return n
     return postfix(p)
 
 # Parses "item, item, ..." up to `close`; a trailing comma is fine.

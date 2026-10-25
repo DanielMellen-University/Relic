@@ -50,8 +50,10 @@ private:
     const std::vector<Token>& toks_;
     size_t pos_ = 0;
     // Nesting of expressions, `-`, `not` and blocks. A limit keeps a hostile
-    // file from overflowing the C++ stack.
-    static constexpr int kMaxNesting = 100;
+    // file from overflowing the stack. It is 32 (was 100 before 1.0.16) because
+    // the same limit is in selfhost/parser.relic, which relicc runs compiled to
+    // C, and Windows' 1 MB stack held about 65 levels there. Keep both the same.
+    static constexpr int kMaxNesting = 32;
     int nesting_ = 0;
     struct Nest {
         Parser& p;

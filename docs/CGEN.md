@@ -50,7 +50,7 @@ relic_add_program(paint apps/paint.relic GRAPHICS)   # links relic_rt_gfx (SDL2)
 
 When the C is written again: when `relicc` changes, when `file` changes, or when any `.relic` file under the folder of `file` (subfolders too) or in Relic's `std/` changes. That is a safe superset of what the program uses, since a module is usually in the program's folder or below it. A module somewhere else (`use ../shared/util`) is not seen on its own, so list it under `DEPENDS`. A new `.relic` file is picked up at the next build (the folder is globbed with `CONFIGURE_DEPENDS`), and files inside the build folder are left out.
 
-Added to another project, Relic builds `relicc` and the runtime but leaves out its own 136 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
+Added to another project, Relic builds `relicc` and the runtime but leaves out its own 138 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
 
 The generated program takes its command-line args like `relic FILE args...` does. With `RELIC_LEAK_CHECK` set in the environment it checks at exit that every container and string was freed, and exits 3 with `leak: ...` if not.
 
@@ -136,7 +136,7 @@ Errors such as `'x' is not defined`, `'x' is not declared; use 'let x = ...'`, `
 
 Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`; `relicc` in the default build, cgen on the host in a host build), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
 
-Today: 136 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
+Today: 138 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
 
 The `build`, `no-cxx` and `cgen` CI jobs build and run these with relicc, and the `host` jobs with the host. The `cgen` job does it strict (warnings as errors) on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
 
@@ -146,7 +146,7 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 | Test | Checks |
 |---|---|
-| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/` and `selfhost/` file (174 today) |
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/` and `selfhost/` file (176 today) |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 
@@ -167,7 +167,7 @@ C5, Daniel's choice (Oct 21 2026): the C for cgen is committed, so a fresh check
 | `bootstrap_fresh` | all | `relicc_stage0` writes, for `cgen.relic`, exactly the committed C (after its comment). Fails when `bootstrap/cgen.c` is stale |
 | `bootstrap_fixed_point` | all | `relicc` writes, for `cgen.relic`, exactly the C it was built from (stage 2 equals stage 1), with the leak check on |
 | `bootstrap_matches_host` | host | cgen on the host writes exactly the committed C |
-| `cgen_stage1_matches_host` | host | `relicc` writes exactly the C the host wrote, for every compiled golden (136) |
+| `cgen_stage1_matches_host` | host | `relicc` writes exactly the C the host wrote, for every compiled golden (138) |
 
 CI runs the C-only build on Linux (gcc), macOS (clang) and Windows (MSVC) in the `build` job, strict with sanitizers in the `cgen` job, and on Alpine Linux with no C++ compiler installed in the `no-cxx` job, which first checks that `c++`, `g++` and `clang++` are all missing. The `host` job builds the host on all three and runs everything, cross-checks included.
 
@@ -208,10 +208,11 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 - Modules: one C file per program with every module it uses compiled in. Decided by Daniel, Oct 21 2026. The emission is isolated, so per-module C files would still be a contained change.
 - Error positions: a mark at each call site that can fail. Decided by Daniel, Oct 21 2026.
 - C5: the C for cgen is committed in `bootstrap/`, and the C++ host is an optional cross-check. Decided by Daniel, Oct 21 2026.
+- Deep nesting: a limit with a clear error rather than a crash (Daniel, Oct 24 2026). The limit is 32 levels in both parsers (`src/parser/parser.cpp` and `selfhost/parser.relic`), so the host, the self-hosted interpreter and `relicc` all give `too deeply nested (more than 32 levels)` at the same place. Measured with a branch-only CI probe: `relicc` built with MSVC overflowed Windows' 1 MB stack between 60 and 70 levels of brackets or lists; on Linux and macOS it stopped with "too much recursion" near 75. At 32 levels the worst case (nested maps) needs about 290 KB on Linux, about half of Windows' stack. The deepest golden or `selfhost/` file nests 12 levels, real code 9, and the M0N0LITH-2 shell 8. Engineer, 1.0.16.
 - Building a program in one step: the CMake helper `relic_add_program(name file)`, not a `relicc run` mode. Decided by Daniel, Oct 21 2026.
 - `relic_add_program` reruns relicc when anything under the program's folder or `std/` changes (a superset), with `DEPENDS` for modules elsewhere, instead of an exact list of the modules used. Decided by Engineer, Oct 21 2026, internal.
 - The committed C is one file with names relative to the repo root; a stale file fails `bootstrap_fresh` rather than being rewritten by the build; the default build compiles the goldens with `relicc`, a host build with the host plus `cgen_stage1_matches_host`; `-DRELIC_SDL=ON` turns the host on. Decided by Engineer, Oct 21 2026, internal.
 
 ## Open choices
 
-- C stack use in `relicc`: it takes about 8 KB of C stack per level of expression nesting (gcc, Release, Linux) and more with MSVC, so deeply nested source (around 100 levels of brackets on Windows' 1 MB stack) crashes it. Every golden and `selfhost/` file needs under 125 KB today. Options, not decided: a bigger stack for `relicc` at link time, smaller frames in the generated C, or a nesting limit with an error. Found in 1.0.14.
+- Long flat chains in `relicc`: a chain like `a + b + c + ...` is not nesting to the parser (it is a loop there), but it makes a left-leaning tree that cgen walks recursively, about 3.3 KB of C stack per term on Linux. 100 terms need about 340 KB, 200 terms about 660 KB (too much for Windows' 1 MB with MSVC), and near 400 terms relicc stops with "too much recursion". The host and the self-hosted interpreter (since 1.0.15) run such chains fine. Options, not decided: walk chains with a loop in cgen, count chain length toward the nesting limit (a language change), or a bigger stack for `relicc`. Found in 1.0.16.

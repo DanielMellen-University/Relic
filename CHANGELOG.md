@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.16 (2026-10-24)
+
+A nesting limit instead of a crash in `relicc` (Daniel's pick, Oct 24 2026).
+
+- Source nesting (brackets, `-`, `not`, blocks) is limited to 32 levels, down from 100. The error is the host's existing one, `too deeply nested (more than 32 levels)`, with file, line and column.
+- The limit is now in both parsers: `src/parser/parser.cpp` (the host) and `selfhost/parser.relic`, which had none. So the VM, the tree-walker, the self-hosted interpreter, `relic --ast`, the compiled `selfhost` parser and `relicc` all stop at the same token with the same message. Before, `relicc` crashed with a stack overflow on Windows near 65 levels and stopped with "too much recursion" elsewhere near 75, and the self-hosted interpreter ran out of host calls.
+- Why 32: a branch-only CI probe (`probe-nesting-1024`) showed `relicc` built with MSVC overflowing Windows' 1 MB stack between 60 and 70 levels. At 32 the worst case (nested maps) needs about 290 KB on Linux, about half of Windows' stack. The deepest golden or `selfhost/` file nests 12 levels, real code 9, the M0N0LITH-2 shell 8.
+- `bootstrap/cgen.c` is regenerated (it contains the parser).
+- New error goldens `err_too_deep` (33 levels of brackets) and `err_too_deep_block` (33 nested `if` blocks), the same on every engine and compiled.
+- Still open (CGEN.md): a long flat chain like `1 + 1 + ...` is not nesting, but cgen walks it recursively; about 200 terms are too much for `relicc` on Windows. That needs a choice.
+- `ctest`: 143 default, 301 with the host, 317 in the `sdl` CI job. `selfhost_interp` compares 140 programs, 7.73 s median on this box (1.0.13: 6.1 s).
+
 ## 1.0.15 (2026-10-24)
 
 Deep recursion in the self-hosted interpreter (SH3, option C), slice 2 of 6: expressions on the frame stack.
