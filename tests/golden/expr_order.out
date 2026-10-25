@@ -30,6 +30,8 @@ r1
 r2
 1
 2
+e1
+range start must be a whole number
 e3
 e4
 cannot add an int and a string

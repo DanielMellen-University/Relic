@@ -203,6 +203,8 @@ int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v);
 int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out);
 int rl_set_field(rl_ctx *cx, rl_value obj, const char *name, rl_value v);
 int rl_range(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
+/* Checks a range start before its end is evaluated (the same check rl_range makes). */
+int rl_range_start(rl_ctx *cx, rl_value a);
 int rl_cond(rl_ctx *cx, rl_value v, const char *what, int *truth);  /* "'if' condition" */
 int rl_loop_items(rl_ctx *cx, rl_value src, rl_value *out);         /* a list to walk */
 int rl_check_type(rl_ctx *cx, const char *type, rl_value v, const char *what);

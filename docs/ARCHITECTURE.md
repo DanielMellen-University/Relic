@@ -97,6 +97,7 @@ The only difference left between the engines is that the REPL uses the tree-walk
 
 - `BINARY` carries its operator as a number. int and float math and compares skip the general path unless something unusual happens (overflow, division, mixed types).
 - `for i in a..b` counts on the stack (`FOR_RANGE_PREP`, `FOR_RANGE_NEXT`) instead of building the list.
+- A range start is checked (`RANGE_START`) before the end is evaluated, in `a..b` and in `for`, so a bad start stops the end from running, as in the tree-walker (1.0.17, golden `range_order`).
 - Scopes that no closure kept, and value stacks, are reused instead of allocated per call or loop turn.
 
 Fastest of 7 runs, Release, VM, before and after the speed pass (commit 76cfc43):

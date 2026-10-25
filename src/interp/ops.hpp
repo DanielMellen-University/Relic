@@ -22,6 +22,8 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
 bool op_condition(const Ast& n, const Value& v, const char* what);
 List op_loop_items(const Ast& iterable, const Value& src);
 Value op_call_builtin(const Ast& call, const Builtin& b, std::vector<Value>& args);
+// Checks the start of a..b; the VM runs it before the end is evaluated.
+void op_range_start(const Ast& n, const Value& av);
 // Checks a..b like op_range does, without building the list.
 void op_range_bounds(const Ast& n, const Value& av, const Value& bv, long long& a, long long& b);
 struct RuntimeError;

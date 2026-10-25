@@ -1,0 +1,35 @@
+# a range checks its start before the end runs, on every engine
+fun t(name, v)
+    print(name)
+    return v
+
+# good start: both ends run, left to right
+print(t("a1", 1)..t("a2", 4))
+for i in t("b1", 2)..t("b2", 4)
+    print(i)
+
+# bad start: the end never runs
+try
+    print(t("c1", 1.5)..t("c2", 3))
+catch e
+    print(e.message, e.line, e.col)
+try
+    for i in t("d1", "x")..t("d2", 3)
+        print(i)
+catch e
+    print(e.message, e.line, e.col)
+try
+    print(t("e1", none)..undefined_name)
+catch e
+    print(e.message, e.line, e.col)
+
+# good start, bad end: both run, the end is reported
+try
+    print(t("f1", 1)..t("f2", 2.5))
+catch e
+    print(e.message, e.line, e.col)
+try
+    for i in t("g1", 0)..t("g2", [])
+        print(i)
+catch e
+    print(e.message, e.line, e.col)

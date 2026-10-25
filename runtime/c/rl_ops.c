@@ -366,6 +366,11 @@ int rl_set_field(rl_ctx *cx, rl_value obj, const char *name, rl_value v) {
     return RL_OK;
 }
 
+int rl_range_start(rl_ctx *cx, rl_value av) {
+    long long a;
+    return whole(cx, av, "range start", &a);
+}
+
 int rl_range(rl_ctx *cx, rl_value av, rl_value bv, rl_value *out) {
     long long a = 0, b = 0, i;
     rl_value l;

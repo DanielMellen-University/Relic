@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.17 (2026-10-24)
+
+Range evaluation order is the same on every engine (option A, decided Oct 24 2026).
+
+- The host VM checks a range start before it evaluates the end, in `a..b` and in `for i in a..b`, as the tree-walker and the self-hosted interpreter always did. `t(1.5)..t(3)` now fails with `range start must be a whole number` without running `t(3)`. New opcode `RANGE_START`, using the host's shared check (`op_range_start`).
+- Compiled code did the same as the VM before, so cgen now emits `rl_range_start` (new in the C runtime, the same check `rl_range` makes) right after the start. `bootstrap/cgen.c` is regenerated.
+- A good start and a bad end behave as before: both ends run and the end is reported. Error positions are unchanged.
+- New golden `range_order`: good starts, bad starts with an end that prints (and one with an undefined name), and bad ends, in expressions and `for`, with each error's line and column. The range case is back in `expr_order`. Both give the same output on the VM, the tree-walker, compiled C and the self-hosted interpreter.
+- `ctest`: 144 default, 303 with the host, 319 in the `sdl` CI job. `selfhost_interp` compares 141 programs, 7.87 s median on this box (1.0.13: 6.1 s).
+
 ## 1.0.16 (2026-10-24)
 
 A nesting limit instead of a crash in `relicc` (Daniel's pick, Oct 24 2026).
@@ -20,7 +30,7 @@ Deep recursion in the self-hosted interpreter (SH3, option C), slice 2 of 6: exp
 - The old recursive `eval_rec` and `binary` are gone; the operator rules live in `binop`, `unary_of`, `field_of` and `index_of`, with the same messages and positions. The order is unchanged: parts run left to right, the first error stops everything, and a range start is checked before its end runs (as the tree-walker does).
 - Depth reached: about 196 levels for a function with a block body (was 131) and 395 for one with an expression body (was 157). A 1,000-term `1 + 1 + ...` chain now runs on the self-hosted interpreter; before it ran out of host calls.
 - New golden `expr_order`: evaluation order, short-circuits and the first error in sums, lists, maps, interpolation, indexes, fields, `-` and `not`. Shallow, so `relicc` needs about 48 KB of stack. `selfhost_interp` compares 138 programs.
-- Found, not fixed: the host VM evaluates both ends of a range before checking the start, while the tree-walker checks the start first, so `t(1.5)..t(3)` runs `t(3)` only on the VM. No golden covers it, so `vm_matches_tree_walker` passes. It needs its own fix with a golden.
+- Found, not fixed here: the host VM evaluates both ends of a range before checking the start, while the tree-walker checks the start first, so `t(1.5)..t(3)` runs `t(3)` on the VM (compiled code did the same). No golden covered it, so `vm_matches_tree_walker` passed. Fixed in 1.0.17.
 - Speed on this box against 1.0.13: `selfhost_interp` 7.60 s median (was 6.1 s; 1.25x, with two more programs), `selfhost_nested` 0.81 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` 7.4 s (was 5.8 s). The budget is under 2x.
 - `ctest`: 141 default, 297 with the host, 313 in the `sdl` CI job.
 

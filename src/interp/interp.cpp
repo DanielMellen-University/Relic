@@ -249,6 +249,8 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
 
 [[noreturn]] void fail_at(const Ast& at, const std::string& msg) { fail(at, msg); }
 
+void op_range_start(const Ast& n, const Value& av) { whole(*n.kids[0], av, "range start"); }
+
 void op_range_bounds(const Ast& n, const Value& av, const Value& bv, long long& a, long long& b) {
     a = whole(*n.kids[0], av, "range start");
     b = whole(*n.kids[1], bv, "range end");

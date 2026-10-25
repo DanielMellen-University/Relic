@@ -1,0 +1,19 @@
+a1
+a2
+[1, 2, 3]
+b1
+b2
+2
+3
+c1
+range start must be a whole number 13 12
+d1
+range start must be a number, got string 17 15
+e1
+range start must be a number, got none 22 12
+f1
+f2
+range end must be a whole number 28 24
+g1
+g2
+range end must be a number, got list 32 27

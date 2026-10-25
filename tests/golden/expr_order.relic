@@ -19,6 +19,11 @@ print(t("s5", true) and t("s6", false))
 for i in t("r1", 1)..t("r2", 3)
     print(i)
 
+# the range start is checked before the end runs
+try
+    print(t("e1", 1.5)..t("e2", 3))
+catch e
+    print(e.message)
 try
     print(t("e3", 1) + t("e4", "x") + t("e5", 2))
 catch e

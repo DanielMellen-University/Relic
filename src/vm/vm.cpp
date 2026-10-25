@@ -29,7 +29,7 @@ enum class Op {
     List, Map, Interp, Call, Closure, Return, ReturnNone,
     ForPrep, ForNext, ForRangePrep, ForRangeNext, Fail, Use, TryBegin, TryEnd, CheckType,
     LoadLate, StoreLate, Mark,
-    SetHintGlobal, CheckHint, CheckHintGlobal, SkipUnlessLate,
+    SetHintGlobal, CheckHint, CheckHintGlobal, SkipUnlessLate, RangeStart,
 };
 
 const char* op_name(Op o) {
@@ -42,7 +42,7 @@ const char* op_name(Op o) {
         "LIST", "MAP", "INTERP", "CALL", "CLOSURE", "RETURN", "RETURN_NONE",
         "FOR_PREP", "FOR_NEXT", "FOR_RANGE_PREP", "FOR_RANGE_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
         "LOAD_LATE", "STORE_LATE", "MARK",
-        "SET_HINT_GLOBAL", "CHECK_HINT", "CHECK_HINT_GLOBAL", "SKIP_UNLESS_LATE",
+        "SET_HINT_GLOBAL", "CHECK_HINT", "CHECK_HINT_GLOBAL", "SKIP_UNLESS_LATE", "RANGE_START",
     };
     return names[static_cast<int>(o)];
 }
@@ -496,6 +496,7 @@ private:
                 bool range = n.kids[0]->kind == Node::Range;
                 if (range) {
                     expr(*n.kids[0]->kids[0]);
+                    emit(Op::RangeStart, 0, 0, n.kids[0].get());
                     expr(*n.kids[0]->kids[1]);
                     emit(Op::ForRangePrep, 0, 0, n.kids[0].get());
                 } else {
@@ -708,7 +709,9 @@ private:
                 emit(Op::Map, static_cast<int>(n.kids.size()), 0, &n);
                 return;
             case Node::Range:
+                // The start is checked before the end runs, like the tree-walker.
                 expr(*n.kids[0]);
+                emit(Op::RangeStart, 0, 0, &n);
                 expr(*n.kids[1]);
                 emit(Op::Range, 0, 0, &n);
                 return;
@@ -1105,6 +1108,7 @@ private:
                     break;
                 case Op::Binary: binary(in, st); break;
                 case Op::Unary: st.back() = op_unary(*in.at, st.back()); break;
+                case Op::RangeStart: op_range_start(*in.at, st.back()); break;
                 case Op::Range: {
                     Value b = pop();
                     st.back() = op_range(*in.at, st.back(), b);

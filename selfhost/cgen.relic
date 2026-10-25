@@ -429,6 +429,8 @@ fun expr(fc, n, d)
             free_to(fc, t)
     else if k == "Range"
         let a = operand(fc, n.kids[0])
+        # The start is checked before the end runs, like the tree-walker.
+        check(fc, "rl_range_start(cx, " + a.expr + ")", n.kids[0])
         let b = operand(fc, n.kids[1])
         check3(fc, "rl_range(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n, n.kids[0], n.kids[1])
     else if k == "Unary"
