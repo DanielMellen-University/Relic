@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.15 (2026-10-24)
+
+Deep recursion in the self-hosted interpreter (SH3, option C), slice 2 of 6: expressions on the frame stack.
+
+- `eval` in `selfhost/interp.relic` now runs every expression kind on its own stack: unary, binary (with `and` / `or` short-circuit), interpolation, lists, maps, ranges, fields and indexes. Each has a frame that waits for its parts on the value stack and then combines them, so nested expressions no longer recurse on the host. Assignment targets use the same `eval`. Calls still go to `call()` and recurse on the host (slice 4).
+- The old recursive `eval_rec` and `binary` are gone; the operator rules live in `binop`, `unary_of`, `field_of` and `index_of`, with the same messages and positions. The order is unchanged: parts run left to right, the first error stops everything, and a range start is checked before its end runs (as the tree-walker does).
+- Depth reached: about 196 levels for a function with a block body (was 131) and 395 for one with an expression body (was 157). A 1,000-term `1 + 1 + ...` chain now runs on the self-hosted interpreter; before it ran out of host calls.
+- New golden `expr_order`: evaluation order, short-circuits and the first error in sums, lists, maps, interpolation, indexes, fields, `-` and `not`. Shallow, so `relicc` needs about 48 KB of stack. `selfhost_interp` compares 138 programs.
+- Found, not fixed: the host VM evaluates both ends of a range before checking the start, while the tree-walker checks the start first, so `t(1.5)..t(3)` runs `t(3)` only on the VM. No golden covers it, so `vm_matches_tree_walker` passes. It needs its own fix with a golden.
+- Speed on this box against 1.0.13: `selfhost_interp` 7.60 s median (was 6.1 s; 1.25x, with two more programs), `selfhost_nested` 0.81 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` 7.4 s (was 5.8 s). The budget is under 2x.
+- `ctest`: 141 default, 297 with the host, 313 in the `sdl` CI job.
+
 ## 1.0.14 (2026-10-24)
 
 Deep recursion in the self-hosted interpreter (SH3), slice 1 of 6. Daniel picked option C on Oct 24 2026: move `eval` in `selfhost/interp.relic` onto an explicit frame stack, so it can reach the host's 800-call limit.

@@ -1,0 +1,37 @@
+# expressions run their parts left to right, stop at the first error, and
+# 'and' / 'or' skip the right side when the left decides
+fun t(name, v)
+    print(name)
+    return v
+
+print(t("a", 1) + t("b", 2) * t("c", 3))
+print([t("l1", 1), t("l2", 2)])
+print({x: t("m1", 1), y: t("m2", 2)})
+let i1 = "i1"
+let i2 = "i2"
+print("{t(i1, 1)} and {t(i2, 2)}")
+print(t("o1", [10, 20])[t("o2", 1)])
+print(t("f", {k: 5}).k)
+print(-t("u", 4), not t("n", false))
+print(t("s1", false) and t("s2", true))
+print(t("s3", true) or t("s4", false))
+print(t("s5", true) and t("s6", false))
+for i in t("r1", 1)..t("r2", 3)
+    print(i)
+
+try
+    print(t("e3", 1) + t("e4", "x") + t("e5", 2))
+catch e
+    print(e.message)
+try
+    print(t("e6", 1) and t("e7", true))
+catch e
+    print(e.message)
+try
+    print(t("e8", true) and t("e9", 2))
+catch e
+    print(e.message)
+try
+    print([t("e10", 1), t("e11", [])[5], t("e12", 3)])
+catch e
+    print(e.message)

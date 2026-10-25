@@ -1,0 +1,43 @@
+a
+b
+c
+7
+l1
+l2
+[1, 2]
+m1
+m2
+{x: 1, y: 2}
+i1
+i2
+1 and 2
+o1
+o2
+20
+f
+5
+u
+n
+-4 true
+s1
+false
+s3
+true
+s5
+s6
+false
+r1
+r2
+1
+2
+e3
+e4
+cannot add an int and a string
+e6
+'and' operand must be true or false, got int
+e8
+e9
+'and' operand must be true or false, got int
+e10
+e11
+list index 5 is out of range (size 0)

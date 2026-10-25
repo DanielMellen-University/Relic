@@ -477,7 +477,7 @@ fun assign(rt, target, v, env, value_at)
                 return
         e.vars[target.text] = v
         return
-    let obj = eval_rec(rt, target.kids[0], env)
+    let obj = eval(rt, target.kids[0], env)
     if rt.err != none
         return
     let t = type_of(obj)
@@ -488,7 +488,7 @@ fun assign(rt, target, v, env, value_at)
             return fail(rt, target, "cannot set a field on " + a_type(obj))
         obj[target.text] = v
         return
-    let idx = eval_rec(rt, target.kids[1], env)
+    let idx = eval(rt, target.kids[1], env)
     if rt.err != none
         return
     if t == "list"
@@ -509,9 +509,23 @@ fun assign(rt, target, v, env, value_at)
 # does not run out of host calls before it reaches max_depth. Leaves are
 # answered at once, with no frame. Any other node gets a frame: a small list
 # [step, node, env], where step is one of the codes below. Values go on vals.
-# Slice 1 (1.0.14): the only step is step_eval, which hands the node to the
-# recursive code (eval_rec, call, binary). Later slices move kinds onto the stack.
+# A step_eval frame looks at a node and pushes the frames for its parts; the
+# other steps run once those parts are on vals and combine them. Errors stop
+# the loop at once, so nothing runs after the first one, as before.
+# Since 1.0.15 every expression kind runs here except calls, which still go
+# to call() and recurse on the host (the next slices change that).
 let step_eval = 0
+let step_unary = 1
+let step_logic_left = 2
+let step_logic_right = 3
+let step_binary = 4
+let step_interp = 5
+let step_list = 6
+let step_map = 7
+let step_range_start = 8
+let step_range_end = 9
+let step_field = 10
+let step_index = 11
 
 fun eval(rt, n, env)
     if rt.err != none
@@ -521,156 +535,217 @@ fun eval(rt, n, env)
         let e = find(env, n.text)
         if e != none
             return e.vars[n.text]
-        return eval_rec(rt, n, env)
+        return not_defined(rt, n, env)
     if k == "String"
         return n.text
-    if k == "Number" or k == "True" or k == "False" or k == "None"
-        return eval_rec(rt, n, env)
+    if k == "Call"
+        return call(rt, n, env)
     let stack = [[step_eval, n, env]]
     let vals = []
     while len(stack) > 0
         let fr = pop(stack)
-        if fr[0] == step_eval
-            # Not on the stack yet: the old code runs it. Calls and binaries
-            # go straight to their functions, which keeps host depth as before.
-            let m = fr[1]
-            if m.kind == "Call"
-                append(vals, call(rt, m, fr[2]))
-            else if m.kind == "Binary"
-                append(vals, binary(rt, m, fr[2]))
+        let step = fr[0]
+        let m = fr[1]
+        if step == step_eval
+            let en = fr[2]
+            let mk = m.kind
+            if mk == "Name"
+                let e = find(en, m.text)
+                if e == none
+                    return not_defined(rt, m, en)
+                append(vals, e.vars[m.text])
+            else if mk == "Call"
+                append(vals, call(rt, m, en))
+                if rt.err != none
+                    return none
+            else if mk == "Binary"
+                if m.text == "and" or m.text == "or"
+                    append(stack, [step_logic_left, m, en])
+                    append(stack, [step_eval, m.kids[0], en])
+                else
+                    append(stack, [step_binary, m])
+                    append(stack, [step_eval, m.kids[1], en])
+                    append(stack, [step_eval, m.kids[0], en])
+            else if mk == "String"
+                append(vals, m.text)
+            else if mk == "Number"
+                try
+                    append(vals, num(m.text))
+                catch err
+                    return fail(rt, m, "float is too large")
+            else if mk == "True"
+                append(vals, true)
+            else if mk == "False"
+                append(vals, false)
+            else if mk == "None"
+                append(vals, none)
+            else if mk == "Field"
+                append(stack, [step_field, m])
+                append(stack, [step_eval, m.kids[0], en])
+            else if mk == "Index"
+                append(stack, [step_index, m])
+                append(stack, [step_eval, m.kids[1], en])
+                append(stack, [step_eval, m.kids[0], en])
+            else if mk == "Unary"
+                append(stack, [step_unary, m])
+                append(stack, [step_eval, m.kids[0], en])
+            else if mk == "List" or mk == "Interp"
+                if mk == "List"
+                    append(stack, [step_list, m])
+                else
+                    append(stack, [step_interp, m])
+                let i = len(m.kids) - 1
+                while i >= 0
+                    append(stack, [step_eval, m.kids[i], en])
+                    i = i - 1
+            else if mk == "Map"
+                append(stack, [step_map, m])
+                let i = len(m.kids) - 1
+                while i >= 0
+                    append(stack, [step_eval, m.kids[i].kids[0], en])
+                    i = i - 1
+            else if mk == "Range"
+                append(stack, [step_range_start, m, en])
+                append(stack, [step_eval, m.kids[0], en])
             else
-                append(vals, eval_rec(rt, m, fr[2]))
-        if rt.err != none
-            return none
+                return fail(rt, m, "cannot evaluate a " + mk)
+        else if step == step_binary
+            let b = pop(vals)
+            let r = binop(rt, m, pop(vals), b)
+            if rt.err != none
+                return none
+            append(vals, r)
+        else if step == step_logic_left
+            let v = pop(vals)
+            if type(v) != "bool"
+                return fail(rt, m.kids[0], "'" + m.text + "' operand must be true or false, got " + type_of(v))
+            if m.text == "and" and not v
+                append(vals, false)
+            else if m.text == "or" and v
+                append(vals, true)
+            else
+                append(stack, [step_logic_right, m])
+                append(stack, [step_eval, m.kids[1], fr[2]])
+        else if step == step_logic_right
+            let v = vals[len(vals) - 1]
+            if type(v) != "bool"
+                return fail(rt, m.kids[1], "'" + m.text + "' operand must be true or false, got " + type_of(v))
+        else if step == step_field
+            let r = field_of(rt, m, pop(vals))
+            if rt.err != none
+                return none
+            append(vals, r)
+        else if step == step_index
+            let idx = pop(vals)
+            let r = index_of(rt, m, pop(vals), idx)
+            if rt.err != none
+                return none
+            append(vals, r)
+        else if step == step_unary
+            let r = unary_of(rt, m, pop(vals))
+            if rt.err != none
+                return none
+            append(vals, r)
+        else if step == step_list
+            let start = len(vals) - len(m.kids)
+            let l = slice(vals, start, len(vals))
+            drop(vals, start)
+            append(vals, l)
+        else if step == step_interp
+            let start = len(vals) - len(m.kids)
+            let s = ""
+            for i in start..len(vals)
+                s = s + show(vals[i])
+            drop(vals, start)
+            append(vals, s)
+        else if step == step_map
+            let start = len(vals) - len(m.kids)
+            let mp = {}
+            for i in 0..len(m.kids)
+                mp[m.kids[i].text] = vals[start + i]
+            drop(vals, start)
+            append(vals, mp)
+        else if step == step_range_start
+            # The start is checked before the end is evaluated, as before.
+            let a = whole(rt, m.kids[0], vals[len(vals) - 1], "range start")
+            if rt.err != none
+                return none
+            append(stack, [step_range_end, m])
+            append(stack, [step_eval, m.kids[1], fr[2]])
+        else
+            # step_range_end
+            let b = whole(rt, m.kids[1], pop(vals), "range end")
+            let a = pop(vals)
+            if rt.err != none
+                return none
+            if b - a > 10000000
+                return fail(rt, m, "range is too large")
+            append(vals, a..b)
     return vals[0]
 
-# The recursive evaluator. Its own sub-expressions still recurse on the host.
-fun eval_rec(rt, n, env)
-    if rt.err != none
-        return none
-    let k = n.kind
-    if k == "Number"
-        try
-            return num(n.text)
-        catch e
-            return fail(rt, n, "float is too large")
-    if k == "String"
-        return n.text
-    if k == "True"
-        return true
-    if k == "False"
-        return false
-    if k == "None"
-        return none
-    if k == "Name"
-        let e = find(env, n.text)
-        if e == none
-            let names = []
-            let s = env
-            while s != none
-                for k in keys(s.vars)
-                    append(names, k)
-                s = s.parent
-            return fail(rt, n, "'{n.text}' is not defined" + suggest(n.text, names))
-        return e.vars[n.text]
-    if k == "Interp"
-        let s = ""
-        for part in n.kids
-            s = s + show(eval_rec(rt, part, env))
-        return s
-    if k == "List"
-        let l = []
-        for x in n.kids
-            append(l, eval_rec(rt, x, env))
-        return l
-    if k == "Map"
-        let m = {}
-        for p in n.kids
-            m[p.text] = eval_rec(rt, p.kids[0], env)
-        return m
-    if k == "Range"
-        let a = whole(rt, n.kids[0], eval_rec(rt, n.kids[0], env), "range start")
-        let b = whole(rt, n.kids[1], eval_rec(rt, n.kids[1], env), "range end")
-        if rt.err != none
+# Pops vals down to len start.
+fun drop(vals, start)
+    while len(vals) > start
+        pop(vals)
+
+fun not_defined(rt, n, env)
+    let names = []
+    let s = env
+    while s != none
+        for name in keys(s.vars)
+            append(names, name)
+        s = s.parent
+    return fail(rt, n, "'{n.text}' is not defined" + suggest(n.text, names))
+
+fun unary_of(rt, n, v)
+    if n.text == "-"
+        if not is_num(type(v))
+            return fail(rt, n, "cannot negate " + a_type(v))
+        if type(v) == "float"
+            return -v
+        return math(rt, n, "-", 0, v)
+    if type(v) != "bool"
+        return fail(rt, n, "'not' needs true or false, got " + type_of(v))
+    return not v
+
+fun field_of(rt, n, obj)
+    if type_of(obj) == "module"
+        if len(n.text) > 0 and n.text[0] == "_"
+            return fail(rt, n, "'{n.text}' is private to module '{obj.name}'")
+        if not (n.text in obj.scope.vars)
+            return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
+        return obj.scope.vars[n.text]
+    if type_of(obj) != "map"
+        return fail(rt, n, "cannot read a field of " + a_type(obj))
+    if not (n.text in obj)
+        return fail(rt, n, "map has no key '{n.text}'" + suggest(n.text, keys(obj)))
+    return obj[n.text]
+
+fun index_of(rt, n, obj, idx)
+    let t = type_of(obj)
+    if t == "list"
+        let i = slot(rt, n.kids[1], idx, len(obj), "list index")
+        if i == none
             return none
-        if b - a > 10000000
-            return fail(rt, n, "range is too large")
-        return a..b
-    if k == "Unary"
-        let v = eval_rec(rt, n.kids[0], env)
-        if rt.err != none
+        return obj[i]
+    if t == "string"
+        let i = slot(rt, n.kids[1], idx, len(obj), "string index")
+        if i == none
             return none
-        if n.text == "-"
-            if not is_num(type(v))
-                return fail(rt, n, "cannot negate " + a_type(v))
-            if type(v) == "float"
-                return -v
-            return math(rt, n, "-", 0, v)
-        if type(v) != "bool"
-            return fail(rt, n, "'not' needs true or false, got " + type_of(v))
-        return not v
-    if k == "Binary"
-        return binary(rt, n, env)
-    if k == "Call"
-        return call(rt, n, env)
-    if k == "Field"
-        let obj = eval_rec(rt, n.kids[0], env)
-        if rt.err != none
-            return none
-        if type_of(obj) == "module"
-            if len(n.text) > 0 and n.text[0] == "_"
-                return fail(rt, n, "'{n.text}' is private to module '{obj.name}'")
-            if not (n.text in obj.scope.vars)
-                return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
-            return obj.scope.vars[n.text]
-        if type_of(obj) != "map"
-            return fail(rt, n, "cannot read a field of " + a_type(obj))
-        if not (n.text in obj)
-            return fail(rt, n, "map has no key '{n.text}'" + suggest(n.text, keys(obj)))
-        return obj[n.text]
-    if k == "Index"
-        let obj = eval_rec(rt, n.kids[0], env)
-        let idx = eval_rec(rt, n.kids[1], env)
-        if rt.err != none
-            return none
-        let t = type_of(obj)
-        if t == "list"
-            let i = slot(rt, n.kids[1], idx, len(obj), "list index")
-            if i == none
-                return none
-            return obj[i]
-        if t == "string"
-            let i = slot(rt, n.kids[1], idx, len(obj), "string index")
-            if i == none
-                return none
-            return obj[i]
-        if t == "map"
-            if type(idx) != "string"
-                return fail(rt, n.kids[1], "map keys must be strings")
-            if not (idx in obj)
-                return fail(rt, n.kids[1], "map has no key '{idx}'" + suggest(idx, keys(obj)))
-            return obj[idx]
-        return fail(rt, n, "cannot index " + a_type(obj))
-    return fail(rt, n, "cannot evaluate a " + k)
+        return obj[i]
+    if t == "map"
+        if type(idx) != "string"
+            return fail(rt, n.kids[1], "map keys must be strings")
+        if not (idx in obj)
+            return fail(rt, n.kids[1], "map has no key '{idx}'" + suggest(idx, keys(obj)))
+        return obj[idx]
+    return fail(rt, n, "cannot index " + a_type(obj))
 
 fun mismatch(rt, n, verb, a, b) = fail(rt, n, "cannot " + verb + " " + a_type(a) + " and " + a_type(b))
 
-fun binary(rt, n, env)
+# Every binary operator but 'and' and 'or', on values already evaluated.
+fun binop(rt, n, a, b)
     let op = n.text
-    if op == "and" or op == "or"
-        let what = "'" + op + "' operand"
-        let left = condition(rt, n.kids[0], env, what)
-        if rt.err != none
-            return none
-        if op == "and" and not left
-            return false
-        if op == "or" and left
-            return true
-        return condition(rt, n.kids[1], env, what)
-    let a = eval_rec(rt, n.kids[0], env)
-    let b = eval_rec(rt, n.kids[1], env)
-    if rt.err != none
-        return none
     let ta = type_of(a)
     let tb = type_of(b)
     if op == "=="
@@ -739,10 +814,10 @@ fun plural(n)
     return "s"
 
 fun call(rt, n, env)
-    let callee = eval_rec(rt, n.kids[0], env)
+    let callee = eval(rt, n.kids[0], env)
     let argv = []
     for i in 1..len(n.kids)
-        append(argv, eval_rec(rt, n.kids[i], env))
+        append(argv, eval(rt, n.kids[i], env))
     if rt.err != none
         return none
     if type_of(callee) != "function"

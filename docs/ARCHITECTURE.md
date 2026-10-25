@@ -149,12 +149,12 @@ What works:
 - `relic selfhost/run.relic FILE args...` passes the args to the program (`selfhost_args`).
 - It can run itself: `relic selfhost/run.relic selfhost/run.relic FILE` works (`selfhost_nested`, about 0.7 s). To make that possible, tagged maps also carry a list under `chr(2)` that is checked by identity (`host_same`), so the inner copy's functions look like plain maps to the outer copy.
 - `num()` hands the string to the host's `num()`, so the answers and errors are the same (golden `num_edges`).
-- `eval` runs on an explicit frame stack (SH3, option C, 1.0.14 onward): leaves are answered at once, any other node gets a small list frame `[step, node, env]` with a whole-number step code. In 1.0.14 the only step hands the node to the recursive code, so the depth limit below is unchanged; later slices move each kind onto the stack.
+- `eval` runs on an explicit frame stack (SH3, option C, 1.0.14 onward): leaves are answered at once, any other node gets a small list frame `[step, node, env]` with a whole-number step code. Since 1.0.15 every expression kind runs on the stack except calls, which still go to `call()` on the host; statements and calls move in later slices.
 - `gc()` runs the host's collector, since the interpreter's values live on the host heap. The count includes the interpreter's own containers, but `gc_cycles` gives the same output (1.0.13).
 
 Limits today:
 
-- Every Relic call inside it costs several host calls, so recursion stops at about 130 levels instead of 800, and the error comes from the interpreter itself, so the program cannot catch it. `rt_recursion` and `try_recursion` are skipped in the comparison for that reason. A third nested level of `run.relic` hits the same limit.
+- Every Relic call inside it costs several host calls, so recursion stops at about 196 levels for a function with a block body and 395 for one with an expression body instead of 800 (about 130 and 157 before 1.0.15), and the error comes from the interpreter itself, so the program cannot catch it. `rt_recursion` and `try_recursion` are skipped in the comparison for that reason. A third nested level of `run.relic` hits the same limit.
 - No REPL, no VM, no `check`.
 - It is slow: `bench/fib.relic` takes about 5.4 s on it against about 35 ms on the host VM (Release).
 
