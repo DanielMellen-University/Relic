@@ -6,8 +6,9 @@ Deep recursion in the self-hosted interpreter (SH3), slice 1 of 6. Daniel picked
 
 - `eval` is now a driver loop over a frame stack. Leaves (names, strings, numbers, `true`, `false`, `none`) are answered at once with no frame. Any other node gets a small list frame `[step, node, env]` with a whole-number step code. The only step so far, `step_eval`, hands the node to the recursive code (`eval_rec`, `call`, `binary`), so nothing changes for programs. No flag; the next slices move kinds onto the stack.
 - Host depth per Relic call is unchanged (about 131 levels for a function with a block body, 157 for one with an expression body), and the depth limit and its error text are still the host's.
-- New golden `deep_nesting`: 40 levels of brackets, a 150-term chain, nested lists, maps, calls, `and` / `or` and interpolation. It passes on the VM, the tree-walker, compiled to C and on the self-hosted interpreter. `selfhost_interp` compares 137 programs.
-- Speed on this box against 1.0.13: `selfhost_interp` 7.3 s (was 6.1 s, with one more program), `selfhost_nested` 0.74 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` 6.3 s (was 5.8 s). The budget is under 2x.
+- New golden `deep_nesting`: 10 levels of brackets, a 24-term chain, nested lists, maps, calls, `and` / `or` and interpolation. It passes on the VM, the tree-walker, compiled to C and on the self-hosted interpreter. `selfhost_interp` compares 137 programs.
+- Found on the way: `relicc` (cgen compiled to C) uses about 8 KB of C stack per level of expression nesting on Linux (gcc, Release) and more with MSVC. A first version of the golden (40 levels, 150 terms, about 500 KB on Linux) overflowed Windows' 1 MB stack. The golden now needs about 110 KB on Linux. Noted in CGEN.md under open choices; nothing else changes.
+- Speed on this box against 1.0.13: `selfhost_interp` 7.4 s (was 6.1 s, with one more program), `selfhost_nested` 0.74 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` 6.3 s (was 5.8 s). The budget is under 2x.
 - `ctest`: 140 default (was 139), 295 with the host (was 293), 311 in the `sdl` CI job (was 309). Test counts in TESTING.md and CGEN.md that had drifted are corrected.
 
 ## 1.0.13 (2026-10-24)

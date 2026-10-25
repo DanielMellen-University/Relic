@@ -214,4 +214,4 @@ Recorded in [PROJECT_PLAN.md](PROJECT_PLAN.md#decisions-needed):
 
 ## Open choices
 
-None right now.
+- C stack use in `relicc`: it takes about 8 KB of C stack per level of expression nesting (gcc, Release, Linux) and more with MSVC, so deeply nested source (around 100 levels of brackets on Windows' 1 MB stack) crashes it. Every golden and `selfhost/` file needs under 125 KB today. Options, not decided: a bigger stack for `relicc` at link time, smaller frames in the generated C, or a nesting limit with an error. Found in 1.0.14.
