@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.20 (2026-10-26)
+
+The built-in text font draws `_` (Daniel approved Oct 26 2026). Font fix only; no language change.
+
+- `_` in the built-in 8x12 font (`src/builtins/font8x12.inc`, used by `graphics.text` in the host and in compiled programs) was blank: DejaVu Sans Mono draws it below the 12-row cell, so `tools/gen_font.py` picked up nothing. It is now a bar one row under the baseline, as wide as `=` (row 10, `0x7e`). `tools/gen_font.py` writes the same bar, so a rerun keeps it. Typing cursors like the `_` in M0N0LITH-2's Notes and Terminal now show.
+- Every other printable glyph from `!` to `~` already drew something; only space is blank, as it should be.
+- The `unit` test checks that every printable glyph but space has pixels set, that space has none, and where the `_` bar sits.
+- `ctest`: 146 default, 307 with the host (unchanged; the check is in `unit`). `selfhost_interp` 8.89 s median of 3 on this box (1.0.13: 6.1 s; budget under 12.2 s). `selfhost/interp.relic` is not touched.
+
 ## 1.0.19 (2026-10-25)
 
 Deep recursion in the self-hosted interpreter (SH3, option C), slice 3 of 6: statements and control flow on a frame stack.

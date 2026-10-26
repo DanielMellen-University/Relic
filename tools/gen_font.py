@@ -15,6 +15,10 @@ for c in range(32, 127):
         for x in range(8):
             if img.getpixel((x, y)) > 110: b |= 0x80 >> x
         rows.append("0x%02x" % b)
+    if c == ord("_"):
+        # DejaVu draws '_' below this 12-row cell, so it came out blank. Use a
+        # bar one row under the baseline (row 9), as wide as '='.
+        rows = ["0x00"] * 10 + ["0x7e", "0x00"]
     out.append("    {%s},  // %r" % (", ".join(rows), chr(c)))
 out.append("};")
 open("src/builtins/font8x12.inc", "w").write("\n".join(out) + "\n")

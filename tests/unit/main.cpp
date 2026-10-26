@@ -4,6 +4,9 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
+// The built-in 8x12 text font (std/graphics text), shared with runtime/c.
+#include "builtins/font8x12.inc"
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -35,6 +38,21 @@ static std::string lex_error(const std::string& src) {
         return std::to_string(e.line) + ":" + std::to_string(e.col) + " " + e.what();
     }
     return "";
+}
+
+// Every printable glyph but space draws something. '_' used to be blank
+// (DejaVu puts it below the cell); it is a bar just under the baseline.
+static void test_font() {
+    for (int c = 33; c < 127; c++) {
+        int bits = 0;
+        for (int row = 0; row < 12; row++) bits |= kFont8x12[c - 32][row];
+        if (bits == 0) std::cerr << "blank glyph '" << static_cast<char>(c) << "'\n";
+        CHECK(bits != 0);
+    }
+    for (int row = 0; row < 12; row++) CHECK(kFont8x12[0][row] == 0);
+    const unsigned char* u = kFont8x12['_' - 32];
+    CHECK(u[10] == 0x7e);
+    for (int row = 0; row < 10; row++) CHECK(u[row] == 0);
 }
 
 static void test_core() {
@@ -240,6 +258,7 @@ int main() {
     test_repl();
     test_interp();
     test_core();
+    test_font();
     test_basic_tokens();
     test_numbers();
     test_strings();
