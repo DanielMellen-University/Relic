@@ -110,13 +110,6 @@ print(box.title, box["version"])
 
 More: the [guide](docs/GUIDE.md) walks through all of it, and the [reference](docs/LANGUAGE.md) has every rule.
 
-## How it relates to MONOLITH
-
-- **MONOLITH 1.0** is finished and lives in its own repo. It stays C++ and SDL2. Relic and the planned Relic IDE do not go there.
-- **MONOLITH 2** is the next version. Its desktop shell and apps are written in Relic in [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2). That repo pins a Relic commit as a submodule and builds it.
-- Language work lands here; desktop and app work lands in M0N0LITH-2.
-- The long-term goal is a stack where nothing is borrowed. The C++ host was the scaffold: since 1.0.7 the default build no longer needs it. See [VISION.md](docs/VISION.md).
-
 ## Docs
 
 Start at the [docs index](docs/README.md). The short list:
@@ -125,6 +118,8 @@ Start at the [docs index](docs/README.md). The short list:
 - [Standard library](docs/STDLIB.md)
 - [Command line and REPL](docs/CLI.md)
 - [Roadmap](docs/ROADMAP.md) and [changelog](CHANGELOG.md)
+
+[M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) is written in Relic.
 
 ## Contributing
 
