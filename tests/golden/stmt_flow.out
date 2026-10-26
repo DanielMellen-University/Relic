@@ -1,0 +1,17 @@
+r3 r4 end
+["a", "!", "b", "!", "boom@25", "d", "!", "e", "!"]
+inner cannot add an int and a string
+outer again 39 17
+w 1
+w 3
+caught bottom
+3
+noret() must return int, got none
+'break' outside a loop 71
+a
+b
+z
+[1, 2, 3, 10, 20, 30]
+a b c even c odd f
+117
+negative -4 none

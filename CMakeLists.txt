@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(relic VERSION 1.0.18 LANGUAGES C)
+project(relic VERSION 1.0.19 LANGUAGES C)
 
 # C5: the default build needs only a C compiler. bootstrap/cgen.c (cgen
 # compiled to C by itself) is built with runtime/c into relicc_stage0, which

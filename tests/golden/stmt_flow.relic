@@ -1,0 +1,118 @@
+# Statements and control flow: return, break and next out of nested loops,
+# if chains and try blocks; errors caught at the nearest try; loops over
+# a copy of a list. The same on every engine (SH3 slice 3, 1.0.19).
+fun f(n)
+    for i in 0..10
+        while true
+            try
+                if i == n
+                    return "r{i}"
+                else
+                    break
+            catch e
+                print("no")
+        if i % 2 == 0
+            next
+        if i > 7
+            break
+    return "end"
+print(f(3), f(4), f(20))
+fun g()
+    let out = []
+    for c in "abcde"
+        try
+            if c == "c"
+                fail("boom")
+            append(out, c)
+        catch e
+            append(out, e.message + "@" + str(e.line))
+            next
+        append(out, "!")
+    return out
+print(g())
+fun h()
+    try
+        try
+            let x = 1 + "a"
+        catch e
+            print("inner", e.message)
+            fail("again")
+    catch e2
+        print("outer", e2.message, e2.line, e2.col)
+h()
+let i = 0
+while i < 5
+    i = i + 1
+    if i == 2
+        next
+    if i == 4
+        break
+    print("w", i)
+fun deep(n)
+    if n == 0
+        fail("bottom")
+    return deep(n - 1)
+try
+    deep(50)
+catch e
+    print("caught", e.message)
+fun deep2(n)
+    if n == 0
+        return 0
+    return 1 + deep2(n - 1)
+print(deep2(3))
+fun noret() as int
+    let a = 1
+try
+    noret()
+catch e
+    print(e.message)
+fun brk()
+    break
+try
+    brk()
+catch e
+    print(e.message, e.line)
+for k in {a: 1, b: 2}
+    print(k)
+if false
+    print("x")
+else if 1 > 2
+    print("y")
+else
+    print("z")
+let xs = [1, 2, 3]
+for x in xs
+    if len(xs) < 6
+        append(xs, x * 10)
+print(xs)
+fun grade(n)
+    if n > 90
+        return "a"
+    else if n > 80
+        return "b"
+    else if n > 70
+        if n % 2 == 0
+            return "c even"
+        return "c odd"
+    return "f"
+print(grade(95), grade(85), grade(74), grade(73), grade(10))
+let total = 0
+for a in 0..4
+    for b in 0..4
+        if b > a
+            break
+        if (a + b) % 2 == 1
+            next
+        total = total + a * 10 + b
+print(total)
+fun first_bad(rows)
+    for r in rows
+        try
+            for v in r
+                if v < 0
+                    fail("negative {v}")
+        catch e
+            return e.message
+    return "none"
+print(first_bad([[1, 2], [3, -4, -5], [-6]]), first_bad([]))

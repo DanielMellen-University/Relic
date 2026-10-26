@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.19 (2026-10-25)
+
+Deep recursion in the self-hosted interpreter (SH3, option C), slice 3 of 6: statements and control flow on a frame stack.
+
+- `exec_body` in `selfhost/interp.relic` runs statements on its own stack: blocks, `let`, assignment, expression statements, `if` / `else if` chains, `while`, `for`, `return`, `break`, `next`, `fun`, `use` and `try`. Frames are small lists: `[s_block, block, env, i]`, `[s_while, node, env]`, `[s_for, node, env, items, i]` and `[s_try, node, env, depth]`. Nested blocks and loops no longer recurse on the host.
+- `return` unwinds to the edge of the function body (or file), `break` and `next` unwind to the nearest loop frame, and an error unwinds to the nearest `try` frame, which runs its `catch` part with the depth put back. This replaces the old flow strings (`"return"`, `"break"`, `"next"`, `"error"`) passed up through `exec` and `exec_block`, which are gone. The messages and positions for a `return`, `break` or `next` in the wrong place are unchanged. `try` moved onto the stack here because `break` and `return` have to unwind through it; errors from calls still come back through `call()` on the host until slice 4.
+- Calls still go to `call()` and recurse on the host (slice 4). Depth reached: about 262 levels for a function with a block body (was 196) and 395 for one with an expression body (unchanged).
+- New golden `stmt_flow`: `return`, `break` and `next` out of nested loops, `if` chains and `try` blocks, errors caught at the nearest `try` (and one raised again from a `catch`), a missing return value with an `as` hint, `break` outside a loop inside a function, and a `for` over a list that grows while it runs. The same output on the VM, the tree-walker, compiled C and the self-hosted interpreter. Shallow (5 levels of blocks); `relicc` compiles it with a 125 KB stack.
+- Speed on this box against 1.0.13: `selfhost_interp` 8.79 s median of 3 (was 6.1 s; 1.44x, with one more program; 1.0.18 measures 7.98 s now), `selfhost_nested` 0.88 s (was 0.71 s), `bench/fib.relic` on `selfhost/run.relic` about 8.1 s (was 5.8 s). The budget is under 2x.
+- `ctest`: 146 default, 307 with the host, 323 in the `sdl` CI job. `selfhost_interp` compares 143 programs.
+
 ## 1.0.18 (2026-10-24)
 
 Long flat chains no longer crash `relicc` (option A, decided Oct 24 2026). Crash fix only; no language change.

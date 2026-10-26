@@ -177,16 +177,9 @@ fun load_module(rt, n)
         let parsed = parser.parse(lexed.tokens)
         err = parsed.err
         if err == none
-            for s in parsed.tree.kids
-                let f = exec(rt, s, mod.scope)
-                if rt.err != none
-                    break
-                if f == "return"
-                    fail(rt, rt.flow_node, "'return' outside a function")
-                else if f == "break"
-                    fail(rt, rt.flow_node, "'break' outside a loop")
-                else if f == "next"
-                    fail(rt, rt.flow_node, "'next' outside a loop")
+            let f = exec_body(rt, parsed.tree, mod.scope)
+            if rt.err == none
+                outside(rt, f, true)
     if err != none and rt.err == none
         rt.err = {line: err.line, col: err.col, msg: err.msg, file: file}
     rt.file = saved
@@ -331,27 +324,19 @@ fun slot(rt, at, idx, size, what)
 # ---- statements ----
 
 fun run(rt, program)
-    for s in program.kids
-        if rt.err != none
-            return
-        let f = exec(rt, s, rt.globals)
-        if rt.err != none
-            return
-        if f == "return"
-            fail(rt, rt.flow_node, "'return' outside a function")
-        else if f == "break"
-            fail(rt, rt.flow_node, "'break' outside a loop")
-        else if f == "next"
-            fail(rt, rt.flow_node, "'next' outside a loop")
+    let f = exec_body(rt, program, rt.globals)
+    if rt.err == none
+        outside(rt, f, true)
 
-fun exec_block(rt, block, env)
-    for s in block.kids
-        let f = exec(rt, s, env)
-        if rt.err != none
-            return "error"
-        if f != "normal"
-            return f
-    return "normal"
+# The error for a return, break or next that reached the edge of a function
+# body or of a file (file_edge true: a return is an error there too).
+fun outside(rt, f, file_edge)
+    if f == flow_return and file_edge
+        fail(rt, rt.flow_node, "'return' outside a function")
+    else if f == flow_break
+        fail(rt, rt.flow_node, "'break' outside a loop")
+    else if f == flow_next
+        fail(rt, rt.flow_node, "'next' outside a loop")
 
 fun condition(rt, n, env, what)
     let v = eval(rt, n, env)
@@ -362,109 +347,161 @@ fun condition(rt, n, env, what)
         return false
     return v
 
-fun exec(rt, n, env)
-    let k = n.kind
-    if k == "Let"
-        let v = eval(rt, n.kids[0], env)
-        let hint = hint_of(n, 1)
-        if hint != ""
-            check_type(rt, n.kids[0], hint, v, "'{n.text}' must be")
-            env.hints[n.text] = hint
-        else if n.text in env.hints
-            remove(env.hints, n.text)
-        if rt.err == none
-            env.vars[n.text] = v
-        return "normal"
-    if k == "Assign"
-        let v = eval(rt, n.kids[1], env)
-        if rt.err == none
-            assign(rt, n.kids[0], v, env, n.kids[1])
-        return "normal"
-    if k == "ExprStmt"
-        eval(rt, n.kids[0], env)
-        return "normal"
-    if k == "Fun"
-        rt.next_id = rt.next_id + 1
-        let f = tagged({name: n.text, node: n, closure: env, id: rt.next_id, file: rt.file}, "fun")
-        env.vars[n.text] = f
-        return "normal"
-    if k == "If"
-        if condition(rt, n.kids[0], env, "'if' condition")
-            return exec_block(rt, n.kids[1], new_env(env))
-        if rt.err == none and len(n.kids) > 2
-            let alt = n.kids[2]
-            if alt.kind == "If"
-                return exec(rt, alt, env)
-            return exec_block(rt, alt, new_env(env))
-        return "normal"
-    if k == "While"
-        while condition(rt, n.kids[0], env, "'while' condition")
-            let f = exec_block(rt, n.kids[1], new_env(env))
-            if f == "break" or f == "error"
-                break
-            if f == "return"
-                return f
-        return "normal"
-    if k == "For"
-        let src = eval(rt, n.kids[0], env)
-        if rt.err != none
-            return "normal"
-        let t = type_of(src)
-        let items = []
-        if t == "list"
-            items = slice(src, 0, len(src))
-        else if t == "string"
-            for c in src
-                append(items, c)
-        else if t == "map"
-            items = keys(src)
-        else
-            fail(rt, n.kids[0], "cannot loop over " + a_type(src))
-            return "normal"
-        for item in items
-            let scope = new_env(env)
-            scope.vars[n.text] = item
-            let f = exec_block(rt, n.kids[1], scope)
-            if f == "break" or f == "error"
-                break
-            if f == "return"
-                return f
-        return "normal"
-    if k == "Return"
-        if len(n.kids) == 0
-            rt.ret = none
-        else
-            rt.ret = eval(rt, n.kids[0], env)
-        rt.flow_node = n
-        return "return"
-    if k == "Try"
-        let depth = rt.depth
-        let f = exec_block(rt, n.kids[0], new_env(env))
-        if rt.err == none
-            return f
-        let e = rt.err
-        rt.err = none
-        rt.depth = depth
-        let scope = new_env(env)
-        if n.text != ""
-            scope.vars[n.text] = {message: e.msg, line: e.line, col: e.col}
-        return exec_block(rt, n.kids[1], scope)
-    if k == "Break"
-        rt.flow_node = n
-        return "break"
-    if k == "Next"
-        rt.flow_node = n
-        return "next"
-    if k == "Use"
-        let m = load_module(rt, n)
-        if rt.err == none
-            if len(n.kids) > 0
-                env.vars[n.kids[0].text] = m
+# Statements run on a frame stack too (SH3, option C, slice 3, 1.0.19), so
+# nested blocks, loops and try do not recurse on the host. exec_body runs the
+# statements of a block (a function body, a file) in env and gives back how it
+# ended: flow_normal, or flow_return, flow_break or flow_next when one of
+# those reached its edge (an error is in rt.err). Frames:
+#   [s_block, block, env, i]        runs block.kids from i on
+#   [s_while, node, env]            checks the condition, runs the body again
+#   [s_for, node, env, items, i]    runs the body for items[i]
+#   [s_try, node, env, depth]       the try part is running above it
+# A return unwinds the whole stack, break and next unwind to the nearest
+# loop frame, and an error unwinds to the nearest try frame, which runs its
+# catch part. Calls still recurse on the host (slice 4).
+let flow_normal = 0
+let flow_return = 1
+let flow_break = 2
+let flow_next = 3
+let s_block = 0
+let s_while = 1
+let s_for = 2
+let s_try = 3
+
+fun exec_body(rt, block, env)
+    let stack = [[s_block, block, env, 0]]
+    while len(stack) > 0
+        let fr = stack[len(stack) - 1]
+        let step = fr[0]
+        let flow = flow_normal
+        if step == s_block
+            let kids = fr[1].kids
+            let i = fr[3]
+            if i >= len(kids)
+                pop(stack)
+                next
+            fr[3] = i + 1
+            let n = kids[i]
+            let en = fr[2]
+            let k = n.kind
+            if k == "ExprStmt"
+                eval(rt, n.kids[0], en)
+            else if k == "Let"
+                let v = eval(rt, n.kids[0], en)
+                let hint = hint_of(n, 1)
+                if hint != ""
+                    check_type(rt, n.kids[0], hint, v, "'{n.text}' must be")
+                    en.hints[n.text] = hint
+                else if n.text in en.hints
+                    remove(en.hints, n.text)
+                if rt.err == none
+                    en.vars[n.text] = v
+            else if k == "Assign"
+                let v = eval(rt, n.kids[1], en)
+                if rt.err == none
+                    assign(rt, n.kids[0], v, en, n.kids[1])
+            else if k == "If"
+                let c = n
+                while true
+                    if condition(rt, c.kids[0], en, "'if' condition")
+                        append(stack, [s_block, c.kids[1], new_env(en), 0])
+                        break
+                    if rt.err != none or len(c.kids) <= 2
+                        break
+                    if c.kids[2].kind != "If"
+                        append(stack, [s_block, c.kids[2], new_env(en), 0])
+                        break
+                    c = c.kids[2]
+            else if k == "While"
+                append(stack, [s_while, n, en])
+            else if k == "For"
+                let src = eval(rt, n.kids[0], en)
+                if rt.err == none
+                    let t = type_of(src)
+                    let items = none
+                    if t == "list"
+                        items = slice(src, 0, len(src))
+                    else if t == "string"
+                        items = []
+                        for ch in src
+                            append(items, ch)
+                    else if t == "map"
+                        items = keys(src)
+                    else
+                        fail(rt, n.kids[0], "cannot loop over " + a_type(src))
+                    if items != none
+                        append(stack, [s_for, n, en, items, 0])
+            else if k == "Return"
+                if len(n.kids) == 0
+                    rt.ret = none
+                else
+                    rt.ret = eval(rt, n.kids[0], en)
+                rt.flow_node = n
+                flow = flow_return
+            else if k == "Break"
+                rt.flow_node = n
+                flow = flow_break
+            else if k == "Next"
+                rt.flow_node = n
+                flow = flow_next
+            else if k == "Fun"
+                rt.next_id = rt.next_id + 1
+                en.vars[n.text] = tagged({name: n.text, node: n, closure: en, id: rt.next_id, file: rt.file}, "fun")
+            else if k == "Try"
+                append(stack, [s_try, n, en, rt.depth])
+                append(stack, [s_block, n.kids[0], new_env(en), 0])
+            else if k == "Use"
+                let m = load_module(rt, n)
+                if rt.err == none
+                    if len(n.kids) > 0
+                        en.vars[n.kids[0].text] = m
+                    else
+                        en.vars[m.name] = m
             else
-                env.vars[m.name] = m
-        return "normal"
-    fail(rt, n, "cannot run a " + k + " here")
-    return "normal"
+                fail(rt, n, "cannot run a " + k + " here")
+        else if step == s_while
+            let n = fr[1]
+            if condition(rt, n.kids[0], fr[2], "'while' condition")
+                append(stack, [s_block, n.kids[1], new_env(fr[2]), 0])
+            else
+                pop(stack)
+        else if step == s_for
+            let i = fr[4]
+            if i >= len(fr[3])
+                pop(stack)
+                next
+            fr[4] = i + 1
+            let scope = new_env(fr[2])
+            scope.vars[fr[1].text] = fr[3][i]
+            append(stack, [s_block, fr[1].kids[1], scope, 0])
+        else
+            # s_try: the try part ended without an error
+            pop(stack)
+        if rt.err != none
+            # Unwind to the nearest try frame and run its catch part there.
+            while len(stack) > 0 and stack[len(stack) - 1][0] != s_try
+                pop(stack)
+            if len(stack) == 0
+                return flow_normal
+            let t = pop(stack)
+            let e = rt.err
+            rt.err = none
+            rt.depth = t[3]
+            let scope = new_env(t[2])
+            if t[1].text != ""
+                scope.vars[t[1].text] = {message: e.msg, line: e.line, col: e.col}
+            append(stack, [s_block, t[1].kids[1], scope, 0])
+        else if flow != flow_normal
+            if flow == flow_return
+                return flow
+            # break and next unwind to the nearest loop; break ends it too.
+            while len(stack) > 0 and stack[len(stack) - 1][0] != s_while and stack[len(stack) - 1][0] != s_for
+                pop(stack)
+            if len(stack) == 0
+                return flow
+            if flow == flow_break
+                pop(stack)
+    return flow_normal
 
 fun assign(rt, target, v, env, value_at)
     if target.kind == "Name"
@@ -858,17 +895,17 @@ fun call(rt, n, env)
         if ret_hint != ""
             check_type(rt, body, ret_hint, result, ret_what)
     else
-        let fl = exec_block(rt, body, scope)
-        if fl == "break"
-            fail(rt, rt.flow_node, "'break' outside a loop")
-        else if fl == "next"
-            fail(rt, rt.flow_node, "'next' outside a loop")
-        else if fl == "return"
+        let fl = exec_body(rt, body, scope)
+        if rt.err == none
+            outside(rt, fl, false)
+        if rt.err != none
+            fl = flow_normal
+        else if fl == flow_return
             result = rt.ret
             rt.ret = none
             if ret_hint != ""
                 check_type(rt, rt.flow_node, ret_hint, result, ret_what)
-        else if ret_hint != "" and fl == "normal"
+        else if ret_hint != ""
             check_type(rt, f.node, ret_hint, none, ret_what)
     if rt.err != none
         std_boundary(rt, f, saved_file, n)

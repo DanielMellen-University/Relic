@@ -21,7 +21,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
 | SH1 | Self-hosted interpreter runs programs with args | M9 | done |
 | SH2 | Self-hosted interpreter runs itself | SH1 | done |
-| SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; `gc()` done (1.0.13); deep recursion in progress (option C, frame stack, slices 1 and 2 of 6 done in 1.0.14 and 1.0.15) |
+| SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; `gc()` done (1.0.13); deep recursion in progress (option C, frame stack, slices 1 to 3 of 6 done in 1.0.14, 1.0.15 and 1.0.19) |
 | SH4 | `check` and REPL in Relic | SH2 | not started, low priority |
 | C1 | C runtime | M9 | done: `runtime/c/`, tests `c_runtime` and `c_demo` |
 | C2 | Relic-to-C codegen, core subset, in CI | C1 | done (1.0.4): `selfhost/cgen.relic`, 106 of 129 goldens, the other 23 need modules |
@@ -96,7 +96,7 @@ A testing aid that checks the Relic-written front end on real programs. Not the 
 
 - SH1 exit: `relic selfhost/run.relic FILE args...` passes the args through. **Done:** `selfhost_args`.
 - SH2 exit: `run.relic` runs `run.relic` running a test program. **Done:** `selfhost_nested`, about 0.7 s. A third level runs out of host recursion.
-- SH3 exit: no skipped comparison tests. `num()` now gives the host's answers (golden `num_edges`). `gc()` runs the host's collector and `gc_cycles` matches (1.0.13). Still open: recursion stops at about 196 Relic calls for a function with a block body and 395 for one with an expression body (the host's 800-call limit, with several host calls per Relic call; it was about 130 and 157 before 1.0.15). Daniel picked option C on Oct 24 2026: `eval` moves onto an explicit frame stack in 6 slices, each staying under 2x the 1.0.13 time of `selfhost_interp` (Daniel's budget). The slices: (1) the stack and driver loop in front of the recursive code, leaves answered at once (1.0.14, done); (2) expressions (1.0.15, done); (3) statements and control flow; (4) calls and returns with no host recursion; (5) `try` / `catch` and errors; (6) remove the recursive path and stop skipping `rt_recursion`, `try_recursion` and `c_demo`. The depth limit and its error text stay the host's.
+- SH3 exit: no skipped comparison tests. `num()` now gives the host's answers (golden `num_edges`). `gc()` runs the host's collector and `gc_cycles` matches (1.0.13). Still open: recursion stops at about 262 Relic calls for a function with a block body and 395 for one with an expression body (the host's 800-call limit, with several host calls per Relic call; it was about 130 and 157 before 1.0.15, and 196 for a block body before 1.0.19). Daniel picked option C on Oct 24 2026: `eval` moves onto an explicit frame stack in 6 slices, each staying under 2x the 1.0.13 time of `selfhost_interp` (Daniel's budget). The slices: (1) the stack and driver loop in front of the recursive code, leaves answered at once (1.0.14, done); (2) expressions (1.0.15, done); (3) statements and control flow (1.0.19, done); (4) calls and returns with no host recursion; (5) `try` / `catch` and errors; (6) remove the recursive path and stop skipping `rt_recursion`, `try_recursion` and `c_demo`. The depth limit and its error text stay the host's.
 - SH4 exit: `relic check` and the REPL run as Relic programs and match the host.
 
 ### C1 to C5: the compiler to C
