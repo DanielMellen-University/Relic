@@ -1,0 +1,3 @@
+err_escape_control.relic:1:9: error: unknown escape: a backslash then U+0001 (a control character; delete it)
+    print("a\b")
+            ^

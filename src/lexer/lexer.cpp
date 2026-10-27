@@ -352,6 +352,12 @@ private:
                     default: {
                         std::string whole(1, e);  // the whole UTF-8 character, not just its first byte
                         while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
+                        unsigned char b = static_cast<unsigned char>(e);
+                        if (b < 0x20 || b == 0x7F) {  // a control character prints as nothing (or cuts the line), so it gets its code
+                            char code[16];
+                            std::snprintf(code, sizeof code, "U+%04X", static_cast<unsigned>(b));
+                            error(el, ec, std::string("unknown escape: a backslash then ") + code + " (a control character; delete it)");
+                        }
                         error(el, ec, "unknown escape '\\" + whole + "'");
                     }
                 }

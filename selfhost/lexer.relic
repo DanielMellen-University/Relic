@@ -206,7 +206,13 @@ fun string_body(st, l, c, first)
                     return
                 text = text + u
             else
-                fail(st, el, ec, "unknown escape '\\{e}'")
+                let code = ord(e)
+                if code < 32 or code == 127
+                    # a control character prints as nothing (or cuts the line), so it gets its code
+                    let hex = "0123456789ABCDEF"
+                    fail(st, el, ec, "unknown escape: a backslash then U+00{hex[int(code / 16)]}{hex[code % 16]} (a control character; delete it)")
+                else
+                    fail(st, el, ec, "unknown escape '\\{e}'")
                 return
             next
         if ch == "{{"
