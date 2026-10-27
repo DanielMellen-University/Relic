@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.25 (2026-10-26)
+
+A bug fix in `std/vfs`. No language change.
+
+- `std/vfs`: a path that goes through a file, like `/home/welcome.txt/x`, stopped the program with `map has no key 'kids'` in `exists`, `is_dir`, `read`, `size`, `append` and `remove`. `STDLIB.md` says `exists` and `is_dir` never fail, and now they do not: such a path is missing, and the others fail with their usual message. The `std_vfs` golden covers it (no new program, so `selfhost_interp` is unchanged).
+- Speed: `selfhost_interp` 12.0 s median of 3 on a busy box (the same box measured 12.2 s without the change, 11.61 s earlier today; 1.90x was the quiet figure), `selfhost_nested` unchanged.
+- `ctest`: 156 default, 327 with the host, 343 in the `sdl` CI job.
+
 ## 1.0.24 (2026-10-26)
 
 Better messages for characters that look like something else, and more tests for behavior that had none. Parsing and running are unchanged.
