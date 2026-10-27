@@ -1,0 +1,32 @@
+# std/math edges: negatives, halves, int against float results, errors.
+use std/math
+print(math.floor(-2.5), math.floor(-3), math.floor(0.0), math.floor(2.0))
+print(math.ceil(-2.5), math.ceil(-3), math.ceil(2.0), math.ceil(2.000001))
+print(math.round(-2.5), math.round(-2.4), math.round(-0.5), math.round(0.49), math.round(7))
+print(math.abs(-0.0), math.abs(2.5), math.abs(-2.5), math.abs(0))
+print(math.min(3, 3.0), math.max(3, 3.0), math.min(-1, 1), math.max(-1.5, -2))
+print(math.clamp(-5, 0, 10), math.clamp(5, 0, 10), math.clamp(1.5, 0, 1))
+print(math.sqrt(0), math.sqrt(2), math.pow(2, -1), math.pow(0, 0), math.pow(2.5, 2))
+print(type(math.floor(2.5)), type(math.sqrt(4)), type(math.pow(2, 2)), type(math.abs(-2)))
+print(math.is_whole(2.0), math.is_whole(2.5), math.is_whole(-4), math.is_whole(-0.5))
+print(math.exp(0), math.log(1), math.cos(math.pi))
+try
+    print(math.floor("x"))
+catch e
+    print(e.message)
+try
+    print(math.sqrt("x"))
+catch e
+    print(e.message)
+try
+    print(math.abs("x"))
+catch e
+    print(e.message)
+try
+    print(math.min(1, "a"))
+catch e
+    print(e.message)
+try
+    print(math.floor(1e30))
+catch e
+    print(e.message)

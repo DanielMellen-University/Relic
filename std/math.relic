@@ -6,6 +6,8 @@ let e = 2.718281828459045
 fun abs(x)
     if x < 0
         return -x
+    if x == 0 and type(x) == "float"
+        return 0.0  # not -0.0
     return x
 
 fun min(a, b)
