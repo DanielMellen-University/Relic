@@ -235,16 +235,25 @@ fun type_hint(p)
 
 fun if_stmt(p)
     let kw = advance(p)
-    let n = node("If", kw, "")
-    add(n, expression(p))
-    add(n, block(p))
-    if at(p, "ELSE")
+    let top = node("If", kw, "")
+    add(top, expression(p))
+    add(top, block(p))
+    # each `else if` hangs off the one before; a loop, not recursion, so a long
+    # chain does not run into the 800-call limit (relicc runs this compiled)
+    let cur = top
+    let more = true
+    while more and at(p, "ELSE")
         advance(p)
         if at(p, "IF")
-            add(n, if_stmt(p))
-        else
+            let n = node("If", advance(p), "")
+            add(n, expression(p))
             add(n, block(p))
-    return n
+            add(cur, n)
+            cur = n
+        else
+            add(cur, block(p))
+            more = false
+    return top
 
 fun while_stmt(p)
     let kw = advance(p)

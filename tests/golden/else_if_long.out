@@ -1,0 +1,15 @@
+0 zero
+1 b1
+2 b2
+99 b99
+150 b150
+199 b199
+200 b200
+201 other
+-1 other
+cannot compare a string and an int
+i 0
+two
+i 3
+end
+none ran

@@ -689,18 +689,48 @@ fun cond(fc, n, what)
         free_to(fc, a.temp)
 
 fun if_stmt(fc, s)
+    if len(s.kids) > 2 and s.kids[2].kind == "If"
+        else_if_chain(fc, s)
+        return
     cond(fc, s.kids[0], "'if' condition")
     emit(fc, "if (c_) " + LB)
     run_block(fc, s.kids[1], [])
     emit(fc, RB)
     if len(s.kids) > 2
         emit(fc, "else " + LB)
-        let alt = s.kids[2]
-        if alt.kind == "If"
-            if_stmt(fc, alt)
-        else
-            run_block(fc, alt, [])
+        run_block(fc, s.kids[2], [])
         emit(fc, RB)
+
+# if / else if / ... as a loop, and as C blocks side by side with a flag for
+# "a branch ran" instead of one more nested else per link: MSVC stops at 128
+# nested blocks (C1061) and clang at 256 brackets, and the recursion ran into
+# relicc's own 800-call limit near 770 links.
+fun else_if_chain(fc, s)
+    let done = label(fc.cg, "fi")
+    emit(fc, LB + " int " + done + " = 0;")
+    let cur = s
+    let first = true
+    while cur != none
+        if not first
+            emit(fc, "if (!" + done + ") " + LB)
+        cond(fc, cur.kids[0], "'if' condition")
+        emit(fc, "if (c_) " + LB + " " + done + " = 1;")
+        run_block(fc, cur.kids[1], [])
+        emit(fc, RB)
+        if not first
+            emit(fc, RB)
+        first = false
+        let after = none
+        if len(cur.kids) > 2
+            let alt = cur.kids[2]
+            if alt.kind == "If"
+                after = alt
+            else
+                emit(fc, "if (!" + done + ") " + LB)
+                run_block(fc, alt, [])
+                emit(fc, RB)
+        cur = after
+    emit(fc, RB)
 
 # The scopes a loop body or try body opened, released at its labels.
 fun release_from(fc, s_mark, v_mark)
