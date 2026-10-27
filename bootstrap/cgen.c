@@ -34,7 +34,7 @@ static rl_scope *MS[6];
 static const char *const NM0[] = {"lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "cg", "text"};
 static const char *const NM1[] = {"keywords", "singles", "indent_width", "is_digit", "is_alpha", "is_word", "hex_digits", "hex_value", "unicode_escape", "new_state", "eof", "peek", "advance", "emit", "fail", "last", "_cat", "text_of", "skip_comment", "layout", "open", "close", "number", "name", "string_body", "two", "token", "unexpected", "lex"};
 static const char *const NM2[] = {"node", "add", "new_parser", "max_nesting", "nest_in", "nest_out", "max_depth", "grow", "peek", "at", "advance", "match", "fail", "describe", "fail_expected", "expect", "end_of_line", "program", "statement", "block", "try_stmt", "use_stmt", "let_stmt", "fun_stmt", "known_types", "type_hint", "if_stmt", "while_stmt", "for_stmt", "expr_stmt", "expression", "binary", "or_expr", "and_expr", "not_expr", "compare_ops", "compare", "range", "additive", "multiplicative", "unary", "items", "postfix", "literals", "words", "primary", "map_literal", "interp", "parse"};
-static const char *const NM3[] = {"files", "strings", "_byte_len", "_window", "snippet", "show"};
+static const char *const NM3[] = {"files", "strings", "_byte_len", "_window", "snippet", "snippet_in", "show"};
 static const char *const NM4[] = {"strings", "read", "write", "append_text", "exists", "lines", "list", "is_dir", "make_dir", "remove", "rename", "size", "remove_tree"};
 static const char *const NM5[] = {"_text", "find", "_find_long", "_borders", "_match", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
 static int rlc_use_1(rl_ctx *cx, rl_value *out);
@@ -155,85 +155,86 @@ static int rlc_mod_4(rl_ctx *cx, rl_scope *top);
 static int fn105__byte_len(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
 static int fn106__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
 static int fn107_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn108_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn108_snippet_in(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn109_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
 static int rlc_mod_3(rl_ctx *cx, rl_scope *top);
-static int fn109_oct3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn110_char_bytes(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn111_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn112_new_cg(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn113_unsupported(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn114_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn115_bslot(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn116_label(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn117_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn118_new_fc(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn119_emit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn120_temp(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn121_T(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn122_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn123_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn124_hint_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn125_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn126_declare(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn127_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn128_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn129_close_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn130_slot_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn131_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn132_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn133_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn134_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn135_on_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn136_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn137_check3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn138_fail_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn139__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn140_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn141_simple(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn142_operand(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn143_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn144_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn145_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn146_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn147_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn148_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn149_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn150_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn151_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn152_hint_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn153_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn154_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn155_cond(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn156_if_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn157_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn158_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn159_while_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn160_for_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn161_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn162_return_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn163_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn164_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn165_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn166_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn167_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn168_folder_of(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn169_use_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn170_is_absolute(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn171_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn172_shown_file(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn173_in_std(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn174_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn175_add_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn176_compile_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn177_use_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn178_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn179_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn180_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn181_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn182_max1(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn183_safe_comment(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn184_stub_skip(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
-static int fn185_stub_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn110_oct3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn111_char_bytes(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn112_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn113_new_cg(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn114_unsupported(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn115_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn116_bslot(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn117_label(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn118_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn119_new_fc(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn120_emit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn121_temp(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn122_T(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn123_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn124_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn125_hint_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn126_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn127_declare(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn128_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn129_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn130_close_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn131_slot_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn132_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn133_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn134_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn135_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn136_on_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn137_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn138_check3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn139_fail_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn140__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn141_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn142_simple(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn143_operand(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn144_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn145_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn146_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn147_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn148_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn149_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn150_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn151_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn152_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn153_hint_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn154_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn155_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn156_cond(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn157_if_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn158_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn159_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn160_while_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn161_for_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn162_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn163_return_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn164_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn165_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn166_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn167_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn168_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn169_folder_of(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn170_use_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn171_is_absolute(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn172_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn173_shown_file(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn174_in_std(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn175_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn176_add_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn177_compile_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn178_use_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn179_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn180_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn181_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn182_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn183_max1(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn184_safe_comment(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn185_stub_skip(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
+static int fn186_stub_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
 static int rlc_mod_0(rl_ctx *cx, rl_scope *top);
 
 static int rlc_use_1(rl_ctx *cx, rl_value *out) {
@@ -283,8 +284,8 @@ static int rlc_use_4(rl_ctx *cx, rl_value *out) {
 static int rlc_use_3(rl_ctx *cx, rl_value *out) {
     *out = rl_none();
     if (MOD[3].k == RL_NONE) {
-        MS[3] = rl_scope_new(NULL, 6);
-        MOD[3] = rl_module_scoped("errfmt", MS[3], 6, NM3);
+        MS[3] = rl_scope_new(NULL, 7);
+        MOD[3] = rl_module_scoped("errfmt", MS[3], 7, NM3);
         if (rlc_mod_3(cx, MS[3])) return RL_ERR;
     }
     *out = rl_retain(MOD[3]);
@@ -10922,26 +10923,18 @@ done:
 }
 
 static int fn107_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
-    rl_value T[6];
-    rl_value L[9];
-    rl_value V[1];
-    size_t I[1];
+    rl_value T[7];
+    rl_value L[3];
     rl_scope *E = self->env;
     rl_value R = rl_none();
     int r = RL_OK, c_ = 0, i_;
     (void)argc; (void)argv; (void)E;
     (void)c_; (void)cx;
-    for (i_ = 0; i_ < 6; ++i_) T[i_] = rl_none();
-    for (i_ = 0; i_ < 9; ++i_) L[i_] = rl_unset();
-    for (i_ = 0; i_ < 1; ++i_) { V[i_] = rl_none(); I[i_] = 0; }
+    for (i_ = 0; i_ < 7; ++i_) T[i_] = rl_none();
+    for (i_ = 0; i_ < 3; ++i_) L[i_] = rl_unset();
     RLC_SET(L[0], rl_unset());
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[2], rl_unset());
-    RLC_SET(L[3], rl_unset());
-    RLC_SET(L[4], rl_unset());
-    RLC_SET(L[5], rl_unset());
-    RLC_SET(L[6], rl_unset());
-    RLC_SET(L[7], rl_unset());
     RLC_SET(L[0], rl_retain(argv[0]));
     RLC_SET(L[1], rl_retain(argv[1]));
     RLC_SET(L[2], rl_retain(argv[2]));
@@ -10977,160 +10970,224 @@ static int fn107_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
-    if (rl_field(cx, E->slots[1], "split", &T[1])) RLC_ERR(3, 54, 24, 54, 24, 54, 24, fail);
-    if (rl_field(cx, E->slots[0], "read", &T[3])) RLC_ERR(3, 54, 36, 54, 36, 54, 36, fail);
-    T[4] = rl_retain(L[0]);
-    if (rl_call(cx, T[3], 1, &T[4], &T[2])) { rl_std_boundary(cx, T[3]); RLC_ERR(3, 54, 41, 54, 41, 54, 41, fail); }
+    if (RLC_IS(E->slots[5])) T[1] = rl_retain(E->slots[5]);
+    else { static const char *const nm_[] = {"path", "line", "col", "files", "strings", "_byte_len", "_window", "snippet", "snippet_in", "show"};
+        const rl_value *const sl_[] = {NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6]};
+        rl_fail_undefined(cx, "snippet_in", 10, nm_, sl_); RLC_ERR(3, 54, 12, 54, 12, 54, 12, fail); }
+    if (rl_field(cx, E->slots[1], "split", &T[3])) RLC_ERR(3, 54, 30, 54, 30, 54, 30, fail);
+    if (rl_field(cx, E->slots[0], "read", &T[5])) RLC_ERR(3, 54, 42, 54, 42, 54, 42, fail);
+    T[6] = rl_retain(L[0]);
+    if (rl_call(cx, T[5], 1, &T[6], &T[4])) { rl_std_boundary(cx, T[5]); RLC_ERR(3, 54, 47, 54, 47, 54, 47, fail); }
+    RLC_DROP(T[6]);
+    RLC_DROP(T[5]);
+    T[5] = rl_retain(K[79]);
+    if (rl_call(cx, T[3], 2, &T[4], &T[2])) { rl_std_boundary(cx, T[3]); RLC_ERR(3, 54, 36, 54, 36, 54, 36, fail); }
+    RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    T[3] = rl_retain(K[79]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(3, 54, 30, 54, 30, 54, 30, fail); }
+    T[3] = rl_retain(L[1]);
+    T[4] = rl_retain(L[2]);
+    if (rl_call(cx, T[1], 3, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(3, 54, 22, 54, 22, 54, 22, fail); }
+    RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
-    RLC_SET(L[3], T[0]); T[0] = rl_none();
-    T[2] = rl_retain(L[3]);
-    if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 55, 18, 55, 18, 55, 18, fail); }
+    RLC_SET(R, T[0]); T[0] = rl_none();
+    goto done;
+    goto done;
+fail:
+    r = RL_ERR;
+done:
+    for (i_ = 0; i_ < 7; ++i_) rl_release(T[i_]);
+    for (i_ = 0; i_ < 3; ++i_) rl_release(L[i_]);
+    if (r == RL_OK) *out = R;
+    else { rl_release(R); *out = rl_none(); }
+    return r;
+}
+
+static int fn108_snippet_in(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+    rl_value T[6];
+    rl_value L[8];
+    rl_value V[1];
+    size_t I[1];
+    rl_scope *E = self->env;
+    rl_value R = rl_none();
+    int r = RL_OK, c_ = 0, i_;
+    (void)argc; (void)argv; (void)E;
+    (void)c_; (void)cx;
+    for (i_ = 0; i_ < 6; ++i_) T[i_] = rl_none();
+    for (i_ = 0; i_ < 8; ++i_) L[i_] = rl_unset();
+    for (i_ = 0; i_ < 1; ++i_) { V[i_] = rl_none(); I[i_] = 0; }
+    RLC_SET(L[0], rl_unset());
+    RLC_SET(L[1], rl_unset());
+    RLC_SET(L[2], rl_unset());
+    RLC_SET(L[3], rl_unset());
+    RLC_SET(L[4], rl_unset());
+    RLC_SET(L[5], rl_unset());
+    RLC_SET(L[6], rl_unset());
+    RLC_SET(L[0], rl_retain(argv[0]));
+    RLC_SET(L[1], rl_retain(argv[1]));
+    RLC_SET(L[2], rl_retain(argv[2]));
+    if (rl_compare(cx, "<", L[1], rl_int(1LL), &T[2])) RLC_ERR(3, 59, 13, 59, 13, 59, 13, fail);
+    if (rl_cond(cx, T[2], "'or' operand", &c_)) RLC_ERR(3, 59, 13, 59, 13, 59, 13, fail);
     RLC_DROP(T[2]);
-    if (rl_compare(cx, ">", L[1], T[1], &T[0])) RLC_ERR(3, 55, 13, 55, 13, 55, 13, fail);
+    if (c_) T[1] = rl_bool(1);
+    else {
+    if (rl_compare(cx, "<", L[2], rl_int(1LL), &T[2])) RLC_ERR(3, 59, 24, 59, 24, 59, 24, fail);
+    if (rl_cond(cx, T[2], "'or' operand", &c_)) RLC_ERR(3, 59, 24, 59, 24, 59, 24, fail);
+    T[1] = rl_bool(c_);
+    RLC_DROP(T[2]);
+    }
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(3, 59, 17, 59, 17, 59, 17, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 55, 13, 55, 13, 55, 13, fail);
+    if (c_) T[0] = rl_bool(1);
+    else {
+    T[3] = rl_retain(L[0]);
+    if (rl_call(cx, B[4], 1, &T[3], &T[2])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 59, 41, 59, 41, 59, 41, fail); }
+    RLC_DROP(T[3]);
+    if (rl_compare(cx, ">", L[1], T[2], &T[1])) RLC_ERR(3, 59, 36, 59, 36, 59, 36, fail);
+    RLC_DROP(T[2]);
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(3, 59, 36, 59, 36, 59, 36, fail);
+    T[0] = rl_bool(c_);
+    RLC_DROP(T[1]);
+    }
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 59, 28, 59, 28, 59, 28, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_retain(K[54]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
-    if (rl_sub(cx, L[1], rl_int(1LL), &T[1])) RLC_ERR(3, 57, 27, 57, 27, 57, 27, fail);
-    if (rl_index(cx, L[3], T[1], &T[0])) RLC_ERR(3, 57, 21, 57, 16, 57, 27, fail);
+    if (rl_sub(cx, L[1], rl_int(1LL), &T[1])) RLC_ERR(3, 61, 27, 61, 27, 61, 27, fail);
+    if (rl_index(cx, L[0], T[1], &T[0])) RLC_ERR(3, 61, 21, 61, 16, 61, 27, fail);
     RLC_DROP(T[1]);
-    RLC_SET(L[4], T[0]); T[0] = rl_none();
-    T[3] = rl_retain(L[4]);
-    if (rl_call(cx, B[4], 1, &T[3], &T[2])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 58, 11, 58, 11, 58, 11, fail); }
+    RLC_SET(L[3], T[0]); T[0] = rl_none();
+    T[3] = rl_retain(L[3]);
+    if (rl_call(cx, B[4], 1, &T[3], &T[2])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 62, 11, 62, 11, 62, 11, fail); }
     RLC_DROP(T[3]);
-    if (rl_compare(cx, ">", T[2], rl_int(0LL), &T[1])) RLC_ERR(3, 58, 18, 58, 18, 58, 18, fail);
+    if (rl_compare(cx, ">", T[2], rl_int(0LL), &T[1])) RLC_ERR(3, 62, 18, 62, 18, 62, 18, fail);
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(3, 58, 18, 58, 18, 58, 18, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(3, 62, 18, 62, 18, 62, 18, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    T[5] = rl_retain(L[4]);
-    if (rl_call(cx, B[4], 1, &T[5], &T[4])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 58, 34, 58, 34, 58, 34, fail); }
+    T[5] = rl_retain(L[3]);
+    if (rl_call(cx, B[4], 1, &T[5], &T[4])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 62, 34, 62, 34, 62, 34, fail); }
     RLC_DROP(T[5]);
-    if (rl_sub(cx, T[4], rl_int(1LL), &T[3])) RLC_ERR(3, 58, 41, 58, 41, 58, 41, fail);
+    if (rl_sub(cx, T[4], rl_int(1LL), &T[3])) RLC_ERR(3, 62, 41, 62, 41, 62, 41, fail);
     RLC_DROP(T[4]);
-    if (rl_index(cx, L[4], T[3], &T[2])) RLC_ERR(3, 58, 30, 58, 26, 58, 41, fail);
+    if (rl_index(cx, L[3], T[3], &T[2])) RLC_ERR(3, 62, 30, 62, 26, 62, 41, fail);
     RLC_DROP(T[3]);
     T[4] = rl_int(13LL);
-    if (rl_call(cx, B[0], 1, &T[4], &T[3])) { rl_std_boundary(cx, B[0]); RLC_ERR(3, 58, 52, 58, 52, 58, 52, fail); }
+    if (rl_call(cx, B[0], 1, &T[4], &T[3])) { rl_std_boundary(cx, B[0]); RLC_ERR(3, 62, 52, 62, 52, 62, 52, fail); }
     RLC_DROP(T[4]);
     T[1] = rl_bool(rl_equal(T[2], T[3]));
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(3, 58, 46, 58, 46, 58, 46, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(3, 62, 46, 62, 46, 62, 46, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 58, 22, 58, 22, 58, 22, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 62, 22, 62, 22, 62, 22, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    T[1] = rl_retain(L[4]);
+    T[1] = rl_retain(L[3]);
     T[2] = rl_int(0LL);
-    T[5] = rl_retain(L[4]);
-    if (rl_call(cx, B[4], 1, &T[5], &T[4])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 59, 34, 59, 34, 59, 34, fail); }
+    T[5] = rl_retain(L[3]);
+    if (rl_call(cx, B[4], 1, &T[5], &T[4])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 63, 34, 63, 34, 63, 34, fail); }
     RLC_DROP(T[5]);
-    if (rl_sub(cx, T[4], rl_int(1LL), &T[3])) RLC_ERR(3, 59, 41, 59, 41, 59, 41, fail);
+    if (rl_sub(cx, T[4], rl_int(1LL), &T[3])) RLC_ERR(3, 63, 41, 63, 41, 63, 41, fail);
     RLC_DROP(T[4]);
-    if (rl_call(cx, B[8], 3, &T[1], &T[0])) { rl_std_boundary(cx, B[8]); RLC_ERR(3, 59, 21, 59, 21, 59, 21, fail); }
+    if (rl_call(cx, B[8], 3, &T[1], &T[0])) { rl_std_boundary(cx, B[8]); RLC_ERR(3, 63, 21, 63, 21, 63, 21, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     {
-    RLC_SET(L[4], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    if (rl_field(cx, E->slots[1], "trim", &T[2])) RLC_ERR(3, 60, 15, 60, 15, 60, 15, fail);
-    T[3] = rl_retain(L[4]);
-    if (rl_call(cx, T[2], 1, &T[3], &T[1])) { rl_std_boundary(cx, T[2]); RLC_ERR(3, 60, 20, 60, 20, 60, 20, fail); }
+    if (rl_field(cx, E->slots[1], "trim", &T[2])) RLC_ERR(3, 64, 15, 64, 15, 64, 15, fail);
+    T[3] = rl_retain(L[3]);
+    if (rl_call(cx, T[2], 1, &T[3], &T[1])) { rl_std_boundary(cx, T[2]); RLC_ERR(3, 64, 20, 64, 20, 64, 20, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     T[0] = rl_bool(rl_equal(T[1], K[54]));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 60, 27, 60, 27, 60, 27, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 64, 27, 64, 27, 64, 27, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_retain(K[54]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
-    T[1] = rl_retain(L[4]);
+    T[1] = rl_retain(L[3]);
     T[2] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[3], 2, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[3]); RLC_ERR(3, 62, 20, 62, 20, 62, 20, fail); }
+    if (rl_call(cx, E->slots[3], 2, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[3]); RLC_ERR(3, 66, 20, 66, 20, 66, 20, fail); }
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
-    RLC_SET(L[5], T[0]); T[0] = rl_none();
-    if (rl_index(cx, L[5], rl_int(0LL), &T[0])) RLC_ERR(3, 63, 13, 63, 12, 63, 14, fail);
+    RLC_SET(L[4], T[0]); T[0] = rl_none();
+    if (rl_index(cx, L[4], rl_int(0LL), &T[0])) RLC_ERR(3, 67, 13, 67, 12, 67, 14, fail);
     {
-    RLC_SET(L[4], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    if (rl_index(cx, L[5], rl_int(1LL), &T[0])) RLC_ERR(3, 64, 12, 64, 11, 64, 13, fail);
+    if (rl_index(cx, L[4], rl_int(1LL), &T[0])) RLC_ERR(3, 68, 12, 68, 11, 68, 13, fail);
     {
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     T[0] = rl_retain(K[54]);
-    RLC_SET(L[6], T[0]); T[0] = rl_none();
+    RLC_SET(L[5], T[0]); T[0] = rl_none();
     T[0] = rl_int(0LL);
-    RLC_SET(L[7], T[0]); T[0] = rl_none();
-    if (rl_loop_items(cx, L[4], &V[0])) RLC_ERR(3, 67, 14, 67, 14, 67, 14, fail);
+    RLC_SET(L[6], T[0]); T[0] = rl_none();
+    if (rl_loop_items(cx, L[3], &V[0])) RLC_ERR(3, 71, 14, 71, 14, 71, 14, fail);
     I[0] = 0;
     top_168:
     if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_169;
     rl_gc_maybe();
-    RLC_SET(L[8], rl_unset());
-    RLC_SET(L[8], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
-    if (rl_sub(cx, L[2], rl_int(1LL), &T[1])) RLC_ERR(3, 68, 25, 68, 25, 68, 25, fail);
-    if (rl_compare(cx, ">=", L[7], T[1], &T[0])) RLC_ERR(3, 68, 18, 68, 18, 68, 18, fail);
+    RLC_SET(L[7], rl_unset());
+    RLC_SET(L[7], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
+    if (rl_sub(cx, L[2], rl_int(1LL), &T[1])) RLC_ERR(3, 72, 25, 72, 25, 72, 25, fail);
+    if (rl_compare(cx, ">=", L[6], T[1], &T[0])) RLC_ERR(3, 72, 18, 72, 18, 72, 18, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 68, 18, 68, 18, 68, 18, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 72, 18, 72, 18, 72, 18, fail);
     RLC_DROP(T[0]);
     if (c_) {
     goto brk_169;
     }
     T[2] = rl_int(9LL);
-    if (rl_call(cx, B[0], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[0]); RLC_ERR(3, 70, 20, 70, 20, 70, 20, fail); }
+    if (rl_call(cx, B[0], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[0]); RLC_ERR(3, 74, 20, 74, 20, 74, 20, fail); }
     RLC_DROP(T[2]);
-    T[0] = rl_bool(rl_equal(L[8], T[1]));
+    T[0] = rl_bool(rl_equal(L[7], T[1]));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 70, 14, 70, 14, 70, 14, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 74, 14, 74, 14, 74, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, L[6], L[8], &T[0])) RLC_ERR(3, 71, 23, 71, 23, 71, 23, fail);
+    if (rl_add(cx, L[5], L[7], &T[0])) RLC_ERR(3, 75, 23, 75, 23, 75, 23, fail);
     {
-    RLC_SET(L[6], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
     else {
-    if (rl_add(cx, L[6], K[83], &T[0])) RLC_ERR(3, 73, 23, 73, 23, 73, 23, fail);
+    if (rl_add(cx, L[5], K[83], &T[0])) RLC_ERR(3, 77, 23, 77, 23, 77, 23, fail);
     {
-    RLC_SET(L[6], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    T[2] = rl_retain(L[8]);
-    if (rl_call(cx, E->slots[2], 1, &T[2], &T[1])) { rl_std_boundary(cx, E->slots[2]); RLC_ERR(3, 74, 34, 74, 34, 74, 34, fail); }
+    T[2] = rl_retain(L[7]);
+    if (rl_call(cx, E->slots[2], 1, &T[2], &T[1])) { rl_std_boundary(cx, E->slots[2]); RLC_ERR(3, 78, 34, 78, 34, 78, 34, fail); }
     RLC_DROP(T[2]);
-    if (rl_add(cx, L[7], T[1], &T[0])) RLC_ERR(3, 74, 23, 74, 23, 74, 23, fail);
+    if (rl_add(cx, L[6], T[1], &T[0])) RLC_ERR(3, 78, 23, 78, 23, 78, 23, fail);
     RLC_DROP(T[1]);
     {
-    RLC_SET(L[7], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[6], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
     goto top_168;
     brk_169: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(K[275]);
-    T[2] = rl_retain(L[4]);
+    T[2] = rl_retain(L[3]);
     T[3] = rl_retain(K[276]);
-    T[4] = rl_retain(L[6]);
+    T[4] = rl_retain(L[5]);
     T[5] = rl_retain(K[277]);
     rl_interp(5, &T[1], &T[0]);
     RLC_DROP(T[5]);
@@ -11145,14 +11202,14 @@ fail:
     r = RL_ERR;
 done:
     for (i_ = 0; i_ < 6; ++i_) rl_release(T[i_]);
-    for (i_ = 0; i_ < 9; ++i_) rl_release(L[i_]);
+    for (i_ = 0; i_ < 8; ++i_) rl_release(L[i_]);
     for (i_ = 0; i_ < 1; ++i_) rl_release(V[i_]);
     if (r == RL_OK) *out = R;
     else { rl_release(R); *out = rl_none(); }
     return r;
 }
 
-static int fn108_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn109_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -11169,11 +11226,11 @@ static int fn108_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_SET(L[1], rl_retain(argv[1]));
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(K[53]);
-    if (rl_field(cx, L[1], "line", &T[4])) RLC_ERR(3, 78, 24, 78, 24, 78, 24, fail);
+    if (rl_field(cx, L[1], "line", &T[4])) RLC_ERR(3, 82, 24, 82, 24, 82, 24, fail);
     T[5] = rl_retain(K[53]);
-    if (rl_field(cx, L[1], "col", &T[6])) RLC_ERR(3, 78, 35, 78, 35, 78, 35, fail);
+    if (rl_field(cx, L[1], "col", &T[6])) RLC_ERR(3, 82, 35, 82, 35, 82, 35, fail);
     T[7] = rl_retain(K[278]);
-    if (rl_field(cx, L[1], "msg", &T[8])) RLC_ERR(3, 78, 53, 78, 53, 78, 53, fail);
+    if (rl_field(cx, L[1], "msg", &T[8])) RLC_ERR(3, 82, 53, 82, 53, 82, 53, fail);
     rl_interp(7, &T[2], &T[1]);
     RLC_DROP(T[8]);
     RLC_DROP(T[7]);
@@ -11182,33 +11239,33 @@ static int fn108_show(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(3, 78, 11, 78, 11, 78, 11, fail); }
+    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(3, 82, 11, 82, 11, 82, 11, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_retain(L[0]);
-    if (rl_field(cx, L[1], "line", &T[2])) RLC_ERR(3, 79, 30, 79, 30, 79, 30, fail);
-    if (rl_field(cx, L[1], "col", &T[3])) RLC_ERR(3, 79, 40, 79, 40, 79, 40, fail);
-    if (rl_call(cx, E->slots[4], 3, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[4]); RLC_ERR(3, 79, 20, 79, 20, 79, 20, fail); }
+    if (rl_field(cx, L[1], "line", &T[2])) RLC_ERR(3, 83, 30, 83, 30, 83, 30, fail);
+    if (rl_field(cx, L[1], "col", &T[3])) RLC_ERR(3, 83, 40, 83, 40, 83, 40, fail);
+    if (rl_call(cx, E->slots[4], 3, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[4]); RLC_ERR(3, 83, 20, 83, 20, 83, 20, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
     T[0] = rl_bool(!rl_equal(L[2], K[54]));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 80, 10, 80, 10, 80, 10, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 84, 10, 84, 10, 84, 10, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[2] = rl_retain(L[2]);
     T[3] = rl_int(0LL);
     T[6] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[6], &T[5])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 81, 31, 81, 31, 81, 31, fail); }
+    if (rl_call(cx, B[4], 1, &T[6], &T[5])) { rl_std_boundary(cx, B[4]); RLC_ERR(3, 85, 31, 85, 31, 85, 31, fail); }
     RLC_DROP(T[6]);
-    if (rl_sub(cx, T[5], rl_int(1LL), &T[4])) RLC_ERR(3, 81, 35, 81, 35, 81, 35, fail);
+    if (rl_sub(cx, T[5], rl_int(1LL), &T[4])) RLC_ERR(3, 85, 35, 85, 35, 85, 35, fail);
     RLC_DROP(T[5]);
-    if (rl_call(cx, B[8], 3, &T[2], &T[1])) { rl_std_boundary(cx, B[8]); RLC_ERR(3, 81, 21, 81, 21, 81, 21, fail); }
+    if (rl_call(cx, B[8], 3, &T[2], &T[1])) { rl_std_boundary(cx, B[8]); RLC_ERR(3, 85, 21, 85, 21, 85, 21, fail); }
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(3, 81, 15, 81, 15, 81, 15, fail); }
+    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(3, 85, 15, 85, 15, 85, 15, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
@@ -11237,7 +11294,8 @@ static int rlc_mod_3(rl_ctx *cx, rl_scope *top) {
     RLC_SET(top->slots[2], rl_fun_new("_byte_len", fn105__byte_len, 1, top));
     RLC_SET(top->slots[3], rl_fun_new("_window", fn106__window, 2, top));
     RLC_SET(top->slots[4], rl_fun_new("snippet", fn107_snippet, 3, top));
-    RLC_SET(top->slots[5], rl_fun_new("show", fn108_show, 2, top));
+    RLC_SET(top->slots[5], rl_fun_new("snippet_in", fn108_snippet_in, 3, top));
+    RLC_SET(top->slots[6], rl_fun_new("show", fn109_show, 2, top));
     goto done;
 fail:
     r = RL_ERR;
@@ -11247,7 +11305,7 @@ done:
     return r;
 }
 
-static int fn109_oct3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn110_oct3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -11303,7 +11361,7 @@ done:
     return r;
 }
 
-static int fn110_char_bytes(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn111_char_bytes(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -11439,7 +11497,7 @@ done:
     return r;
 }
 
-static int fn111_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn112_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[7];
     rl_value V[2];
@@ -11604,7 +11662,7 @@ done:
     return r;
 }
 
-static int fn112_new_cg(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn113_new_cg(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[2];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -11676,7 +11734,7 @@ done:
     return r;
 }
 
-static int fn113_unsupported(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn114_unsupported(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[2];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -11725,7 +11783,7 @@ done:
     return r;
 }
 
-static int fn114_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn115_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -11781,7 +11839,7 @@ done:
     return r;
 }
 
-static int fn115_bslot(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn116_bslot(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -11839,7 +11897,7 @@ done:
     return r;
 }
 
-static int fn116_label(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn117_label(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -11878,7 +11936,7 @@ done:
     return r;
 }
 
-static int fn117_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn118_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[4];
     rl_value V[1];
@@ -11960,7 +12018,7 @@ done:
     return r;
 }
 
-static int fn118_new_fc(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn119_new_fc(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -12058,7 +12116,7 @@ done:
     return r;
 }
 
-static int fn119_emit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn120_emit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -12089,7 +12147,7 @@ done:
     return r;
 }
 
-static int fn120_temp(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn121_temp(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -12135,7 +12193,7 @@ done:
     return r;
 }
 
-static int fn121_T(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn122_T(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -12166,7 +12224,7 @@ done:
     return r;
 }
 
-static int fn122_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn123_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -12223,7 +12281,7 @@ done:
     return r;
 }
 
-static int fn123_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn124_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[9];
     rl_value V[3];
@@ -12485,7 +12543,7 @@ done:
     return r;
 }
 
-static int fn124_hint_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn125_hint_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -12516,7 +12574,7 @@ done:
     return r;
 }
 
-static int fn125_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn126_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[6];
     rl_value V[1];
@@ -12625,7 +12683,7 @@ done:
     return r;
 }
 
-static int fn126_declare(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn127_declare(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -12695,7 +12753,7 @@ done:
     return r;
 }
 
-static int fn127_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn128_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -12761,7 +12819,7 @@ done:
     return r;
 }
 
-static int fn128_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn129_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[5];
     rl_value V[1];
@@ -12917,7 +12975,7 @@ done:
     return r;
 }
 
-static int fn129_close_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn130_close_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[7];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -12977,7 +13035,7 @@ done:
     return r;
 }
 
-static int fn130_slot_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn131_slot_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -13036,7 +13094,7 @@ done:
     return r;
 }
 
-static int fn131_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn132_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[2];
     rl_value L[4];
     rl_value V[1];
@@ -13100,7 +13158,7 @@ done:
     return r;
 }
 
-static int fn132_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn133_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[2];
     rl_value L[2];
     rl_value V[1];
@@ -13151,7 +13209,7 @@ done:
     return r;
 }
 
-static int fn133_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn134_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[15];
     rl_value V[3];
@@ -13440,7 +13498,7 @@ done:
     return r;
 }
 
-static int fn134_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn135_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[12];
     rl_value V[4];
@@ -13673,7 +13731,7 @@ done:
     return r;
 }
 
-static int fn135_on_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn136_on_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[13];
     rl_value L[8];
     rl_scope *E = self->env;
@@ -13802,7 +13860,7 @@ done:
     return r;
 }
 
-static int fn136_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn137_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -13851,7 +13909,7 @@ done:
     return r;
 }
 
-static int fn137_check3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn138_check3(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -13904,7 +13962,7 @@ done:
     return r;
 }
 
-static int fn138_fail_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn139_fail_here(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -13961,7 +14019,7 @@ done:
     return r;
 }
 
-static int fn139__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn140__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[2];
     rl_value L[2];
     rl_value V[1];
@@ -14036,7 +14094,7 @@ done:
     return r;
 }
 
-static int fn140_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn141_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[6];
     rl_scope *E = self->env;
@@ -14215,7 +14273,7 @@ done:
     return r;
 }
 
-static int fn141_simple(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn142_simple(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -14366,7 +14424,7 @@ done:
     return r;
 }
 
-static int fn142_operand(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn143_operand(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -14441,7 +14499,7 @@ done:
     return r;
 }
 
-static int fn143_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn144_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[17];
     rl_value V[3];
@@ -15044,7 +15102,7 @@ done:
     return r;
 }
 
-static int fn144_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn145_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[12];
     rl_value L[14];
     rl_value V[2];
@@ -15359,7 +15417,7 @@ done:
     return r;
 }
 
-static int fn145_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn146_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[9];
     rl_scope *E = self->env;
@@ -15519,7 +15577,7 @@ done:
     return r;
 }
 
-static int fn146_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn147_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[8];
     rl_scope *E = self->env;
@@ -15837,7 +15895,7 @@ done:
     return r;
 }
 
-static int fn147_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn148_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[9];
     rl_scope *E = self->env;
@@ -15997,7 +16055,7 @@ done:
     return r;
 }
 
-static int fn148_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn149_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[6];
     rl_scope *E = self->env;
@@ -16133,7 +16191,7 @@ done:
     return r;
 }
 
-static int fn149_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn150_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[9];
     rl_value V[1];
@@ -16302,7 +16360,7 @@ done:
     return r;
 }
 
-static int fn150_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn151_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[5];
     rl_value V[1];
@@ -16370,7 +16428,7 @@ done:
     return r;
 }
 
-static int fn151_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn152_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[5];
     rl_value V[1];
@@ -16459,7 +16517,7 @@ done:
     return r;
 }
 
-static int fn152_hint_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn153_hint_check(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -16528,7 +16586,7 @@ done:
     return r;
 }
 
-static int fn153_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn154_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[9];
     rl_scope *E = self->env;
@@ -17017,7 +17075,7 @@ done:
     return r;
 }
 
-static int fn154_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn155_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[13];
     rl_value L[14];
     rl_value V[1];
@@ -17415,7 +17473,7 @@ done:
     return r;
 }
 
-static int fn155_cond(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn156_cond(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -17484,7 +17542,7 @@ done:
     return r;
 }
 
-static int fn156_if_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn157_if_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -17609,7 +17667,7 @@ done:
     return r;
 }
 
-static int fn157_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn158_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[7];
     rl_scope *E = self->env;
@@ -17797,7 +17855,7 @@ done:
     return r;
 }
 
-static int fn158_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn159_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -17861,7 +17919,7 @@ done:
     return r;
 }
 
-static int fn159_while_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn160_while_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -18014,7 +18072,7 @@ done:
     return r;
 }
 
-static int fn160_for_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn161_for_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[9];
     rl_scope *E = self->env;
@@ -18271,7 +18329,7 @@ done:
     return r;
 }
 
-static int fn161_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn162_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[11];
     rl_scope *E = self->env;
@@ -18543,7 +18601,7 @@ done:
     return r;
 }
 
-static int fn162_return_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn163_return_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[8];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -18680,7 +18738,7 @@ done:
     return r;
 }
 
-static int fn163_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn164_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[14];
     rl_value V[1];
@@ -18976,7 +19034,7 @@ done:
     return r;
 }
 
-static int fn164_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn165_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[4];
     rl_value V[1];
@@ -19104,7 +19162,7 @@ done:
     return r;
 }
 
-static int fn165_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn166_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[11];
     rl_value L[14];
     rl_value V[4];
@@ -19520,7 +19578,7 @@ done:
     return r;
 }
 
-static int fn166_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn167_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[7];
     rl_value V[1];
@@ -19977,7 +20035,7 @@ done:
     return r;
 }
 
-static int fn167_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn168_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[3];
     rl_value L[3];
     rl_value V[1];
@@ -20050,7 +20108,7 @@ done:
     return r;
 }
 
-static int fn168_folder_of(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn169_folder_of(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -20085,7 +20143,7 @@ done:
     return r;
 }
 
-static int fn169_use_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn170_use_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -20139,7 +20197,7 @@ done:
     return r;
 }
 
-static int fn170_is_absolute(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn171_is_absolute(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -20214,7 +20272,7 @@ done:
     return r;
 }
 
-static int fn171_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn172_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[7];
     rl_value L[5];
     rl_value V[1];
@@ -20408,7 +20466,7 @@ done:
     return r;
 }
 
-static int fn172_shown_file(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn173_shown_file(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[7];
     rl_value L[4];
     rl_scope *E = self->env;
@@ -20503,7 +20561,7 @@ done:
     return r;
 }
 
-static int fn173_in_std(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn174_in_std(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[7];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -20574,7 +20632,7 @@ done:
     return r;
 }
 
-static int fn174_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn175_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[3];
     rl_scope *E = self->env;
@@ -20650,7 +20708,7 @@ done:
     return r;
 }
 
-static int fn175_add_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn176_add_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[7];
     rl_scope *E = self->env;
@@ -20797,7 +20855,7 @@ done:
     return r;
 }
 
-static int fn176_compile_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn177_compile_module(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -20902,7 +20960,7 @@ done:
     return r;
 }
 
-static int fn177_use_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn178_use_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[12];
     rl_value L[8];
     rl_scope *E = self->env;
@@ -21138,7 +21196,7 @@ done:
     return r;
 }
 
-static int fn178_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn179_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[10];
     rl_value V[4];
@@ -21395,7 +21453,7 @@ done:
     return r;
 }
 
-static int fn179_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn180_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[14];
     rl_value L[7];
     rl_value V[1];
@@ -21655,7 +21713,7 @@ done:
     return r;
 }
 
-static int fn180_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn181_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[10];
     rl_value L[15];
     rl_value V[5];
@@ -22372,7 +22430,7 @@ done:
     return r;
 }
 
-static int fn181_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn182_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[7];
     rl_value V[2];
@@ -22542,7 +22600,7 @@ done:
     return r;
 }
 
-static int fn182_max1(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn183_max1(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[1];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -22576,7 +22634,7 @@ done:
     return r;
 }
 
-static int fn183_safe_comment(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn184_safe_comment(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[5];
     rl_value L[1];
     rl_scope *E = self->env;
@@ -22609,7 +22667,7 @@ done:
     return r;
 }
 
-static int fn184_stub_skip(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn185_stub_skip(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[6];
     rl_value L[2];
     rl_scope *E = self->env;
@@ -22652,7 +22710,7 @@ done:
     return r;
 }
 
-static int fn185_stub_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+static int fn186_stub_error(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[9];
     rl_value L[5];
     rl_scope *E = self->env;
@@ -22790,11 +22848,11 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_SET(top->slots[5], T[0]); T[0] = rl_none();
     T[0] = rl_retain(K[65]);
     RLC_SET(top->slots[6], T[0]); T[0] = rl_none();
-    RLC_SET(top->slots[7], rl_fun_new("oct3", fn109_oct3, 1, top));
-    RLC_SET(top->slots[8], rl_fun_new("char_bytes", fn110_char_bytes, 1, top));
-    RLC_SET(top->slots[9], rl_fun_new("c_string", fn111_c_string, 1, top));
-    RLC_SET(top->slots[10], rl_fun_new("new_cg", fn112_new_cg, 1, top));
-    RLC_SET(top->slots[11], rl_fun_new("unsupported", fn113_unsupported, 3, top));
+    RLC_SET(top->slots[7], rl_fun_new("oct3", fn110_oct3, 1, top));
+    RLC_SET(top->slots[8], rl_fun_new("char_bytes", fn111_char_bytes, 1, top));
+    RLC_SET(top->slots[9], rl_fun_new("c_string", fn112_c_string, 1, top));
+    RLC_SET(top->slots[10], rl_fun_new("new_cg", fn113_new_cg, 1, top));
+    RLC_SET(top->slots[11], rl_fun_new("unsupported", fn114_unsupported, 3, top));
     T[0] = rl_list_new(97);
     T[1] = rl_retain(K[301]);
     rl_list_push((rl_list *)T[0].u.o, T[1]);
@@ -23107,35 +23165,35 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     brk_178: ;
     rl_scope_release(S[0]); S[0] = NULL;
     RLC_DROP(V[0]);
-    RLC_SET(top->slots[14], rl_fun_new("konst", fn114_konst, 2, top));
-    RLC_SET(top->slots[15], rl_fun_new("bslot", fn115_bslot, 2, top));
-    RLC_SET(top->slots[16], rl_fun_new("label", fn116_label, 2, top));
-    RLC_SET(top->slots[17], rl_fun_new("has_fun", fn117_has_fun, 1, top));
-    RLC_SET(top->slots[18], rl_fun_new("new_fc", fn118_new_fc, 5, top));
-    RLC_SET(top->slots[19], rl_fun_new("emit", fn119_emit, 2, top));
-    RLC_SET(top->slots[20], rl_fun_new("temp", fn120_temp, 1, top));
-    RLC_SET(top->slots[21], rl_fun_new("T", fn121_T, 1, top));
-    RLC_SET(top->slots[22], rl_fun_new("free_to", fn122_free_to, 2, top));
-    RLC_SET(top->slots[23], rl_fun_new("new_block", fn123_new_block, 3, top));
-    RLC_SET(top->slots[24], rl_fun_new("hint_name", fn124_hint_name, 1, top));
-    RLC_SET(top->slots[25], rl_fun_new("mixed_hints", fn125_mixed_hints, 1, top));
-    RLC_SET(top->slots[26], rl_fun_new("declare", fn126_declare, 4, top));
-    RLC_SET(top->slots[27], rl_fun_new("env_expr", fn127_env_expr, 1, top));
-    RLC_SET(top->slots[28], rl_fun_new("open_block", fn128_open_block, 3, top));
-    RLC_SET(top->slots[29], rl_fun_new("close_block", fn129_close_block, 1, top));
-    RLC_SET(top->slots[30], rl_fun_new("slot_here", fn130_slot_here, 2, top));
-    RLC_SET(top->slots[31], rl_fun_new("last_hint", fn131_last_hint, 2, top));
-    RLC_SET(top->slots[32], rl_fun_new("same_hint", fn132_same_hint, 1, top));
-    RLC_SET(top->slots[33], rl_fun_new("resolve", fn133_resolve, 3, top));
-    RLC_SET(top->slots[34], rl_fun_new("visible_names", fn134_visible_names, 1, top));
-    RLC_SET(top->slots[35], rl_fun_new("on_error", fn135_on_error, 4, top));
-    RLC_SET(top->slots[36], rl_fun_new("check", fn136_check, 3, top));
-    RLC_SET(top->slots[37], rl_fun_new("check3", fn137_check3, 5, top));
-    RLC_SET(top->slots[38], rl_fun_new("fail_here", fn138_fail_here, 3, top));
-    RLC_SET(top->slots[39], rl_fun_new("_nonzero_digit", fn139__nonzero_digit, 1, top));
-    RLC_SET(top->slots[40], rl_fun_new("number_value", fn140_number_value, 2, top));
-    RLC_SET(top->slots[41], rl_fun_new("simple", fn141_simple, 2, top));
-    RLC_SET(top->slots[42], rl_fun_new("operand", fn142_operand, 2, top));
+    RLC_SET(top->slots[14], rl_fun_new("konst", fn115_konst, 2, top));
+    RLC_SET(top->slots[15], rl_fun_new("bslot", fn116_bslot, 2, top));
+    RLC_SET(top->slots[16], rl_fun_new("label", fn117_label, 2, top));
+    RLC_SET(top->slots[17], rl_fun_new("has_fun", fn118_has_fun, 1, top));
+    RLC_SET(top->slots[18], rl_fun_new("new_fc", fn119_new_fc, 5, top));
+    RLC_SET(top->slots[19], rl_fun_new("emit", fn120_emit, 2, top));
+    RLC_SET(top->slots[20], rl_fun_new("temp", fn121_temp, 1, top));
+    RLC_SET(top->slots[21], rl_fun_new("T", fn122_T, 1, top));
+    RLC_SET(top->slots[22], rl_fun_new("free_to", fn123_free_to, 2, top));
+    RLC_SET(top->slots[23], rl_fun_new("new_block", fn124_new_block, 3, top));
+    RLC_SET(top->slots[24], rl_fun_new("hint_name", fn125_hint_name, 1, top));
+    RLC_SET(top->slots[25], rl_fun_new("mixed_hints", fn126_mixed_hints, 1, top));
+    RLC_SET(top->slots[26], rl_fun_new("declare", fn127_declare, 4, top));
+    RLC_SET(top->slots[27], rl_fun_new("env_expr", fn128_env_expr, 1, top));
+    RLC_SET(top->slots[28], rl_fun_new("open_block", fn129_open_block, 3, top));
+    RLC_SET(top->slots[29], rl_fun_new("close_block", fn130_close_block, 1, top));
+    RLC_SET(top->slots[30], rl_fun_new("slot_here", fn131_slot_here, 2, top));
+    RLC_SET(top->slots[31], rl_fun_new("last_hint", fn132_last_hint, 2, top));
+    RLC_SET(top->slots[32], rl_fun_new("same_hint", fn133_same_hint, 1, top));
+    RLC_SET(top->slots[33], rl_fun_new("resolve", fn134_resolve, 3, top));
+    RLC_SET(top->slots[34], rl_fun_new("visible_names", fn135_visible_names, 1, top));
+    RLC_SET(top->slots[35], rl_fun_new("on_error", fn136_on_error, 4, top));
+    RLC_SET(top->slots[36], rl_fun_new("check", fn137_check, 3, top));
+    RLC_SET(top->slots[37], rl_fun_new("check3", fn138_check3, 5, top));
+    RLC_SET(top->slots[38], rl_fun_new("fail_here", fn139_fail_here, 3, top));
+    RLC_SET(top->slots[39], rl_fun_new("_nonzero_digit", fn140__nonzero_digit, 1, top));
+    RLC_SET(top->slots[40], rl_fun_new("number_value", fn141_number_value, 2, top));
+    RLC_SET(top->slots[41], rl_fun_new("simple", fn142_simple, 2, top));
+    RLC_SET(top->slots[42], rl_fun_new("operand", fn143_operand, 2, top));
     T[0] = rl_map_new();
     T[1] = rl_retain(K[467]);
     rl_map_set((rl_map *)T[0].u.o, (rl_str *)K[41].u.o, T[1]);
@@ -23153,10 +23211,10 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     rl_map_set((rl_map *)T[0].u.o, (rl_str *)K[49].u.o, T[1]);
     RLC_DROP(T[1]);
     RLC_SET(top->slots[43], T[0]); T[0] = rl_none();
-    RLC_SET(top->slots[44], rl_fun_new("expr", fn143_expr, 3, top));
-    RLC_SET(top->slots[45], rl_fun_new("name_value", fn144_name_value, 3, top));
-    RLC_SET(top->slots[46], rl_fun_new("binary", fn145_binary, 3, top));
-    RLC_SET(top->slots[47], rl_fun_new("binary_op", fn146_binary_op, 4, top));
+    RLC_SET(top->slots[44], rl_fun_new("expr", fn144_expr, 3, top));
+    RLC_SET(top->slots[45], rl_fun_new("name_value", fn145_name_value, 3, top));
+    RLC_SET(top->slots[46], rl_fun_new("binary", fn146_binary, 3, top));
+    RLC_SET(top->slots[47], rl_fun_new("binary_op", fn147_binary_op, 4, top));
     T[0] = rl_map_new();
     T[1] = rl_bool(1);
     rl_map_set((rl_map *)T[0].u.o, (rl_str *)K[232].u.o, T[1]);
@@ -23168,47 +23226,47 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     rl_map_set((rl_map *)T[0].u.o, (rl_str *)K[223].u.o, T[1]);
     RLC_DROP(T[1]);
     RLC_SET(top->slots[48], T[0]); T[0] = rl_none();
-    RLC_SET(top->slots[49], rl_fun_new("postfix", fn147_postfix, 3, top));
-    RLC_SET(top->slots[50], rl_fun_new("postfix_op", fn148_postfix_op, 4, top));
-    RLC_SET(top->slots[51], rl_fun_new("call", fn149_call, 4, top));
-    RLC_SET(top->slots[52], rl_fun_new("block", fn150_block, 3, top));
-    RLC_SET(top->slots[53], rl_fun_new("run_block", fn151_run_block, 3, top));
-    RLC_SET(top->slots[54], rl_fun_new("hint_check", fn152_hint_check, 5, top));
-    RLC_SET(top->slots[55], rl_fun_new("statement", fn153_statement, 2, top));
-    RLC_SET(top->slots[56], rl_fun_new("assign", fn154_assign, 2, top));
-    RLC_SET(top->slots[57], rl_fun_new("cond", fn155_cond, 3, top));
-    RLC_SET(top->slots[58], rl_fun_new("if_stmt", fn156_if_stmt, 2, top));
-    RLC_SET(top->slots[59], rl_fun_new("else_if_chain", fn157_else_if_chain, 2, top));
-    RLC_SET(top->slots[60], rl_fun_new("release_from", fn158_release_from, 3, top));
-    RLC_SET(top->slots[61], rl_fun_new("while_stmt", fn159_while_stmt, 2, top));
-    RLC_SET(top->slots[62], rl_fun_new("for_stmt", fn160_for_stmt, 2, top));
-    RLC_SET(top->slots[63], rl_fun_new("try_stmt", fn161_try_stmt, 2, top));
-    RLC_SET(top->slots[64], rl_fun_new("return_stmt", fn162_return_stmt, 2, top));
-    RLC_SET(top->slots[65], rl_fun_new("fun_stmt", fn163_fun_stmt, 3, top));
-    RLC_SET(top->slots[66], rl_fun_new("safe_name", fn164_safe_name, 1, top));
-    RLC_SET(top->slots[67], rl_fun_new("compile_function", fn165_compile_function, 4, top));
-    RLC_SET(top->slots[68], rl_fun_new("finish_function", fn166_finish_function, 3, top));
-    RLC_SET(top->slots[69], rl_fun_new("last_slash", fn167_last_slash, 1, top));
-    RLC_SET(top->slots[70], rl_fun_new("folder_of", fn168_folder_of, 1, top));
-    RLC_SET(top->slots[71], rl_fun_new("use_name", fn169_use_name, 1, top));
-    RLC_SET(top->slots[72], rl_fun_new("is_absolute", fn170_is_absolute, 1, top));
-    RLC_SET(top->slots[73], rl_fun_new("path_key", fn171_path_key, 1, top));
-    RLC_SET(top->slots[74], rl_fun_new("shown_file", fn172_shown_file, 2, top));
-    RLC_SET(top->slots[75], rl_fun_new("in_std", fn173_in_std, 2, top));
-    RLC_SET(top->slots[76], rl_fun_new("file_stem", fn174_file_stem, 1, top));
-    RLC_SET(top->slots[77], rl_fun_new("add_module", fn175_add_module, 3, top));
-    RLC_SET(top->slots[78], rl_fun_new("compile_module", fn176_compile_module, 2, top));
-    RLC_SET(top->slots[79], rl_fun_new("use_stmt", fn177_use_stmt, 3, top));
-    RLC_SET(top->slots[80], rl_fun_new("module_tables", fn178_module_tables, 2, top));
-    RLC_SET(top->slots[81], rl_fun_new("module_uses", fn179_module_uses, 2, top));
-    RLC_SET(top->slots[82], rl_fun_new("compile_program", fn180_compile_program, 2, top));
+    RLC_SET(top->slots[49], rl_fun_new("postfix", fn148_postfix, 3, top));
+    RLC_SET(top->slots[50], rl_fun_new("postfix_op", fn149_postfix_op, 4, top));
+    RLC_SET(top->slots[51], rl_fun_new("call", fn150_call, 4, top));
+    RLC_SET(top->slots[52], rl_fun_new("block", fn151_block, 3, top));
+    RLC_SET(top->slots[53], rl_fun_new("run_block", fn152_run_block, 3, top));
+    RLC_SET(top->slots[54], rl_fun_new("hint_check", fn153_hint_check, 5, top));
+    RLC_SET(top->slots[55], rl_fun_new("statement", fn154_statement, 2, top));
+    RLC_SET(top->slots[56], rl_fun_new("assign", fn155_assign, 2, top));
+    RLC_SET(top->slots[57], rl_fun_new("cond", fn156_cond, 3, top));
+    RLC_SET(top->slots[58], rl_fun_new("if_stmt", fn157_if_stmt, 2, top));
+    RLC_SET(top->slots[59], rl_fun_new("else_if_chain", fn158_else_if_chain, 2, top));
+    RLC_SET(top->slots[60], rl_fun_new("release_from", fn159_release_from, 3, top));
+    RLC_SET(top->slots[61], rl_fun_new("while_stmt", fn160_while_stmt, 2, top));
+    RLC_SET(top->slots[62], rl_fun_new("for_stmt", fn161_for_stmt, 2, top));
+    RLC_SET(top->slots[63], rl_fun_new("try_stmt", fn162_try_stmt, 2, top));
+    RLC_SET(top->slots[64], rl_fun_new("return_stmt", fn163_return_stmt, 2, top));
+    RLC_SET(top->slots[65], rl_fun_new("fun_stmt", fn164_fun_stmt, 3, top));
+    RLC_SET(top->slots[66], rl_fun_new("safe_name", fn165_safe_name, 1, top));
+    RLC_SET(top->slots[67], rl_fun_new("compile_function", fn166_compile_function, 4, top));
+    RLC_SET(top->slots[68], rl_fun_new("finish_function", fn167_finish_function, 3, top));
+    RLC_SET(top->slots[69], rl_fun_new("last_slash", fn168_last_slash, 1, top));
+    RLC_SET(top->slots[70], rl_fun_new("folder_of", fn169_folder_of, 1, top));
+    RLC_SET(top->slots[71], rl_fun_new("use_name", fn170_use_name, 1, top));
+    RLC_SET(top->slots[72], rl_fun_new("is_absolute", fn171_is_absolute, 1, top));
+    RLC_SET(top->slots[73], rl_fun_new("path_key", fn172_path_key, 1, top));
+    RLC_SET(top->slots[74], rl_fun_new("shown_file", fn173_shown_file, 2, top));
+    RLC_SET(top->slots[75], rl_fun_new("in_std", fn174_in_std, 2, top));
+    RLC_SET(top->slots[76], rl_fun_new("file_stem", fn175_file_stem, 1, top));
+    RLC_SET(top->slots[77], rl_fun_new("add_module", fn176_add_module, 3, top));
+    RLC_SET(top->slots[78], rl_fun_new("compile_module", fn177_compile_module, 2, top));
+    RLC_SET(top->slots[79], rl_fun_new("use_stmt", fn178_use_stmt, 3, top));
+    RLC_SET(top->slots[80], rl_fun_new("module_tables", fn179_module_tables, 2, top));
+    RLC_SET(top->slots[81], rl_fun_new("module_uses", fn180_module_uses, 2, top));
+    RLC_SET(top->slots[82], rl_fun_new("compile_program", fn181_compile_program, 2, top));
     T[0] = rl_int(4000LL);
     RLC_SET(top->slots[83], T[0]); T[0] = rl_none();
-    RLC_SET(top->slots[84], rl_fun_new("long_konst", fn181_long_konst, 4, top));
-    RLC_SET(top->slots[85], rl_fun_new("max1", fn182_max1, 1, top));
-    RLC_SET(top->slots[86], rl_fun_new("safe_comment", fn183_safe_comment, 1, top));
-    RLC_SET(top->slots[87], rl_fun_new("stub_skip", fn184_stub_skip, 1, top));
-    RLC_SET(top->slots[88], rl_fun_new("stub_error", fn185_stub_error, 2, top));
+    RLC_SET(top->slots[84], rl_fun_new("long_konst", fn182_long_konst, 4, top));
+    RLC_SET(top->slots[85], rl_fun_new("max1", fn183_max1, 1, top));
+    RLC_SET(top->slots[86], rl_fun_new("safe_comment", fn184_safe_comment, 1, top));
+    RLC_SET(top->slots[87], rl_fun_new("stub_skip", fn185_stub_skip, 1, top));
+    RLC_SET(top->slots[88], rl_fun_new("stub_error", fn186_stub_error, 2, top));
     if (rl_call(cx, B[23], 0, NULL, &T[0])) { rl_std_boundary(cx, B[23]); RLC_ERR(0, 1314, 16, 1314, 16, 1314, 16, fail); }
     RLC_SET(top->slots[89], T[0]); T[0] = rl_none();
     T[0] = rl_none();

@@ -51,8 +51,12 @@ fun _window(text, col)
 fun snippet(path, line, col)
     if line < 1 or col < 1 or not files.exists(path)
         return ""
-    let lines = strings.split(files.read(path), "\n")
-    if line > len(lines)
+    return snippet_in(strings.split(files.read(path), "\n"), line, col)
+
+# The same from the file's lines, split once by a caller with many messages for
+# one file (check.relic read and split the whole file again for each warning).
+fun snippet_in(lines, line, col)
+    if line < 1 or col < 1 or line > len(lines)
         return ""
     let text = lines[line - 1]
     if len(text) > 0 and text[len(text) - 1] == chr(13)

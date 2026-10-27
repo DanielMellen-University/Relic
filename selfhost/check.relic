@@ -18,6 +18,7 @@ use interp
 use errfmt
 use std/files
 use std/lists
+use std/strings
 
 fun new_scope() = {names: {}, pending: {}}
 
@@ -284,15 +285,16 @@ fun check_tree(tree)
 
 fun before(a, b) = a.line < b.line or (a.line == b.line and a.col < b.col)
 
-fun warn(path, it)
+fun warn(path, lines, it)
     eprint("{path}:{it.line}:{it.col}: warning: {it.msg}")
-    let s = errfmt.snippet(path, it.line, it.col)
+    let s = errfmt.snippet_in(lines, it.line, it.col)
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
 
 # Checks one file; gives the exit code the host gives for it (0, 1).
 fun check_file(path)
-    let lexed = lexer.lex(files.read(path))
+    let src = files.read(path)
+    let lexed = lexer.lex(src)
     let err = lexed.err
     let tree = none
     if err == none
@@ -303,8 +305,11 @@ fun check_file(path)
         errfmt.show(path, err)
         return 1
     let items = check_tree(tree)
+    let lines = []
+    if len(items) > 0
+        lines = strings.split(src, "\n")
     for it in items
-        warn(path, it)
+        warn(path, lines, it)
     if len(items) > 0
         return 1
     return 0
