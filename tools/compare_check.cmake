@@ -4,10 +4,19 @@
 # comparisons read: the goldens and their helper modules, std/, selfhost/,
 # examples/ and bench/. Also checks a few runs with several files, some missing.
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir [-DCORPUS=1] [-DTOOL=path] -P tools/compare_check.cmake
+# With -DNESTED=1, selfhost/check.relic runs on selfhost/run.relic (the interpreter
+# written in Relic), which is slow, so -DONLY="a.relic|b.relic" limits the files to
+# those cases and no multi-file runs are made.
 # With -DTOOL=path, that program (selfhost/check.relic compiled to C) is checked
 # instead of running selfhost/check.relic on the host.
 file(GLOB files ${SRC}/tests/check_cases/*.relic)
-if(CORPUS)
+if(ONLY)
+  set(files "")
+  string(REPLACE "|" ";" only "${ONLY}")
+  foreach(o ${only})
+    list(APPEND files ${SRC}/tests/check_cases/${o})
+  endforeach()
+elseif(CORPUS)
   file(GLOB more ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic
     ${SRC}/selfhost/*.relic ${SRC}/examples/*.relic ${SRC}/examples/*/*.relic ${SRC}/bench/*.relic)
   list(APPEND files ${more})
@@ -23,7 +32,11 @@ foreach(f ${files})
   if(TOOL)
     set(mine ${TOOL})
   else()
+    if(NESTED)
+    set(mine ${RELIC} ${SRC}/selfhost/run.relic ${SRC}/selfhost/check.relic)
+    else()
     set(mine ${RELIC} ${SRC}/selfhost/check.relic)
+    endif()
   endif()
   execute_process(COMMAND ${mine} ${name} WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err RESULT_VARIABLE b_code)
@@ -48,6 +61,9 @@ set(combos
   "syntax_error.relic|undefined.relic"
   "nofile.relic|clean.relic"
   "clean.relic|clean.relic")
+if(NESTED)
+  set(combos "")
+endif()
 foreach(combo ${combos})
   string(REPLACE "|" ";" argv "${combo}")
   math(EXPR total "${total}+1")

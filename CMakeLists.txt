@@ -183,6 +183,11 @@ if(RELIC_BUILD_HOST)
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DCORPUS=1
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
 
+  # ... and the same on the Relic-written interpreter (slow: two cases).
+  add_test(NAME selfhost_check_nested
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DNESTED=1
+      "-DONLY=late.relic|suggest.relic" -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
+
   # Self-host: args reach the program, and run.relic can run itself (two levels).
   add_test(NAME selfhost_args
     COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/run.relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/args.relic one --two)
