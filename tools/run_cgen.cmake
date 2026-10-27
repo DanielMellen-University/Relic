@@ -1,7 +1,7 @@
 # Runs one golden program compiled to C by selfhost/cgen.relic. Usage:
 #   cmake -DEXE=path/to/cgen_name -DTEST=tests/golden/name.relic -P tools/run_cgen.cmake
 # Same checks as run_golden.cmake: stdout against name.out, or stderr against
-# name.err for error tests. RELIC_LEAK_CHECK=1 makes the program exit 3 if any
+# name.err (with exit code 1) for error tests. RELIC_LEAK_CHECK=1 makes the program exit 3 if any
 # value is still alive at the end. A program cgen could not compile prints
 # "cgen-skip: ..." and the test is reported as skipped.
 get_filename_component(dir ${TEST} DIRECTORY)
@@ -29,8 +29,8 @@ if(EXISTS ${dir}/${name}.err)
   string(REPLACE "${dir}/" "" err "${err}")
   string(REPLACE "${dir_fwd}/" "" err "${err}")
   string(REPLACE "${dir_native}\\" "" err "${err}")
-  if(code EQUAL 0)
-    message(FATAL_ERROR "${name}: expected an error, got exit 0")
+  if(NOT code EQUAL 1)
+    message(FATAL_ERROR "${name}: expected an error and exit 1, got exit ${code}")
   endif()
   if(NOT err STREQUAL want)
     message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want}--- got\n${err}")

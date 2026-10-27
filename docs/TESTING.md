@@ -24,7 +24,7 @@ Each test is a set of files in `tests/golden/` with the same name:
 |---|---|
 | `name.relic` | the program |
 | `name.out` | the exact stdout |
-| `name.err` | for error tests: the exact stderr; the program must exit with an error |
+| `name.err` | for error tests: the exact stderr; the program must exit with code 1 |
 | `name.args` | optional flags passed before the file, such as `--tokens` |
 
 - Each `tests/golden/*.relic` file is its own ctest case (`golden_name`), run by `tools/run_golden.cmake` from inside `tests/golden/`. Helper modules live in `tests/golden/modules/` and are not run on their own.

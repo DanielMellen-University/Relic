@@ -3,7 +3,7 @@
 # Optional name.args holds flags to pass first.
 # Files named repl_*.relic are fed to `relic` on stdin instead; stdout is
 # compared with .out and stderr with .err (both optional, empty if missing).
-# Compares stdout with name.out, or stderr with name.err for error tests.
+# Compares stdout with name.out, or stderr with name.err (and exit code 1) for error tests.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
 # Optional name.args: extra flags placed before the file, e.g. --tokens
@@ -62,8 +62,8 @@ if(EXISTS ${dir}/${name}.err)
   string(REPLACE "${dir}/" "" err "${err}")
   string(REPLACE "${dir_fwd}/" "" err "${err}")
   string(REPLACE "${dir_native}\\" "" err "${err}")
-  if(code EQUAL 0)
-    message(FATAL_ERROR "${name}: expected an error, got exit 0")
+  if(NOT code EQUAL 1)
+    message(FATAL_ERROR "${name}: expected an error and exit 1, got exit ${code}")
   endif()
   if(NOT err STREQUAL want)
     message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want}--- got\n${err}")
