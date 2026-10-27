@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.28 (2026-10-27)
+
+Clearer errors for wrong arguments, a folder given as a file, and control characters; a platform-dependent `slice` fixed; the self-hosted tools match the host in two more places. No language change.
+
+- `std/math`: `abs`, `ceil` and `round` on a non-number fail with `math.abs(): argument must be a number, got string` (they said `cannot negate a string` or `cannot compare ...`). `std/strings`: `upper`, `lower`, `trim`, `split` and `repeat` say `strings.upper(): argument must be a string, got int` (they said `cannot loop over an int`).
+- `slice`, `insert` and `remove` with a whole float past the int range (`slice("abc", 0, 1e300)`) use the nearest int on every engine. The cast gave the lowest int on x86, so that slice was empty and `insert([1], 1e30, 0)` named `-9223372036854775808` as the index; the selfhost interpreter also printed these indexes as floats and rejected huge ints used as indexes.
+- A folder given as a file (`relic DIR`, `relic check DIR`, `files.read("DIR")`, `host_read_file` in the C runtime, and the selfhost `run` and `check`) is `cannot open`, exit 2. It used to run as an empty program and exit 0. `relicc` with a missing file or a folder says `relicc: cannot open FILE` and exits 3.
+- The lexer names a control character in the source: `unexpected character U+0001 (a control character; delete it)`, on the host and in `selfhost/lexer.relic` (the message used to hold the raw character).
+- `selfhost/errfmt.relic` cuts very long source lines to the host's 160-byte window around the column, so errors from `selfhost/run.relic` and `check.relic` on such lines read the same.
+- Tests: goldens `std_paths_edges`, `std_lists_edges`, `index_big_floats`, `err_long_line`, `err_control_char`; `std_math_edges` and `std_strings_edges` cover the new messages; new `relicc_cli`; `cli`, `selfhost_cli` and `selfhost_check` try a folder; `c_runtime` covers float indexes and a folder (786 checks).
+- Speed: `selfhost_interp` MEDIAN_PLACEHOLDER.
+- `ctest`: 167 default, 352 with the host.
+
 ## 1.0.27 (2026-10-27)
 
 `relic check` written in Relic (the first half of SH4), and one bug fix in the self-hosted interpreter. No language change, and the host's `relic check` is untouched.
