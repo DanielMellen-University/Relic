@@ -121,10 +121,14 @@ fun main()
         let blank = only_spaces(line)
         chunk = chunk + line + "\n"
         # A header spread over several lines cannot be read as a block opener until
-        # its bracket closes, so ask again once it has.
-        if not block and not unclosed(chunk)
-            block = opens_block(chunk)
-        let more = unclosed(chunk)
+        # its bracket closes, so ask again once it has. Inside a block only an empty
+        # line ends it, so the chunk is not lexed again for each line (that made a
+        # 1,000-line function take 27 s to type in).
+        let more = false
+        if not block
+            more = unclosed(chunk)
+            if not more
+                block = opens_block(chunk)
         if block
             more = not blank
         if more
