@@ -9,25 +9,38 @@ fun _hex(n, width)
         n = int(n / 16)
     return out
 
+# Pieces xs[a] to xs[b - 1] joined, in halves: adding to one growing string
+# copies it each time, so encoding long text or a long list took time growing
+# with the square of the output's size.
+fun _glue(xs, a, b)
+    if b - a <= 16
+        let out = ""
+        for i in a..b
+            out = out + xs[i]
+        return out
+    let m = a + int((b - a) / 2)
+    return _glue(xs, a, m) + _glue(xs, m, b)
+
 fun _quote(s)
-    let out = "\""
+    let out = ["\""]
     for c in s
         let k = ord(c)
         if c == "\""
-            out = out + "\\\""
+            append(out, "\\\"")
         else if c == "\\"
-            out = out + "\\\\"
+            append(out, "\\\\")
         else if c == "\n"
-            out = out + "\\n"
+            append(out, "\\n")
         else if c == "\t"
-            out = out + "\\t"
+            append(out, "\\t")
         else if k == 13
-            out = out + "\\r"
+            append(out, "\\r")
         else if k < 32
-            out = out + "\\u" + _hex(k, 4)
+            append(out, "\\u" + _hex(k, 4))
         else
-            out = out + c
-    return out + "\""
+            append(out, c)
+    append(out, "\"")
+    return _glue(out, 0, len(out))
 
 fun _enc(v, indent, depth)
     let t = type(v)
@@ -61,21 +74,22 @@ fun _enc(v, indent, depth)
             pad = pad + indent
         for i in 0..depth
             end_pad = end_pad + indent
-    let out = open
+    let out = [open]
     let first = true
     for item in items
         if not first
-            out = out + sep
+            append(out, sep)
         first = false
-        out = out + pad
+        append(out, pad)
         if t == "map"
-            out = out + _quote(item) + ":"
+            append(out, _quote(item) + ":")
             if indent != ""
-                out = out + " "
-            out = out + _enc(v[item], indent, depth + 1)
+                append(out, " ")
+            append(out, _enc(v[item], indent, depth + 1))
         else
-            out = out + _enc(item, indent, depth + 1)
-    return out + end_pad + close
+            append(out, _enc(item, indent, depth + 1))
+    append(out, end_pad + close)
+    return _glue(out, 0, len(out))
 
 fun encode(v) = _enc(v, "", 0)
 fun pretty(v) = _enc(v, "  ", 0)
@@ -132,33 +146,33 @@ fun _hexval(p)
 
 fun _str(p)
     p.i = p.i + 1
-    let out = ""
+    let out = []
     let start = p.i
     while true
         if p.i >= p.n
             _bad(p, "unterminated string")
         let c = p.s[p.i]
         if c == "\""
-            out = out + _cat(p, start, p.i)
+            append(out, _cat(p, start, p.i))
             p.i = p.i + 1
-            return out
+            return _glue(out, 0, len(out))
         if c == "\\"
-            out = out + _cat(p, start, p.i)
+            append(out, _cat(p, start, p.i))
             p.i = p.i + 1
             if p.i >= p.n
                 _bad(p, "unterminated string")
             let e = p.s[p.i]
             p.i = p.i + 1
             if e == "n"
-                out = out + "\n"
+                append(out, "\n")
             else if e == "t"
-                out = out + "\t"
+                append(out, "\t")
             else if e == "r"
-                out = out + chr(13)
+                append(out, chr(13))
             else if e == "b"
-                out = out + chr(8)
+                append(out, chr(8))
             else if e == "f"
-                out = out + chr(12)
+                append(out, chr(12))
             else if e == "u"
                 let k = _hexval(p)
                 if k >= 55296 and k <= 56319 and _cat(p, p.i, p.i + 2) == "\\u"
@@ -167,9 +181,9 @@ fun _str(p)
                     k = 65536 + (k - 55296) * 1024 + (lo - 56320)
                 if k >= 55296 and k <= 57343
                     k = 65533
-                out = out + chr(k)
+                append(out, chr(k))
             else if e == "\"" or e == "\\" or e == "/"
-                out = out + e
+                append(out, e)
             else
                 _bad(p, "bad escape")
             start = p.i
