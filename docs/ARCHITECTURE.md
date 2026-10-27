@@ -162,6 +162,7 @@ Limits today:
 
 - Recursion reaches the host's limit since 1.0.21: `too much recursion (more than 800 calls deep)` at the same call, catchable, like the host (`rt_recursion`, `try_recursion` and `c_demo` are compared now). Before, every Relic call cost several host calls, and recursion stopped at about 262 levels for a block body and 395 for an expression body, with an error the program could not catch. A third nested level of `run.relic` works now too (about 67 s for `hello`).
 - No VM. `check` is `selfhost/check.relic` and the REPL is `selfhost/repl.relic`, run by hand: `relic check` and the `relic` REPL are still the host's.
+- `ast.relic` and `check.relic` walk the tree with recursion, so about 790 links in one chain (`a + b + ...`, `x.a.a...`, `else if`) stop them with `too much recursion`; `run.relic` has no such limit (measured in 1.0.33).
 - It is slow: `bench/fib.relic` takes about 9 s on it against about 35 ms on the host VM (Release).
 
 What still comes from the C++ host: running all of it, reference counting and the cycle collector, number parsing, files, clocks, float math, process access and graphics (`host_*`), and the command line.
