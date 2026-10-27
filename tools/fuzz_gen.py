@@ -29,7 +29,7 @@ NAMES = ['a', 'b', 'c', 'xs', 'ys', 'm', 's', 't']
 # Typed generation: most expressions have the types their operators and calls want, so
 # programs get past the first error and test values and messages deeper; some pick any type.
 INTS = ['0', '1', '2', '3', '-1', '7', '10', '255', '1000', '-5', '9223372036854775807', '60', 'n']
-FLOATS = ['0.5', '1.5', '-2.25', '3.0', '1e3', '2.5e-3', '0.1', '1e20', '100.0', 'c']
+FLOATS = ['0.5', '1.5', '-2.25', '3.0', '1e3', '2.5e-3', '0.1', '1e20', '100.0', 'c', '1e-400', '4.9e-324', '2.5e-310', '1.7976931348623157e308']
 PATHS = ['"a/b.txt"', '"/x/y/"', '"."', '".."', '"a/../b"', '"./a//b/"', '""', '"/"', '"f.tar.gz"', '".hidden"', '"é/ü.ç"', '"a\\\\b"']
 JSONS = ['"[1, 2.5, \\"x\\", null, true]"', '"{\\"a\\": {\\"b\\": []}}"', '" 1e400 "', '"\\"\\\\u00e9\\\\ud83d\\\\ude00\\""', '"[1,]"', '"-0"', '"01"', '"{\\"a\\":1,\\"a\\":2}"', '""']
 STRS = ['"abc"', '""', '"hello world"', '"é€😀"', '"a,b,c"', '"  pad  "', '"x"', '"12"', '"3.5"', '"{{}}"', '"tab\\tq"', 's', 'b']
