@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.34 (2026-10-27)
+
+Float edge cases where the Relic-written tools and compiled programs differed from the host. No change to the language.
+
+- Tiny float literals: the host reads `1e-400` as `0.0` and `4.9e-324` as the smallest float above zero (it uses `strtod`). The Relic-written interpreter, `check.relic` and `relicc` all said `float is too large`, because `num()` refuses numbers out of range in both directions. New `selfhost/floatlit.relic` works out the same float from the digits, exactly, half to even. `relicc` writes it as a whole number of the smallest step, since a C compiler warns about a literal it rounds to zero. Golden `float_tiny`, green on MSVC. `num("1e-400")` still fails on every engine, as before.
+- An infinity counts as a whole number for `slice`, `chr`, `insert` and `remove` on the Relic-written interpreter, as on the host (`floor(x) == x`), which then takes the nearest int. `slice(s, -inf, 3)` failed there and worked everywhere else. Found by `fuzz_gen`. Golden `inf_args`.
+- `tools/fuzz_gen.py` feeds each program a random standard input (CRLF, NUL, bad UTF-8, long lines) and calls `os.read_line` and `os.prompt`, and uses tiny and huge float literals. About 1500 more programs agree.
+- Docs: C-RUNTIME.md's "Not in the runtime yet" list had been empty since 1.0.10; the float rule in LANGUAGE.md; `floatlit.relic` in ARCHITECTURE.md; what `fuzz_gen` covers in TESTING.md.
+- Speed: `selfhost_interp` 10.21 s median of 3 (10.30, 10.21, 10.12) on a quiet box, under the 12.2 s cap. Up from 9.79 s: the two new goldens add about 0.1 s, and the rest looks like box noise (three readings taken right after a full ctest were 10.32 to 10.75).
+- `ctest`: 184 default, 388 with the host.
+
 ## 1.0.33 (2026-10-27)
 
 Long chains and long strings in compiled programs and the Relic-written tools. No change to the language.
