@@ -447,15 +447,8 @@ fun expr(fc, n, d)
             check(fc, "rl_not(cx, " + a.expr + ", &" + dst + ")", n)
     else if k == "Binary"
         binary(fc, n, dst)
-    else if k == "Call"
-        call(fc, n, d)
-    else if k == "Field"
-        let o = operand(fc, n.kids[0])
-        check(fc, "rl_field(cx, " + o.expr + ", " + c_string(n.text).lit + ", &" + dst + ")", n)
-    else if k == "Index"
-        let o = operand(fc, n.kids[0])
-        let i = operand(fc, n.kids[1])
-        check3(fc, "rl_index(cx, " + o.expr + ", " + i.expr + ", &" + dst + ")", n, n.kids[0], n.kids[1])
+    else if k in postfix_kinds
+        postfix(fc, n, d)
     else
         unsupported(cg, n, "a " + k + " expression")
     free_to(fc, mark)
@@ -552,8 +545,42 @@ fun binary_op(fc, n, dst, a)
     else
         check(fc, "rl_compare(cx, \"" + op + "\", " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
 
-fun call(fc, n, d)
-    let callee = operand(fc, n.kids[0])
+let postfix_kinds = {Call: true, Field: true, Index: true}
+
+# Calls, fields and indexes on a value that is itself one (f()(), m.a.b[0] ...)
+# are walked with a loop like binary() above, so a long chain does not run
+# relicc into the 800-call limit (it stopped near 264 calls or 396 fields in a
+# row). Same C as the recursive version: each value below the top gets a temp,
+# freed where expr() freed it.
+fun postfix(fc, n, d)
+    let spine = [{n: n, d: d, mark: 0, temp: -1}]
+    let m = n
+    while m.kids[0].kind in postfix_kinds
+        m = m.kids[0]
+        let t = temp(fc)
+        append(spine, {n: m, d: t, mark: fc.nt, temp: t})
+    let a = operand(fc, m.kids[0])
+    let i = len(spine) - 1
+    while i >= 0
+        let lv = spine[i]
+        postfix_op(fc, lv.n, lv.d, a)
+        if i > 0
+            free_to(fc, lv.mark)
+            a = {expr: T(lv.d), temp: lv.temp}
+        i = i - 1
+
+# One call, field or index, with the value it applies to already in a.
+fun postfix_op(fc, n, d, a)
+    let k = n.kind
+    if k == "Call"
+        call(fc, n, d, a)
+    else if k == "Field"
+        check(fc, "rl_field(cx, " + a.expr + ", " + c_string(n.text).lit + ", &" + T(d) + ")", n)
+    else
+        let i = operand(fc, n.kids[1])
+        check3(fc, "rl_index(cx, " + a.expr + ", " + i.expr + ", &" + T(d) + ")", n, n.kids[0], n.kids[1])
+
+fun call(fc, n, d, callee)
     let base = fc.nt
     let argc = len(n.kids) - 1
     for i in 1..len(n.kids)
