@@ -250,5 +250,6 @@ Names starting with `host_` are the host's own pieces (files, clocks, float math
 
 - Calls: 800 deep.
 - Source nesting (brackets, `-`, `not`, blocks): 32 levels (`too deeply nested (more than 32 levels)`), the same in every engine and in `relicc`. It was 100 before 1.0.16; see [CGEN.md](CGEN.md#decided-choices) for why.
-- Chained operators in one expression (`1 + 1 + 1 + ...`): the host walks them recursively, so tens of thousands in a row run out of C stack and the process crashes (about 55,000 terms with Linux's usual 8 MB stack). Nothing real comes near this; split the expression up.
+- Expression depth: 10,000 levels (`expression is too deeply nested (limit 10000)`, since 1.0.36). Each operator, call, index, field, `-`, `not`, list, map and string with `{...}` is one level more than its deepest part, so `a + a + ...` with 10,000 `+` is fine and 10,001 is the error, pointing at the `+` that went over; `print(...)` around it counts one more. `f()()...` and `m.a.a...` count one per link. Before 1.0.36 there was no limit, and about 55,000 links in a row crashed the host (C stack). The same in every engine and in `relicc`.
+- `else if` chains: 10,000 links (`'else if' chain is too long (limit 10000)`, pointing at the `if` that went over). A chain inside a branch of another chain counts that chain's links before it too. Nothing real comes near either limit; split the expression or use a map or a list.
 - One graphics window at a time.

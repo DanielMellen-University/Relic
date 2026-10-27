@@ -1,5 +1,8 @@
 #include "parser/parser.hpp"
 
+#include <algorithm>
+#include <string>
+
 namespace relic {
 
 namespace {
@@ -55,6 +58,20 @@ private:
     // C, and Windows' 1 MB stack held about 65 levels there. Keep both the same.
     static constexpr int kMaxNesting = 32;
     int nesting_ = 0;
+    // Height of the expression just parsed: 0 for a name, number or other leaf,
+    // and one more than its highest part for anything else, so a + b + c is 2 and
+    // f()() is 2. Past kMaxDepth the parse stops, since the tree walker, the VM
+    // compiler and --ast all walk a tree with recursion and a 55,000-level chain
+    // overflowed an 8 MB stack. `else if` links count the same way, together with
+    // the links of any chain they sit in. selfhost/parser.relic has the same limits.
+    static constexpr int kMaxDepth = 10000;
+    int h_ = 0;
+    int elifs_ = 0;
+    void grow(const Ast& n, int h) {
+        h_ = std::max(h, h_) + 1;
+        if (h_ > kMaxDepth)
+            throw ParseError(n.line, n.col, "expression is too deeply nested (limit " + std::to_string(kMaxDepth) + ")");
+    }
     struct Nest {
         Parser& p;
         explicit Nest(Parser& pp) : p(pp) {
@@ -221,6 +238,13 @@ private:
     }
 
     AstPtr if_stmt() {
+        int saved = elifs_;
+        auto n = if_link();
+        elifs_ = saved;
+        return n;
+    }
+
+    AstPtr if_link() {
         const Token& kw = advance();
         auto n = make(Node::If, kw);
         n->kids.push_back(expression());
@@ -228,7 +252,9 @@ private:
         if (at(Tok::Else)) {
             const Token& el = advance();
             if (at(Tok::If)) {
-                n->kids.push_back(if_stmt());
+                if (++elifs_ > kMaxDepth)
+                    fail(peek(), "'else if' chain is too long (limit " + std::to_string(kMaxDepth) + ")");
+                n->kids.push_back(if_link());
             } else {
                 (void)el;
                 n->kids.push_back(block());
@@ -294,7 +320,9 @@ private:
         auto left = and_expr();
         while (at(Tok::Or)) {
             const Token& op = advance();
+            int h = h_;
             left = binary(std::move(left), op, and_expr());
+            grow(*left, h);
         }
         return left;
     }
@@ -303,7 +331,9 @@ private:
         auto left = not_expr();
         while (at(Tok::And)) {
             const Token& op = advance();
+            int h = h_;
             left = binary(std::move(left), op, not_expr());
+            grow(*left, h);
         }
         return left;
     }
@@ -314,6 +344,7 @@ private:
             auto n = make(Node::Unary, op, "not");
             Nest nest(*this);
             n->kids.push_back(not_expr());
+            grow(*n, 0);
             return n;
         }
         return compare();
@@ -329,7 +360,9 @@ private:
         auto left = range();
         if (is_compare(peek().kind)) {
             const Token& op = advance();
+            int h = h_;
             left = binary(std::move(left), op, range());
+            grow(*left, h);
             if (is_compare(peek().kind))
                 fail(peek(), "comparisons cannot be chained; use 'and'");
         }
@@ -341,8 +374,10 @@ private:
         if (at(Tok::DotDot)) {
             const Token& op = advance();
             auto n = make(Node::Range, op);
+            int h = h_;
             n->kids.push_back(std::move(left));
             n->kids.push_back(additive());
+            grow(*n, h);
             return n;
         }
         return left;
@@ -352,7 +387,9 @@ private:
         auto left = multiplicative();
         while (at(Tok::Plus) || at(Tok::Minus)) {
             const Token& op = advance();
+            int h = h_;
             left = binary(std::move(left), op, multiplicative());
+            grow(*left, h);
         }
         return left;
     }
@@ -361,7 +398,9 @@ private:
         auto left = unary();
         while (at(Tok::Star) || at(Tok::Slash) || at(Tok::Percent)) {
             const Token& op = advance();
+            int h = h_;
             left = binary(std::move(left), op, unary());
+            grow(*left, h);
         }
         return left;
     }
@@ -372,6 +411,7 @@ private:
             auto n = make(Node::Unary, op, "-");
             Nest nest(*this);
             n->kids.push_back(unary());
+            grow(*n, 0);
             return n;
         }
         return postfix();
@@ -384,24 +424,26 @@ private:
                 const Token& open = advance();
                 auto call = make(Node::Call, open);
                 call->kids.push_back(std::move(e));
-                if (!at(Tok::RParen)) {
-                    do call->kids.push_back(expression());
-                    while (match(Tok::Comma) && !at(Tok::RParen));
-                }
+                int h = h_;
+                items(*call, Tok::RParen);
                 expect(Tok::RParen, "')' after the arguments");
+                grow(*call, h);
                 e = std::move(call);
             } else if (at(Tok::LBracket)) {
                 const Token& open = advance();
                 auto idx = make(Node::Index, open);
                 idx->kids.push_back(std::move(e));
+                int h = h_;
                 idx->kids.push_back(expression());
                 expect(Tok::RBracket, "']' after the index");
+                grow(*idx, h);
                 e = std::move(idx);
             } else if (at(Tok::Dot)) {
                 const Token& dot = advance();
                 const Token& name = expect(Tok::Name, "a field name after '.'");
                 auto f = make(Node::Field, dot, name.text);
                 f->kids.push_back(std::move(e));
+                grow(*f, 0);
                 e = std::move(f);
             } else {
                 return e;
@@ -409,8 +451,22 @@ private:
         }
     }
 
+    // "item, item, ..." up to `close` (a trailing comma is fine); h_ ends as the
+    // highest item, or 0 for none.
+    void items(Ast& n, Tok close) {
+        int h = 0;
+        if (!at(close)) {
+            do {
+                n.kids.push_back(expression());
+                h = std::max(h, h_);
+            } while (match(Tok::Comma) && !at(close));
+        }
+        h_ = h;
+    }
+
     AstPtr primary() {
         const Token& t = peek();
+        h_ = 0;
         switch (t.kind) {
             case Tok::Number: advance(); return make(Node::Number, t, t.text);
             case Tok::String: advance(); return make(Node::String, t, t.text);
@@ -428,11 +484,9 @@ private:
             case Tok::LBracket: {
                 advance();
                 auto list = make(Node::List, t);
-                if (!at(Tok::RBracket)) {
-                    do list->kids.push_back(expression());
-                    while (match(Tok::Comma) && !at(Tok::RBracket));
-                }
+                items(*list, Tok::RBracket);
                 expect(Tok::RBracket, "']' to close the list");
+                grow(*list, 0);
                 return list;
             }
             case Tok::LBrace: return map_literal();
@@ -443,6 +497,7 @@ private:
     AstPtr map_literal() {
         const Token& open = advance();
         auto map = make(Node::Map, open);
+        int h = 0;
         if (!at(Tok::RBrace)) {
             do {
                 const Token& key = peek();
@@ -454,10 +509,14 @@ private:
                 expect(Tok::Colon, "':' after the map key");
                 auto pair = make(Node::Pair, key, key.text);
                 pair->kids.push_back(expression());
+                grow(*pair, 0);
+                h = std::max(h, h_);
                 map->kids.push_back(std::move(pair));
             } while (match(Tok::Comma) && !at(Tok::RBrace));
         }
         expect(Tok::RBrace, "'}' to close the map");
+        h_ = h;
+        grow(*map, 0);
         return map;
     }
 
@@ -465,13 +524,19 @@ private:
     AstPtr interp() {
         const Token& first = peek();
         auto n = make(Node::Interp, first);
+        int h = 0;
         while (true) {
             const Token& part = advance();  // StringPart or StringEnd
             if (!part.text.empty()) n->kids.push_back(make(Node::String, part, part.text));
-            if (part.kind == Tok::StringEnd) return n;
+            if (part.kind == Tok::StringEnd) {
+                h_ = h;
+                grow(*n, 0);
+                return n;
+            }
             expect(Tok::InterpStart, "'{'");
             if (at(Tok::InterpEnd)) fail(peek(), "empty '{}' in a string; use '{{' for a brace");
             n->kids.push_back(expression());
+            h = std::max(h, h_);
             expect(Tok::InterpEnd, "'}' to close the value in the string");
             if (!at(Tok::StringPart) && !at(Tok::StringEnd)) fail_expected("the rest of the string");
         }

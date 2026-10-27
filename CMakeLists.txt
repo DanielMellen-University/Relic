@@ -352,6 +352,14 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
   add_test(NAME relicc_cli
     COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
+  # The 10,000-level limit on expressions and `else if` chains, on every engine.
+  set(depth_host)
+  if(RELIC_BUILD_HOST)
+    set(depth_host -DRELIC=$<TARGET_FILE:relic>)
+  endif()
+  add_test(NAME depth_limit
+    COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> ${depth_host} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/depth_limit -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_depth_limit.cmake)
   if(RELIC_BUILD_HOST)
     add_test(NAME cgen_stage1_matches_host
       COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}

@@ -13,7 +13,7 @@ fun add(n, kid)
     append(n.kids, kid)
     return n
 
-fun new_parser(tokens) = {toks: tokens, pos: 0, err: none, dead: {kind: "ERR", text: "", line: 0, col: 0}, nest: 0}
+fun new_parser(tokens) = {toks: tokens, pos: 0, err: none, dead: {kind: "ERR", text: "", line: 0, col: 0}, nest: 0, h: 0, elifs: 0}
 
 # Nesting of expressions, `-`, `not` and blocks, counted like the host's
 # parser (kMaxNesting in src/parser/parser.cpp; keep the two the same). At 32
@@ -28,6 +28,22 @@ fun nest_in(p)
 
 fun nest_out(p)
     p.nest = p.nest - 1
+
+# p.h is the height of the expression just parsed: 0 for a name, number or
+# other leaf, one more than its highest part for anything else (a + b + c is 2,
+# f()() is 2). Past max_depth the parse stops, like the host's parser (kMaxDepth
+# in src/parser/parser.cpp; keep the two the same): the host walks a tree with
+# recursion. `else if` links count the same way, with the links of any chain
+# they sit in (p.elifs).
+let max_depth = 10000
+
+# n has just been finished; h is the height of the parts parsed before the last.
+fun grow(p, n, h)
+    if p.h < h
+        p.h = h
+    p.h = p.h + 1
+    if p.h > max_depth
+        fail(p, n, "expression is too deeply nested (limit {max_depth})")
 
 fun peek(p)
     if p.err != none
@@ -242,9 +258,13 @@ fun if_stmt(p)
     # chain does not run into the 800-call limit (relicc runs this compiled)
     let cur = top
     let more = true
+    let saved = p.elifs
     while more and at(p, "ELSE")
         advance(p)
         if at(p, "IF")
+            p.elifs = p.elifs + 1
+            if p.elifs > max_depth
+                fail(p, peek(p), "'else if' chain is too long (limit {max_depth})")
             let n = node("If", advance(p), "")
             add(n, expression(p))
             add(n, block(p))
@@ -253,6 +273,7 @@ fun if_stmt(p)
         else
             add(cur, block(p))
             more = false
+    p.elifs = saved
     return top
 
 fun while_stmt(p)
@@ -305,14 +326,18 @@ fun or_expr(p)
     let left = and_expr(p)
     while at(p, "OR")
         let op = advance(p)
+        let h = p.h
         left = binary(left, op, and_expr(p))
+        grow(p, left, h)
     return left
 
 fun and_expr(p)
     let left = not_expr(p)
     while at(p, "AND")
         let op = advance(p)
+        let h = p.h
         left = binary(left, op, not_expr(p))
+        grow(p, left, h)
     return left
 
 fun not_expr(p)
@@ -320,6 +345,7 @@ fun not_expr(p)
         let op = advance(p)
         nest_in(p)
         let n = add(node("Unary", op, "not"), not_expr(p))
+        grow(p, n, 0)
         nest_out(p)
         return n
     return compare(p)
@@ -330,7 +356,9 @@ fun compare(p)
     let left = range(p)
     if peek(p).kind in compare_ops
         let op = advance(p)
+        let h = p.h
         left = binary(left, op, range(p))
+        grow(p, left, h)
         if peek(p).kind in compare_ops
             fail(p, peek(p), "comparisons cannot be chained; use 'and'")
     return left
@@ -340,21 +368,28 @@ fun range(p)
     if at(p, "DOT_DOT")
         let op = advance(p)
         let n = add(node("Range", op, ""), left)
-        return add(n, additive(p))
+        let h = p.h
+        add(n, additive(p))
+        grow(p, n, h)
+        return n
     return left
 
 fun additive(p)
     let left = multiplicative(p)
     while at(p, "PLUS") or at(p, "MINUS")
         let op = advance(p)
+        let h = p.h
         left = binary(left, op, multiplicative(p))
+        grow(p, left, h)
     return left
 
 fun multiplicative(p)
     let left = unary(p)
     while at(p, "STAR") or at(p, "SLASH") or at(p, "PERCENT")
         let op = advance(p)
+        let h = p.h
         left = binary(left, op, unary(p))
+        grow(p, left, h)
     return left
 
 fun unary(p)
@@ -362,35 +397,46 @@ fun unary(p)
         let op = advance(p)
         nest_in(p)
         let n = add(node("Unary", op, "-"), unary(p))
+        grow(p, n, 0)
         nest_out(p)
         return n
     return postfix(p)
 
-# Parses "item, item, ..." up to `close`; a trailing comma is fine.
+# Parses "item, item, ..." up to `close`; a trailing comma is fine. p.h ends
+# as the highest item, or 0 for none.
 fun items(p, n, close)
+    let h = 0
     if not at(p, close)
         let more = true
         while more and p.err == none
             add(n, expression(p))
+            if p.h > h
+                h = p.h
             more = match(p, "COMMA") and not at(p, close)
+    p.h = h
 
 fun postfix(p)
     let e = primary(p)
     while p.err == none
         if at(p, "LPAREN")
             let call = add(node("Call", advance(p), ""), e)
+            let h = p.h
             items(p, call, "RPAREN")
             expect(p, "RPAREN", "')' after the arguments")
+            grow(p, call, h)
             e = call
         else if at(p, "LBRACKET")
             let idx = add(node("Index", advance(p), ""), e)
+            let h = p.h
             add(idx, expression(p))
             expect(p, "RBRACKET", "']' after the index")
+            grow(p, idx, h)
             e = idx
         else if at(p, "DOT")
             let dot = advance(p)
             let name = expect(p, "NAME", "a field name after '.'")
             e = add(node("Field", dot, name.text), e)
+            grow(p, e, 0)
         else
             return e
     return e
@@ -401,6 +447,7 @@ let words = {TRUE: "True", FALSE: "False", NONE: "None"}
 fun primary(p)
     let t = peek(p)
     let k = t.kind
+    p.h = 0
     if k in literals
         advance(p)
         return node(literals[k], t, t.text)
@@ -419,6 +466,7 @@ fun primary(p)
         let l = node("List", t, "")
         items(p, l, "RBRACKET")
         expect(p, "RBRACKET", "']' to close the list")
+        grow(p, l, 0)
         return l
     if k == "LBRACE"
         return map_literal(p)
@@ -428,6 +476,7 @@ fun primary(p)
 fun map_literal(p)
     let open = advance(p)
     let m = node("Map", open, "")
+    let h = 0
     if not at(p, "RBRACE")
         let more = true
         while more and p.err == none
@@ -439,23 +488,34 @@ fun map_literal(p)
                 if seen.text == key.text
                     fail(p, key, "duplicate map key '{key.text}'")
             expect(p, "COLON", "':' after the map key")
-            add(m, add(node("Pair", key, key.text), expression(p)))
+            let pair = add(node("Pair", key, key.text), expression(p))
+            grow(p, pair, 0)
+            if p.h > h
+                h = p.h
+            add(m, pair)
             more = match(p, "COMMA") and not at(p, "RBRACE")
     expect(p, "RBRACE", "'}}' to close the map")
+    p.h = h
+    grow(p, m, 0)
     return m
 
 fun interp(p)
     let n = node("Interp", peek(p), "")
+    let h = 0
     while p.err == none
         let part = advance(p)
         if part.text != ""
             add(n, node("String", part, part.text))
         if part.kind == "STRING_END"
+            p.h = h
+            grow(p, n, 0)
             return n
         expect(p, "INTERP_START", "'{{'")
         if at(p, "INTERP_END")
             fail(p, peek(p), "empty '{{}}' in a string; use '{{{{' for a brace")
         add(n, expression(p))
+        if p.h > h
+            h = p.h
         expect(p, "INTERP_END", "'}}' to close the value in the string")
         if not at(p, "STRING_PART") and not at(p, "STRING_END")
             fail_expected(p, "the rest of the string")
