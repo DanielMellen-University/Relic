@@ -1,0 +1,42 @@
+# for forms and loop control.
+for i in 0..0
+    print("never")
+for i in 3..1
+    print("never")
+for i in 1..4
+    print(i)
+let lo = 2
+let hi = 5
+for i in lo..hi
+    print(i * i)
+for k in keys({b: 1, a: 2})
+    print(k)
+let items = [1, 2, 3]
+for it in items
+    if it == 1
+        append(items, 4)
+    print(it)
+print(items)
+let total = 0
+for i in 0..5
+    for j in 0..5
+        if j > i
+            break
+        if (i + j) % 2 == 1
+            next
+        total = total + 1
+print(total)
+let n = 0
+while true
+    n = n + 1
+    if n < 3
+        next
+    if n > 5
+        break
+    print("n", n)
+for i in 0..3
+    let i2 = i * 2
+try
+    print(i2)
+catch e
+    print(e.message)

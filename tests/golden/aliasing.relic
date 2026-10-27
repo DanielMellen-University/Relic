@@ -1,0 +1,30 @@
+# Lists and maps are shared, not copied; slice makes a copy.
+let a = [1, 2, 3]
+let b = a
+append(b, 4)
+print(a, b)
+let c = slice(a, 0, len(a))
+append(c, 5)
+print(a, c)
+let m = {x: [1]}
+let n = m
+append(n.x, 2)
+n.y = "new"
+print(m, n)
+fun add_to(list, v)
+    append(list, v)
+    return list
+let r = add_to(a, 9)
+print(a, r == a)
+fun rebind(list)
+    list = [0]
+    return list
+rebind(a)
+print(a)
+let nested = [[1, 2], [3]]
+let first = nested[0]
+first[0] = 99
+print(nested)
+let x = [1]
+append(x, x)
+print(len(x), len(x[1]), x[1][1][0])

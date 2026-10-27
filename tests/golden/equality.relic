@@ -1,0 +1,13 @@
+# == on lists, maps, none, functions; deep and by value.
+print([1, 2] == [1, 2], [1, 2] == [2, 1], [] == [], [[1]] == [[1]], [1] == [1.0])
+print({a: 1} == {a: 1}, {a: 1, b: 2} == {b: 2, a: 1}, {a: 1} == {a: 2}, {} == {})
+print(none == none, none == 0, none == false, none == "", none != none)
+fun f(x) = x
+fun g(x) = x
+print(f == f, f == g, print == print, print == len)
+let a = [1, 2]
+let b = a
+print(a == b, a == [1, 2])
+a = a
+print(true == true, true == 1, false == 0, "true" == true)
+print([none] == [none], {k: none} == {k: none}, {k: none} == {})

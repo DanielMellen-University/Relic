@@ -1,0 +1,15 @@
+# Strings: indexing, slicing, comparing, repeating, in.
+let s = "héllo wörld"
+print(len(s), s[0], s[1], s[len(s) - 1])
+print(slice(s, 0, 5), slice(s, 6, len(s)), slice(s, 3, 3), slice(s, 2, 1))
+print("a" < "b", "a" < "B", "abc" < "abd", "" < "a", "Z" < "a", "é" > "z")
+print("ab" == "ab", "ab" == "AB", "1" == 1)
+print("l" in s, "ll" in s, "x" in s, "" in s)
+print("ab" + "cd" + str(1) + str(2.5))
+let t = ""
+for ch in "añb"
+    t = ch + t
+print(t)
+print("tab\there", "quote\"s", "back\\slash", "new\\nline")
+print("{1 + 1} and {"nested"} and {len("abc")}")
+print("{{braces}}")
