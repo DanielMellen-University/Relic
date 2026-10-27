@@ -84,7 +84,7 @@ Paths are relative to where `relic` runs. Caught errors use the std name
 
 | Call | Returns | On failure |
 |---|---|---|
-| `read(path)` | string | `cannot open {path}` |
+| `read(path)` | string | `cannot open {path}` (also for a folder) |
 | `write(path, text)` | none | `cannot write {path}` |
 | `append_text(path, text)` | none | `cannot write {path}` |
 | `lines(path)` | list of strings | same as `read`; strips a trailing empty line |

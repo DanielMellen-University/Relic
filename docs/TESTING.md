@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 166 ctest cases: 160 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 343: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 167 ctest cases: 160 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 343: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -60,7 +60,8 @@ Three more self-host cases check the interpreter on real use:
 | `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 15 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
 | `selfhost_check_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two cases | the interpreter runs `check.relic` right |
 | `cgen_selfhost_check` | the compiled `selfhost/check.relic` (host build with C) | the same comparison as `selfhost_check` |
-| `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |
+| `relicc_cli` | `relicc` with no arguments, no `-o`, a clean file, a syntax error, a missing file and a folder (`tools/check_relicc_cli.cmake`) | exit codes 0, 1 and 3, and `relicc: cannot open FILE` |
+| `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, a folder, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |
 
 `selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
 

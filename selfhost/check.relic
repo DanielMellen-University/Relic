@@ -302,7 +302,7 @@ fun main(argv)
         return 2
     let code = 0
     for path in argv
-        if not files.exists(path)
+        if not files.exists(path) or files.is_dir(path)
             eprint("relic: cannot open {path}")
             code = 2
         else

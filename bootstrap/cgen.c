@@ -42,7 +42,7 @@ static int rlc_use_2(rl_ctx *cx, rl_value *out);
 static int rlc_use_5(rl_ctx *cx, rl_value *out);
 static int rlc_use_4(rl_ctx *cx, rl_value *out);
 static int rlc_use_3(rl_ctx *cx, rl_value *out);
-static rl_value K[713];
+static rl_value K[714];
 static rl_value B[25];
 static int fn1_is_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
 static int fn2_is_alpha(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out);
@@ -21126,111 +21126,147 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (rl_field(cx, top->slots[0], "lex", &T[1])) RLC_ERR(0, 1249, 18, 1249, 18, 1249, 18, fail);
-    if (rl_field(cx, top->slots[3], "read", &T[3])) RLC_ERR(0, 1249, 28, 1249, 28, 1249, 28, fail);
+    if (rl_field(cx, top->slots[3], "exists", &T[3])) RLC_ERR(0, 1249, 13, 1249, 13, 1249, 13, fail);
     T[4] = rl_retain(top->slots[83]);
-    if (rl_call(cx, T[3], 1, &T[4], &T[2])) { rl_std_boundary(cx, T[3]); RLC_ERR(0, 1249, 33, 1249, 33, 1249, 33, fail); }
+    if (rl_call(cx, T[3], 1, &T[4], &T[2])) { rl_std_boundary(cx, T[3]); RLC_ERR(0, 1249, 20, 1249, 20, 1249, 20, fail); }
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_call(cx, T[1], 1, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1249, 22, 1249, 22, 1249, 22, fail); }
+    if (rl_not(cx, T[2], &T[1])) RLC_ERR(0, 1249, 4, 1249, 4, 1249, 4, fail);
+    RLC_DROP(T[2]);
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(0, 1249, 4, 1249, 4, 1249, 4, fail);
+    RLC_DROP(T[1]);
+    if (c_) T[0] = rl_bool(1);
+    else {
+    if (rl_field(cx, top->slots[3], "is_dir", &T[2])) RLC_ERR(0, 1249, 34, 1249, 34, 1249, 34, fail);
+    T[3] = rl_retain(top->slots[83]);
+    if (rl_call(cx, T[2], 1, &T[3], &T[1])) { rl_std_boundary(cx, T[2]); RLC_ERR(0, 1249, 41, 1249, 41, 1249, 41, fail); }
+    RLC_DROP(T[3]);
+    RLC_DROP(T[2]);
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(0, 1249, 41, 1249, 41, 1249, 41, fail);
+    T[0] = rl_bool(c_);
+    RLC_DROP(T[1]);
+    }
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1249, 26, 1249, 26, 1249, 26, fail);
+    RLC_DROP(T[0]);
+    if (c_) {
+    T[2] = rl_retain(K[711]);
+    T[3] = rl_retain(top->slots[83]);
+    rl_interp(2, &T[2], &T[1]);
+    RLC_DROP(T[3]);
+    RLC_DROP(T[2]);
+    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(0, 1250, 11, 1250, 11, 1250, 11, fail); }
+    RLC_DROP(T[1]);
+    RLC_DROP(T[0]);
+    T[1] = rl_int(3LL);
+    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1251, 14, 1251, 14, 1251, 14, fail); }
+    RLC_DROP(T[1]);
+    RLC_DROP(T[0]);
+    }
+    if (rl_field(cx, top->slots[0], "lex", &T[1])) RLC_ERR(0, 1252, 18, 1252, 18, 1252, 18, fail);
+    if (rl_field(cx, top->slots[3], "read", &T[3])) RLC_ERR(0, 1252, 28, 1252, 28, 1252, 28, fail);
+    T[4] = rl_retain(top->slots[83]);
+    if (rl_call(cx, T[3], 1, &T[4], &T[2])) { rl_std_boundary(cx, T[3]); RLC_ERR(0, 1252, 33, 1252, 33, 1252, 33, fail); }
+    RLC_DROP(T[4]);
+    RLC_DROP(T[3]);
+    if (rl_call(cx, T[1], 1, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1252, 22, 1252, 22, 1252, 22, fail); }
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(top->slots[89], T[0]); T[0] = rl_none();
-    if (rl_field(cx, top->slots[89], "err", &T[0])) RLC_ERR(0, 1250, 16, 1250, 16, 1250, 16, fail);
+    if (rl_field(cx, top->slots[89], "err", &T[0])) RLC_ERR(0, 1253, 16, 1253, 16, 1253, 16, fail);
     RLC_SET(top->slots[90], T[0]); T[0] = rl_none();
     T[0] = rl_none();
     RLC_SET(top->slots[91], T[0]); T[0] = rl_none();
     T[0] = rl_bool(rl_equal(top->slots[90], rl_none()));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1252, 8, 1252, 8, 1252, 8, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1255, 8, 1255, 8, 1255, 8, fail);
     RLC_DROP(T[0]);
     if (c_) {
     S[2] = rl_scope_new(top, 1);
-    if (rl_field(cx, top->slots[1], "parse", &T[1])) RLC_ERR(0, 1253, 24, 1253, 24, 1253, 24, fail);
-    if (rl_field(cx, top->slots[89], "tokens", &T[2])) RLC_ERR(0, 1253, 36, 1253, 36, 1253, 36, fail);
-    if (rl_call(cx, T[1], 1, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1253, 30, 1253, 30, 1253, 30, fail); }
+    if (rl_field(cx, top->slots[1], "parse", &T[1])) RLC_ERR(0, 1256, 24, 1256, 24, 1256, 24, fail);
+    if (rl_field(cx, top->slots[89], "tokens", &T[2])) RLC_ERR(0, 1256, 36, 1256, 36, 1256, 36, fail);
+    if (rl_call(cx, T[1], 1, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1256, 30, 1256, 30, 1256, 30, fail); }
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(S[2]->slots[0], T[0]); T[0] = rl_none();
-    if (rl_field(cx, S[2]->slots[0], "err", &T[0])) RLC_ERR(0, 1254, 17, 1254, 17, 1254, 17, fail);
+    if (rl_field(cx, S[2]->slots[0], "err", &T[0])) RLC_ERR(0, 1257, 17, 1257, 17, 1257, 17, fail);
     {
     RLC_SET(top->slots[90], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    if (rl_field(cx, S[2]->slots[0], "tree", &T[0])) RLC_ERR(0, 1255, 18, 1255, 18, 1255, 18, fail);
+    if (rl_field(cx, S[2]->slots[0], "tree", &T[0])) RLC_ERR(0, 1258, 18, 1258, 18, 1258, 18, fail);
     {
     RLC_SET(top->slots[91], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     rl_scope_release(S[2]); S[2] = NULL;
     }
     T[0] = rl_bool(!rl_equal(top->slots[90], rl_none()));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1256, 8, 1256, 8, 1256, 8, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1259, 8, 1259, 8, 1259, 8, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_cond(cx, top->slots[85], "'if' condition", &c_)) RLC_ERR(0, 1257, 8, 1257, 8, 1257, 8, fail);
+    if (rl_cond(cx, top->slots[85], "'if' condition", &c_)) RLC_ERR(0, 1260, 8, 1260, 8, 1260, 8, fail);
     if (c_) {
-    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1258, 14, 1258, 14, 1258, 14, fail);
+    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1261, 14, 1261, 14, 1261, 14, fail);
     T[2] = rl_retain(top->slots[84]);
     T[4] = rl_retain(top->slots[83]);
     T[5] = rl_retain(top->slots[90]);
-    if (rl_call(cx, top->slots[81], 2, &T[4], &T[3])) { rl_std_boundary(cx, top->slots[81]); RLC_ERR(0, 1258, 41, 1258, 41, 1258, 41, fail); }
+    if (rl_call(cx, top->slots[81], 2, &T[4], &T[3])) { rl_std_boundary(cx, top->slots[81]); RLC_ERR(0, 1261, 41, 1261, 41, 1261, 41, fail); }
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1258, 20, 1258, 20, 1258, 20, fail); }
+    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1261, 20, 1261, 20, 1261, 20, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_int(0LL);
-    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1259, 18, 1259, 18, 1259, 18, fail); }
+    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1262, 18, 1262, 18, 1262, 18, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (rl_field(cx, top->slots[2], "show", &T[1])) RLC_ERR(0, 1260, 11, 1260, 11, 1260, 11, fail);
+    if (rl_field(cx, top->slots[2], "show", &T[1])) RLC_ERR(0, 1263, 11, 1263, 11, 1263, 11, fail);
     T[2] = rl_retain(top->slots[83]);
     T[3] = rl_retain(top->slots[90]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1260, 16, 1260, 16, 1260, 16, fail); }
+    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1263, 16, 1263, 16, 1263, 16, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_int(1LL);
-    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1261, 14, 1261, 14, 1261, 14, fail); }
+    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1264, 14, 1264, 14, 1264, 14, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
     T[1] = rl_retain(top->slots[83]);
-    if (rl_call(cx, top->slots[10], 1, &T[1], &T[0])) { rl_std_boundary(cx, top->slots[10]); RLC_ERR(0, 1262, 16, 1262, 16, 1262, 16, fail); }
+    if (rl_call(cx, top->slots[10], 1, &T[1], &T[0])) { rl_std_boundary(cx, top->slots[10]); RLC_ERR(0, 1265, 16, 1265, 16, 1265, 16, fail); }
     RLC_DROP(T[1]);
     RLC_SET(top->slots[92], T[0]); T[0] = rl_none();
     T[0] = rl_retain(top->slots[86]);
-    if (rl_set_field(cx, top->slots[92], "root", T[0])) RLC_ERR(0, 1263, 3, 1263, 3, 1263, 3, fail);
+    if (rl_set_field(cx, top->slots[92], "root", T[0])) RLC_ERR(0, 1266, 3, 1266, 3, 1266, 3, fail);
     RLC_DROP(T[0]);
     T[1] = rl_retain(top->slots[92]);
     T[2] = rl_retain(top->slots[91]);
-    if (rl_call(cx, top->slots[77], 2, &T[1], &T[0])) { rl_std_boundary(cx, top->slots[77]); RLC_ERR(0, 1264, 27, 1264, 27, 1264, 27, fail); }
+    if (rl_call(cx, top->slots[77], 2, &T[1], &T[0])) { rl_std_boundary(cx, top->slots[77]); RLC_ERR(0, 1267, 27, 1267, 27, 1267, 27, fail); }
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(top->slots[93], T[0]); T[0] = rl_none();
-    if (rl_field(cx, top->slots[92], "bad", &T[1])) RLC_ERR(0, 1265, 6, 1265, 6, 1265, 6, fail);
+    if (rl_field(cx, top->slots[92], "bad", &T[1])) RLC_ERR(0, 1268, 6, 1268, 6, 1268, 6, fail);
     T[0] = rl_bool(!rl_equal(T[1], rl_none()));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1265, 11, 1265, 11, 1265, 11, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1268, 11, 1268, 11, 1268, 11, fail);
     RLC_DROP(T[0]);
     if (c_) {
     S[3] = rl_scope_new(top, 1);
-    if (rl_field(cx, top->slots[92], "bad", &T[2])) RLC_ERR(0, 1266, 19, 1266, 19, 1266, 19, fail);
-    if (rl_field(cx, T[2], "file", &T[1])) RLC_ERR(0, 1266, 23, 1266, 23, 1266, 23, fail);
+    if (rl_field(cx, top->slots[92], "bad", &T[2])) RLC_ERR(0, 1269, 19, 1269, 19, 1269, 19, fail);
+    if (rl_field(cx, T[2], "file", &T[1])) RLC_ERR(0, 1269, 23, 1269, 23, 1269, 23, fail);
     RLC_DROP(T[2]);
     T[2] = rl_retain(K[53]);
-    if (rl_field(cx, top->slots[92], "bad", &T[4])) RLC_ERR(0, 1266, 33, 1266, 33, 1266, 33, fail);
-    if (rl_field(cx, T[4], "line", &T[3])) RLC_ERR(0, 1266, 37, 1266, 37, 1266, 37, fail);
+    if (rl_field(cx, top->slots[92], "bad", &T[4])) RLC_ERR(0, 1269, 33, 1269, 33, 1269, 33, fail);
+    if (rl_field(cx, T[4], "line", &T[3])) RLC_ERR(0, 1269, 37, 1269, 37, 1269, 37, fail);
     RLC_DROP(T[4]);
     T[4] = rl_retain(K[53]);
-    if (rl_field(cx, top->slots[92], "bad", &T[6])) RLC_ERR(0, 1266, 47, 1266, 47, 1266, 47, fail);
-    if (rl_field(cx, T[6], "col", &T[5])) RLC_ERR(0, 1266, 51, 1266, 51, 1266, 51, fail);
+    if (rl_field(cx, top->slots[92], "bad", &T[6])) RLC_ERR(0, 1269, 47, 1269, 47, 1269, 47, fail);
+    if (rl_field(cx, T[6], "col", &T[5])) RLC_ERR(0, 1269, 51, 1269, 51, 1269, 51, fail);
     RLC_DROP(T[6]);
-    T[6] = rl_retain(K[711]);
-    if (rl_field(cx, top->slots[92], "bad", &T[8])) RLC_ERR(0, 1266, 80, 1266, 80, 1266, 80, fail);
-    if (rl_field(cx, T[8], "what", &T[7])) RLC_ERR(0, 1266, 84, 1266, 84, 1266, 84, fail);
+    T[6] = rl_retain(K[712]);
+    if (rl_field(cx, top->slots[92], "bad", &T[8])) RLC_ERR(0, 1269, 80, 1269, 80, 1269, 80, fail);
+    if (rl_field(cx, T[8], "what", &T[7])) RLC_ERR(0, 1269, 84, 1269, 84, 1269, 84, fail);
     RLC_DROP(T[8]);
     rl_interp(7, &T[1], &T[0]);
     RLC_DROP(T[7]);
@@ -21241,37 +21277,37 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(S[3]->slots[0], T[0]); T[0] = rl_none();
-    if (rl_cond(cx, top->slots[85], "'if' condition", &c_)) RLC_ERR(0, 1267, 8, 1267, 8, 1267, 8, fail);
+    if (rl_cond(cx, top->slots[85], "'if' condition", &c_)) RLC_ERR(0, 1270, 8, 1270, 8, 1270, 8, fail);
     if (c_) {
-    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1268, 14, 1268, 14, 1268, 14, fail);
+    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1271, 14, 1271, 14, 1271, 14, fail);
     T[2] = rl_retain(top->slots[84]);
     T[4] = rl_retain(S[3]->slots[0]);
-    if (rl_call(cx, top->slots[80], 1, &T[4], &T[3])) { rl_std_boundary(cx, top->slots[80]); RLC_ERR(0, 1268, 40, 1268, 40, 1268, 40, fail); }
+    if (rl_call(cx, top->slots[80], 1, &T[4], &T[3])) { rl_std_boundary(cx, top->slots[80]); RLC_ERR(0, 1271, 40, 1271, 40, 1271, 40, fail); }
     RLC_DROP(T[4]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1268, 20, 1268, 20, 1268, 20, fail); }
+    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1271, 20, 1271, 20, 1271, 20, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_int(0LL);
-    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1269, 18, 1269, 18, 1269, 18, fail); }
+    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1272, 18, 1272, 18, 1272, 18, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (rl_add(cx, K[712], S[3]->slots[0], &T[1])) RLC_ERR(0, 1270, 21, 1270, 21, 1270, 21, fail);
-    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(0, 1270, 11, 1270, 11, 1270, 11, fail); }
+    if (rl_add(cx, K[713], S[3]->slots[0], &T[1])) RLC_ERR(0, 1273, 21, 1273, 21, 1273, 21, fail);
+    if (rl_call(cx, B[19], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[19]); RLC_ERR(0, 1273, 11, 1273, 11, 1273, 11, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_int(2LL);
-    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1271, 14, 1271, 14, 1271, 14, fail); }
+    if (rl_call(cx, B[24], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[24]); RLC_ERR(0, 1274, 14, 1274, 14, 1274, 14, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     rl_scope_release(S[3]); S[3] = NULL;
     }
-    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1272, 6, 1272, 6, 1272, 6, fail);
+    if (rl_field(cx, top->slots[3], "write", &T[1])) RLC_ERR(0, 1275, 6, 1275, 6, 1275, 6, fail);
     T[2] = rl_retain(top->slots[84]);
     T[3] = rl_retain(top->slots[93]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1272, 12, 1272, 12, 1272, 12, fail); }
+    if (rl_call(cx, T[1], 2, &T[2], &T[0])) { rl_std_boundary(cx, T[1]); RLC_ERR(0, 1275, 12, 1275, 12, 1275, 12, fail); }
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -22003,8 +22039,9 @@ int main(int argc, char **argv) {
     K[708] = rl_str_new("--stub", 6);
     K[709] = rl_str_new("--root", 6);
     K[710] = rl_str_new("usage: relic selfhost/cgen.relic FILE -o OUT.c [--stub] [--root DIR]", 68);
-    K[711] = rl_str_new(": not supported yet: ", 21);
-    K[712] = rl_str_new("cgen: ", 6);
+    K[711] = rl_str_new("relicc: cannot open ", 20);
+    K[712] = rl_str_new(": not supported yet: ", 21);
+    K[713] = rl_str_new("cgen: ", 6);
     rl_builtin("chr", &B[0]);
     rl_builtin("ord", &B[1]);
     rl_builtin("fail", &B[2]);
@@ -22037,7 +22074,7 @@ int main(int argc, char **argv) {
     fflush(stdout);
     if (r) rl_report(&cx, stderr, NULL);
     for (i = 0; i < 6; ++i) { rl_release(MOD[i]); if (MS[i]) rl_scope_release(MS[i]); }
-    for (i = 0; i < 713; ++i) rl_release(K[i]);
+    for (i = 0; i < 714; ++i) rl_release(K[i]);
     for (i = 0; i < 25; ++i) rl_release(B[i]);
     rl_ctx_free(&cx);
     rl_gc_collect();

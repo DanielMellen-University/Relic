@@ -325,6 +325,9 @@ static void test_errors_and_builtins(void) {
     a[0] = S("/nonexistent/x");
     ERR(call("host_read_file", 1, a, &r), "host_read_file(): cannot open /nonexistent/x");
     rl_release(a[0]);
+    a[0] = S(".");   /* a folder opens on Linux and reads as nothing; it must not read */
+    ERR(call("host_read_file", 1, a, &r), "host_read_file(): cannot open .");
+    rl_release(a[0]);
     ERR(call("len", 0, a, &r), "len() takes 1 argument, got 0");
     ERR(rl_call(&cx, rl_int(3), 0, NULL, &r), "cannot call an int");
     ERR(rl_cond(&cx, rl_int(1), "'if' condition", (int *)&a[0].u.b), "'if' condition must be true or false, got int");

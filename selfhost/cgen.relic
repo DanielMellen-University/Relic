@@ -1246,6 +1246,9 @@ while i < len(argv)
 if usage or src == none or out_path == none
     eprint("usage: relic selfhost/cgen.relic FILE -o OUT.c [--stub] [--root DIR]")
     host_exit(3)
+if not files.exists(src) or files.is_dir(src)
+    eprint("relicc: cannot open {src}")
+    host_exit(3)
 let lexed = lexer.lex(files.read(src))
 let err = lexed.err
 let tree = none

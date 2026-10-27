@@ -60,6 +60,8 @@ set(combos
   "undefined.relic|nofile.relic|syntax_error.relic"
   "syntax_error.relic|undefined.relic"
   "nofile.relic|clean.relic"
+  ".|clean.relic"
+  "undefined.relic|."
   "clean.relic|clean.relic")
 if(NESTED)
   set(combos "")

@@ -94,6 +94,10 @@ BI(h_read_file) {
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
     f = open_file(S(a[0])->data, "rb");
+    if (f) {   /* a folder opens fine on Linux and reads as nothing */
+        int is_dir = 0;
+        if (stat_path(S(a[0])->data, &is_dir, NULL) && is_dir) { fclose(f); f = NULL; }
+    }
     if (!f) return rl_fail(cx, "cannot open %s", S(a[0])->data);
     for (;;) {
         if (n == cap) {

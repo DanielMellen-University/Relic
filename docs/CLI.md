@@ -26,7 +26,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 |---|---|
 | 0 | the program ran to the end, or the REPL was left |
 | 1 | a syntax or runtime error nobody caught, or `relic check` found something |
-| 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`) |
+| 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`; a folder counts as not openable) |
 | any | the program called `os.exit(code)` |
 
 ## Output
@@ -107,5 +107,5 @@ The default build (no C++ host) makes `build/relicc`, cgen compiled to C:
 relicc FILE -o OUT.c [--stub] [--root DIR]
 ```
 
-It writes one C99 file for `FILE` and every module it uses, to be built with `runtime/c/` (see the [README](../README.md#build)). Exit codes: 0 written, 1 a lex or parse error (printed like the host prints it), 2 something not supported, 3 bad usage. `--stub` writes a small C program in place of a refused file, so a build can compile every file. `--root DIR` writes file names inside `DIR` relative to it, which is how `bootstrap/cgen.c` is made. Details are in [CGEN.md](CGEN.md).
+It writes one C99 file for `FILE` and every module it uses, to be built with `runtime/c/` (see the [README](../README.md#build)). Exit codes: 0 written, 1 a lex or parse error (printed like the host prints it), 2 something not supported, 3 bad usage or a file that cannot be opened (`relicc: cannot open FILE`; a folder counts). `--stub` writes a small C program in place of a refused file, so a build can compile every file. `--root DIR` writes file names inside `DIR` relative to it, which is how `bootstrap/cgen.c` is made. Details are in [CGEN.md](CGEN.md).
 

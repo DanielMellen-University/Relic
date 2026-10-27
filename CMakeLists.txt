@@ -338,6 +338,9 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     get_filename_component(name ${t} NAME_WE)
     relic_cgen_test(only_${name} ${t})
   endforeach()
+  add_test(NAME relicc_cli
+    COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
   if(RELIC_BUILD_HOST)
     add_test(NAME cgen_stage1_matches_host
       COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}

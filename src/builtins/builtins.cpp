@@ -230,7 +230,9 @@ void Interpreter::install_builtins() {
     });
     add("host_read_file", 1, [str_arg](std::vector<Value>& a) {
         std::ifstream f(str_arg(a[0], "path"), std::ios::binary);
-        if (!f) throw std::string("cannot open ") + a[0].as<std::string>();
+        std::error_code ec;
+        if (!f || std::filesystem::is_directory(a[0].as<std::string>(), ec))
+            throw std::string("cannot open ") + a[0].as<std::string>();
         std::stringstream ss;
         ss << f.rdbuf();
         return Value(ss.str());

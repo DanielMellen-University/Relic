@@ -39,6 +39,9 @@ expect("unknown flag" 2 "^$" "${usage}" --bogus)
 expect("--tokens without a file" 2 "^$" "${usage}" --tokens)
 expect("--ast with extra words" 2 "^$" "${usage}" --ast clean.relic extra)
 expect("missing file" 2 "^$" "^relic: cannot open nofile.relic\n$" nofile.relic)
+expect("a folder is not a file" 2 "^$" "^relic: cannot open \\.\n$" .)
+expect("a folder after --tree" 2 "^$" "^relic: cannot open \\.\n$" --tree .)
+expect("a folder, --tokens" 2 "^$" "^relic: cannot open \\.\n$" --tokens .)
 expect("missing file after --tree" 2 "^$" "^relic: cannot open nofile.relic\n$" --tree nofile.relic)
 
 # Anything after the file goes to the program, flags included, on every engine.
@@ -56,6 +59,7 @@ expect("check clean" 0 "^$" "^$" check clean.relic)
 expect("check typo" 1 "^$" "typo.relic:1:7: warning: 'prnt' is not defined \\(did you mean 'print'\\?\\)" check typo.relic)
 expect("check several" 1 "^$" "typo.relic:1:7: warning" check clean.relic typo.relic)
 expect("check missing" 2 "^$" "^relic: cannot open nofile.relic\n$" check nofile.relic)
+expect("check a folder" 2 "^$" "^relic: cannot open \\.\n$" check .)
 expect("check without files" 2 "^$" "${usage}" check)
 
 # The REPL on piped input: no prompts, an error does not stop it, exit 0

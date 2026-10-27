@@ -14,7 +14,7 @@ let argv = args()
 if len(argv) < 1
     eprint("usage: relic selfhost/run.relic FILE [args...]")
     host_exit(2)
-else if not files.exists(argv[0])
+else if not files.exists(argv[0]) or files.is_dir(argv[0])
     eprint("relic: cannot open {argv[0]}")
     host_exit(2)
 else

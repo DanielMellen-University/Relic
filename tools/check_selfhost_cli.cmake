@@ -18,6 +18,8 @@ endfunction()
 
 expect("no file" 2 "^usage: relic selfhost/run.relic FILE" ${run})
 expect("missing file" 2 "^relic: cannot open nofile.relic\n$" ${run} nofile.relic)
+expect("a folder" 2 "^relic: cannot open \\.\n$" ${run} .)
+expect("host, a folder" 2 "^relic: cannot open \\.\n$" .)
 expect("host, missing file" 2 "^relic: cannot open nofile.relic\n$" nofile.relic)
 expect("uncaught error" 1 "division by zero" ${run} rt_div_zero.relic)
 expect("host, uncaught error" 1 "division by zero" rt_div_zero.relic)

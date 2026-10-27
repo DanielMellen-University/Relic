@@ -1,6 +1,7 @@
 #include "core.hpp"
 
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -15,6 +16,11 @@ static bool stdout_is_terminal() { return _isatty(_fileno(stdout)) != 0; }
 static bool stdin_is_terminal() { return isatty(0) != 0; }
 static bool stdout_is_terminal() { return isatty(1) != 0; }
 #endif
+
+static bool is_folder(const std::string& path) {
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec);
+}
 
 static void usage() {
     std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
@@ -39,7 +45,7 @@ int main(int argc, char** argv) {
         int code = 0;
         for (int i = 2; i < argc; ++i) {
             std::ifstream f(argv[i], std::ios::binary);
-            if (!f) {
+            if (!f || is_folder(argv[i])) {
                 std::cerr << "relic: cannot open " << argv[i] << "\n";
                 code = 2;
                 continue;
@@ -68,7 +74,7 @@ int main(int argc, char** argv) {
         for (int i = (vm || tree) ? 3 : 2; i < argc; ++i) relic::script_args().push_back(argv[i]);
     std::string path = argv[flag ? 2 : 1];
     std::ifstream f(path, std::ios::binary);
-    if (!f) {
+    if (!f || is_folder(path)) {  // a folder opens fine and reads as nothing, so ask it
         std::cerr << "relic: cannot open " << path << "\n";
         return 2;
     }
