@@ -7,7 +7,7 @@ Where fuzz_mutate.py edits existing programs (most of its cases stop at a syntax
 error), this writes programs that run: expressions over ints, floats, strings,
 lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
 std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths,
-string interpolation, functions, loops and `try` / `catch`. Every statement is
+string interpolation, functions, closures, `else if` chains, loops and `try` / `catch`. Every statement is
 wrapped in `try`, so an error shows up as its message and the program goes on.
 Compares `relic` (VM) with `--tree`, `selfhost/run.relic` and the program compiled
 to C (stdout, stderr, exit code). A mismatch prints the path of the program under
@@ -134,7 +134,20 @@ def stmt(ind):
     if k < 0.92:
         return [p + 'let w = 0', p + 'while w < %s' % R.choice(['3', expr(2)]), p + '    w = w + 1', p + '    if w > 5', p + '        break',
                 p + 'print(w)']
-    return [p + 'print(str(%s), type(%s))' % (expr(), expr())]
+    if k < 0.95:
+        return [p + 'print(str(%s), type(%s))' % (expr(), expr())]
+    if k < 0.97:
+        # an else if chain over one value
+        v = expr(1)
+        out = [p + 'let sel = %s' % v, p + 'if sel == %s' % expr(2), p + '    print("b0")']
+        for j in range(R.randint(1, 6)):
+            out += [p + 'else if %s' % R.choice(['sel == %s' % expr(2), '%s' % gen('bool', 2), 'sel in %s' % gen('list', 2)]), p + '    print("b%d", sel)' % (j + 1)]
+        if R.random() < 0.6:
+            out += [p + 'else', p + '    print("none of them")']
+        return out
+    # a closure that counts, called a few times
+    return [p + 'fun mk()', p + '    let box = {n: %s}' % gen('int', 2), p + '    fun step(d)', p + '        box.n = box.n + d',
+            p + '        return box.n', p + '    return step', p + 'let st = mk()', p + 'print(st(%s), st(1)%s)' % (gen('int', 2), R.choice(['', '()', '.n', '[0]']))]
 
 def program():
     out = ['use std/strings', 'use std/lists', 'use std/maps', 'use std/math', 'use std/json', 'use std/paths',
