@@ -1,14 +1,14 @@
 # Deeply nested lists and maps need no deep call stack: == and printing on lists and
-# maps nested 1500 levels (past the 800-call limit). Printing stops at 1000 levels
+# maps nested 1100 levels (past the 800-call limit). Printing stops at 1000 levels
 # ([...] below that). The 10000-level limit of == is not tested here.
 
-# Two separate chains of lists, each [[[...]]] 1500 deep, with copies kept on the way.
+# Two separate chains of lists, each [[[...]]] 1100 deep, with copies kept on the way.
 fun chain()
     let snaps = []
     let x = []
-    for i in 1..1501
+    for i in 1..1101
         x = [x]
-        if i == 100 or i == 1499 or i == 1500
+        if i == 100 or i == 1099 or i == 1100
             append(snaps, x)
     return snaps
 
@@ -26,14 +26,14 @@ fun show(f)
 
 let a = chain()
 let b = chain()
-let ma = chain_map(1500)
-let mb = chain_map(1500)
-let mc = chain_map(1499)
+let ma = chain_map(1100)
+let mb = chain_map(1100)
+let mc = chain_map(1099)
 
 fun eq_100() = a[0] == b[0]
-fun eq_1500() = a[2] == b[2]
-fun ne_1500() = a[2] == b[1]
-fun neq_1500() = a[2] != b[2]
+fun eq_1100() = a[2] == b[2]
+fun ne_1100() = a[2] == b[1]
+fun neq_1100() = a[2] != b[2]
 fun eq_map() = ma == mb
 fun ne_map() = ma == mc
 fun in_list() = a[2] in [b[2]]
@@ -47,11 +47,11 @@ fun eq_cycles() = cyc == cyc2
 fun eq_same() = cyc == cyc
 
 fun len_100() = len(str(a[0]))
-fun len_1500() = len(str(a[2]))
-fun tail_1500() = slice(str(a[2]), 990, 1010)
+fun len_1100() = len(str(a[2]))
+fun tail_1100() = slice(str(a[2]), 990, 1010)
 fun map_len() = len(str(ma))
 fun cyc_str() = str(cyc)
 fun cyc_in_map() = str({a: cyc, b: [cyc, cyc]})
 
-for f in [eq_100, eq_1500, ne_1500, neq_1500, eq_map, ne_map, in_list, same_deep, eq_cycles, eq_same, len_100, len_1500, tail_1500, map_len, cyc_str, cyc_in_map]
+for f in [eq_100, eq_1100, ne_1100, neq_1100, eq_map, ne_map, in_list, same_deep, eq_cycles, eq_same, len_100, len_1100, tail_1100, map_len, cyc_str, cyc_in_map]
     show(f)

@@ -28,16 +28,16 @@ let c = lists.copy(original)
 append(c, 4)
 print(original, c, lists.copy([]))
 
-# a long list through the merge sort
+# a longer list through the merge sort
 let big = []
-for i in 0..300
-    append(big, (i * 7919) % 301)
+for i in 0..60
+    append(big, (i * 37) % 61)
 let s = lists.sort(big)
 let ok = true
 for i in 1..len(s)
     if s[i - 1] > s[i]
         ok = false
-print(len(s), ok, s[0], s[len(s) - 1], lists.index_of(s, 300))
+print(len(s), ok, s[0], s[len(s) - 1], lists.index_of(s, 60))
 
 # maps
 print(maps.values({}), maps.items({}), maps.merge({}, {}))

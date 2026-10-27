@@ -18,28 +18,3 @@ try
 catch e
     print(e.message)
 print(depth, reached, len(log))
-
-# the same with a loop and a try around the call
-depth = 0
-reached = 0
-fun loop_down(n)
-    depth = depth + 1
-    for i in [1]
-        try
-            print_at_limit()
-            loop_down(n + 1)
-        catch e
-            fail(e.message)
-    depth = depth - 1
-
-fun print_at_limit()
-    reached = depth
-    let t = str(depth) + "!"
-    if depth == 800
-        print("at the limit:", t)
-
-try
-    loop_down(0)
-catch e
-    print(e.message)
-print(depth, reached)

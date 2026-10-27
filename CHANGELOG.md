@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.29 (2026-10-27)
+
+Four places where the engines or the self-hosted tools disagreed with the host, a REPL fix, and a fuzz tool that finds this kind of thing. No language change.
+
+- Compiled programs: a built-in (`print`, `len`, `str`, ...) called from the 800th frame failed with `too much recursion`; the VM, the tree-walker and the self-hosted interpreter allow it, since only Relic functions count toward the limit. Now they agree (golden `recursion_builtins`).
+- `selfhost/run.relic`: `==` on lists and maps and printing them recursed on the host, so a list nested a few hundred levels deep stopped with `too much recursion` (and a list holding itself looped there). Both now run on their own stacks like the host: `==` gives up past 10000 levels, printing shows `[...]` past 1000 (golden `deep_values`).
+- `selfhost/tokens.relic` and `selfhost/ast.relic` exited 0 after a lex or parse error. They exit 1 like `--tokens` and `--ast`, and 2 for no file, a missing file or a folder (`relic: cannot open FILE`). The lexer and parser comparisons check exit codes and those cases.
+- The lexer's `unknown escape` error printed only the first byte of a multi-byte character after the backslash, a broken character; it names the whole character now, on the host (the Relic lexer already did). Golden `err_escape_utf8`.
+- REPL: a block header spread over several lines (`fun add(` with the parameters on the next lines) ran the header alone and failed with `expected an indented block`; it reads the indented body once the bracket closes (golden `repl_multiline_header`).
+- New `tools/fuzz_mutate.py` (by hand, needs Python): edits the test programs a little and compares `--tokens`, `--ast`, `relic check` and `run` (VM, tree-walker, `selfhost/run.relic`, compiled) with the Relic-written ones. It found the escape and exit-code bugs above; thousands of other cases agreed. A second scan of random statement programs (about 120 seeds), random expressions with 150 values each (about 160 seeds) and random JSON (80 seeds) found only the recursion-limit difference.
+- Not fixed: when the source line an error points at holds a NUL byte, a compiled program stops printing that line at the NUL (the host prints it whole).
+- Tests: goldens `recursion_builtins`, `deep_values`, `err_escape_utf8`, `repl_multiline_header`; `std_lists_edges` is smaller.
+- Speed: `selfhost_interp` 9.88 s median of 3 on a quiet box (1.62x the 6.1 s baseline; 9.29 s in 1.0.28). Two new goldens cost about 0.5 s, and `==` and printing are a little slower on their own stacks.
+- `ctest`: 170 default, 359 with the host.
+
 ## 1.0.28 (2026-10-27)
 
 Clearer errors for wrong arguments, a folder given as a file, and control characters; a platform-dependent `slice` fixed; the self-hosted tools match the host in two more places. No language change.
