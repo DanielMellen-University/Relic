@@ -1,13 +1,29 @@
 # std/paths: path text helpers. Paths use "/"; "\" is read as "/" too.
 
-fun _fix(p)
-    let out = ""
+# The characters of p with "\" as "/". A list, since indexing a string walks
+# it from the start, and joined in halves, since adding one character at a time
+# copies the text each time: both took time growing with the square of the length.
+fun _chars(p)
+    let cs = []
     for c in p
         if c == "\\"
-            out = out + "/"
+            append(cs, "/")
         else
-            out = out + c
-    return out
+            append(cs, c)
+    return cs
+
+fun _glue(xs, a, b)
+    if b - a <= 16
+        let out = ""
+        for i in a..b
+            out = out + xs[i]
+        return out
+    let m = a + int((b - a) / 2)
+    return _glue(xs, a, m) + _glue(xs, m, b)
+
+fun _fix(p)
+    let cs = _chars(p)
+    return _glue(cs, 0, len(cs))
 
 fun _last_slash(p)
     let cut = -1
@@ -45,14 +61,14 @@ fun dir(p)
 # ext("notes.txt") is ".txt"; "" when there is none. Leading dots are part of the
 # name, so ".hidden", ".." and "...a" have none.
 fun ext(p)
-    let b = base(p)
+    let b = _chars(base(p))
     let start = 0
     while start < len(b) and b[start] == "."
         start = start + 1
     let i = len(b) - 1
     while i > start
         if b[i] == "."
-            return slice(b, i, len(b))
+            return _glue(b, i, len(b))
         i = i - 1
     return ""
 
@@ -60,28 +76,29 @@ fun stem(p) = slice(base(p), 0, len(base(p)) - len(ext(p)))
 
 # normalize: folds "." and "dir/.." away and drops doubled slashes.
 fun normalize(p)
-    let x = _fix(p)
+    let x = _chars(p)
     let absolute = len(x) > 0 and x[0] == "/"
     let parts = []
-    let cur = ""
-    for c in x + "/"
-        if c == "/"
+    let start = 0
+    append(x, "/")
+    for i in 0..len(x)
+        if x[i] == "/"
+            let cur = _glue(x, start, i)
             if cur == ".." and len(parts) > 0 and parts[len(parts) - 1] != ".."
                 pop(parts)
             else if cur == ".." and absolute
                 cur = ""
             else if cur != "." and cur != ""
                 append(parts, cur)
-            cur = ""
-        else
-            cur = cur + c
-    let out = ""
+            start = i + 1
+    let out = []
     for i in 0..len(parts)
         if i > 0
-            out = out + "/"
-        out = out + parts[i]
+            append(out, "/")
+        append(out, parts[i])
+    let text = _glue(out, 0, len(out))
     if absolute
-        return "/" + out
-    if out == ""
+        return "/" + text
+    if text == ""
         return "."
-    return out
+    return text

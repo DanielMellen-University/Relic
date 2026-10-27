@@ -8891,17 +8891,21 @@ done:
 
 static int fn79_trim(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[4];
-    rl_value L[3];
+    rl_value L[5];
+    rl_value V[1];
+    size_t I[1];
     rl_scope *E = self->env;
     rl_value R = rl_none();
     int r = RL_OK, c_ = 0, i_;
     (void)argc; (void)argv; (void)E;
     (void)c_; (void)cx;
     for (i_ = 0; i_ < 4; ++i_) T[i_] = rl_none();
-    for (i_ = 0; i_ < 3; ++i_) L[i_] = rl_unset();
+    for (i_ = 0; i_ < 5; ++i_) L[i_] = rl_unset();
+    for (i_ = 0; i_ < 1; ++i_) { V[i_] = rl_none(); I[i_] = 0; }
     RLC_SET(L[0], rl_unset());
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[2], rl_unset());
+    RLC_SET(L[3], rl_unset());
     RLC_SET(L[0], rl_retain(argv[0]));
     T[1] = rl_retain(K[263]);
     T[2] = rl_retain(K[261]);
@@ -8911,64 +8915,83 @@ static int fn79_trim(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, r
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
-    T[0] = rl_int(0LL);
+    T[0] = rl_list_new(0);
     RLC_SET(L[1], T[0]); T[0] = rl_none();
-    T[1] = rl_retain(L[0]);
-    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 86, 16, 86, 16, 86, 16, fail);
-    RLC_DROP(T[1]);
-    RLC_SET(L[2], T[0]); T[0] = rl_none();
+    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 87, 14, 87, 14, 87, 14, fail);
+    I[0] = 0;
     top_122:
-    if (rl_compare(cx, "<", L[1], L[2], &T[1])) RLC_ERR(5, 87, 13, 87, 13, 87, 13, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 87, 13, 87, 13, 87, 13, fail);
-    RLC_DROP(T[1]);
-    if (!c_) T[0] = rl_bool(0);
-    else {
-    if (rl_index(cx, L[0], L[1], &T[2])) RLC_ERR(5, 87, 31, 87, 30, 87, 32, fail);
-    if (rl_call(cx, E->slots[9], 1, &T[2], &T[1])) RLC_ERR(5, 87, 29, 87, 29, 87, 29, fail);
-    RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 87, 29, 87, 29, 87, 29, fail);
-    T[0] = rl_bool(c_);
-    RLC_DROP(T[1]);
-    }
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 87, 17, 87, 17, 87, 17, fail);
-    RLC_DROP(T[0]);
-    if (!c_) goto brk_123;
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_123;
     rl_gc_maybe();
-    if (rl_add(cx, L[1], rl_int(1LL), &T[0])) RLC_ERR(5, 88, 15, 88, 15, 88, 15, fail);
-    {
-    RLC_SET(L[1], T[0]); T[0] = rl_none(); }
+    RLC_SET(L[4], rl_unset());
+    RLC_SET(L[4], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
+    T[1] = rl_retain(L[1]);
+    T[2] = rl_retain(L[4]);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 88, 15, 88, 15, 88, 15, fail);
+    RLC_DROP(T[2]);
+    RLC_DROP(T[1]);
     RLC_DROP(T[0]);
+    ++I[0];
     goto top_122;
     brk_123: ;
+    RLC_DROP(V[0]);
+    T[0] = rl_int(0LL);
+    RLC_SET(L[2], T[0]); T[0] = rl_none();
+    T[1] = rl_retain(L[1]);
+    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 90, 16, 90, 16, 90, 16, fail);
+    RLC_DROP(T[1]);
+    RLC_SET(L[3], T[0]); T[0] = rl_none();
     top_125:
-    if (rl_compare(cx, ">", L[2], L[1], &T[1])) RLC_ERR(5, 89, 13, 89, 13, 89, 13, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 89, 13, 89, 13, 89, 13, fail);
+    if (rl_compare(cx, "<", L[2], L[3], &T[1])) RLC_ERR(5, 91, 13, 91, 13, 91, 13, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 91, 13, 91, 13, 91, 13, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    if (rl_sub(cx, L[2], rl_int(1LL), &T[3])) RLC_ERR(5, 89, 34, 89, 34, 89, 34, fail);
-    if (rl_index(cx, L[0], T[3], &T[2])) RLC_ERR(5, 89, 31, 89, 30, 89, 34, fail);
-    RLC_DROP(T[3]);
-    if (rl_call(cx, E->slots[9], 1, &T[2], &T[1])) RLC_ERR(5, 89, 29, 89, 29, 89, 29, fail);
+    if (rl_index(cx, L[1], L[2], &T[2])) RLC_ERR(5, 91, 32, 91, 30, 91, 33, fail);
+    if (rl_call(cx, E->slots[9], 1, &T[2], &T[1])) RLC_ERR(5, 91, 29, 91, 29, 91, 29, fail);
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 89, 29, 89, 29, 89, 29, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 91, 29, 91, 29, 91, 29, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 89, 17, 89, 17, 89, 17, fail);
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 91, 17, 91, 17, 91, 17, fail);
     RLC_DROP(T[0]);
     if (!c_) goto brk_126;
     rl_gc_maybe();
-    if (rl_sub(cx, L[2], rl_int(1LL), &T[0])) RLC_ERR(5, 90, 15, 90, 15, 90, 15, fail);
+    if (rl_add(cx, L[2], rl_int(1LL), &T[0])) RLC_ERR(5, 92, 15, 92, 15, 92, 15, fail);
     {
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     goto top_125;
     brk_126: ;
+    top_128:
+    if (rl_compare(cx, ">", L[3], L[2], &T[1])) RLC_ERR(5, 93, 13, 93, 13, 93, 13, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 93, 13, 93, 13, 93, 13, fail);
+    RLC_DROP(T[1]);
+    if (!c_) T[0] = rl_bool(0);
+    else {
+    if (rl_sub(cx, L[3], rl_int(1LL), &T[3])) RLC_ERR(5, 93, 35, 93, 35, 93, 35, fail);
+    if (rl_index(cx, L[1], T[3], &T[2])) RLC_ERR(5, 93, 32, 93, 30, 93, 35, fail);
+    RLC_DROP(T[3]);
+    if (rl_call(cx, E->slots[9], 1, &T[2], &T[1])) RLC_ERR(5, 93, 29, 93, 29, 93, 29, fail);
+    RLC_DROP(T[2]);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 93, 29, 93, 29, 93, 29, fail);
+    T[0] = rl_bool(c_);
+    RLC_DROP(T[1]);
+    }
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 93, 17, 93, 17, 93, 17, fail);
+    RLC_DROP(T[0]);
+    if (!c_) goto brk_129;
+    rl_gc_maybe();
+    if (rl_sub(cx, L[3], rl_int(1LL), &T[0])) RLC_ERR(5, 94, 15, 94, 15, 94, 15, fail);
+    {
+    RLC_SET(L[3], T[0]); T[0] = rl_none(); }
+    RLC_DROP(T[0]);
+    goto top_128;
+    brk_129: ;
     T[1] = rl_retain(L[0]);
-    T[2] = rl_retain(L[1]);
-    T[3] = rl_retain(L[2]);
-    if (rl_call(cx, B[8], 3, &T[1], &T[0])) RLC_ERR(5, 91, 17, 91, 17, 91, 17, fail);
+    T[2] = rl_retain(L[2]);
+    T[3] = rl_retain(L[3]);
+    if (rl_call(cx, B[8], 3, &T[1], &T[0])) RLC_ERR(5, 95, 17, 95, 17, 95, 17, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -8979,7 +9002,8 @@ fail:
     r = RL_ERR;
 done:
     for (i_ = 0; i_ < 4; ++i_) rl_release(T[i_]);
-    for (i_ = 0; i_ < 3; ++i_) rl_release(L[i_]);
+    for (i_ = 0; i_ < 5; ++i_) rl_release(L[i_]);
+    for (i_ = 0; i_ < 1; ++i_) rl_release(V[i_]);
     if (r == RL_OK) *out = R;
     else { rl_release(R); *out = rl_none(); }
     return r;
@@ -9008,7 +9032,7 @@ static int fn80_split(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     T[1] = rl_retain(K[264]);
     T[2] = rl_retain(K[81]);
     T[3] = rl_retain(L[0]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 95, 10, 95, 10, 95, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 99, 10, 99, 10, 99, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -9016,7 +9040,7 @@ static int fn80_split(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     T[1] = rl_retain(K[264]);
     T[2] = rl_retain(K[265]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 96, 10, 96, 10, 96, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 100, 10, 100, 10, 100, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -9024,45 +9048,45 @@ static int fn80_split(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     T[0] = rl_list_new(0);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
     T[0] = rl_bool(rl_equal(L[1], K[54]));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 98, 12, 98, 12, 98, 12, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 102, 12, 102, 12, 102, 12, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 99, 18, 99, 18, 99, 18, fail);
+    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 103, 18, 103, 18, 103, 18, fail);
     I[0] = 0;
-    top_128:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_129;
+    top_131:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_132;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[5], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
     T[1] = rl_retain(L[2]);
     T[2] = rl_retain(L[5]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 100, 19, 100, 19, 100, 19, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 104, 19, 104, 19, 104, 19, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_128;
-    brk_129: ;
+    goto top_131;
+    brk_132: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(L[2]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
     T[2] = rl_retain(L[0]);
-    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 102, 11, 102, 11, 102, 11, fail);
+    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 106, 11, 106, 11, 106, 11, fail);
     RLC_DROP(T[2]);
-    if (rl_compare(cx, ">", T[1], rl_int(4096LL), &T[0])) RLC_ERR(5, 102, 15, 102, 15, 102, 15, fail);
+    if (rl_compare(cx, ">", T[1], rl_int(4096LL), &T[0])) RLC_ERR(5, 106, 15, 106, 15, 106, 15, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 102, 15, 102, 15, 102, 15, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 106, 15, 106, 15, 106, 15, fail);
     RLC_DROP(T[0]);
     if (c_) {
     if (RLC_IS(E->slots[12])) T[1] = rl_retain(E->slots[12]);
     else { static const char *const nm_[] = {"s", "sep", "parts", "_text", "find", "_find_long", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21]};
-        rl_fail_undefined(cx, "_split_long", 25, nm_, sl_); RLC_ERR(5, 103, 16, 103, 16, 103, 16, fail); }
+        rl_fail_undefined(cx, "_split_long", 25, nm_, sl_); RLC_ERR(5, 107, 16, 107, 16, 107, 16, fail); }
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, T[1], 2, &T[2], &T[0])) RLC_ERR(5, 103, 27, 103, 27, 103, 27, fail);
+    if (rl_call(cx, T[1], 2, &T[2], &T[0])) RLC_ERR(5, 107, 27, 107, 27, 107, 27, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -9073,38 +9097,38 @@ static int fn80_split(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     T[1] = rl_retain(L[3]);
     T[2] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[1], 2, &T[1], &T[0])) RLC_ERR(5, 105, 17, 105, 17, 105, 17, fail);
+    if (rl_call(cx, E->slots[1], 2, &T[1], &T[0])) RLC_ERR(5, 109, 17, 109, 17, 109, 17, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_131:
-    if (rl_compare(cx, ">=", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 106, 13, 106, 13, 106, 13, fail);
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 106, 13, 106, 13, 106, 13, fail);
+    top_134:
+    if (rl_compare(cx, ">=", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 110, 13, 110, 13, 110, 13, fail);
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 110, 13, 110, 13, 110, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_132;
+    if (!c_) goto brk_135;
     rl_gc_maybe();
     T[1] = rl_retain(L[2]);
     T[3] = rl_retain(L[3]);
     T[4] = rl_int(0LL);
     T[5] = rl_retain(L[4]);
-    if (rl_call(cx, B[8], 3, &T[3], &T[2])) RLC_ERR(5, 107, 28, 107, 28, 107, 28, fail);
+    if (rl_call(cx, B[8], 3, &T[3], &T[2])) RLC_ERR(5, 111, 28, 111, 28, 111, 28, fail);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 107, 15, 107, 15, 107, 15, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 111, 15, 111, 15, 111, 15, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[1] = rl_retain(L[3]);
     T[4] = rl_retain(L[1]);
-    if (rl_call(cx, B[4], 1, &T[4], &T[3])) RLC_ERR(5, 108, 35, 108, 35, 108, 35, fail);
+    if (rl_call(cx, B[4], 1, &T[4], &T[3])) RLC_ERR(5, 112, 35, 112, 35, 112, 35, fail);
     RLC_DROP(T[4]);
-    if (rl_add(cx, L[4], T[3], &T[2])) RLC_ERR(5, 108, 30, 108, 30, 108, 30, fail);
+    if (rl_add(cx, L[4], T[3], &T[2])) RLC_ERR(5, 112, 30, 112, 30, 112, 30, fail);
     RLC_DROP(T[3]);
     T[4] = rl_retain(L[3]);
-    if (rl_call(cx, B[4], 1, &T[4], &T[3])) RLC_ERR(5, 108, 45, 108, 45, 108, 45, fail);
+    if (rl_call(cx, B[4], 1, &T[4], &T[3])) RLC_ERR(5, 112, 45, 112, 45, 112, 45, fail);
     RLC_DROP(T[4]);
-    if (rl_call(cx, B[8], 3, &T[1], &T[0])) RLC_ERR(5, 108, 21, 108, 21, 108, 21, fail);
+    if (rl_call(cx, B[8], 3, &T[1], &T[0])) RLC_ERR(5, 112, 21, 112, 21, 112, 21, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -9113,17 +9137,17 @@ static int fn80_split(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     T[1] = rl_retain(L[3]);
     T[2] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[1], 2, &T[1], &T[0])) RLC_ERR(5, 109, 17, 109, 17, 109, 17, fail);
+    if (rl_call(cx, E->slots[1], 2, &T[1], &T[0])) RLC_ERR(5, 113, 17, 113, 17, 113, 17, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     {
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_131;
-    brk_132: ;
+    goto top_134;
+    brk_135: ;
     T[1] = rl_retain(L[2]);
     T[2] = rl_retain(L[3]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 110, 11, 110, 11, 110, 11, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 114, 11, 114, 11, 114, 11, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
@@ -9168,48 +9192,48 @@ static int fn81__split_long(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[1], rl_retain(argv[1]));
     T[0] = rl_list_new(0);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
-    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 118, 14, 118, 14, 118, 14, fail);
+    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 122, 14, 122, 14, 122, 14, fail);
     I[0] = 0;
-    top_134:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_135;
+    top_137:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_138;
     rl_gc_maybe();
     RLC_SET(L[9], rl_unset());
     RLC_SET(L[9], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
     T[1] = rl_retain(L[2]);
     T[2] = rl_retain(L[9]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 119, 15, 119, 15, 119, 15, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 123, 15, 123, 15, 123, 15, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_134;
-    brk_135: ;
+    goto top_137;
+    brk_138: ;
     RLC_DROP(V[0]);
     T[0] = rl_list_new(0);
     RLC_SET(L[3], T[0]); T[0] = rl_none();
-    if (rl_loop_items(cx, L[1], &V[1])) RLC_ERR(5, 121, 14, 121, 14, 121, 14, fail);
+    if (rl_loop_items(cx, L[1], &V[1])) RLC_ERR(5, 125, 14, 125, 14, 125, 14, fail);
     I[1] = 0;
-    top_137:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_138;
+    top_140:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_141;
     rl_gc_maybe();
     RLC_SET(L[10], rl_unset());
     RLC_SET(L[10], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
     T[1] = rl_retain(L[3]);
     T[2] = rl_retain(L[10]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 122, 15, 122, 15, 122, 15, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 126, 15, 126, 15, 126, 15, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_137;
-    brk_138: ;
+    goto top_140;
+    brk_141: ;
     RLC_DROP(V[1]);
     T[1] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 123, 16, 123, 16, 123, 16, fail);
+    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 127, 16, 127, 16, 127, 16, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     T[1] = rl_retain(L[3]);
-    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 124, 16, 124, 16, 124, 16, fail);
+    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 128, 16, 128, 16, 128, 16, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[5], T[0]); T[0] = rl_none();
     T[0] = rl_list_new(0);
@@ -9218,66 +9242,66 @@ static int fn81__split_long(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[7], T[0]); T[0] = rl_none();
     T[0] = rl_int(0LL);
     RLC_SET(L[8], T[0]); T[0] = rl_none();
-    top_140:
-    if (rl_add(cx, L[8], L[5], &T[1])) RLC_ERR(5, 128, 13, 128, 13, 128, 13, fail);
-    if (rl_compare(cx, "<=", T[1], L[4], &T[0])) RLC_ERR(5, 128, 17, 128, 17, 128, 17, fail);
+    top_143:
+    if (rl_add(cx, L[8], L[5], &T[1])) RLC_ERR(5, 132, 13, 132, 13, 132, 13, fail);
+    if (rl_compare(cx, "<=", T[1], L[4], &T[0])) RLC_ERR(5, 132, 17, 132, 17, 132, 17, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 128, 17, 128, 17, 128, 17, fail);
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 132, 17, 132, 17, 132, 17, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_141;
+    if (!c_) goto brk_144;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     T[0] = rl_int(0LL);
     RLC_SET(L[11], T[0]); T[0] = rl_none();
-    top_143:
-    if (rl_compare(cx, "<", L[11], L[5], &T[1])) RLC_ERR(5, 130, 17, 130, 17, 130, 17, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 130, 17, 130, 17, 130, 17, fail);
+    top_146:
+    if (rl_compare(cx, "<", L[11], L[5], &T[1])) RLC_ERR(5, 134, 17, 134, 17, 134, 17, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 134, 17, 134, 17, 134, 17, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    if (rl_add(cx, L[8], L[11], &T[3])) RLC_ERR(5, 130, 30, 130, 30, 130, 30, fail);
-    if (rl_index(cx, L[2], T[3], &T[2])) RLC_ERR(5, 130, 27, 130, 25, 130, 30, fail);
+    if (rl_add(cx, L[8], L[11], &T[3])) RLC_ERR(5, 134, 30, 134, 30, 134, 30, fail);
+    if (rl_index(cx, L[2], T[3], &T[2])) RLC_ERR(5, 134, 27, 134, 25, 134, 30, fail);
     RLC_DROP(T[3]);
-    if (rl_index(cx, L[3], L[11], &T[3])) RLC_ERR(5, 130, 40, 130, 38, 130, 41, fail);
+    if (rl_index(cx, L[3], L[11], &T[3])) RLC_ERR(5, 134, 40, 134, 38, 134, 41, fail);
     T[1] = rl_bool(rl_equal(T[2], T[3]));
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 130, 35, 130, 35, 130, 35, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 134, 35, 134, 35, 134, 35, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 130, 21, 130, 21, 130, 21, fail);
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 134, 21, 134, 21, 134, 21, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_144;
+    if (!c_) goto brk_147;
     rl_gc_maybe();
-    if (rl_add(cx, L[11], rl_int(1LL), &T[0])) RLC_ERR(5, 131, 19, 131, 19, 131, 19, fail);
+    if (rl_add(cx, L[11], rl_int(1LL), &T[0])) RLC_ERR(5, 135, 19, 135, 19, 135, 19, fail);
     {
     RLC_SET(L[11], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_143;
-    brk_144: ;
+    goto top_146;
+    brk_147: ;
     T[0] = rl_bool(rl_equal(L[11], L[5]));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 132, 14, 132, 14, 132, 14, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 136, 14, 136, 14, 136, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[1] = rl_retain(L[6]);
     if (RLC_IS(E->slots[13])) T[3] = rl_retain(E->slots[13]);
     else { static const char *const nm_[] = {"k", "s", "sep", "cs", "ss", "n", "m", "parts", "start", "i", "_text", "find", "_find_long", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21]};
-        rl_fail_undefined(cx, "_piece", 32, nm_, sl_); RLC_ERR(5, 133, 27, 133, 27, 133, 27, fail); }
+        rl_fail_undefined(cx, "_piece", 32, nm_, sl_); RLC_ERR(5, 137, 27, 137, 27, 137, 27, fail); }
     T[4] = rl_retain(L[2]);
     T[5] = rl_retain(L[7]);
     T[6] = rl_retain(L[8]);
-    if (rl_call(cx, T[3], 3, &T[4], &T[2])) RLC_ERR(5, 133, 33, 133, 33, 133, 33, fail);
+    if (rl_call(cx, T[3], 3, &T[4], &T[2])) RLC_ERR(5, 137, 33, 137, 33, 137, 33, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 133, 19, 133, 19, 133, 19, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 137, 19, 137, 19, 137, 19, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
-    if (rl_add(cx, L[8], L[5], &T[0])) RLC_ERR(5, 134, 19, 134, 19, 134, 19, fail);
+    if (rl_add(cx, L[8], L[5], &T[0])) RLC_ERR(5, 138, 19, 138, 19, 138, 19, fail);
     {
     RLC_SET(L[8], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
@@ -9287,27 +9311,27 @@ static int fn81__split_long(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[0]);
     }
     else {
-    if (rl_add(cx, L[8], rl_int(1LL), &T[0])) RLC_ERR(5, 137, 19, 137, 19, 137, 19, fail);
+    if (rl_add(cx, L[8], rl_int(1LL), &T[0])) RLC_ERR(5, 141, 19, 141, 19, 141, 19, fail);
     {
     RLC_SET(L[8], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    goto top_140;
-    brk_141: ;
+    goto top_143;
+    brk_144: ;
     T[1] = rl_retain(L[6]);
     if (RLC_IS(E->slots[13])) T[3] = rl_retain(E->slots[13]);
     else { static const char *const nm_[] = {"s", "sep", "cs", "ss", "n", "m", "parts", "start", "i", "_text", "find", "_find_long", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21]};
-        rl_fail_undefined(cx, "_piece", 31, nm_, sl_); RLC_ERR(5, 138, 19, 138, 19, 138, 19, fail); }
+        rl_fail_undefined(cx, "_piece", 31, nm_, sl_); RLC_ERR(5, 142, 19, 142, 19, 142, 19, fail); }
     T[4] = rl_retain(L[2]);
     T[5] = rl_retain(L[7]);
     T[6] = rl_retain(L[4]);
-    if (rl_call(cx, T[3], 3, &T[4], &T[2])) RLC_ERR(5, 138, 25, 138, 25, 138, 25, fail);
+    if (rl_call(cx, T[3], 3, &T[4], &T[2])) RLC_ERR(5, 142, 25, 142, 25, 142, 25, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 138, 11, 138, 11, 138, 11, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 142, 11, 142, 11, 142, 11, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
@@ -9342,8 +9366,8 @@ static int fn82__piece(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     RLC_SET(L[0], rl_retain(argv[0]));
     RLC_SET(L[1], rl_retain(argv[1]));
     RLC_SET(L[2], rl_retain(argv[2]));
-    if (rl_compare(cx, "<=", L[2], L[1], &T[0])) RLC_ERR(5, 142, 10, 142, 10, 142, 10, fail);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 142, 10, 142, 10, 142, 10, fail);
+    if (rl_compare(cx, "<=", L[2], L[1], &T[0])) RLC_ERR(5, 146, 10, 146, 10, 146, 10, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 146, 10, 146, 10, 146, 10, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_retain(K[54]);
@@ -9353,12 +9377,12 @@ static int fn82__piece(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     if (RLC_IS(E->slots[15])) T[1] = rl_retain(E->slots[15]);
     else { static const char *const nm_[] = {"cs", "a", "b", "_text", "find", "_find_long", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21]};
-        rl_fail_undefined(cx, "_join", 25, nm_, sl_); RLC_ERR(5, 144, 12, 144, 12, 144, 12, fail); }
+        rl_fail_undefined(cx, "_join", 25, nm_, sl_); RLC_ERR(5, 148, 12, 148, 12, 148, 12, fail); }
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(K[54]);
     T[4] = rl_retain(L[1]);
     T[5] = rl_retain(L[2]);
-    if (rl_call(cx, T[1], 4, &T[2], &T[0])) RLC_ERR(5, 144, 17, 144, 17, 144, 17, fail);
+    if (rl_call(cx, T[1], 4, &T[2], &T[0])) RLC_ERR(5, 148, 17, 148, 17, 148, 17, fail);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
@@ -9397,31 +9421,31 @@ static int fn83_join(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, r
     RLC_SET(L[1], rl_retain(argv[1]));
     T[0] = rl_list_new(0);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
-    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 148, 14, 148, 14, 148, 14, fail);
+    if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(5, 152, 14, 152, 14, 152, 14, fail);
     I[0] = 0;
-    top_146:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_147;
+    top_149:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_150;
     rl_gc_maybe();
     RLC_SET(L[3], rl_unset());
     RLC_SET(L[3], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
     T[1] = rl_retain(L[2]);
     T[3] = rl_retain(L[3]);
-    if (rl_call(cx, B[9], 1, &T[3], &T[2])) RLC_ERR(5, 149, 26, 149, 26, 149, 26, fail);
+    if (rl_call(cx, B[9], 1, &T[3], &T[2])) RLC_ERR(5, 153, 26, 153, 26, 153, 26, fail);
     RLC_DROP(T[3]);
-    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 149, 15, 149, 15, 149, 15, fail);
+    if (rl_call(cx, B[3], 2, &T[1], &T[0])) RLC_ERR(5, 153, 15, 153, 15, 153, 15, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_146;
-    brk_147: ;
+    goto top_149;
+    brk_150: ;
     RLC_DROP(V[0]);
     T[2] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 150, 11, 150, 11, 150, 11, fail);
+    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 154, 11, 154, 11, 154, 11, fail);
     RLC_DROP(T[2]);
     T[0] = rl_bool(rl_equal(T[1], rl_int(0LL)));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 150, 19, 150, 19, 150, 19, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 154, 19, 154, 19, 154, 19, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_retain(K[54]);
@@ -9431,14 +9455,14 @@ static int fn83_join(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, r
     if (RLC_IS(E->slots[15])) T[1] = rl_retain(E->slots[15]);
     else { static const char *const nm_[] = {"items", "sep", "parts", "_text", "find", "_find_long", "_chars", "contains", "starts_with", "ends_with", "upper", "lower", "is_space", "trim", "split", "_split_long", "_piece", "join", "_join", "replace", "repeat", "_pad", "_fills", "pad_left", "pad_right"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21]};
-        rl_fail_undefined(cx, "_join", 25, nm_, sl_); RLC_ERR(5, 152, 12, 152, 12, 152, 12, fail); }
+        rl_fail_undefined(cx, "_join", 25, nm_, sl_); RLC_ERR(5, 156, 12, 156, 12, 156, 12, fail); }
     T[2] = rl_retain(L[2]);
     T[3] = rl_retain(L[1]);
     T[4] = rl_int(0LL);
     T[6] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[6], &T[5])) RLC_ERR(5, 152, 36, 152, 36, 152, 36, fail);
+    if (rl_call(cx, B[4], 1, &T[6], &T[5])) RLC_ERR(5, 156, 36, 156, 36, 156, 36, fail);
     RLC_DROP(T[6]);
-    if (rl_call(cx, T[1], 4, &T[2], &T[0])) RLC_ERR(5, 152, 17, 152, 17, 152, 17, fail);
+    if (rl_call(cx, T[1], 4, &T[2], &T[0])) RLC_ERR(5, 156, 17, 156, 17, 156, 17, fail);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
@@ -9480,72 +9504,72 @@ static int fn84__join(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_SET(L[1], rl_retain(argv[1]));
     RLC_SET(L[2], rl_retain(argv[2]));
     RLC_SET(L[3], rl_retain(argv[3]));
-    if (rl_sub(cx, L[3], L[2], &T[1])) RLC_ERR(5, 156, 10, 156, 10, 156, 10, fail);
-    if (rl_compare(cx, "<=", T[1], rl_int(8LL), &T[0])) RLC_ERR(5, 156, 14, 156, 14, 156, 14, fail);
+    if (rl_sub(cx, L[3], L[2], &T[1])) RLC_ERR(5, 160, 10, 160, 10, 160, 10, fail);
+    if (rl_compare(cx, "<=", T[1], rl_int(8LL), &T[0])) RLC_ERR(5, 160, 14, 160, 14, 160, 14, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 156, 14, 156, 14, 156, 14, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 160, 14, 160, 14, 160, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
     RLC_SET(L[5], rl_unset());
-    if (rl_index(cx, L[0], L[2], &T[0])) RLC_ERR(5, 157, 24, 157, 19, 157, 25, fail);
+    if (rl_index(cx, L[0], L[2], &T[0])) RLC_ERR(5, 161, 24, 161, 19, 161, 25, fail);
     RLC_SET(L[5], T[0]); T[0] = rl_none();
-    if (rl_add(cx, L[2], rl_int(1LL), &T[1])) RLC_ERR(5, 158, 20, 158, 20, 158, 20, fail);
-    if (rl_range_start(cx, T[1])) RLC_ERR(5, 158, 20, 158, 20, 158, 20, fail);
-    if (rl_range(cx, T[1], L[3], &T[0])) RLC_ERR(5, 158, 23, 158, 20, 158, 25, fail);
+    if (rl_add(cx, L[2], rl_int(1LL), &T[1])) RLC_ERR(5, 162, 20, 162, 20, 162, 20, fail);
+    if (rl_range_start(cx, T[1])) RLC_ERR(5, 162, 20, 162, 20, 162, 20, fail);
+    if (rl_range(cx, T[1], L[3], &T[0])) RLC_ERR(5, 162, 23, 162, 20, 162, 25, fail);
     RLC_DROP(T[1]);
-    if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(5, 158, 23, 158, 23, 158, 23, fail);
+    if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(5, 162, 23, 162, 23, 162, 23, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_149:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_150;
+    top_152:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_153;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
-    if (rl_add(cx, L[5], L[1], &T[1])) RLC_ERR(5, 159, 23, 159, 23, 159, 23, fail);
-    if (rl_index(cx, L[0], L[6], &T[2])) RLC_ERR(5, 159, 36, 159, 31, 159, 37, fail);
-    if (rl_add(cx, T[1], T[2], &T[0])) RLC_ERR(5, 159, 29, 159, 29, 159, 29, fail);
+    if (rl_add(cx, L[5], L[1], &T[1])) RLC_ERR(5, 163, 23, 163, 23, 163, 23, fail);
+    if (rl_index(cx, L[0], L[6], &T[2])) RLC_ERR(5, 163, 36, 163, 31, 163, 37, fail);
+    if (rl_add(cx, T[1], T[2], &T[0])) RLC_ERR(5, 163, 29, 163, 29, 163, 29, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     {
     RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_149;
-    brk_150: ;
+    goto top_152;
+    brk_153: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(L[5]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
-    if (rl_sub(cx, L[3], L[2], &T[3])) RLC_ERR(5, 161, 24, 161, 24, 161, 24, fail);
-    if (rl_div(cx, T[3], rl_int(2LL), &T[2])) RLC_ERR(5, 161, 29, 161, 29, 161, 29, fail);
+    if (rl_sub(cx, L[3], L[2], &T[3])) RLC_ERR(5, 165, 24, 165, 24, 165, 24, fail);
+    if (rl_div(cx, T[3], rl_int(2LL), &T[2])) RLC_ERR(5, 165, 29, 165, 29, 165, 29, fail);
     RLC_DROP(T[3]);
-    if (rl_call(cx, B[5], 1, &T[2], &T[1])) RLC_ERR(5, 161, 20, 161, 20, 161, 20, fail);
+    if (rl_call(cx, B[5], 1, &T[2], &T[1])) RLC_ERR(5, 165, 20, 165, 20, 165, 20, fail);
     RLC_DROP(T[2]);
-    if (rl_add(cx, L[2], T[1], &T[0])) RLC_ERR(5, 161, 15, 161, 15, 161, 15, fail);
+    if (rl_add(cx, L[2], T[1], &T[0])) RLC_ERR(5, 165, 15, 165, 15, 165, 15, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     T[3] = rl_retain(L[0]);
     T[4] = rl_retain(L[1]);
     T[5] = rl_retain(L[2]);
     T[6] = rl_retain(L[4]);
-    if (rl_call(cx, E->slots[15], 4, &T[3], &T[2])) RLC_ERR(5, 162, 17, 162, 17, 162, 17, fail);
+    if (rl_call(cx, E->slots[15], 4, &T[3], &T[2])) RLC_ERR(5, 166, 17, 166, 17, 166, 17, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_add(cx, T[2], L[1], &T[1])) RLC_ERR(5, 162, 36, 162, 36, 162, 36, fail);
+    if (rl_add(cx, T[2], L[1], &T[1])) RLC_ERR(5, 166, 36, 166, 36, 166, 36, fail);
     RLC_DROP(T[2]);
     T[3] = rl_retain(L[0]);
     T[4] = rl_retain(L[1]);
     T[5] = rl_retain(L[4]);
     T[6] = rl_retain(L[3]);
-    if (rl_call(cx, E->slots[15], 4, &T[3], &T[2])) RLC_ERR(5, 162, 49, 162, 49, 162, 49, fail);
+    if (rl_call(cx, E->slots[15], 4, &T[3], &T[2])) RLC_ERR(5, 166, 49, 166, 49, 166, 49, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
-    if (rl_add(cx, T[1], T[2], &T[0])) RLC_ERR(5, 162, 42, 162, 42, 162, 42, fail);
+    if (rl_add(cx, T[1], T[2], &T[0])) RLC_ERR(5, 166, 42, 166, 42, 166, 42, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -9580,11 +9604,11 @@ static int fn85_replace(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_SET(L[2], rl_retain(argv[2]));
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[11], 2, &T[2], &T[1])) RLC_ERR(5, 164, 38, 164, 38, 164, 38, fail);
+    if (rl_call(cx, E->slots[11], 2, &T[2], &T[1])) RLC_ERR(5, 168, 38, 168, 38, 168, 38, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     T[2] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[14], 2, &T[1], &T[0])) RLC_ERR(5, 164, 32, 164, 32, 164, 32, fail);
+    if (rl_call(cx, E->slots[14], 2, &T[1], &T[0])) RLC_ERR(5, 168, 32, 168, 32, 168, 32, fail);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -9619,49 +9643,49 @@ static int fn86_repeat(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     T[1] = rl_retain(K[266]);
     T[2] = rl_retain(K[81]);
     T[3] = rl_retain(L[0]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 167, 10, 167, 10, 167, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 171, 10, 171, 10, 171, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 168, 12, 168, 12, 168, 12, fail);
+    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 172, 12, 172, 12, 172, 12, fail);
     RLC_DROP(T[3]);
     T[1] = rl_bool(!rl_equal(T[2], K[205]));
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 168, 16, 168, 16, 168, 16, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 172, 16, 172, 16, 172, 16, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 168, 33, 168, 33, 168, 33, fail);
+    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 172, 33, 172, 33, 172, 33, fail);
     RLC_DROP(T[3]);
     T[1] = rl_bool(!rl_equal(T[2], K[206]));
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 168, 37, 168, 37, 168, 37, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 172, 37, 172, 37, 172, 37, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 168, 25, 168, 25, 168, 25, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 172, 25, 172, 25, 172, 25, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 169, 69, 169, 69, 169, 69, fail);
+    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 173, 69, 173, 69, 173, 69, fail);
     RLC_DROP(T[3]);
-    if (rl_add(cx, K[267], T[2], &T[1])) RLC_ERR(5, 169, 63, 169, 63, 169, 63, fail);
+    if (rl_add(cx, K[267], T[2], &T[1])) RLC_ERR(5, 173, 63, 173, 63, 173, 63, fail);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 169, 13, 169, 13, 169, 13, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 173, 13, 173, 13, 173, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (rl_mod(cx, L[1], rl_int(1LL), &T[1])) RLC_ERR(5, 170, 10, 170, 10, 170, 10, fail);
+    if (rl_mod(cx, L[1], rl_int(1LL), &T[1])) RLC_ERR(5, 174, 10, 174, 10, 174, 10, fail);
     T[0] = rl_bool(!rl_equal(T[1], rl_int(0LL)));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 170, 14, 170, 14, 170, 14, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 174, 14, 174, 14, 174, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[1] = rl_retain(K[268]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 171, 13, 171, 13, 171, 13, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 175, 13, 175, 13, 175, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
@@ -9671,40 +9695,40 @@ static int fn86_repeat(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     T[0] = rl_retain(L[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_152:
-    if (rl_compare(cx, ">", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 176, 13, 176, 13, 176, 13, fail);
-    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 176, 13, 176, 13, 176, 13, fail);
+    top_155:
+    if (rl_compare(cx, ">", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 180, 13, 180, 13, 180, 13, fail);
+    if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(5, 180, 13, 180, 13, 180, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_153;
+    if (!c_) goto brk_156;
     rl_gc_maybe();
-    if (rl_mod(cx, L[4], rl_int(2LL), &T[1])) RLC_ERR(5, 177, 14, 177, 14, 177, 14, fail);
+    if (rl_mod(cx, L[4], rl_int(2LL), &T[1])) RLC_ERR(5, 181, 14, 181, 14, 181, 14, fail);
     T[0] = rl_bool(rl_equal(T[1], rl_int(1LL)));
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 177, 18, 177, 18, 177, 18, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 181, 18, 181, 18, 181, 18, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, L[2], L[3], &T[0])) RLC_ERR(5, 178, 23, 178, 23, 178, 23, fail);
+    if (rl_add(cx, L[2], L[3], &T[0])) RLC_ERR(5, 182, 23, 182, 23, 182, 23, fail);
     {
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    if (rl_div(cx, L[4], rl_int(2LL), &T[1])) RLC_ERR(5, 179, 19, 179, 19, 179, 19, fail);
-    if (rl_call(cx, B[5], 1, &T[1], &T[0])) RLC_ERR(5, 179, 16, 179, 16, 179, 16, fail);
+    if (rl_div(cx, L[4], rl_int(2LL), &T[1])) RLC_ERR(5, 183, 19, 183, 19, 183, 19, fail);
+    if (rl_call(cx, B[5], 1, &T[1], &T[0])) RLC_ERR(5, 183, 16, 183, 16, 183, 16, fail);
     RLC_DROP(T[1]);
     {
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    if (rl_compare(cx, ">", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 180, 14, 180, 14, 180, 14, fail);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 180, 14, 180, 14, 180, 14, fail);
+    if (rl_compare(cx, ">", L[4], rl_int(0LL), &T[0])) RLC_ERR(5, 184, 14, 184, 14, 184, 14, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 184, 14, 184, 14, 184, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, L[3], L[3], &T[0])) RLC_ERR(5, 181, 27, 181, 27, 181, 27, fail);
+    if (rl_add(cx, L[3], L[3], &T[0])) RLC_ERR(5, 185, 27, 185, 27, 185, 27, fail);
     {
     RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    goto top_152;
-    brk_153: ;
+    goto top_155;
+    brk_156: ;
     T[0] = rl_retain(L[2]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -9740,7 +9764,7 @@ static int fn87__pad(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, r
     T[1] = rl_retain(L[0]);
     T[2] = rl_retain(K[81]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 186, 10, 186, 10, 186, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 190, 10, 190, 10, 190, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -9748,88 +9772,88 @@ static int fn87__pad(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, r
     T[1] = rl_retain(L[0]);
     T[2] = rl_retain(K[269]);
     T[3] = rl_retain(L[3]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 187, 10, 187, 10, 187, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 191, 10, 191, 10, 191, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[3] = rl_retain(L[2]);
-    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 188, 12, 188, 12, 188, 12, fail);
+    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 192, 12, 192, 12, 192, 12, fail);
     RLC_DROP(T[3]);
     T[1] = rl_bool(!rl_equal(T[2], K[205]));
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 188, 20, 188, 20, 188, 20, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 192, 20, 192, 20, 192, 20, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
     T[3] = rl_retain(L[2]);
-    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 188, 37, 188, 37, 188, 37, fail);
+    if (rl_call(cx, B[7], 1, &T[3], &T[2])) RLC_ERR(5, 192, 37, 192, 37, 192, 37, fail);
     RLC_DROP(T[3]);
     T[1] = rl_bool(!rl_equal(T[2], K[206]));
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 188, 45, 188, 45, 188, 45, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 192, 45, 192, 45, 192, 45, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 188, 29, 188, 29, 188, 29, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 192, 29, 192, 29, 192, 29, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, K[257], L[0], &T[3])) RLC_ERR(5, 189, 25, 189, 25, 189, 25, fail);
-    if (rl_add(cx, T[3], K[270], &T[2])) RLC_ERR(5, 189, 32, 189, 32, 189, 32, fail);
+    if (rl_add(cx, K[257], L[0], &T[3])) RLC_ERR(5, 193, 25, 193, 25, 193, 25, fail);
+    if (rl_add(cx, T[3], K[270], &T[2])) RLC_ERR(5, 193, 32, 193, 32, 193, 32, fail);
     RLC_DROP(T[3]);
     T[4] = rl_retain(L[2]);
-    if (rl_call(cx, B[7], 1, &T[4], &T[3])) RLC_ERR(5, 189, 75, 189, 75, 189, 75, fail);
+    if (rl_call(cx, B[7], 1, &T[4], &T[3])) RLC_ERR(5, 193, 75, 193, 75, 193, 75, fail);
     RLC_DROP(T[4]);
-    if (rl_add(cx, T[2], T[3], &T[1])) RLC_ERR(5, 189, 69, 189, 69, 189, 69, fail);
+    if (rl_add(cx, T[2], T[3], &T[1])) RLC_ERR(5, 193, 69, 193, 69, 193, 69, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 189, 13, 189, 13, 189, 13, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 193, 13, 193, 13, 193, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (rl_compare(cx, ">", L[2], rl_int(0LL), &T[1])) RLC_ERR(5, 190, 14, 190, 14, 190, 14, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 190, 14, 190, 14, 190, 14, fail);
+    if (rl_compare(cx, ">", L[2], rl_int(0LL), &T[1])) RLC_ERR(5, 194, 14, 194, 14, 194, 14, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 194, 14, 194, 14, 194, 14, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    if (rl_sub(cx, L[2], L[2], &T[2])) RLC_ERR(5, 190, 28, 190, 28, 190, 28, fail);
+    if (rl_sub(cx, L[2], L[2], &T[2])) RLC_ERR(5, 194, 28, 194, 28, 194, 28, fail);
     T[1] = rl_bool(!rl_equal(T[2], rl_int(0LL)));
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 190, 36, 190, 36, 190, 36, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 194, 36, 194, 36, 194, 36, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 190, 18, 190, 18, 190, 18, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 194, 18, 194, 18, 194, 18, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, K[257], L[0], &T[2])) RLC_ERR(5, 191, 25, 191, 25, 191, 25, fail);
-    if (rl_add(cx, T[2], K[271], &T[1])) RLC_ERR(5, 191, 32, 191, 32, 191, 32, fail);
+    if (rl_add(cx, K[257], L[0], &T[2])) RLC_ERR(5, 195, 25, 195, 25, 195, 25, fail);
+    if (rl_add(cx, T[2], K[271], &T[1])) RLC_ERR(5, 195, 32, 195, 32, 195, 32, fail);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 191, 13, 191, 13, 191, 13, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 195, 13, 195, 13, 195, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
     T[1] = rl_bool(rl_equal(L[3], K[54]));
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 192, 13, 192, 13, 192, 13, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 196, 13, 196, 13, 196, 13, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, B[4], 1, &T[3], &T[2])) RLC_ERR(5, 192, 26, 192, 26, 192, 26, fail);
+    if (rl_call(cx, B[4], 1, &T[3], &T[2])) RLC_ERR(5, 196, 26, 196, 26, 196, 26, fail);
     RLC_DROP(T[3]);
-    if (rl_compare(cx, "<", T[2], L[2], &T[1])) RLC_ERR(5, 192, 30, 192, 30, 192, 30, fail);
+    if (rl_compare(cx, "<", T[2], L[2], &T[1])) RLC_ERR(5, 196, 30, 196, 30, 196, 30, fail);
     RLC_DROP(T[2]);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 192, 30, 192, 30, 192, 30, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 196, 30, 196, 30, 196, 30, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 192, 19, 192, 19, 192, 19, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 196, 19, 196, 19, 196, 19, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, K[257], L[0], &T[2])) RLC_ERR(5, 193, 25, 193, 25, 193, 25, fail);
-    if (rl_add(cx, T[2], K[272], &T[1])) RLC_ERR(5, 193, 32, 193, 32, 193, 32, fail);
+    if (rl_add(cx, K[257], L[0], &T[2])) RLC_ERR(5, 197, 25, 197, 25, 197, 25, fail);
+    if (rl_add(cx, T[2], K[272], &T[1])) RLC_ERR(5, 197, 32, 197, 32, 197, 32, fail);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 193, 13, 193, 13, 193, 13, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 197, 13, 197, 13, 197, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
@@ -9864,11 +9888,11 @@ static int fn88__fills(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     RLC_SET(L[1], rl_retain(argv[1]));
     RLC_SET(L[2], rl_retain(argv[2]));
     T[1] = rl_retain(L[0]);
-    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 197, 17, 197, 17, 197, 17, fail);
+    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 201, 17, 201, 17, 201, 17, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[3], T[0]); T[0] = rl_none();
-    if (rl_compare(cx, ">=", L[3], L[1], &T[0])) RLC_ERR(5, 198, 11, 198, 11, 198, 11, fail);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 198, 11, 198, 11, 198, 11, fail);
+    if (rl_compare(cx, ">=", L[3], L[1], &T[0])) RLC_ERR(5, 202, 11, 202, 11, 202, 11, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 202, 11, 202, 11, 202, 11, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_int(0LL);
@@ -9876,24 +9900,24 @@ static int fn88__fills(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     goto done;
     }
     T[1] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 200, 17, 200, 17, 200, 17, fail);
+    if (rl_call(cx, B[4], 1, &T[1], &T[0])) RLC_ERR(5, 204, 17, 204, 17, 204, 17, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    if (rl_sub(cx, L[1], L[3], &T[2])) RLC_ERR(5, 201, 24, 201, 24, 201, 24, fail);
-    if (rl_div(cx, T[2], L[4], &T[1])) RLC_ERR(5, 201, 30, 201, 30, 201, 30, fail);
+    if (rl_sub(cx, L[1], L[3], &T[2])) RLC_ERR(5, 205, 24, 205, 24, 205, 24, fail);
+    if (rl_div(cx, T[2], L[4], &T[1])) RLC_ERR(5, 205, 30, 205, 30, 205, 30, fail);
     RLC_DROP(T[2]);
-    if (rl_call(cx, B[5], 1, &T[1], &T[0])) RLC_ERR(5, 201, 16, 201, 16, 201, 16, fail);
+    if (rl_call(cx, B[5], 1, &T[1], &T[0])) RLC_ERR(5, 205, 16, 205, 16, 205, 16, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[5], T[0]); T[0] = rl_none();
-    if (rl_mul(cx, L[5], L[4], &T[2])) RLC_ERR(5, 202, 15, 202, 15, 202, 15, fail);
-    if (rl_add(cx, L[3], T[2], &T[1])) RLC_ERR(5, 202, 11, 202, 11, 202, 11, fail);
+    if (rl_mul(cx, L[5], L[4], &T[2])) RLC_ERR(5, 206, 15, 206, 15, 206, 15, fail);
+    if (rl_add(cx, L[3], T[2], &T[1])) RLC_ERR(5, 206, 11, 206, 11, 206, 11, fail);
     RLC_DROP(T[2]);
-    if (rl_compare(cx, "<", T[1], L[1], &T[0])) RLC_ERR(5, 202, 20, 202, 20, 202, 20, fail);
+    if (rl_compare(cx, "<", T[1], L[1], &T[0])) RLC_ERR(5, 206, 20, 206, 20, 206, 20, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 202, 20, 202, 20, 202, 20, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 206, 20, 206, 20, 206, 20, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    if (rl_add(cx, L[5], rl_int(1LL), &T[0])) RLC_ERR(5, 203, 15, 203, 15, 203, 15, fail);
+    if (rl_add(cx, L[5], rl_int(1LL), &T[0])) RLC_ERR(5, 207, 15, 207, 15, 207, 15, fail);
     {
     RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
@@ -9932,7 +9956,7 @@ static int fn89_pad_left(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(L[1]);
     T[4] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[18], 4, &T[1], &T[0])) RLC_ERR(5, 208, 9, 208, 9, 208, 9, fail);
+    if (rl_call(cx, E->slots[18], 4, &T[1], &T[0])) RLC_ERR(5, 212, 9, 212, 9, 212, 9, fail);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
@@ -9942,14 +9966,14 @@ static int fn89_pad_left(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     T[4] = rl_retain(L[0]);
     T[5] = rl_retain(L[1]);
     T[6] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[19], 3, &T[4], &T[3])) RLC_ERR(5, 209, 31, 209, 31, 209, 31, fail);
+    if (rl_call(cx, E->slots[19], 3, &T[4], &T[3])) RLC_ERR(5, 213, 31, 213, 31, 213, 31, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
-    if (rl_call(cx, E->slots[17], 2, &T[2], &T[1])) RLC_ERR(5, 209, 18, 209, 18, 209, 18, fail);
+    if (rl_call(cx, E->slots[17], 2, &T[2], &T[1])) RLC_ERR(5, 213, 18, 213, 18, 213, 18, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_add(cx, T[1], L[0], &T[0])) RLC_ERR(5, 209, 49, 209, 49, 209, 49, fail);
+    if (rl_add(cx, T[1], L[0], &T[0])) RLC_ERR(5, 213, 49, 213, 49, 213, 49, fail);
     RLC_DROP(T[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -9984,7 +10008,7 @@ static int fn90_pad_right(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     T[2] = rl_retain(L[0]);
     T[3] = rl_retain(L[1]);
     T[4] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[18], 4, &T[1], &T[0])) RLC_ERR(5, 212, 9, 212, 9, 212, 9, fail);
+    if (rl_call(cx, E->slots[18], 4, &T[1], &T[0])) RLC_ERR(5, 216, 9, 216, 9, 216, 9, fail);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
@@ -9994,14 +10018,14 @@ static int fn90_pad_right(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     T[4] = rl_retain(L[0]);
     T[5] = rl_retain(L[1]);
     T[6] = rl_retain(L[2]);
-    if (rl_call(cx, E->slots[19], 3, &T[4], &T[3])) RLC_ERR(5, 213, 35, 213, 35, 213, 35, fail);
+    if (rl_call(cx, E->slots[19], 3, &T[4], &T[3])) RLC_ERR(5, 217, 35, 217, 35, 217, 35, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
-    if (rl_call(cx, E->slots[17], 2, &T[2], &T[1])) RLC_ERR(5, 213, 22, 213, 22, 213, 22, fail);
+    if (rl_call(cx, E->slots[17], 2, &T[2], &T[1])) RLC_ERR(5, 217, 22, 217, 22, 217, 22, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_add(cx, L[0], T[1], &T[0])) RLC_ERR(5, 213, 14, 213, 14, 213, 14, fail);
+    if (rl_add(cx, L[0], T[1], &T[0])) RLC_ERR(5, 217, 14, 217, 14, 217, 14, fail);
     RLC_DROP(T[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -10432,21 +10456,21 @@ static int fn102_remove_tree(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     for (i_ = 0; i_ < 1; ++i_) { V[i_] = rl_none(); I[i_] = 0; }
     RLC_SET(L[0], rl_unset());
     RLC_SET(L[0], rl_retain(argv[0]));
-    { int fi_155 = 0;
+    { int fi_158 = 0;
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, B[14], 1, &T[1], &T[0])) RLC_ERR(4, 26, 19, 26, 19, 26, 19, fail);
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(4, 26, 19, 26, 19, 26, 19, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_155 = 1;
+    if (c_) { fi_158 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, B[13], 1, &T[1], &T[0])) RLC_ERR(4, 27, 34, 27, 34, 27, 34, fail);
     RLC_DROP(T[1]);
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(4, 27, 34, 27, 34, 27, 34, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_156:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_157;
+    top_159:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_160;
     rl_gc_maybe();
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[1], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -10457,21 +10481,21 @@ static int fn102_remove_tree(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_156;
-    brk_157: ;
+    goto top_159;
+    brk_160: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, B[16], 1, &T[1], &T[0])) RLC_ERR(4, 29, 20, 29, 20, 29, 20, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_155) {
+    if (!fi_158) {
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, B[12], 1, &T[1], &T[0])) RLC_ERR(4, 30, 29, 30, 29, 30, 29, fail);
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(4, 30, 29, 30, 29, 30, 29, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_155 = 1;
+    if (c_) { fi_158 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, B[16], 1, &T[1], &T[0])) RLC_ERR(4, 31, 20, 31, 20, 31, 20, fail);
     RLC_DROP(T[1]);
@@ -10606,8 +10630,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[2], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(3, 20, 14, 20, 14, 20, 14, fail);
     I[0] = 0;
-    top_159:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_160;
+    top_162:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_163;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     RLC_SET(L[11], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -10620,8 +10644,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_159;
-    brk_160: ;
+    goto top_162;
+    brk_163: ;
     RLC_DROP(V[0]);
     if (rl_compare(cx, "<=", L[2], rl_int(160LL), &T[0])) RLC_ERR(3, 22, 14, 22, 14, 22, 14, fail);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 22, 14, 22, 14, 22, 14, fail);
@@ -10658,8 +10682,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[7], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[1])) RLC_ERR(3, 32, 14, 32, 14, 32, 14, fail);
     I[1] = 0;
-    top_162:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_163;
+    top_165:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_166;
     rl_gc_maybe();
     RLC_SET(L[12], rl_unset());
     RLC_SET(L[12], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -10667,7 +10691,7 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 33, 15, 33, 15, 33, 15, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    goto brk_163;
+    goto brk_166;
     }
     T[0] = rl_retain(L[5]);
     {
@@ -10690,8 +10714,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[7], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_162;
-    brk_163: ;
+    goto top_165;
+    brk_166: ;
     RLC_DROP(V[1]);
     if (rl_add(cx, L[4], rl_int(160LL), &T[0])) RLC_ERR(3, 40, 21, 40, 21, 40, 21, fail);
     RLC_SET(L[8], T[0]); T[0] = rl_none();
@@ -10711,8 +10735,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(3, 44, 19, 44, 19, 44, 19, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_165:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_166;
+    top_168:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_169;
     rl_gc_maybe();
     RLC_SET(L[13], rl_unset());
     RLC_SET(L[13], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -10720,7 +10744,7 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 45, 16, 45, 16, 45, 16, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    goto brk_166;
+    goto brk_169;
     }
     T[2] = rl_retain(L[13]);
     if (rl_call(cx, E->slots[2], 1, &T[2], &T[1])) { rl_std_boundary(cx, E->slots[2]); RLC_ERR(3, 47, 30, 47, 30, 47, 30, fail); }
@@ -10735,8 +10759,8 @@ static int fn104__window(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[10], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[2];
-    goto top_165;
-    brk_166: ;
+    goto top_168;
+    brk_169: ;
     RLC_DROP(V[2]);
     T[0] = rl_list_new(2);
     T[2] = rl_retain(L[0]);
@@ -10927,8 +10951,8 @@ static int fn105_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[7], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[4], &V[0])) RLC_ERR(3, 67, 14, 67, 14, 67, 14, fail);
     I[0] = 0;
-    top_168:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_169;
+    top_171:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_172;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[8], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -10938,7 +10962,7 @@ static int fn105_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(3, 68, 18, 68, 18, 68, 18, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    goto brk_169;
+    goto brk_172;
     }
     T[2] = rl_int(9LL);
     if (rl_call(cx, B[0], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[0]); RLC_ERR(3, 70, 20, 70, 20, 70, 20, fail); }
@@ -10968,8 +10992,8 @@ static int fn105_snippet(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[7], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_168;
-    brk_169: ;
+    goto top_171;
+    brk_172: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(K[275]);
     T[2] = rl_retain(L[4]);
@@ -11309,8 +11333,8 @@ static int fn109_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     RLC_SET(L[2], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 52, 15, 52, 15, 52, 15, fail);
     I[0] = 0;
-    top_171:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_172;
+    top_174:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_175;
     rl_gc_maybe();
     RLC_SET(L[3], rl_unset());
     RLC_SET(L[4], rl_unset());
@@ -11393,8 +11417,8 @@ static int fn109_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     else {
     if (rl_loop_items(cx, L[4], &V[1])) RLC_ERR(0, 59, 22, 59, 22, 59, 22, fail);
     I[1] = 0;
-    top_174:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_175;
+    top_177:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_178;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -11407,13 +11431,13 @@ static int fn109_c_string(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_174;
-    brk_175: ;
+    goto top_177;
+    brk_178: ;
     RLC_DROP(V[1]);
     }
     ++I[0];
-    goto top_171;
-    brk_172: ;
+    goto top_174;
+    brk_175: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[1]);
     T[2] = rl_retain(K[102]);
@@ -11743,7 +11767,7 @@ static int fn115_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     rl_list_push((rl_list *)T[0].u.o, T[1]);
     RLC_DROP(T[1]);
     RLC_SET(L[1], T[0]); T[0] = rl_none();
-    top_180:
+    top_183:
     T[2] = rl_retain(L[1]);
     if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 108, 14, 108, 14, 108, 14, fail); }
     RLC_DROP(T[2]);
@@ -11751,7 +11775,7 @@ static int fn115_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 108, 21, 108, 21, 108, 21, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_181;
+    if (!c_) goto brk_184;
     rl_gc_maybe();
     RLC_SET(L[2], rl_unset());
     T[1] = rl_retain(L[1]);
@@ -11762,8 +11786,8 @@ static int fn115_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 110, 19, 110, 19, 110, 19, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_183:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_184;
+    top_186:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_187;
     rl_gc_maybe();
     RLC_SET(L[3], rl_unset());
     RLC_SET(L[3], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -11784,11 +11808,11 @@ static int fn115_has_fun(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
+    goto top_186;
+    brk_187: ;
+    RLC_DROP(V[0]);
     goto top_183;
     brk_184: ;
-    RLC_DROP(V[0]);
-    goto top_180;
-    brk_181: ;
     T[0] = rl_bool(0);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -12029,11 +12053,11 @@ static int fn120_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 133, 19, 133, 19, 133, 19, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
-    top_186:
+    top_189:
     if (rl_compare(cx, ">=", L[2], L[1], &T[0])) RLC_ERR(0, 134, 13, 134, 13, 134, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 134, 13, 134, 13, 134, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_187;
+    if (!c_) goto brk_190;
     rl_gc_maybe();
     T[1] = rl_retain(L[0]);
     T[5] = rl_retain(L[2]);
@@ -12051,8 +12075,8 @@ static int fn120_free_to(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     {
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_186;
-    brk_187: ;
+    goto top_189;
+    brk_190: ;
     T[0] = rl_retain(L[1]);
     if (rl_set_field(cx, L[0], "nt", T[0])) RLC_ERR(0, 137, 7, 137, 7, 137, 7, fail);
     RLC_DROP(T[0]);
@@ -12116,8 +12140,8 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[2], &V[0])) RLC_ERR(0, 143, 14, 143, 14, 143, 14, fail);
     I[0] = 0;
-    top_189:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_190;
+    top_192:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_193;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[5], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -12137,25 +12161,25 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_189;
-    brk_190: ;
+    goto top_192;
+    brk_193: ;
     RLC_DROP(V[0]);
     T[0] = rl_int(0LL);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[1], &V[1])) RLC_ERR(0, 146, 14, 146, 14, 146, 14, fail);
     I[1] = 0;
-    top_192:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_193;
+    top_195:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_196;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
-    { int fi_195 = 0;
+    { int fi_198 = 0;
     if (rl_field(cx, L[6], "kind", &T[1])) RLC_ERR(0, 147, 13, 147, 13, 147, 13, fail);
     T[0] = rl_bool(rl_equal(T[1], K[195]));
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 147, 19, 147, 19, 147, 19, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_195 = 1;
+    if (c_) { fi_198 = 1;
     RLC_SET(L[7], rl_unset());
     T[0] = rl_retain(K[54]);
     RLC_SET(L[7], T[0]); T[0] = rl_none();
@@ -12192,13 +12216,13 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_195) {
+    if (!fi_198) {
     if (rl_field(cx, L[6], "kind", &T[1])) RLC_ERR(0, 152, 18, 152, 18, 152, 18, fail);
     T[0] = rl_bool(rl_equal(T[1], K[197]));
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 152, 24, 152, 24, 152, 24, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_195 = 1;
+    if (c_) { fi_198 = 1;
     if (RLC_IS(E->slots[26])) T[1] = rl_retain(E->slots[26]);
     else { static const char *const nm_[] = {"s", "fc", "stmts", "extras", "b", "i", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "usage", "lexed", "err", "tree", "cg", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[99], &E->slots[100]};
@@ -12216,13 +12240,13 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_195) {
+    if (!fi_198) {
     if (rl_field(cx, L[6], "kind", &T[1])) RLC_ERR(0, 154, 18, 154, 18, 154, 18, fail);
     T[0] = rl_bool(rl_equal(T[1], K[190]));
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 154, 24, 154, 24, 154, 24, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_195 = 1;
+    if (c_) { fi_198 = 1;
     if (RLC_IS(E->slots[26])) T[1] = rl_retain(E->slots[26]);
     else { static const char *const nm_[] = {"s", "fc", "stmts", "extras", "b", "i", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "usage", "lexed", "err", "tree", "cg", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[99], &E->slots[100]};
@@ -12253,15 +12277,15 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_192;
-    brk_193: ;
+    goto top_195;
+    brk_196: ;
     RLC_DROP(V[1]);
     if (rl_field(cx, L[3], "order", &T[0])) RLC_ERR(0, 159, 18, 159, 18, 159, 18, fail);
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 159, 18, 159, 18, 159, 18, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_196:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_197;
+    top_199:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_200;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[8], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -12311,8 +12335,8 @@ static int fn121_new_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     ++I[2];
-    goto top_196;
-    brk_197: ;
+    goto top_199;
+    brk_200: ;
     RLC_DROP(V[2]);
     T[0] = rl_retain(L[3]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -12389,8 +12413,8 @@ static int fn123_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 171, 14, 171, 14, 171, 14, fail);
     I[0] = 0;
-    top_199:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_200;
+    top_202:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_203;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[5], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -12437,8 +12461,8 @@ static int fn123_mixed_hints(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     }
     }
     ++I[0];
-    goto top_199;
-    brk_200: ;
+    goto top_202;
+    brk_203: ;
     RLC_DROP(V[0]);
     if (rl_compare(cx, ">", L[2], rl_int(1LL), &T[1])) RLC_ERR(0, 180, 18, 180, 18, 180, 18, fail);
     if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(0, 180, 18, 180, 18, 180, 18, fail);
@@ -12558,11 +12582,11 @@ static int fn125_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 191, 28, 191, 28, 191, 28, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[1], T[0]); T[0] = rl_none();
-    top_202:
+    top_205:
     if (rl_compare(cx, ">=", L[1], rl_int(0LL), &T[0])) RLC_ERR(0, 192, 13, 192, 13, 192, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 192, 13, 192, 13, 192, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_203;
+    if (!c_) goto brk_206;
     rl_gc_maybe();
     RLC_SET(L[2], rl_unset());
     if (rl_field(cx, L[0], "blocks", &T[1])) RLC_ERR(0, 193, 19, 193, 19, 193, 19, fail);
@@ -12581,8 +12605,8 @@ static int fn125_env_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     {
     RLC_SET(L[1], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_202;
-    brk_203: ;
+    goto top_205;
+    brk_206: ;
     if (rl_field(cx, L[0], "module", &T[0])) RLC_ERR(0, 197, 10, 197, 10, 197, 10, fail);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 197, 10, 197, 10, 197, 10, fail);
     RLC_DROP(T[0]);
@@ -12629,9 +12653,9 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_call(cx, B[4], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 203, 16, 203, 16, 203, 16, fail); }
     RLC_DROP(T[1]);
     RLC_SET(L[3], T[0]); T[0] = rl_none();
-    { int fi_205 = 0;
+    { int fi_208 = 0;
     if (rl_cond(cx, L[2], "'if' condition", &c_)) RLC_ERR(0, 204, 8, 204, 8, 204, 8, fail);
-    if (c_) { fi_205 = 1;
+    if (c_) { fi_208 = 1;
     T[0] = rl_bool(1);
     if (rl_set_field(cx, L[1], "exists", T[0])) RLC_ERR(0, 205, 10, 205, 10, 205, 10, fail);
     RLC_DROP(T[0]);
@@ -12639,7 +12663,7 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_set_field(cx, L[1], "cvar", T[0])) RLC_ERR(0, 206, 10, 206, 10, 206, 10, fail);
     RLC_DROP(T[0]);
     }
-    if (!fi_205) {
+    if (!fi_208) {
     if (rl_compare(cx, ">", L[3], rl_int(0LL), &T[1])) RLC_ERR(0, 207, 15, 207, 15, 207, 15, fail);
     if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 207, 15, 207, 15, 207, 15, fail);
     RLC_DROP(T[1]);
@@ -12652,7 +12676,7 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 207, 19, 207, 19, 207, 19, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_205 = 1;
+    if (c_) { fi_208 = 1;
     T[0] = rl_bool(1);
     if (rl_set_field(cx, L[1], "exists", T[0])) RLC_ERR(0, 208, 10, 208, 10, 208, 10, fail);
     RLC_DROP(T[0]);
@@ -12696,11 +12720,11 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_205) {
+    if (!fi_208) {
     if (rl_compare(cx, ">", L[3], rl_int(0LL), &T[0])) RLC_ERR(0, 212, 15, 212, 15, 212, 15, fail);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 212, 15, 212, 15, 212, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_205 = 1;
+    if (c_) { fi_208 = 1;
     if (rl_field(cx, L[0], "nl", &T[0])) RLC_ERR(0, 213, 20, 213, 20, 213, 20, fail);
     if (rl_set_field(cx, L[1], "base", T[0])) RLC_ERR(0, 213, 10, 213, 10, 213, 10, fail);
     RLC_DROP(T[0]);
@@ -12714,8 +12738,8 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 215, 19, 215, 19, 215, 19, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_206:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_207;
+    top_209:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_210;
     rl_gc_maybe();
     RLC_SET(L[4], rl_unset());
     RLC_SET(L[4], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -12734,8 +12758,8 @@ static int fn126_open_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_206;
-    brk_207: ;
+    goto top_209;
+    brk_210: ;
     RLC_DROP(V[0]);
     }
     }
@@ -12902,8 +12926,8 @@ static int fn129_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[2], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 239, 14, 239, 14, 239, 14, fail);
     I[0] = 0;
-    top_209:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_210;
+    top_212:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_213;
     rl_gc_maybe();
     RLC_SET(L[3], rl_unset());
     RLC_SET(L[3], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -12926,8 +12950,8 @@ static int fn129_last_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     }
     }
     ++I[0];
-    goto top_209;
-    brk_210: ;
+    goto top_212;
+    brk_213: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(L[2]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -12961,8 +12985,8 @@ static int fn130_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[0], rl_retain(argv[0]));
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 248, 14, 248, 14, 248, 14, fail);
     I[0] = 0;
-    top_212:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_213;
+    top_215:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_216;
     rl_gc_maybe();
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[1], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -12977,8 +13001,8 @@ static int fn130_same_hint(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     goto done;
     }
     ++I[0];
-    goto top_212;
-    brk_213: ;
+    goto top_215;
+    brk_216: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(K[54]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -13024,11 +13048,11 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 257, 28, 257, 28, 257, 28, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_215:
+    top_218:
     if (rl_compare(cx, ">=", L[4], rl_int(0LL), &T[0])) RLC_ERR(0, 258, 13, 258, 13, 258, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 258, 13, 258, 13, 258, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_216;
+    if (!c_) goto brk_219;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     if (rl_field(cx, L[0], "blocks", &T[1])) RLC_ERR(0, 259, 19, 259, 19, 259, 19, fail);
@@ -13050,8 +13074,8 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 262, 29, 262, 29, 262, 29, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_218:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_219;
+    top_221:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_222;
     rl_gc_maybe();
     RLC_SET(L[7], rl_unset());
     RLC_SET(L[7], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -13069,8 +13093,8 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_218;
-    brk_219: ;
+    goto top_221;
+    brk_222: ;
     RLC_DROP(V[0]);
     if (rl_cond(cx, L[6], "'if' condition", &c_)) RLC_ERR(0, 265, 16, 265, 16, 265, 16, fail);
     if (c_) {
@@ -13111,14 +13135,14 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     {
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_215;
-    brk_216: ;
+    goto top_218;
+    brk_219: ;
     if (rl_field(cx, L[0], "outer", &T[0])) RLC_ERR(0, 269, 16, 269, 16, 269, 16, fail);
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 269, 16, 269, 16, 269, 16, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_221:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_222;
+    top_224:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_225;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[9], rl_unset());
@@ -13143,8 +13167,8 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 273, 29, 273, 29, 273, 29, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_224:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_225;
+    top_227:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_228;
     rl_gc_maybe();
     RLC_SET(L[14], rl_unset());
     RLC_SET(L[14], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -13162,8 +13186,8 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[0]);
     }
     ++I[2];
-    goto top_224;
-    brk_225: ;
+    goto top_227;
+    brk_228: ;
     RLC_DROP(V[2]);
     if (rl_field(cx, L[9], "decls", &T[2])) RLC_ERR(0, 276, 35, 276, 35, 276, 35, fail);
     if (rl_index(cx, T[2], L[2], &T[1])) RLC_ERR(0, 276, 41, 276, 35, 276, 42, fail);
@@ -13266,8 +13290,8 @@ static int fn131_resolve(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[0]);
     }
     ++I[1];
-    goto top_221;
-    brk_222: ;
+    goto top_224;
+    brk_225: ;
     RLC_DROP(V[1]);
     T[0] = rl_retain(L[3]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -13315,11 +13339,11 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 293, 28, 293, 28, 293, 28, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_227:
+    top_230:
     if (rl_compare(cx, ">=", L[4], rl_int(0LL), &T[0])) RLC_ERR(0, 294, 13, 294, 13, 294, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 294, 13, 294, 13, 294, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_228;
+    if (!c_) goto brk_231;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     if (rl_field(cx, L[0], "blocks", &T[1])) RLC_ERR(0, 295, 19, 295, 19, 295, 19, fail);
@@ -13330,8 +13354,8 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 296, 22, 296, 22, 296, 22, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_230:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_231;
+    top_233:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_234;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -13365,8 +13389,8 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 299, 33, 299, 33, 299, 33, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_233:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_234;
+    top_236:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_237;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[8], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -13384,8 +13408,8 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[0]);
     }
     ++I[1];
-    goto top_233;
-    brk_234: ;
+    goto top_236;
+    brk_237: ;
     RLC_DROP(V[1]);
     if (rl_cond(cx, L[7], "'if' condition", &c_)) RLC_ERR(0, 302, 20, 302, 20, 302, 20, fail);
     if (c_) {
@@ -13407,21 +13431,21 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     }
     }
     ++I[0];
-    goto top_230;
-    brk_231: ;
+    goto top_233;
+    brk_234: ;
     RLC_DROP(V[0]);
     if (rl_sub(cx, L[4], rl_int(1LL), &T[0])) RLC_ERR(0, 306, 15, 306, 15, 306, 15, fail);
     {
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_227;
-    brk_228: ;
+    goto top_230;
+    brk_231: ;
     if (rl_field(cx, L[0], "outer", &T[0])) RLC_ERR(0, 307, 16, 307, 16, 307, 16, fail);
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 307, 16, 307, 16, 307, 16, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_236:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_237;
+    top_239:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_240;
     rl_gc_maybe();
     RLC_SET(L[9], rl_unset());
     RLC_SET(L[10], rl_unset());
@@ -13432,8 +13456,8 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[3])) RLC_ERR(0, 309, 22, 309, 22, 309, 22, fail);
     RLC_DROP(T[0]);
     I[3] = 0;
-    top_239:
-    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_240;
+    top_242:
+    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_243;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     RLC_SET(L[11], rl_retain(((rl_list *)V[3].u.o)->items[I[3]]));
@@ -13489,12 +13513,12 @@ static int fn132_visible_names(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[0]);
     }
     ++I[3];
-    goto top_239;
-    brk_240: ;
+    goto top_242;
+    brk_243: ;
     RLC_DROP(V[3]);
     ++I[2];
-    goto top_236;
-    brk_237: ;
+    goto top_239;
+    brk_240: ;
     RLC_DROP(V[2]);
     T[0] = rl_map_new();
     T[1] = rl_retain(L[1]);
@@ -13822,8 +13846,8 @@ static int fn137__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_val
     RLC_SET(L[0], rl_retain(argv[0]));
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 347, 14, 347, 14, 347, 14, fail);
     I[0] = 0;
-    top_242:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_243;
+    top_245:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_246;
     rl_gc_maybe();
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[1], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -13862,8 +13886,8 @@ static int fn137__nonzero_digit(rl_ctx *cx, rl_fun *self, int argc, const rl_val
     goto done;
     }
     ++I[0];
-    goto top_242;
-    brk_243: ;
+    goto top_245;
+    brk_246: ;
     RLC_DROP(V[0]);
     T[0] = rl_bool(0);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -13924,13 +13948,13 @@ static int fn138_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     T[0] = rl_float(0.0);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     T[1] = rl_retain(L[2]);
-    if (rl_call(cx, B[20], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[20]); RLC_ERR(0, 359, 20, 359, 20, 359, 20, catch_245); }
+    if (rl_call(cx, B[20], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[20]); RLC_ERR(0, 359, 20, 359, 20, 359, 20, catch_248); }
     RLC_DROP(T[1]);
     {
     RLC_SET(L[4], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto end_246;
-    catch_245:
+    goto end_249;
+    catch_248:
     for (i_ = 0; i_ < (int)(sizeof T / sizeof T[0]); ++i_) RLC_DROP(T[i_]);
     rl_catch(cx, &T[0]);
     RLC_SET(L[5], rl_unset());
@@ -13938,7 +13962,7 @@ static int fn138_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     T[0] = rl_none();
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
-    end_246: ;
+    end_249: ;
     if (rl_compare(cx, "<", L[4], rl_float(2.2250738585072014e-308), &T[1])) RLC_ERR(0, 362, 14, 362, 14, 362, 14, fail);
     if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 362, 14, 362, 14, 362, 14, fail);
     RLC_DROP(T[1]);
@@ -13974,7 +13998,7 @@ static int fn138_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     }
     T[0] = rl_retain(L[2]);
     RLC_SET(L[3], T[0]); T[0] = rl_none();
-    top_247:
+    top_250:
     T[3] = rl_retain(L[3]);
     if (rl_call(cx, B[4], 1, &T[3], &T[2])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 369, 14, 369, 14, 369, 14, fail); }
     RLC_DROP(T[3]);
@@ -13993,7 +14017,7 @@ static int fn138_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     }
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 369, 27, 369, 27, 369, 27, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_248;
+    if (!c_) goto brk_251;
     rl_gc_maybe();
     T[1] = rl_retain(L[3]);
     T[2] = rl_int(1LL);
@@ -14007,8 +14031,8 @@ static int fn138_number_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     {
     RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_247;
-    brk_248: ;
+    goto top_250;
+    brk_251: ;
     T[3] = rl_retain(L[3]);
     if (rl_call(cx, B[4], 1, &T[3], &T[2])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 371, 11, 371, 11, 371, 11, fail); }
     RLC_DROP(T[3]);
@@ -14318,11 +14342,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_SET(L[5], T[0]); T[0] = rl_none();
     if (rl_field(cx, L[0], "nt", &T[0])) RLC_ERR(0, 413, 18, 413, 18, 413, 18, fail);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
-    { int fi_250 = 0;
+    { int fi_253 = 0;
     T[0] = rl_bool(rl_equal(L[4], K[236]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 414, 10, 414, 10, 414, 10, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     RLC_SET(L[7], rl_unset());
     T[1] = rl_retain(L[0]);
     T[2] = rl_retain(L[1]);
@@ -14395,11 +14419,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[237]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 423, 15, 423, 15, 423, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[5], K[475], &T[4])) RLC_ERR(0, 424, 22, 424, 22, 424, 22, fail);
     T[7] = rl_retain(L[3]);
@@ -14420,7 +14444,7 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[2] = rl_bool(rl_equal(L[4], K[238]));
     if (rl_cond(cx, T[2], "'or' operand", &c_)) RLC_ERR(0, 425, 15, 425, 15, 425, 15, fail);
     RLC_DROP(T[2]);
@@ -14442,7 +14466,7 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 425, 41, 425, 41, 425, 41, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[5], K[474], &T[4])) RLC_ERR(0, 426, 22, 426, 22, 426, 22, fail);
     T[6] = rl_retain(L[0]);
@@ -14461,11 +14485,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[192]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 427, 15, 427, 15, 427, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     if (RLC_IS(E->slots[45])) T[1] = rl_retain(E->slots[45]);
     else { static const char *const nm_[] = {"fc", "n", "d", "cg", "k", "dst", "mark", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -14481,11 +14505,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[251]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 429, 15, 429, 15, 429, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     RLC_SET(L[8], rl_unset());
     if (rl_field(cx, L[0], "nt", &T[0])) RLC_ERR(0, 430, 22, 430, 22, 430, 22, fail);
     RLC_SET(L[8], T[0]); T[0] = rl_none();
@@ -14493,8 +14517,8 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 431, 22, 431, 22, 431, 22, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_251:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_252;
+    top_254:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_255;
     rl_gc_maybe();
     RLC_SET(L[9], rl_unset());
     RLC_SET(L[9], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -14509,8 +14533,8 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_251;
-    brk_252: ;
+    goto top_254;
+    brk_255: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[1], "kids", &T[10])) RLC_ERR(0, 433, 42, 433, 42, 433, 42, fail);
@@ -14540,11 +14564,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[242]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 434, 15, 434, 15, 434, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[5], K[479], &T[4])) RLC_ERR(0, 435, 22, 435, 22, 435, 22, fail);
     if (rl_field(cx, L[1], "kids", &T[7])) RLC_ERR(0, 435, 53, 435, 53, 435, 53, fail);
@@ -14565,8 +14589,8 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 436, 22, 436, 22, 436, 22, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_254:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_255;
+    top_257:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_258;
     rl_gc_maybe();
     RLC_SET(L[10], rl_unset());
     RLC_SET(L[11], rl_unset());
@@ -14606,16 +14630,16 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_254;
-    brk_255: ;
+    goto top_257;
+    brk_258: ;
     RLC_DROP(V[1]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[245]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 441, 15, 441, 15, 441, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[5], K[482], &T[2])) RLC_ERR(0, 442, 22, 442, 22, 442, 22, fail);
     if (rl_call(cx, E->slots[19], 2, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[19]); RLC_ERR(0, 442, 13, 442, 13, 442, 13, fail); }
@@ -14626,8 +14650,8 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 443, 22, 443, 22, 443, 22, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_257:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_258;
+    top_260:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_261;
     rl_gc_maybe();
     RLC_SET(L[12], rl_unset());
     RLC_SET(L[13], rl_unset());
@@ -14681,16 +14705,16 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[2];
-    goto top_257;
-    brk_258: ;
+    goto top_260;
+    brk_261: ;
     RLC_DROP(V[2]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[231]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 448, 15, 448, 15, 448, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     RLC_SET(L[14], rl_unset());
     RLC_SET(L[15], rl_unset());
     T[1] = rl_retain(L[0]);
@@ -14755,11 +14779,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[229]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 454, 15, 454, 15, 454, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     RLC_SET(L[16], rl_unset());
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[1], "kids", &T[3])) RLC_ERR(0, 455, 30, 455, 30, 455, 30, fail);
@@ -14812,11 +14836,11 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     }
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[0] = rl_bool(rl_equal(L[4], K[228]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 460, 15, 460, 15, 460, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     if (RLC_IS(E->slots[46])) T[1] = rl_retain(E->slots[46]);
     else { static const char *const nm_[] = {"fc", "n", "d", "cg", "k", "dst", "mark", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -14832,7 +14856,7 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     if (RLC_IS(E->slots[48])) T[1] = rl_retain(E->slots[48]);
     else { static const char *const nm_[] = {"fc", "n", "d", "cg", "k", "dst", "mark", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -14841,7 +14865,7 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 462, 15, 462, 15, 462, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_250 = 1;
+    if (c_) { fi_253 = 1;
     if (RLC_IS(E->slots[49])) T[1] = rl_retain(E->slots[49]);
     else { static const char *const nm_[] = {"fc", "n", "d", "cg", "k", "dst", "mark", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -14857,7 +14881,7 @@ static int fn141_expr(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_250) {
+    if (!fi_253) {
     T[1] = rl_retain(L[3]);
     T[2] = rl_retain(L[1]);
     if (rl_add(cx, K[491], L[4], &T[4])) RLC_ERR(0, 465, 33, 465, 33, 465, 33, fail);
@@ -14931,8 +14955,8 @@ static int fn142_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[6], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[3], &V[0])) RLC_ERR(0, 473, 14, 473, 14, 473, 14, fail);
     I[0] = 0;
-    top_260:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_261;
+    top_263:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_264;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     RLC_SET(L[11], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -15015,8 +15039,8 @@ static int fn142_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_260;
-    brk_261: ;
+    goto top_263;
+    brk_264: ;
     RLC_DROP(V[0]);
     if (rl_cond(cx, L[6], "'if' condition", &c_)) RLC_ERR(0, 486, 8, 486, 8, 486, 8, fail);
     if (c_) {
@@ -15069,8 +15093,8 @@ static int fn142_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 496, 15, 496, 15, 496, 15, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_263:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_264;
+    top_266:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_267;
     rl_gc_maybe();
     RLC_SET(L[13], rl_unset());
     RLC_SET(L[13], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -15085,8 +15109,8 @@ static int fn142_name_value(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_263;
-    brk_264: ;
+    goto top_266;
+    brk_267: ;
     RLC_DROP(V[1]);
     T[1] = rl_retain(L[9]);
     if (rl_call(cx, B[4], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 498, 18, 498, 18, 498, 18, fail); }
@@ -15242,7 +15266,7 @@ static int fn143_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     T[0] = rl_retain(L[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_266:
+    top_269:
     if (rl_field(cx, L[4], "kids", &T[3])) RLC_ERR(0, 514, 12, 514, 12, 514, 12, fail);
     if (rl_index(cx, T[3], rl_int(0LL), &T[2])) RLC_ERR(0, 514, 17, 514, 12, 514, 18, fail);
     RLC_DROP(T[3]);
@@ -15252,7 +15276,7 @@ static int fn143_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 514, 26, 514, 26, 514, 26, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_267;
+    if (!c_) goto brk_270;
     rl_gc_maybe();
     RLC_SET(L[7], rl_unset());
     if (rl_field(cx, L[4], "kids", &T[1])) RLC_ERR(0, 515, 14, 515, 14, 515, 14, fail);
@@ -15285,8 +15309,8 @@ static int fn143_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
-    goto top_266;
-    brk_267: ;
+    goto top_269;
+    brk_270: ;
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[4], "kids", &T[3])) RLC_ERR(0, 518, 26, 518, 26, 518, 26, fail);
     if (rl_index(cx, T[3], rl_int(0LL), &T[2])) RLC_ERR(0, 518, 31, 518, 26, 518, 32, fail);
@@ -15301,11 +15325,11 @@ static int fn143_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 519, 24, 519, 24, 519, 24, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
-    top_269:
+    top_272:
     if (rl_compare(cx, ">=", L[6], rl_int(0LL), &T[0])) RLC_ERR(0, 520, 13, 520, 13, 520, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 520, 13, 520, 13, 520, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_270;
+    if (!c_) goto brk_273;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     if (rl_index(cx, L[3], L[6], &T[0])) RLC_ERR(0, 521, 23, 521, 18, 521, 24, fail);
@@ -15350,8 +15374,8 @@ static int fn143_binary(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     {
     RLC_SET(L[6], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_269;
-    brk_270: ;
+    goto top_272;
+    brk_273: ;
     goto done;
 fail:
     r = RL_ERR;
@@ -15530,11 +15554,11 @@ static int fn144_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(L[5], T[0]); T[0] = rl_none();
-    { int fi_272 = 0;
+    { int fi_275 = 0;
     if (rl_in(cx, L[4], E->slots[43], &T[0])) RLC_ERR(0, 549, 11, 549, 11, 549, 11, fail);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 549, 11, 549, 11, 549, 11, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_272 = 1;
+    if (c_) { fi_275 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_index(cx, E->slots[43], L[4], &T[9])) RLC_ERR(0, 550, 24, 550, 19, 550, 25, fail);
     if (rl_add(cx, T[9], K[512], &T[8])) RLC_ERR(0, 550, 29, 550, 29, 550, 29, fail);
@@ -15562,11 +15586,11 @@ static int fn144_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_272) {
+    if (!fi_275) {
     T[0] = rl_bool(rl_equal(L[4], K[118]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 551, 16, 551, 16, 551, 16, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_272 = 1;
+    if (c_) { fi_275 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[2], K[513], &T[6])) RLC_ERR(0, 552, 22, 552, 22, 552, 22, fail);
     if (rl_field(cx, L[3], "expr", &T[7])) RLC_ERR(0, 552, 50, 552, 50, 552, 50, fail);
@@ -15587,11 +15611,11 @@ static int fn144_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_272) {
+    if (!fi_275) {
     T[0] = rl_bool(rl_equal(L[4], K[132]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 553, 16, 553, 16, 553, 16, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_272 = 1;
+    if (c_) { fi_275 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, L[2], K[515], &T[6])) RLC_ERR(0, 554, 22, 554, 22, 554, 22, fail);
     if (rl_field(cx, L[3], "expr", &T[7])) RLC_ERR(0, 554, 51, 554, 51, 554, 51, fail);
@@ -15612,11 +15636,11 @@ static int fn144_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_272) {
+    if (!fi_275) {
     T[0] = rl_bool(rl_equal(L[4], K[13]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 555, 16, 555, 16, 555, 16, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_272 = 1;
+    if (c_) { fi_275 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[3], "expr", &T[8])) RLC_ERR(0, 556, 35, 556, 35, 556, 35, fail);
     if (rl_add(cx, K[516], T[8], &T[7])) RLC_ERR(0, 556, 32, 556, 32, 556, 32, fail);
@@ -15641,7 +15665,7 @@ static int fn144_binary_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_272) {
+    if (!fi_275) {
     T[1] = rl_retain(L[0]);
     if (rl_add(cx, K[517], L[4], &T[9])) RLC_ERR(0, 558, 39, 558, 39, 558, 39, fail);
     if (rl_add(cx, T[9], K[518], &T[8])) RLC_ERR(0, 558, 44, 558, 44, 558, 44, fail);
@@ -15720,7 +15744,7 @@ static int fn145_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     T[0] = rl_retain(L[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_273:
+    top_276:
     if (rl_field(cx, L[4], "kids", &T[3])) RLC_ERR(0, 570, 12, 570, 12, 570, 12, fail);
     if (rl_index(cx, T[3], rl_int(0LL), &T[2])) RLC_ERR(0, 570, 17, 570, 12, 570, 18, fail);
     RLC_DROP(T[3]);
@@ -15730,7 +15754,7 @@ static int fn145_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 570, 26, 570, 26, 570, 26, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_274;
+    if (!c_) goto brk_277;
     rl_gc_maybe();
     RLC_SET(L[7], rl_unset());
     if (rl_field(cx, L[4], "kids", &T[1])) RLC_ERR(0, 571, 14, 571, 14, 571, 14, fail);
@@ -15761,8 +15785,8 @@ static int fn145_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
-    goto top_273;
-    brk_274: ;
+    goto top_276;
+    brk_277: ;
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[4], "kids", &T[3])) RLC_ERR(0, 574, 26, 574, 26, 574, 26, fail);
     if (rl_index(cx, T[3], rl_int(0LL), &T[2])) RLC_ERR(0, 574, 31, 574, 26, 574, 32, fail);
@@ -15777,11 +15801,11 @@ static int fn145_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 575, 24, 575, 24, 575, 24, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
-    top_276:
+    top_279:
     if (rl_compare(cx, ">=", L[6], rl_int(0LL), &T[0])) RLC_ERR(0, 576, 13, 576, 13, 576, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 576, 13, 576, 13, 576, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_277;
+    if (!c_) goto brk_280;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     if (rl_index(cx, L[3], L[6], &T[0])) RLC_ERR(0, 577, 23, 577, 18, 577, 24, fail);
@@ -15828,8 +15852,8 @@ static int fn145_postfix(rl_ctx *cx, rl_fun *self, int argc, const rl_value *arg
     {
     RLC_SET(L[6], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_276;
-    brk_277: ;
+    goto top_279;
+    brk_280: ;
     goto done;
 fail:
     r = RL_ERR;
@@ -15862,11 +15886,11 @@ static int fn146_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[3], rl_retain(argv[3]));
     if (rl_field(cx, L[1], "kind", &T[0])) RLC_ERR(0, 586, 14, 586, 14, 586, 14, fail);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    { int fi_279 = 0;
+    { int fi_282 = 0;
     T[0] = rl_bool(rl_equal(L[4], K[232]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 587, 10, 587, 10, 587, 10, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_279 = 1;
+    if (c_) { fi_282 = 1;
     if (RLC_IS(E->slots[51])) T[1] = rl_retain(E->slots[51]);
     else { static const char *const nm_[] = {"fc", "n", "d", "a", "k", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "cg", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[99], &E->slots[100]};
@@ -15883,11 +15907,11 @@ static int fn146_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_279) {
+    if (!fi_282) {
     T[0] = rl_bool(rl_equal(L[4], K[224]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 589, 15, 589, 15, 589, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_279 = 1;
+    if (c_) { fi_282 = 1;
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[3], "expr", &T[8])) RLC_ERR(0, 590, 38, 590, 38, 590, 38, fail);
     if (rl_add(cx, K[520], T[8], &T[7])) RLC_ERR(0, 590, 35, 590, 35, 590, 35, fail);
@@ -15920,7 +15944,7 @@ static int fn146_postfix_op(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_279) {
+    if (!fi_282) {
     RLC_SET(L[5], rl_unset());
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[1], "kids", &T[3])) RLC_ERR(0, 592, 30, 592, 30, 592, 30, fail);
@@ -16019,8 +16043,8 @@ static int fn147_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 598, 15, 598, 15, 598, 15, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_280:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_281;
+    top_283:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_284;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[8], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -16037,8 +16061,8 @@ static int fn147_call(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_280;
-    brk_281: ;
+    goto top_283;
+    brk_284: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(K[446]);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
@@ -16170,8 +16194,8 @@ static int fn148_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[1], &V[0])) RLC_ERR(0, 614, 14, 614, 14, 614, 14, fail);
     I[0] = 0;
-    top_283:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_284;
+    top_286:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_287;
     rl_gc_maybe();
     RLC_SET(L[4], rl_unset());
     RLC_SET(L[4], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -16194,8 +16218,8 @@ static int fn148_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_283;
-    brk_284: ;
+    goto top_286;
+    brk_287: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[1]);
     if (rl_call(cx, B[4], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 618, 16, 618, 16, 618, 16, fail); }
@@ -16250,8 +16274,8 @@ static int fn149_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[2], &V[0])) RLC_ERR(0, 622, 14, 622, 14, 622, 14, fail);
     I[0] = 0;
-    top_286:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_287;
+    top_289:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_290;
     rl_gc_maybe();
     RLC_SET(L[4], rl_unset());
     RLC_SET(L[4], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -16276,8 +16300,8 @@ static int fn149_run_block(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_286;
-    brk_287: ;
+    goto top_289;
+    brk_290: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[1], "kids", &T[2])) RLC_ERR(0, 624, 18, 624, 18, 624, 18, fail);
@@ -16403,11 +16427,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    { int fi_289 = 0;
+    { int fi_292 = 0;
     T[0] = rl_bool(rl_equal(L[3], K[227]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 635, 10, 635, 10, 635, 10, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     RLC_SET(L[5], rl_unset());
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, E->slots[20], 1, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[20]); RLC_ERR(0, 636, 21, 636, 21, 636, 21, fail); }
@@ -16430,11 +16454,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[195]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 639, 15, 639, 15, 639, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     RLC_SET(L[6], rl_unset());
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, E->slots[20], 1, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[20]); RLC_ERR(0, 640, 21, 640, 21, 640, 21, fail); }
@@ -16594,11 +16618,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[226]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 651, 15, 651, 15, 651, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[56])) T[1] = rl_retain(E->slots[56]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16612,11 +16636,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[217]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 653, 15, 653, 15, 653, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[58])) T[1] = rl_retain(E->slots[58]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16630,11 +16654,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[219]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 655, 15, 655, 15, 655, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[61])) T[1] = rl_retain(E->slots[61]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16648,11 +16672,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[222]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 657, 15, 657, 15, 657, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[62])) T[1] = rl_retain(E->slots[62]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16666,11 +16690,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[185]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 659, 15, 659, 15, 659, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[63])) T[1] = rl_retain(E->slots[63]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16684,11 +16708,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[197]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 661, 15, 661, 15, 661, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[65])) T[1] = rl_retain(E->slots[65]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16704,11 +16728,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[178]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 663, 15, 663, 15, 663, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[64])) T[1] = rl_retain(E->slots[64]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16722,7 +16746,7 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[1] = rl_bool(rl_equal(L[3], K[179]));
     if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(0, 665, 15, 665, 15, 665, 15, fail);
     RLC_DROP(T[1]);
@@ -16735,7 +16759,7 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 665, 26, 665, 26, 665, 26, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (rl_field(cx, L[0], "loops", &T[2])) RLC_ERR(0, 666, 18, 666, 18, 666, 18, fail);
     if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 666, 15, 666, 15, 666, 15, fail); }
     RLC_DROP(T[2]);
@@ -16817,11 +16841,11 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     }
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[0] = rl_bool(rl_equal(L[3], K[190]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 678, 15, 678, 15, 678, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_289 = 1;
+    if (c_) { fi_292 = 1;
     if (RLC_IS(E->slots[79])) T[1] = rl_retain(E->slots[79]);
     else { static const char *const nm_[] = {"fc", "s", "cg", "k", "b", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "i", "usage", "lexed", "err", "tree", "text"};
         const rl_value *const sl_[] = {NULL, NULL, NULL, NULL, NULL, &E->slots[0], &E->slots[1], &E->slots[2], &E->slots[3], &E->slots[4], &E->slots[5], &E->slots[6], &E->slots[7], &E->slots[8], &E->slots[9], &E->slots[10], &E->slots[11], &E->slots[12], &E->slots[13], &E->slots[14], &E->slots[15], &E->slots[16], &E->slots[17], &E->slots[18], &E->slots[19], &E->slots[20], &E->slots[21], &E->slots[22], &E->slots[23], &E->slots[24], &E->slots[25], &E->slots[26], &E->slots[27], &E->slots[28], &E->slots[29], &E->slots[30], &E->slots[31], &E->slots[32], &E->slots[33], &E->slots[34], &E->slots[35], &E->slots[36], &E->slots[37], &E->slots[38], &E->slots[39], &E->slots[40], &E->slots[41], &E->slots[42], &E->slots[43], &E->slots[44], &E->slots[45], &E->slots[46], &E->slots[47], &E->slots[48], &E->slots[49], &E->slots[50], &E->slots[51], &E->slots[52], &E->slots[53], &E->slots[54], &E->slots[55], &E->slots[56], &E->slots[57], &E->slots[58], &E->slots[59], &E->slots[60], &E->slots[61], &E->slots[62], &E->slots[63], &E->slots[64], &E->slots[65], &E->slots[66], &E->slots[67], &E->slots[68], &E->slots[69], &E->slots[70], &E->slots[71], &E->slots[72], &E->slots[73], &E->slots[74], &E->slots[75], &E->slots[76], &E->slots[77], &E->slots[78], &E->slots[79], &E->slots[80], &E->slots[81], &E->slots[82], &E->slots[83], &E->slots[84], &E->slots[85], &E->slots[86], &E->slots[87], &E->slots[88], &E->slots[89], &E->slots[90], &E->slots[91], &E->slots[92], &E->slots[93], &E->slots[94], &E->slots[95], &E->slots[96], &E->slots[97], &E->slots[98], &E->slots[100]};
@@ -16837,7 +16861,7 @@ static int fn151_statement(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_289) {
+    if (!fi_292) {
     T[1] = rl_retain(L[2]);
     T[2] = rl_retain(L[1]);
     if (rl_add(cx, K[491], L[3], &T[4])) RLC_ERR(0, 681, 33, 681, 33, 681, 33, fail);
@@ -16898,13 +16922,13 @@ static int fn152_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
-    { int fi_290 = 0;
+    { int fi_293 = 0;
     if (rl_field(cx, L[2], "kind", &T[1])) RLC_ERR(0, 687, 14, 687, 14, 687, 14, fail);
     T[0] = rl_bool(rl_equal(T[1], K[192]));
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 687, 20, 687, 20, 687, 20, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_290 = 1;
+    if (c_) { fi_293 = 1;
     RLC_SET(L[4], rl_unset());
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[6], rl_unset());
@@ -16922,8 +16946,8 @@ static int fn152_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_SET(L[6], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[4], &V[0])) RLC_ERR(0, 691, 18, 691, 18, 691, 18, fail);
     I[0] = 0;
-    top_291:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_292;
+    top_294:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_295;
     rl_gc_maybe();
     RLC_SET(L[7], rl_unset());
     RLC_SET(L[8], rl_unset());
@@ -17086,11 +17110,11 @@ static int fn152_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     {
     RLC_SET(L[6], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto brk_292;
+    goto brk_295;
     }
     ++I[0];
-    goto top_291;
-    brk_292: ;
+    goto top_294;
+    brk_295: ;
     RLC_DROP(V[0]);
     if (rl_not(cx, L[6], &T[0])) RLC_ERR(0, 708, 12, 708, 12, 708, 12, fail);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 708, 12, 708, 12, 708, 12, fail);
@@ -17138,13 +17162,13 @@ static int fn152_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_290) {
+    if (!fi_293) {
     if (rl_field(cx, L[2], "kind", &T[1])) RLC_ERR(0, 715, 19, 715, 19, 715, 19, fail);
     T[0] = rl_bool(rl_equal(T[1], K[224]));
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 715, 25, 715, 25, 715, 25, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_290 = 1;
+    if (c_) { fi_293 = 1;
     RLC_SET(L[11], rl_unset());
     T[1] = rl_retain(L[0]);
     if (rl_field(cx, L[2], "kids", &T[3])) RLC_ERR(0, 716, 35, 716, 35, 716, 35, fail);
@@ -17186,7 +17210,7 @@ static int fn152_assign(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_290) {
+    if (!fi_293) {
     RLC_SET(L[12], rl_unset());
     RLC_SET(L[13], rl_unset());
     T[1] = rl_retain(L[0]);
@@ -17490,11 +17514,11 @@ static int fn155_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_SET(L[3], T[0]); T[0] = rl_none();
     T[0] = rl_bool(1);
     RLC_SET(L[4], T[0]); T[0] = rl_none();
-    top_294:
+    top_297:
     T[0] = rl_bool(!rl_equal(L[3], rl_none()));
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 752, 15, 752, 15, 752, 15, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_295;
+    if (!c_) goto brk_298;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     if (rl_not(cx, L[4], &T[0])) RLC_ERR(0, 753, 12, 753, 12, 753, 12, fail);
@@ -17622,8 +17646,8 @@ static int fn155_else_if_chain(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     {
     RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_294;
-    brk_295: ;
+    goto top_297;
+    brk_298: ;
     T[1] = rl_retain(L[0]);
     T[2] = rl_retain(E->slots[6]);
     if (rl_call(cx, E->slots[19], 2, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[19]); RLC_ERR(0, 772, 9, 772, 9, 772, 9, fail); }
@@ -17660,13 +17684,13 @@ static int fn156_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     RLC_SET(L[2], rl_retain(argv[2]));
     T[0] = rl_retain(L[1]);
     RLC_SET(L[3], T[0]); T[0] = rl_none();
-    top_297:
+    top_300:
     if (rl_field(cx, L[0], "ns", &T[1])) RLC_ERR(0, 777, 17, 777, 17, 777, 17, fail);
     if (rl_compare(cx, "<", L[3], T[1], &T[0])) RLC_ERR(0, 777, 13, 777, 13, 777, 13, fail);
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 777, 13, 777, 13, 777, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_298;
+    if (!c_) goto brk_301;
     rl_gc_maybe();
     T[1] = rl_retain(L[0]);
     T[7] = rl_retain(L[3]);
@@ -17692,8 +17716,8 @@ static int fn156_release_from(rl_ctx *cx, rl_fun *self, int argc, const rl_value
     {
     RLC_SET(L[3], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_297;
-    brk_298: ;
+    goto top_300;
+    brk_301: ;
     goto done;
 fail:
     r = RL_ERR;
@@ -18213,13 +18237,13 @@ static int fn159_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     RLC_DROP(T[0]);
     T[0] = rl_retain(L[5]);
     RLC_SET(L[7], T[0]); T[0] = rl_none();
-    top_300:
+    top_303:
     if (rl_field(cx, L[0], "nv", &T[1])) RLC_ERR(0, 842, 17, 842, 17, 842, 17, fail);
     if (rl_compare(cx, "<", L[7], T[1], &T[0])) RLC_ERR(0, 842, 13, 842, 13, 842, 13, fail);
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 842, 13, 842, 13, 842, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_301;
+    if (!c_) goto brk_304;
     rl_gc_maybe();
     T[1] = rl_retain(L[0]);
     T[5] = rl_retain(L[7]);
@@ -18237,8 +18261,8 @@ static int fn159_try_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     {
     RLC_SET(L[7], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_300;
-    brk_301: ;
+    goto top_303;
+    brk_304: ;
     T[1] = rl_retain(L[0]);
     if (rl_call(cx, E->slots[20], 1, &T[1], &T[0])) { rl_std_boundary(cx, E->slots[20]); RLC_ERR(0, 845, 17, 845, 17, 845, 17, fail); }
     RLC_DROP(T[1]);
@@ -18639,11 +18663,11 @@ static int fn161_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 891, 28, 891, 28, 891, 28, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[10], T[0]); T[0] = rl_none();
-    top_303:
+    top_306:
     if (rl_compare(cx, ">=", L[10], rl_int(0LL), &T[0])) RLC_ERR(0, 892, 13, 892, 13, 892, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 892, 13, 892, 13, 892, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_304;
+    if (!c_) goto brk_307;
     rl_gc_maybe();
     RLC_SET(L[12], rl_unset());
     if (rl_field(cx, L[0], "blocks", &T[1])) RLC_ERR(0, 893, 20, 893, 20, 893, 20, fail);
@@ -18678,14 +18702,14 @@ static int fn161_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     {
     RLC_SET(L[10], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_303;
-    brk_304: ;
+    goto top_306;
+    brk_307: ;
     if (rl_field(cx, L[0], "outer", &T[0])) RLC_ERR(0, 898, 16, 898, 16, 898, 16, fail);
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 898, 16, 898, 16, 898, 16, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_306:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_307;
+    top_309:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_310;
     rl_gc_maybe();
     RLC_SET(L[13], rl_unset());
     RLC_SET(L[13], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -18715,8 +18739,8 @@ static int fn161_fun_stmt(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_306;
-    brk_307: ;
+    goto top_309;
+    brk_310: ;
     RLC_DROP(V[0]);
     if (RLC_IS(E->slots[67])) T[1] = rl_retain(E->slots[67]);
     else { static const char *const nm_[] = {"fc", "s", "b", "cg", "cname", "params", "body", "sub", "path", "hops", "i", "lexer", "parser", "errfmt", "files", "strings", "LB", "RB", "oct3", "char_bytes", "c_string", "new_cg", "unsupported", "builtin_names", "is_builtin", "konst", "bslot", "label", "has_fun", "new_fc", "emit", "temp", "T", "free_to", "new_block", "hint_name", "mixed_hints", "declare", "env_expr", "open_block", "close_block", "slot_here", "last_hint", "same_hint", "resolve", "visible_names", "on_error", "check", "check3", "fail_here", "_nonzero_digit", "number_value", "simple", "operand", "arith", "expr", "name_value", "binary", "binary_op", "postfix_kinds", "postfix", "postfix_op", "call", "block", "run_block", "hint_check", "statement", "assign", "cond", "if_stmt", "else_if_chain", "release_from", "while_stmt", "for_stmt", "try_stmt", "return_stmt", "fun_stmt", "safe_name", "compile_function", "finish_function", "last_slash", "folder_of", "use_name", "is_absolute", "path_key", "shown_file", "in_std", "file_stem", "add_module", "compile_module", "use_stmt", "module_tables", "module_uses", "compile_program", "max_literal", "long_konst", "max1", "safe_comment", "stub_skip", "stub_error", "argv", "src", "out_path", "stub", "root", "usage", "lexed", "err", "tree", "text"};
@@ -18840,8 +18864,8 @@ static int fn162_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_SET(L[1], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[0], &V[0])) RLC_ERR(0, 908, 15, 908, 15, 908, 15, fail);
     I[0] = 0;
-    top_309:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_310;
+    top_312:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_313;
     rl_gc_maybe();
     RLC_SET(L[2], rl_unset());
     RLC_SET(L[3], rl_unset());
@@ -18924,8 +18948,8 @@ static int fn162_safe_name(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_309;
-    brk_310: ;
+    goto top_312;
+    brk_313: ;
     RLC_DROP(V[0]);
     if (rl_field(cx, E->slots[4], "join", &T[1])) RLC_ERR(0, 914, 19, 914, 19, 914, 19, fail);
     T[2] = rl_retain(L[1]);
@@ -18979,8 +19003,8 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_SET(L[5], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[2], &V[0])) RLC_ERR(0, 920, 14, 920, 14, 920, 14, fail);
     I[0] = 0;
-    top_312:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_313;
+    top_315:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_316;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[9], rl_unset());
@@ -19030,8 +19054,8 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_312;
-    brk_313: ;
+    goto top_315;
+    brk_316: ;
     RLC_DROP(V[0]);
     T[0] = rl_list_new(0);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
@@ -19066,8 +19090,8 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_DROP(T[0]);
     if (rl_loop_items(cx, L[2], &V[1])) RLC_ERR(0, 931, 14, 931, 14, 931, 14, fail);
     I[1] = 0;
-    top_315:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_316;
+    top_318:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_319;
     rl_gc_maybe();
     RLC_SET(L[10], rl_unset());
     RLC_SET(L[10], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -19130,13 +19154,13 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_SET(L[5], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_315;
-    brk_316: ;
+    goto top_318;
+    brk_319: ;
     RLC_DROP(V[1]);
     if (rl_loop_items(cx, L[4], &V[2])) RLC_ERR(0, 936, 14, 936, 14, 936, 14, fail);
     I[2] = 0;
-    top_318:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_319;
+    top_321:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_322;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     RLC_SET(L[11], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -19161,13 +19185,13 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[2];
-    goto top_318;
-    brk_319: ;
+    goto top_321;
+    brk_322: ;
     RLC_DROP(V[2]);
     if (rl_loop_items(cx, L[2], &V[3])) RLC_ERR(0, 939, 14, 939, 14, 939, 14, fail);
     I[3] = 0;
-    top_321:
-    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_322;
+    top_324:
+    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_325;
     rl_gc_maybe();
     RLC_SET(L[12], rl_unset());
     RLC_SET(L[12], rl_retain(((rl_list *)V[3].u.o)->items[I[3]]));
@@ -19243,8 +19267,8 @@ static int fn163_compile_function(rl_ctx *cx, rl_fun *self, int argc, const rl_v
     RLC_DROP(T[0]);
     }
     ++I[3];
-    goto top_321;
-    brk_322: ;
+    goto top_324;
+    brk_325: ;
     RLC_DROP(V[3]);
     if (rl_field(cx, L[3], "kind", &T[1])) RLC_ERR(0, 942, 12, 942, 12, 942, 12, fail);
     T[0] = rl_bool(rl_equal(T[1], K[183]));
@@ -19643,8 +19667,8 @@ static int fn164_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 992, 19, 992, 19, 992, 19, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_324:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_325;
+    top_327:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_328;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -19655,8 +19679,8 @@ static int fn164_finish_function(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_324;
-    brk_325: ;
+    goto top_327;
+    brk_328: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[4]);
     T[2] = rl_retain(K[610]);
@@ -19848,8 +19872,8 @@ static int fn165_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 1028, 15, 1028, 15, 1028, 15, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_327:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_328;
+    top_330:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_331;
     rl_gc_maybe();
     RLC_SET(L[2], rl_unset());
     RLC_SET(L[2], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -19876,8 +19900,8 @@ static int fn165_last_slash(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_327;
-    brk_328: ;
+    goto top_330;
+    brk_331: ;
     RLC_DROP(V[0]);
     T[0] = rl_retain(L[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
@@ -20103,8 +20127,8 @@ static int fn169_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 1052, 16, 1052, 16, 1052, 16, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_330:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_331;
+    top_333:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_334;
     rl_gc_maybe();
     RLC_SET(L[4], rl_unset());
     RLC_SET(L[4], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -20121,7 +20145,7 @@ static int fn169_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1053, 21, 1053, 21, 1053, 21, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    { int fi_333 = 0;
+    { int fi_336 = 0;
     T[3] = rl_bool(rl_equal(L[3], K[129]));
     if (rl_cond(cx, T[3], "'and' operand", &c_)) RLC_ERR(0, 1054, 20, 1054, 20, 1054, 20, fail);
     RLC_DROP(T[3]);
@@ -20172,13 +20196,13 @@ static int fn169_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1054, 81, 1054, 81, 1054, 81, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_333 = 1;
+    if (c_) { fi_336 = 1;
     T[1] = rl_retain(L[2]);
     if (rl_call(cx, B[6], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[6]); RLC_ERR(0, 1055, 20, 1055, 20, 1055, 20, fail); }
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
-    if (!fi_333) {
+    if (!fi_336) {
     T[1] = rl_bool(!rl_equal(L[3], K[95]));
     if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 1056, 25, 1056, 25, 1056, 25, fail);
     RLC_DROP(T[1]);
@@ -20206,7 +20230,7 @@ static int fn169_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1056, 32, 1056, 32, 1056, 32, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_333 = 1;
+    if (c_) { fi_336 = 1;
     T[1] = rl_retain(L[2]);
     T[2] = rl_retain(L[3]);
     if (rl_call(cx, B[3], 2, &T[1], &T[0])) { rl_std_boundary(cx, B[3]); RLC_ERR(0, 1057, 23, 1057, 23, 1057, 23, fail); }
@@ -20228,8 +20252,8 @@ static int fn169_path_key(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_330;
-    brk_331: ;
+    goto top_333;
+    brk_334: ;
     RLC_DROP(V[0]);
     if (rl_field(cx, E->slots[4], "join", &T[1])) RLC_ERR(0, 1061, 19, 1061, 19, 1061, 19, fail);
     T[2] = rl_retain(L[2]);
@@ -20452,11 +20476,11 @@ static int fn172_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     if (rl_sub(cx, T[1], rl_int(1LL), &T[0])) RLC_ERR(0, 1080, 20, 1080, 20, 1080, 20, fail);
     RLC_DROP(T[1]);
     RLC_SET(L[2], T[0]); T[0] = rl_none();
-    top_334:
+    top_337:
     if (rl_compare(cx, ">", L[2], rl_int(0LL), &T[0])) RLC_ERR(0, 1081, 13, 1081, 13, 1081, 13, fail);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 1081, 13, 1081, 13, 1081, 13, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_335;
+    if (!c_) goto brk_338;
     rl_gc_maybe();
     if (rl_index(cx, L[1], L[2], &T[1])) RLC_ERR(0, 1082, 13, 1082, 12, 1082, 14, fail);
     T[0] = rl_bool(rl_equal(T[1], K[95]));
@@ -20478,8 +20502,8 @@ static int fn172_file_stem(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a
     {
     RLC_SET(L[2], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
-    goto top_334;
-    brk_335: ;
+    goto top_337;
+    brk_338: ;
     T[0] = rl_retain(L[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -21014,8 +21038,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 1141, 16, 1141, 16, 1141, 16, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_337:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_338;
+    top_340:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_341;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[5], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -21053,8 +21077,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_337;
-    brk_338: ;
+    goto top_340;
+    brk_341: ;
     RLC_DROP(V[0]);
     T[1] = rl_retain(L[1]);
     if (rl_add(cx, K[636], E->slots[5], &T[5])) RLC_ERR(0, 1147, 57, 1147, 57, 1147, 57, fail);
@@ -21124,8 +21148,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 1151, 16, 1151, 16, 1151, 16, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_340:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_341;
+    top_343:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_344;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[7], rl_unset());
@@ -21136,8 +21160,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 1153, 19, 1153, 19, 1153, 19, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_343:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_344;
+    top_346:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_347;
     rl_gc_maybe();
     RLC_SET(L[8], rl_unset());
     RLC_SET(L[8], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -21152,8 +21176,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[2];
-    goto top_343;
-    brk_344: ;
+    goto top_346;
+    brk_347: ;
     RLC_DROP(V[2]);
     T[2] = rl_retain(L[7]);
     if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1155, 15, 1155, 15, 1155, 15, fail); }
@@ -21199,15 +21223,15 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_340;
-    brk_341: ;
+    goto top_343;
+    brk_344: ;
     RLC_DROP(V[1]);
     if (rl_field(cx, L[0], "uses", &T[0])) RLC_ERR(0, 1158, 17, 1158, 17, 1158, 17, fail);
     if (rl_loop_items(cx, T[0], &V[3])) RLC_ERR(0, 1158, 17, 1158, 17, 1158, 17, fail);
     RLC_DROP(T[0]);
     I[3] = 0;
-    top_346:
-    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_347;
+    top_349:
+    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_350;
     rl_gc_maybe();
     RLC_SET(L[9], rl_unset());
     RLC_SET(L[9], rl_retain(((rl_list *)V[3].u.o)->items[I[3]]));
@@ -21224,8 +21248,8 @@ static int fn176_module_tables(rl_ctx *cx, rl_fun *self, int argc, const rl_valu
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[3];
-    goto top_346;
-    brk_347: ;
+    goto top_349;
+    brk_350: ;
     RLC_DROP(V[3]);
     goto done;
 fail:
@@ -21260,8 +21284,8 @@ static int fn177_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 1165, 17, 1165, 17, 1165, 17, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_349:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_350;
+    top_352:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_353;
     rl_gc_maybe();
     RLC_SET(L[2], rl_unset());
     RLC_SET(L[3], rl_unset());
@@ -21484,8 +21508,8 @@ static int fn177_module_uses(rl_ctx *cx, rl_fun *self, int argc, const rl_value 
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[0];
-    goto top_349;
-    brk_350: ;
+    goto top_352;
+    brk_353: ;
     RLC_DROP(V[0]);
     goto done;
 fail:
@@ -21742,8 +21766,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[0])) RLC_ERR(0, 1217, 16, 1217, 16, 1217, 16, fail);
     RLC_DROP(T[0]);
     I[0] = 0;
-    top_352:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_353;
+    top_355:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_356;
     rl_gc_maybe();
     RLC_SET(L[9], rl_unset());
     RLC_SET(L[9], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -21763,8 +21787,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_DROP(T[0]);
     }
     ++I[0];
-    goto top_352;
-    brk_353: ;
+    goto top_355;
+    brk_356: ;
     RLC_DROP(V[0]);
     if (rl_field(cx, L[0], "consts", &T[1])) RLC_ERR(0, 1220, 20, 1220, 20, 1220, 20, fail);
     if (rl_call(cx, B[4], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1220, 17, 1220, 17, 1220, 17, fail); }
@@ -21816,8 +21840,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 1224, 16, 1224, 16, 1224, 16, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_355:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_356;
+    top_358:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_359;
     rl_gc_maybe();
     RLC_SET(L[10], rl_unset());
     RLC_SET(L[10], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -21828,8 +21852,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[1];
-    goto top_355;
-    brk_356: ;
+    goto top_358;
+    brk_359: ;
     RLC_DROP(V[1]);
     T[1] = rl_retain(L[4]);
     T[2] = rl_retain(K[54]);
@@ -21847,8 +21871,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[2])) RLC_ERR(0, 1228, 16, 1228, 16, 1228, 16, fail);
     RLC_DROP(T[0]);
     I[2] = 0;
-    top_358:
-    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_359;
+    top_361:
+    if (I[2] >= ((rl_list *)V[2].u.o)->n) goto brk_362;
     rl_gc_maybe();
     RLC_SET(L[11], rl_unset());
     RLC_SET(L[11], rl_retain(((rl_list *)V[2].u.o)->items[I[2]]));
@@ -21865,8 +21889,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     ++I[2];
-    goto top_358;
-    brk_359: ;
+    goto top_361;
+    brk_362: ;
     RLC_DROP(V[2]);
     if (rl_field(cx, L[0], "mods", &T[1])) RLC_ERR(0, 1231, 20, 1231, 20, 1231, 20, fail);
     if (rl_call(cx, B[4], 1, &T[1], &T[0])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1231, 17, 1231, 17, 1231, 17, fail); }
@@ -21914,8 +21938,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[3])) RLC_ERR(0, 1239, 16, 1239, 16, 1239, 16, fail);
     RLC_DROP(T[0]);
     I[3] = 0;
-    top_361:
-    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_362;
+    top_364:
+    if (I[3] >= ((rl_list *)V[3].u.o)->n) goto brk_365;
     rl_gc_maybe();
     RLC_SET(L[12], rl_unset());
     RLC_SET(L[13], rl_unset());
@@ -21986,8 +22010,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_SET(L[8], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[3];
-    goto top_361;
-    brk_362: ;
+    goto top_364;
+    brk_365: ;
     RLC_DROP(V[3]);
     T[0] = rl_int(0LL);
     {
@@ -21997,8 +22021,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     if (rl_loop_items(cx, T[0], &V[4])) RLC_ERR(0, 1247, 19, 1247, 19, 1247, 19, fail);
     RLC_DROP(T[0]);
     I[4] = 0;
-    top_364:
-    if (I[4] >= ((rl_list *)V[4].u.o)->n) goto brk_365;
+    top_367:
+    if (I[4] >= ((rl_list *)V[4].u.o)->n) goto brk_368;
     rl_gc_maybe();
     RLC_SET(L[14], rl_unset());
     RLC_SET(L[14], rl_retain(((rl_list *)V[4].u.o)->items[I[4]]));
@@ -22023,8 +22047,8 @@ static int fn178_compile_program(rl_ctx *cx, rl_fun *self, int argc, const rl_va
     RLC_SET(L[8], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     ++I[4];
-    goto top_364;
-    brk_365: ;
+    goto top_367;
+    brk_368: ;
     RLC_DROP(V[4]);
     T[1] = rl_retain(L[4]);
     T[8] = rl_retain(L[7]);
@@ -22260,8 +22284,8 @@ static int fn179_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_SET(L[4], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, L[2], &V[0])) RLC_ERR(0, 1276, 15, 1276, 15, 1276, 15, fail);
     I[0] = 0;
-    top_367:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_368;
+    top_370:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_371;
     rl_gc_maybe();
     RLC_SET(L[5], rl_unset());
     RLC_SET(L[5], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -22271,8 +22295,8 @@ static int fn179_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     if (rl_loop_items(cx, T[0], &V[1])) RLC_ERR(0, 1277, 28, 1277, 28, 1277, 28, fail);
     RLC_DROP(T[0]);
     I[1] = 0;
-    top_370:
-    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_371;
+    top_373:
+    if (I[1] >= ((rl_list *)V[1].u.o)->n) goto brk_374;
     rl_gc_maybe();
     RLC_SET(L[6], rl_unset());
     RLC_SET(L[6], rl_retain(((rl_list *)V[1].u.o)->items[I[1]]));
@@ -22314,12 +22338,12 @@ static int fn179_long_konst(rl_ctx *cx, rl_fun *self, int argc, const rl_value *
     RLC_DROP(T[0]);
     }
     ++I[1];
-    goto top_370;
-    brk_371: ;
+    goto top_373;
+    brk_374: ;
     RLC_DROP(V[1]);
     ++I[0];
-    goto top_367;
-    brk_368: ;
+    goto top_370;
+    brk_371: ;
     RLC_DROP(V[0]);
     T[2] = rl_retain(L[4]);
     if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1282, 11, 1282, 11, 1282, 11, fail); }
@@ -22936,8 +22960,8 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_SET(top->slots[13], T[0]); T[0] = rl_none();
     if (rl_loop_items(cx, top->slots[12], &V[0])) RLC_ERR(0, 75, 10, 75, 10, 75, 10, fail);
     I[0] = 0;
-    top_177:
-    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_178;
+    top_180:
+    if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_181;
     rl_gc_maybe();
     S[0] = rl_scope_new(top, 1);
     RLC_SET(S[0]->slots[0], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
@@ -22947,8 +22971,8 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     rl_scope_release(S[0]); S[0] = NULL;
     rl_scope_release(S[0]); S[0] = NULL;
     ++I[0];
-    goto top_177;
-    brk_178: ;
+    goto top_180;
+    brk_181: ;
     rl_scope_release(S[0]); S[0] = NULL;
     RLC_DROP(V[0]);
     RLC_SET(top->slots[14], rl_fun_new("konst", fn112_konst, 2, top));
@@ -23067,7 +23091,7 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_SET(top->slots[94], T[0]); T[0] = rl_none();
     T[0] = rl_bool(0);
     RLC_SET(top->slots[95], T[0]); T[0] = rl_none();
-    top_373:
+    top_376:
     T[2] = rl_retain(top->slots[89]);
     if (rl_call(cx, B[4], 1, &T[2], &T[1])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1321, 14, 1321, 14, 1321, 14, fail); }
     RLC_DROP(T[2]);
@@ -23075,12 +23099,12 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_DROP(T[1]);
     if (rl_cond(cx, T[0], "'while' condition", &c_)) RLC_ERR(0, 1321, 9, 1321, 9, 1321, 9, fail);
     RLC_DROP(T[0]);
-    if (!c_) goto brk_374;
+    if (!c_) goto brk_377;
     rl_gc_maybe();
     S[1] = rl_scope_new(top, 1);
     if (rl_index(cx, top->slots[89], top->slots[94], &T[0])) RLC_ERR(0, 1322, 17, 1322, 13, 1322, 18, fail);
     RLC_SET(S[1]->slots[0], T[0]); T[0] = rl_none();
-    { int fi_376 = 0;
+    { int fi_379 = 0;
     T[1] = rl_bool(rl_equal(S[1]->slots[0], K[730]));
     if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 1323, 10, 1323, 10, 1323, 10, fail);
     RLC_DROP(T[1]);
@@ -23099,7 +23123,7 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1323, 18, 1323, 18, 1323, 18, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_376 = 1;
+    if (c_) { fi_379 = 1;
     if (rl_add(cx, top->slots[94], rl_int(1LL), &T[1])) RLC_ERR(0, 1324, 27, 1324, 27, 1324, 27, fail);
     if (rl_index(cx, top->slots[89], T[1], &T[0])) RLC_ERR(0, 1324, 24, 1324, 20, 1324, 27, fail);
     RLC_DROP(T[1]);
@@ -23111,18 +23135,18 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_SET(top->slots[94], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
-    if (!fi_376) {
+    if (!fi_379) {
     T[0] = rl_bool(rl_equal(S[1]->slots[0], K[731]));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1326, 15, 1326, 15, 1326, 15, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_376 = 1;
+    if (c_) { fi_379 = 1;
     T[0] = rl_bool(1);
     {
     RLC_SET(top->slots[92], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_376) {
+    if (!fi_379) {
     T[1] = rl_bool(rl_equal(S[1]->slots[0], K[732]));
     if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 1328, 15, 1328, 15, 1328, 15, fail);
     RLC_DROP(T[1]);
@@ -23141,7 +23165,7 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     }
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1328, 27, 1328, 27, 1328, 27, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_376 = 1;
+    if (c_) { fi_379 = 1;
     if (rl_add(cx, top->slots[94], rl_int(1LL), &T[1])) RLC_ERR(0, 1329, 23, 1329, 23, 1329, 23, fail);
     if (rl_index(cx, top->slots[89], T[1], &T[0])) RLC_ERR(0, 1329, 20, 1329, 16, 1329, 23, fail);
     RLC_DROP(T[1]);
@@ -23154,18 +23178,18 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_376) {
+    if (!fi_379) {
     T[0] = rl_bool(rl_equal(top->slots[90], rl_none()));
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1331, 17, 1331, 17, 1331, 17, fail);
     RLC_DROP(T[0]);
-    if (c_) { fi_376 = 1;
+    if (c_) { fi_379 = 1;
     T[0] = rl_retain(S[1]->slots[0]);
     {
     RLC_SET(top->slots[90], T[0]); T[0] = rl_none(); }
     RLC_DROP(T[0]);
     }
     }
-    if (!fi_376) {
+    if (!fi_379) {
     T[0] = rl_bool(1);
     {
     RLC_SET(top->slots[95], T[0]); T[0] = rl_none(); }
@@ -23178,8 +23202,8 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     RLC_DROP(T[0]);
     rl_scope_release(S[1]); S[1] = NULL;
     rl_scope_release(S[1]); S[1] = NULL;
-    goto top_373;
-    brk_374: ;
+    goto top_376;
+    brk_377: ;
     rl_scope_release(S[1]); S[1] = NULL;
     if (rl_cond(cx, top->slots[95], "'or' operand", &c_)) RLC_ERR(0, 1336, 4, 1336, 4, 1336, 4, fail);
     if (c_) T[1] = rl_bool(1);

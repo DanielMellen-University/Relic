@@ -82,11 +82,15 @@ fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
 fun trim(s)
     _text("trim", "argument", s)
+    # a list of the characters: s[i] walks the text from its start
+    let cs = []
+    for c in s
+        append(cs, c)
     let a = 0
-    let b = len(s)
-    while a < b and is_space(s[a])
+    let b = len(cs)
+    while a < b and is_space(cs[a])
         a = a + 1
-    while b > a and is_space(s[b - 1])
+    while b > a and is_space(cs[b - 1])
         b = b - 1
     return slice(s, a, b)
 

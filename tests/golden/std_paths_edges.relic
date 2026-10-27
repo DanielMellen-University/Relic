@@ -6,3 +6,5 @@ for p in ["", "/", "a", "a/", "/a", "a/b.txt", "a.b/c", "a/.hidden", ".a.b", "a.
     print("[{p}] base [{paths.base(p)}] dir [{paths.dir(p)}] ext [{paths.ext(p)}] stem [{paths.stem(p)}]")
 for pr in [["", ""], ["a", ""], ["", "b"], ["/", "b"], ["a", "/b"], ["a/", "/b"], ["a\\", "b"], ["a", "b\\c"]]
     print(pr, paths.join(pr[0], pr[1]))
+# "\" is "/" everywhere; ".." past the start stays in a relative path and goes in an absolute one
+print(paths.normalize("a\\..\\..\\b/./c//"), paths.normalize("\\x\\..\\..\\y"), paths.ext("a.b\\c.d"), paths.ext("a.b\\c"), paths.base("x\\"))
