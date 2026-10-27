@@ -8,6 +8,7 @@ namespace relic { std::string std_root(); }
 #include <cerrno>
 #include <cctype>
 #include <cmath>
+#include <limits>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -102,6 +103,10 @@ void Interpreter::install_builtins() {
         if (v.is<long long>()) return v.as<long long>();
         double d = num_arg(v, what);
         if (d != std::floor(d)) throw std::string(what) + " must be a whole number";
+        // Past the int range the answer is the nearest int, not whatever the cast gives
+        // (it was the lowest int on x86, so slice("abc", 0, 1e300) was "").
+        if (d >= 9223372036854775808.0) return std::numeric_limits<long long>::max();
+        if (d <= -9223372036854775808.0) return std::numeric_limits<long long>::min();
         return static_cast<long long>(d);
     };
     auto str_arg = [](const Value& v, const char* what) -> const std::string& {

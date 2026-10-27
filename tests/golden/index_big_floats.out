@@ -1,0 +1,15 @@
+abc
+ab
+[2, 3]
+[1]
+b
+error: insert(): index 10000000000000000 is out of range
+error: insert(): index 9223372036854775807 is out of range
+error: insert(): index -9223372036854775808 is out of range
+error: insert(): index 2 is out of range
+error: remove(): index 9223372036854775807 is out of range
+error: remove(): index -9223372036854775808 is out of range
+error: remove(): index 5 is out of range
+error: list index must be a whole number
+error: list index 2 is out of range (size 2)
+error: string index -1 is out of range (size 2)

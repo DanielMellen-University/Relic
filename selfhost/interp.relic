@@ -280,9 +280,22 @@ fun is_whole(d) = d % 1 == 0
 fun whole(rt, at, v, what)
     if not is_num(type(v))
         return fail(rt, at, what + " must be a number, got " + type_of(v))
+    if type(v) == "int"
+        return v
+    # a float: whole and within 9e15, and handed on as an int like the host does
     if not is_whole(v) or v > 9000000000000000 or v < -9000000000000000
         return fail(rt, at, what + " must be a whole number")
-    return v
+    return int(v)
+
+# A whole number as an int, the way the host reads it: past the int range it is the nearest int.
+fun as_int(v)
+    if type(v) == "int"
+        return v
+    if v >= 9223372036854775808.0
+        return 9223372036854775807
+    if v <= -9223372036854775808.0
+        return -9223372036854775807 - 1
+    return int(v)
 
 fun slot(rt, at, idx, size, what)
     let i = whole(rt, at, idx, what)
@@ -1092,7 +1105,7 @@ fun builtin(rt, name, a)
         if not is_whole(a[1])
             return bad("index must be a whole number")
         if a[1] < 0 or a[1] > len(a[0])
-            return bad("index {a[1]} is out of range")
+            return bad("index {as_int(a[1])} is out of range")
         insert(a[0], a[1], a[2])
         return ok(none)
     # remove
@@ -1102,7 +1115,7 @@ fun builtin(rt, name, a)
         if not is_whole(a[1])
             return bad("index must be a whole number")
         if a[1] < 0 or a[1] >= len(a[0])
-            return bad("index {a[1]} is out of range")
+            return bad("index {as_int(a[1])} is out of range")
         return ok(remove(a[0], a[1]))
     if t == "map"
         if type(a[1]) != "string"

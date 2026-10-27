@@ -125,6 +125,13 @@ static void test_strings(void) {
     a[0] = h; a[1] = rl_int(1); a[2] = rl_int(3);
     CHECK(call("slice", 3, a, &r) == RL_OK);
     SHOW(r, "\xc3\xa9l");
+    /* a whole float past the int range is the nearest int: the end of a slice is clamped */
+    a[0] = T("abc"); a[1] = rl_int(0); a[2] = rl_float(1e300);
+    CHECK(call("slice", 3, a, &r) == RL_OK);
+    SHOW(r, "abc");
+    a[1] = rl_float(-1e300); a[2] = rl_int(2);
+    CHECK(call("slice", 3, a, &r) == RL_OK);
+    SHOW(r, "ab");
     SHOW(calls("ord", "\xc3\xa9"), "233");
     SHOW(call1("chr", rl_int(233)), "\xc3\xa9");
     SHOW(call1("chr", rl_int(128512)), "\xf0\x9f\x98\x80");
@@ -275,6 +282,10 @@ static void test_containers(void) {
     ERR(rl_index(&cx, l, rl_float(0.5), &r), "list index must be a whole number");
     a[1] = rl_int(5);
     ERR(call("insert", 3, a, &r), "insert(): index 5 is out of range");
+    a[1] = rl_float(1e30);
+    ERR(call("insert", 3, a, &r), "insert(): index 9223372036854775807 is out of range");
+    a[1] = rl_float(-1e30);
+    ERR(call("remove", 2, a, &r), "remove(): index -9223372036854775808 is out of range");
     CHECK(rl_set_index(&cx, l, rl_int(0), T("x")) == RL_OK);
     SHOW(rl_retain(l), "[\"x\", 2]");
     CHECK(rl_set_index(&cx, l, rl_int(0), rl_int(0)) == RL_OK);

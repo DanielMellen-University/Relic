@@ -4,6 +4,7 @@
 #include "relic.h"
 #include "rl_internal.h"
 
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,10 @@ int rl_arg_whole(rl_ctx *cx, rl_value v, const char *what, long long *r) {
     if (v.k == RL_INT) { *r = v.u.i; return RL_OK; }
     if (rl_arg_num(cx, v, what, &d)) return RL_ERR;
     if (d != floor(d)) return rl_fail(cx, "%s must be a whole number", what);
-    *r = (long long)d;
+    /* Past the int range the answer is the nearest int, not whatever the cast gives. */
+    if (d >= 9223372036854775808.0) *r = LLONG_MAX;
+    else if (d <= -9223372036854775808.0) *r = LLONG_MIN;
+    else *r = (long long)d;
     return RL_OK;
 }
 int rl_arg_str(rl_ctx *cx, rl_value v, const char *what) {

@@ -1,0 +1,25 @@
+# Whole floats that do not fit an int are clamped like the ends of a slice, on every engine.
+fun show(f)
+    try
+        print(f())
+    catch e
+        print("error:", e.message)
+
+fun s1() = slice("abc", 0, 1e300)
+fun s2() = slice("abc", -1e300, 2)
+fun s3() = slice([1, 2, 3], 1, 9.3e18)
+fun s4() = slice([1, 2, 3], -9.3e18, 1.0)
+fun s5() = slice("abc", 1.0, 2.0)
+fun i1() = insert([1], 1e16, 0)
+fun i2() = insert([1], 1e30, 0)
+fun i3() = insert([1], -1e30, 0)
+fun i4() = insert([1], 2.0, 0)
+fun r1() = remove([1], 1e30)
+fun r2() = remove([1], -1e30)
+fun r3() = remove([1], 5.0)
+fun x1() = [1, 2][1e16]
+fun x2() = [1, 2][2.0]
+fun x3() = "ab"[-1.0]
+
+for f in [s1, s2, s3, s4, s5, i1, i2, i3, i4, r1, r2, r3, x1, x2, x3]
+    show(f)
