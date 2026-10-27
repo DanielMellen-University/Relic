@@ -169,17 +169,17 @@ fun remove(fs, path)
         fail("cannot remove " + p)
     d.kids = _drop(d.kids, name)
 
+# The folder goes from its parent with everything in it at once. It was emptied
+# one name at a time, and each removal copied the folder's map of names, so a
+# folder of 4,000 files took 3 s.
 fun remove_tree(fs, path)
     let p = _norm(path)
     if p == "/"
         fail("cannot remove /")
-    let n = _node(fs, p)
-    if n == none
+    if _node(fs, p) == none
         return
-    if n.dir
-        for name in keys(n.kids)
-            remove_tree(fs, p + "/" + name)
-    remove(fs, p)
+    let d = _node(fs, paths.dir(p))
+    d.kids = _drop(d.kids, paths.base(p))
 
 fun rename(fs, from, to)
     let src = _norm(from)
