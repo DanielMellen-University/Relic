@@ -11,7 +11,8 @@ MODE is one of
 
 Each case is a golden or check case with one to three small edits (a quote, a
 bracket, a keyword, a multi-byte character, a control character, a digit ...).
-A mismatch prints the mutated source's path under /tmp/relic_fuzz/. Not part of
+A mismatch prints the mutated source's path under /tmp/relic_fuzz/MODE_SEED/,
+so runs with different modes or seeds can go in parallel. Not part of
 ctest (it needs Python); run it by hand after changing the lexer, parser, check,
 errfmt or interp in selfhost/. It found the host lexer printing half a
 character in "unknown escape" and the selfhost tokens/ast tools exiting 0 on
@@ -24,7 +25,7 @@ root = os.getcwd()
 build = os.path.abspath(sys.argv[4] if len(sys.argv) > 4 else 'build')
 relic = build + '/relic'
 random.seed(seed)
-work = '/tmp/relic_fuzz'
+work = '/tmp/relic_fuzz/%s_%d' % (mode, seed)  # one folder per mode and seed, so several runs can go at once
 os.makedirs(work, exist_ok=True)
 if not os.path.exists(work + '/modules'):
     for d in ('modules', 'lib'):
