@@ -1,0 +1,46 @@
+# (compiled side only: the Relic-written interpreter takes seconds for this)
+# Nested JSON as deep as the recursion limit allows. encode and decode call
+# themselves once per level, so a compiled program on Windows (1 MB of stack by
+# default) needs the room that the build gives it (/STACK in runtime/c).
+use std/json
+use std/strings
+fun nest(n, kind)
+    let x = 1
+    for i in 0..n
+        if kind == "list"
+            x = [x]
+        else
+            x = {k: x}
+    return x
+fun depth(x)
+    let d = 0
+    while type(x) == "list" or type(x) == "map"
+        if type(x) == "list"
+            x = x[0]
+        else
+            x = x.k
+        d = d + 1
+    return d
+for kind in ["list", "map"]
+    for n in [10, 150, 380]
+        let text = json.encode(nest(n, kind))
+        let back = json.decode(text)
+        print(kind, n, len(text), depth(back))
+    print(kind, "encode", len(json.encode(nest(790, kind))))
+    let pretty = json.pretty(nest(60, kind))
+    print(kind, len(strings.split(pretty, "\n")), depth(json.decode(pretty)))
+# past the limit it is an error, not a crash
+for kind in ["list", "map"]
+    try
+        json.encode(nest(900, kind))
+    catch e
+        print(kind, e.message)
+    let open = "["
+    let close = "]"
+    if kind == "map"
+        open = "{{\"k\":"
+        close = "}}"
+    try
+        json.decode(strings.repeat(open, 900) + "1" + strings.repeat(close, 900))
+    catch e
+        print(kind, "decode", e.message)

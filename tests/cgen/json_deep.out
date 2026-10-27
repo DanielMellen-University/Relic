@@ -1,0 +1,14 @@
+list 10 21 10
+list 150 301 150
+list 380 761 380
+list encode 1581
+list 121 60
+map 10 61 10
+map 150 901 150
+map 380 2281 380
+map encode 4741
+map 121 60
+list too much recursion (more than 800 calls deep)
+list decode too much recursion (more than 800 calls deep)
+map too much recursion (more than 800 calls deep)
+map decode too much recursion (more than 800 calls deep)
