@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.36 (2026-10-27)
+
+Two changes Daniel approved: `num()` reads more numbers, and a limit of 10,000 on how deep code goes, where the host used to crash.
+
+- `num()`, `float()` and `int()` read `nan`, `inf` and `infinity` in any case, with an optional sign, and hex like `0x1F` or `-0x1f`, which gives an int when it fits (it gave a float before; past the int range it is still a float). A float too small for a normal float rounds like a literal: `num("1e-400")` is `0.0` and `num("4.9e-324")` the smallest float above zero (both were `not a number`). One too large, `nan(1)`, `infin`, spaces and the rest are still `not a number`. The host's `parse_num` and the C runtime's `rl_parse_num` take the same steps, and the Relic-written interpreter hands the text to the host's `num()`. Goldens `num_edges`, `float_tiny`.
+- `json.decode` reads back a subnormal float that `json.encode` wrote (it said `bad number`). JSON stays strict: `NaN`, `Infinity` and hex are still errors. Golden `std_json_edges`.
+- `selfhost/floatlit.relic` (1.0.34) is gone: `interp.relic` and `check.relic` read every float literal with `num()` now, and `relicc` writes a tiny one from `num()`'s value as a whole number of steps of 2^-1074. The C it writes is the same as before.
+- An expression more than 10,000 levels deep is a parse error, `expression is too deeply nested (limit 10000)`, and so is an `else if` chain of more than 10,000 links, `'else if' chain is too long (limit 10000)`. Each operator, call, index, field, `-`, `not`, list, map and string with `{...}` adds a level, so 10,000 `+` in a row run and 10,001 do not. Before, about 55,000 links crashed the host (C stack). The host's parser and `selfhost/parser.relic` count the same way, so the VM, `--tree`, `relic check`, `run.relic`, `check.relic` and `relicc` all give the error at the same place. New test `depth_limit` (`tools/check_depth_limit.cmake` writes the 10,000 and 10,001 cases; they are not goldens, since a C compiler takes seconds on the first and the Relic-written tools about 2 s on the `else if` ones). The 32-level limit on brackets, `-`, `not` and blocks is unchanged.
+- Speed: `selfhost/lexer.relic` indexed the source string, and indexing a string walks its UTF-8 from the start, so lexing took time growing with the square of the file (a 10,000-link `else if` file: 35 s in `check.relic`, now about 2 s). It reads a list of the characters now. `strings.split` copied the rest of the text after every piece; for text over 4096 characters it now walks it once (a 20,000-line file: 6.9 s, now 0.3 s). Same results.
+- Speed: `selfhost_interp` 10.27 s median of 3 (10.10, 10.28, 10.27), under the 12.2 s cap.
+- `ctest`: 185 default, 389 with the host.
+
 ## 1.0.35 (2026-10-27)
 
 Standard library edge cases: wrong answers, a hang and error messages that named the wrong function. No change to the language.
