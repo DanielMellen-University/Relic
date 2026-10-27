@@ -33,7 +33,7 @@ Relic-written front end and interpreter. These run on the host today and are kep
 - [x] SH1: the self-hosted interpreter runs real programs with their args (`selfhost_args`)
 - [x] SH2: it runs itself: `run.relic` on `run.relic` on a test program (`selfhost_nested`)
 - [x] SH3: parity with the host: `num()` and `gc()` (1.0.13), deep recursion (Daniel picked option C on Oct 24 2026, an explicit frame stack in slices: 1.0.14, 1.0.15, 1.0.19, 1.0.21 and 1.0.22, which removed the old recursive path), every comparison test passing but the REPL ones
-- [ ] SH4: `relic check` and the REPL written in Relic (`check` done in 1.0.27, `selfhost/check.relic`; the REPL needs a way to read standard input, which Relic does not have, so it waits for Daniel's OK on a new built-in)
+- [x] SH4: `relic check` and the REPL written in Relic (`check` in 1.0.27, `selfhost/check.relic`; the REPL in 1.0.31, `selfhost/repl.relic`, on the new standard input built-in `os.read_line()` / `os.prompt()` that Daniel approved on Oct 27 2026)
 
 Compiler to C:
 

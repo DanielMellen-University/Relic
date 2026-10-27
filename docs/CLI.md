@@ -79,6 +79,7 @@ hello Daniel
 - `use` paths are relative to the current folder.
 - Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 0 even if a chunk failed.
 - The REPL runs on the tree-walker.
+- `selfhost/repl.relic` is the same REPL written in Relic (`relic selfhost/repl.relic`, since 1.0.31). Same values, errors, blocks, multi-line headers and exit code on every script in the tests (`selfhost_repl`); it is a test of the self-hosted front end, not a replacement. Two differences, both for a person at a terminal: its banner has no version number, and `:quit` does not print an extra empty line. A program run inside it can read the same standard input (`os.read_line()`).
 
 ## Environment
 

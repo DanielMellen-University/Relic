@@ -155,9 +155,46 @@ the `fail` inside `std/json`, not at a spot in the JSON text.
 | `env(name)` | string or `none` | |
 | `cwd()` | string | `/` separators |
 | `exit(code)` | never returns | flushes output first |
+| `read_line()` | string or `none` | the next line of standard input (see below) |
+| `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
 
 `os.args()` is the same list as the built-in `args()`. Prefer `os.args()` in
 modules; `args()` is also fine at the top level of a script.
+
+**Standard input** (1.0.31). `read_line()` gives the next line without its line
+end, which is `"\n"` or `"\r\n"`, and `none` once the input has run out (and
+on every call after that). So a line of text comes back as a string, even an
+empty one (`""`), and `none` can only mean the end:
+
+```
+use std/os
+let total = 0
+while true
+    let line = os.read_line()
+    if line == none
+        break
+    total = total + num(line)
+print(total)
+```
+
+- Only the line end is cut: spaces and tabs stay, and a lone `"\r"` that is not
+  followed by `"\n"` stays. A last line with no newline at the end of the input
+  comes back as it is; an input that ends with a newline has no extra empty line.
+- Lines can be any length and hold any bytes, as in `files.read`: bytes that are
+  not valid UTF-8 and NUL bytes come through unchanged, and so does a Ctrl-Z byte.
+  On Windows the input is read in binary mode, so nothing is translated.
+- `prompt(text)` is for programs that talk to a person. The text is written to
+  the program's output and shown at once, but only when stdin is a terminal;
+  with input from a pipe or a file it is left out, so a program prints the same
+  with or without a prompt. When the input ends on a terminal (Ctrl-D) a newline
+  follows the prompt, so the shell prompt starts on a fresh line. `text` must be a
+  string: `os.prompt(): prompt must be a string, got int`.
+- A program, the REPL and `selfhost/run.relic` read the same standard input in
+  order, so a line the REPL reads is not seen by the program and the other way
+  round.
+- The name is the one the other `os` and `files` calls would give it: `read_line`,
+  like `files.lines`, and the `host_read_line(prompt)` primitive underneath
+  (a bare `os.read_line()` is `host_read_line("")`).
 
 ## std/time
 
