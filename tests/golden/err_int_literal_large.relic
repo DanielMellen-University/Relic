@@ -1,0 +1,3 @@
+# an integer literal past 64 bits is an error, not a float
+print(9223372036854775807)
+print(9223372036854775808)

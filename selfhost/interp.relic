@@ -570,7 +570,12 @@ fun machine(rt, st)
                     append(vals, m.text)
                 else if mk == "Number"
                     try
-                        append(vals, num(m.text))
+                        let v = num(m.text)
+                        # num() turns an int too big for 64 bits into a float; a literal is an error
+                        if type(v) == "float" and not ("." in m.text or "e" in m.text or "E" in m.text)
+                            fail(rt, m, "int is too large (the limit is 9223372036854775807)")
+                        else
+                            append(vals, v)
                     catch err
                         fail(rt, m, "float is too large")
                 else if mk == "True"
