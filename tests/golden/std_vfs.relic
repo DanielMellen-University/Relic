@@ -36,3 +36,24 @@ try
 catch err
     print(err.message)
 print(vfs.is_dir(fs, "/home/box"), vfs.exists(fs, "/home/box/inner"))
+# a path that goes through a file is not there; it does not crash
+fs = vfs.new()
+print(vfs.exists(fs, "/home/welcome.txt/x"), vfs.is_dir(fs, "/home/welcome.txt/x"))
+try
+    vfs.read(fs, "/home/welcome.txt/x")
+catch err
+    print(err.message)
+try
+    vfs.remove(fs, "/home/welcome.txt/x")
+catch err
+    print(err.message)
+vfs.remove_tree(fs, "/home/welcome.txt/x")
+try
+    vfs.append(fs, "/home/welcome.txt/x", "t")
+catch err
+    print(err.message)
+try
+    vfs.size(fs, "/home/welcome.txt/x/y")
+catch err
+    print(err.message)
+print(vfs.list(fs, "/home"))

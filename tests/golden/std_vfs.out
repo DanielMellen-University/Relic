@@ -15,3 +15,9 @@ true Welcome to Relic.
 
 cannot rename /home/box
 true false
+false false
+cannot read /home/welcome.txt/x
+cannot remove /home/welcome.txt/x
+cannot write /home/welcome.txt/x
+cannot get the size of /home/welcome.txt/x/y
+["welcome.txt"]

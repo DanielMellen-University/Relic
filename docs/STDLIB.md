@@ -117,7 +117,7 @@ argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 | Call | Returns | On failure |
 |---|---|---|
 | `new()` | vfs | |
-| `exists(fs, path)` | bool | never fails |
+| `exists(fs, path)` | bool | never fails; a path that goes through a file (`/home/welcome.txt/x`) is not there |
 | `is_dir(fs, path)` | bool | never fails (`false` if missing) |
 | `list(fs, path)` | list of names | sorted; `cannot list {path}` |
 | `read(fs, path)` | string | `cannot read {path}` |

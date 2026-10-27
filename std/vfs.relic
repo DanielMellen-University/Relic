@@ -25,7 +25,7 @@ fun _parts(p)
 fun _node(fs, path)
     let cur = fs.root
     for name in _parts(path)
-        if not name in cur.kids
+        if not cur.dir or not name in cur.kids
             return none
         cur = cur.kids[name]
     return cur
@@ -109,7 +109,7 @@ fun remove(fs, path)
     let parent = paths.dir(p)
     let name = paths.base(p)
     let d = _node(fs, parent)
-    if d == none or not name in d.kids
+    if d == none or not d.dir or not name in d.kids
         fail("cannot remove " + p)
     let n = d.kids[name]
     if n.dir and len(keys(n.kids)) > 0
