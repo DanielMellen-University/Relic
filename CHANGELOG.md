@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.24 (2026-10-26)
+
+Better messages for characters that look like something else, and more tests for behavior that had none. Parsing and running are unchanged.
+
+- `unexpected character` now says what a pasted character is and what to type: a byte order mark at the start of a file (`U+FEFF`; save as UTF-8 without one), a no-break space (`U+00A0`), a zero-width space (`U+200B`), an ideographic space (`U+3000`), and curly single and double quotes. Invisible ones are named by code point, since the quoted character showed nothing. The same words come from the host (`src/lexer/lexer.cpp`) and `selfhost/lexer.relic`, so `bootstrap/cgen.c` is regenerated. New goldens `err_bom` and `err_curly_quote`.
+- `unit` checks built-in error messages and edge results (`insert`, `remove`, `pop`, `ord`, `chr`, `int`, `float`, `keys`, `len`, `slice`), the REPL's details from `CLI.md`, and parse error positions and messages for `use`, `fun`, `let`, `try`, loops, lists, maps and calls. They run in the one `unit` case, so they add nothing to the `selfhost_interp` time.
+- `c_runtime` checks `rl_type_name`, `rl_a_type`, `rl_repr`, `rl_set_field`, `rl_module_new`, `rl_range_start`, `rl_parse_num`, `rl_fail_str` and `rl_obj_value`; the file is clean under ASan and UBSan.
+- Docs: `TESTING.md` says what the unit and C runtime tests cover now, and `LANGUAGE.md` mentions the new messages.
+- Speed on this box against 1.0.13: `selfhost_interp` 11.61 s median of 3 (11.46, 11.61, 11.65; was 6.1 s with 136 programs, now 156; 1.90x, budget under 2x), `selfhost_nested` 1.00 s.
+- `ctest`: 156 default, 327 with the host, 343 in the `sdl` CI job.
+
 ## 1.0.23 (2026-10-26)
 
 A bug fix in `std/math` and more golden tests for behavior that had none. No language change.
