@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.21 (2026-10-26)
+
+Deep recursion in the self-hosted interpreter (SH3, option C), slices 4 and 5 of 6: calls, returns and errors on the frame stack. The self-hosted interpreter now reaches the host's 800-call limit.
+
+- `run` in `selfhost/interp.relic` drives one stack, `machine`, for statements, expressions and calls together, so a Relic call costs no host call. A user function call checks arity, depth and `as` hints as before, then pushes `[k_call, fun, caller_file, call]` (with `rt.file` switched to the function's file) and its body on top. When the body ends, or a `return` unwinds to it, the return hint is checked and the frame goes. A `use` of a new module pushes `[k_module, mod, caller_file, use, env]` and the module's body.
+- `return` unwinds to the nearest `k_call`; `break` and `next` to the nearest loop, but not past a function or module edge (same errors as before). An error unwinds to the nearest `try` frame, leaving each call on the way like the host does (std boundary renaming, depth, `rt.file`) and dropping the values it left on the value stack. Slice 5 (errors through calls) came with slice 4 because `c_demo` needs both.
+- The depth limit and its message are the host's: `too much recursion (more than 800 calls deep)` at the same call and position, and a `try` catches it. A third nested level of `run.relic` works now too (slow).
+- `rt_recursion`, `try_recursion` and `c_demo` are no longer skipped: `selfhost_interp` compares 147 programs (only `repl_*` skipped).
+- The old recursive `eval`, `exec_body` and `call` are still in the file, unused; slice 6 removes them.
+- New golden `call_flow`: return hints, `break` at a function edge, an error 40 calls deep caught by the caller, a `try` inside a function, calls inside expressions and assignment targets, `return` from loops in a called function. The same output on the VM, the tree-walker, compiled C and the self-hosted interpreter. Shallow (4 levels of blocks); fine for `relicc` on Windows.
+- Speed on this box against 1.0.13: `selfhost_interp` 11.58 s median of 3 (11.50, 11.58, 11.59; was 6.1 s with 136 programs, now 147; 1.90x, budget under 2x), `selfhost_nested` 1.51 s, `bench/fib.relic` on `selfhost/run.relic` about 9.0 s (fib(25); was 5.8 s).
+- `ctest`: 147 default, 309 with the host, 325 in the `sdl` CI job.
+
 ## 1.0.20 (2026-10-26)
 
 The built-in text font draws `_` (Daniel approved Oct 26 2026). Font fix only; no language change.

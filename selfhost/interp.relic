@@ -324,9 +324,7 @@ fun slot(rt, at, idx, size, what)
 # ---- statements ----
 
 fun run(rt, program)
-    let f = exec_body(rt, program, rt.globals)
-    if rt.err == none
-        outside(rt, f, true)
+    machine(rt, [[k_block, program, rt.globals, 0]])
 
 # The error for a return, break or next that reached the edge of a function
 # body or of a file (file_edge true: a return is an error there too).
@@ -358,7 +356,8 @@ fun condition(rt, n, env, what)
 #   [s_try, node, env, depth]       the try part is running above it
 # A return unwinds the whole stack, break and next unwind to the nearest
 # loop frame, and an error unwinds to the nearest try frame, which runs its
-# catch part. Calls still recurse on the host (slice 4).
+# catch part. Since 1.0.21 run() uses machine() below instead, which also
+# runs calls on its stack; this recursive path is unused until slice 6 removes it.
 let flow_normal = 0
 let flow_return = 1
 let flow_break = 2
@@ -549,8 +548,8 @@ fun assign(rt, target, v, env, value_at)
 # A step_eval frame looks at a node and pushes the frames for its parts; the
 # other steps run once those parts are on vals and combine them. Errors stop
 # the loop at once, so nothing runs after the first one, as before.
-# Since 1.0.15 every expression kind runs here except calls, which still go
-# to call() and recurse on the host (the next slices change that).
+# Since 1.0.15 every expression kind runs here except calls, which go to
+# call() and recurse on the host. Unused since 1.0.21 (see machine()).
 let step_eval = 0
 let step_unary = 1
 let step_logic_left = 2
@@ -932,6 +931,527 @@ fun std_boundary(rt, f, caller_file, n)
         stem = slice(stem, 0, len(stem) - 6)
         msg = stem + "." + f.name + "(): " + slice(msg, cut + 4, len(msg))
     rt.err = {line: n.line, col: n.col, msg: msg, file: caller_file}
+
+# ---- the machine: statements, expressions and calls on one stack ----
+
+# Since 1.0.21 (SH3, option C, slices 4 and 5) run() drives one frame stack
+# for statements, expressions and calls, so a Relic call costs no host call
+# and recursion reaches the host's limit (max_depth, same error text). Frames
+# with a code below x_eval stay on the stack while the work above them runs:
+#   [k_block, block, env, i]             runs block.kids from i on
+#   [k_while, node, env]                 checks the condition, runs the body again
+#   [k_for, node, env, items, i]         runs the body for items[i]
+#   [k_try, node, env, depth, nvals]     the try part is running above it
+#   [k_call, fun, caller_file, call]     a function body is running above it
+#   [k_module, mod, caller_file, use, env]  a module body is running above it
+# The rest are popped when they run: x_eval looks at a node and pushes the
+# frames for its parts, the others take their parts' values from vals.
+# A return unwinds to the nearest k_call, break and next to the nearest loop
+# (not past a k_call or k_module), and an error to the nearest k_try, leaving
+# each k_call on the way like the host does (std_boundary, depth, rt.file).
+# eval, exec_body and call above are the old recursive path; nothing uses
+# them now (slice 6 removes them).
+let k_block = 0
+let k_while = 1
+let k_for = 2
+let k_try = 3
+let k_call = 4
+let k_module = 5
+let x_eval = 10
+let x_binary = 11
+let x_call = 12
+let x_logic_left = 13
+let x_logic_right = 14
+let x_field = 15
+let x_index = 16
+let x_unary = 17
+let x_list = 18
+let x_interp = 19
+let x_map = 20
+let x_range_start = 21
+let x_range_end = 22
+let x_drop = 23
+let x_let = 24
+let x_assign = 25
+let x_if = 26
+let x_while = 27
+let x_for = 28
+let x_return = 29
+
+fun machine(rt, st)
+    let vals = []
+    while len(st) > 0
+        if rt.err != none
+            if not unwind_error(rt, st, vals)
+                return none
+            next
+        let fr = st[len(st) - 1]
+        let step = fr[0]
+        if step >= x_eval
+            pop(st)
+            let m = fr[1]
+            if step == x_eval
+                let en = fr[2]
+                let mk = m.kind
+                if mk == "Name"
+                    let e = find(en, m.text)
+                    if e == none
+                        not_defined(rt, m, en)
+                    else
+                        append(vals, e.vars[m.text])
+                else if mk == "Binary"
+                    if m.text == "and" or m.text == "or"
+                        append(st, [x_logic_left, m, en])
+                        append(st, [x_eval, m.kids[0], en])
+                    else
+                        append(st, [x_binary, m])
+                        append(st, [x_eval, m.kids[1], en])
+                        let a = m.kids[0]
+                        let e = none
+                        if a.kind == "Name"
+                            e = find(en, a.text)
+                        if e != none
+                            # a name on the left is read now, with no frame
+                            append(vals, e.vars[a.text])
+                        else
+                            append(st, [x_eval, a, en])
+                else if mk == "Call"
+                    # Leading names and strings (the callee, simple arguments)
+                    # are read now, with no frame; the rest get frames.
+                    let kids = m.kids
+                    let i = 0
+                    while i < len(kids)
+                        let c = kids[i]
+                        if c.kind == "Name"
+                            let e = find(en, c.text)
+                            if e == none
+                                break
+                            append(vals, e.vars[c.text])
+                        else if c.kind == "String"
+                            append(vals, c.text)
+                        else
+                            break
+                        i = i + 1
+                    append(st, [x_call, m])
+                    let j = len(kids) - 1
+                    while j >= i
+                        append(st, [x_eval, kids[j], en])
+                        j = j - 1
+                else if mk == "String"
+                    append(vals, m.text)
+                else if mk == "Number"
+                    try
+                        append(vals, num(m.text))
+                    catch err
+                        fail(rt, m, "float is too large")
+                else if mk == "True"
+                    append(vals, true)
+                else if mk == "False"
+                    append(vals, false)
+                else if mk == "None"
+                    append(vals, none)
+                else if mk == "Field"
+                    append(st, [x_field, m])
+                    append(st, [x_eval, m.kids[0], en])
+                else if mk == "Index"
+                    append(st, [x_index, m])
+                    append(st, [x_eval, m.kids[1], en])
+                    append(st, [x_eval, m.kids[0], en])
+                else if mk == "Unary"
+                    append(st, [x_unary, m])
+                    append(st, [x_eval, m.kids[0], en])
+                else if mk == "List" or mk == "Interp"
+                    if mk == "List"
+                        append(st, [x_list, m])
+                    else
+                        append(st, [x_interp, m])
+                    let i = len(m.kids) - 1
+                    while i >= 0
+                        append(st, [x_eval, m.kids[i], en])
+                        i = i - 1
+                else if mk == "Map"
+                    append(st, [x_map, m])
+                    let i = len(m.kids) - 1
+                    while i >= 0
+                        append(st, [x_eval, m.kids[i].kids[0], en])
+                        i = i - 1
+                else if mk == "Range"
+                    append(st, [x_range_start, m, en])
+                    append(st, [x_eval, m.kids[0], en])
+                else
+                    fail(rt, m, "cannot evaluate a " + mk)
+            else if step == x_binary
+                let b = pop(vals)
+                append(vals, binop(rt, m, pop(vals), b))
+            else if step == x_call
+                let start = len(vals) - len(m.kids)
+                let callee = vals[start]
+                let argv = slice(vals, start + 1, len(vals))
+                drop(vals, start)
+                if type_of(callee) != "function"
+                    fail(rt, m, "cannot call " + a_type(callee))
+                else if callee[tag] == "builtin"
+                    if callee.arity >= 0 and len(argv) != callee.arity
+                        fail(rt, m, "{callee.name}() takes {callee.arity} argument{plural(callee.arity)}, got {len(argv)}")
+                    else
+                        let r = builtin(rt, callee.name, argv)
+                        if r.err == none
+                            append(vals, r.value)
+                        else if callee.name == "fail"
+                            fail(rt, m, r.err)
+                        else
+                            fail(rt, m, callee.name + "(): " + r.err)
+                else
+                    enter(rt, st, callee, argv, m)
+            else if step == x_drop
+                pop(vals)
+            else if step == x_field
+                append(vals, field_of(rt, m, pop(vals)))
+            else if step == x_index
+                let idx = pop(vals)
+                append(vals, index_of(rt, m, pop(vals), idx))
+            else if step == x_let
+                let v = pop(vals)
+                let en = fr[2]
+                let hint = hint_of(m, 1)
+                if hint != ""
+                    check_type(rt, m.kids[0], hint, v, "'{m.text}' must be")
+                    en.hints[m.text] = hint
+                else if m.text in en.hints
+                    remove(en.hints, m.text)
+                if rt.err == none
+                    en.vars[m.text] = v
+            else if step == x_if
+                let v = pop(vals)
+                if type(v) != "bool"
+                    fail(rt, m.kids[0], "'if' condition must be true or false, got " + type_of(v))
+                else if v
+                    append(st, [k_block, m.kids[1], new_env(fr[2]), 0])
+                else if len(m.kids) > 2
+                    let c = m.kids[2]
+                    if c.kind != "If"
+                        append(st, [k_block, c, new_env(fr[2]), 0])
+                    else
+                        append(st, [x_if, c, fr[2]])
+                        append(st, [x_eval, c.kids[0], fr[2]])
+            else if step == x_while
+                let v = pop(vals)
+                if type(v) != "bool"
+                    fail(rt, m.kids[0], "'while' condition must be true or false, got " + type_of(v))
+                else if v
+                    append(st, [k_block, m.kids[1], new_env(fr[2]), 0])
+                else
+                    # the k_while frame under it
+                    pop(st)
+            else if step == x_return
+                rt.flow_node = m
+                flow_out(rt, st, vals, flow_return, pop(vals))
+            else if step == x_assign
+                let t = m.kids[0]
+                let idx = none
+                let obj = none
+                if t.kind == "Index"
+                    idx = pop(vals)
+                if t.kind != "Name"
+                    obj = pop(vals)
+                assign_set(rt, t, pop(vals), obj, idx, fr[2], m.kids[1])
+            else if step == x_for
+                let src = pop(vals)
+                let t = type_of(src)
+                let items = none
+                if t == "list"
+                    items = slice(src, 0, len(src))
+                else if t == "string"
+                    items = []
+                    for ch in src
+                        append(items, ch)
+                else if t == "map"
+                    items = keys(src)
+                else
+                    fail(rt, m.kids[0], "cannot loop over " + a_type(src))
+                if items != none
+                    append(st, [k_for, m, fr[2], items, 0])
+            else if step == x_logic_left
+                let v = pop(vals)
+                if type(v) != "bool"
+                    fail(rt, m.kids[0], "'" + m.text + "' operand must be true or false, got " + type_of(v))
+                else if m.text == "and" and not v
+                    append(vals, false)
+                else if m.text == "or" and v
+                    append(vals, true)
+                else
+                    append(st, [x_logic_right, m])
+                    append(st, [x_eval, m.kids[1], fr[2]])
+            else if step == x_logic_right
+                let v = vals[len(vals) - 1]
+                if type(v) != "bool"
+                    fail(rt, m.kids[1], "'" + m.text + "' operand must be true or false, got " + type_of(v))
+            else if step == x_unary
+                append(vals, unary_of(rt, m, pop(vals)))
+            else if step == x_list
+                let start = len(vals) - len(m.kids)
+                let l = slice(vals, start, len(vals))
+                drop(vals, start)
+                append(vals, l)
+            else if step == x_interp
+                let start = len(vals) - len(m.kids)
+                let s = ""
+                for i in start..len(vals)
+                    s = s + show(vals[i])
+                drop(vals, start)
+                append(vals, s)
+            else if step == x_map
+                let start = len(vals) - len(m.kids)
+                let mp = {}
+                for i in 0..len(m.kids)
+                    mp[m.kids[i].text] = vals[start + i]
+                drop(vals, start)
+                append(vals, mp)
+            else if step == x_range_start
+                # The start is checked before the end is evaluated.
+                whole(rt, m.kids[0], vals[len(vals) - 1], "range start")
+                append(st, [x_range_end, m])
+                append(st, [x_eval, m.kids[1], fr[2]])
+            else
+                # x_range_end
+                let b = whole(rt, m.kids[1], pop(vals), "range end")
+                let a = pop(vals)
+                if rt.err == none
+                    if b - a > 10000000
+                        fail(rt, m, "range is too large")
+                    else
+                        append(vals, a..b)
+        else if step == k_block
+            let kids = fr[1].kids
+            let i = fr[3]
+            if i >= len(kids)
+                pop(st)
+                next
+            fr[3] = i + 1
+            let n = kids[i]
+            let en = fr[2]
+            let k = n.kind
+            if k == "ExprStmt"
+                append(st, [x_drop, n])
+                append(st, [x_eval, n.kids[0], en])
+            else if k == "Let"
+                append(st, [x_let, n, en])
+                append(st, [x_eval, n.kids[0], en])
+            else if k == "Assign"
+                append(st, [x_assign, n, en])
+                let t = n.kids[0]
+                if t.kind == "Index"
+                    append(st, [x_eval, t.kids[1], en])
+                if t.kind != "Name"
+                    append(st, [x_eval, t.kids[0], en])
+                append(st, [x_eval, n.kids[1], en])
+            else if k == "If"
+                append(st, [x_if, n, en])
+                append(st, [x_eval, n.kids[0], en])
+            else if k == "Return"
+                if len(n.kids) == 0
+                    rt.flow_node = n
+                    flow_out(rt, st, vals, flow_return, none)
+                else
+                    append(st, [x_return, n])
+                    append(st, [x_eval, n.kids[0], en])
+            else if k == "While"
+                append(st, [k_while, n, en])
+            else if k == "For"
+                append(st, [x_for, n, en])
+                append(st, [x_eval, n.kids[0], en])
+            else if k == "Break"
+                rt.flow_node = n
+                flow_out(rt, st, vals, flow_break, none)
+            else if k == "Next"
+                rt.flow_node = n
+                flow_out(rt, st, vals, flow_next, none)
+            else if k == "Fun"
+                rt.next_id = rt.next_id + 1
+                en.vars[n.text] = tagged({name: n.text, node: n, closure: en, id: rt.next_id, file: rt.file}, "fun")
+            else if k == "Try"
+                append(st, [k_try, n, en, rt.depth, len(vals)])
+                append(st, [k_block, n.kids[0], new_env(en), 0])
+            else if k == "Use"
+                use_module(rt, st, n, en)
+            else
+                fail(rt, n, "cannot run a " + k + " here")
+        else if step == k_call
+            # The body ended without a return.
+            let body = fr[1].node.kids[1]
+            if body.kind != "Block"
+                finish_call(rt, st, vals, pop(vals), body)
+            else
+                finish_call(rt, st, vals, none, fr[1].node)
+        else if step == k_while
+            append(st, [x_while, fr[1], fr[2]])
+            append(st, [x_eval, fr[1].kids[0], fr[2]])
+        else if step == k_for
+            let i = fr[4]
+            if i >= len(fr[3])
+                pop(st)
+                next
+            fr[4] = i + 1
+            let scope = new_env(fr[2])
+            scope.vars[fr[1].text] = fr[3][i]
+            append(st, [k_block, fr[1].kids[1], scope, 0])
+        else if step == k_try
+            # the try part ended without an error
+            pop(st)
+        else
+            # k_module: the module's body ended
+            pop(st)
+            rt.file = fr[2]
+            bind_module(fr[3], fr[4], fr[1])
+    if len(vals) > 0
+        return vals[0]
+    return none
+
+# A user function call: checks, then a k_call frame and its body on top.
+fun enter(rt, st, f, argv, n)
+    let params = f.node.kids[0].kids
+    if len(argv) != len(params)
+        return fail(rt, n, "{f.name}() takes {len(params)} argument{plural(len(params))}, got {len(argv)}")
+    if rt.depth >= max_depth
+        return fail(rt, n, "too much recursion (more than {max_depth} calls deep)")
+    let scope = new_env(f.closure)
+    for i in 0..len(argv)
+        let prm = params[i]
+        if len(prm.kids) > 0
+            check_type(rt, n, prm.kids[0].text, argv[i], "{f.name}() argument '{prm.text}' must be")
+            if rt.err != none
+                return none
+            scope.hints[prm.text] = prm.kids[0].text
+        scope.vars[prm.text] = argv[i]
+    rt.depth = rt.depth + 1
+    append(st, [k_call, f, rt.file, n])
+    rt.file = f.file
+    let body = f.node.kids[1]
+    if body.kind == "Block"
+        append(st, [k_block, body, scope, 0])
+    else
+        append(st, [x_eval, body, scope])
+
+# The k_call frame on top gets its result: the return hint is checked (an
+# error leaves the frame for unwind_error), then the frame goes.
+fun finish_call(rt, st, vals, result, at)
+    let fr = st[len(st) - 1]
+    let f = fr[1]
+    let ret_hint = hint_of(f.node, 2)
+    if ret_hint != ""
+        check_type(rt, at, ret_hint, result, "{f.name}() must return")
+        if rt.err != none
+            return none
+    pop(st)
+    rt.depth = rt.depth - 1
+    rt.file = fr[2]
+    append(vals, result)
+
+# return, break or next: unwind to where it goes, or fail at the edge of a
+# function body or a file like outside() does.
+fun flow_out(rt, st, vals, flow, v)
+    while len(st) > 0
+        let k = st[len(st) - 1][0]
+        if k == k_call
+            if flow == flow_return
+                return finish_call(rt, st, vals, v, rt.flow_node)
+            return outside(rt, flow, false)
+        if k == k_module
+            return outside(rt, flow, true)
+        if flow != flow_return and (k == k_while or k == k_for)
+            if flow == flow_break
+                pop(st)
+            return none
+        pop(st)
+    outside(rt, flow, true)
+
+# An error unwinds to the nearest k_try, which runs its catch part; each
+# k_call and k_module on the way is left like the host leaves a call or a
+# module. Gives false when no try catches it.
+fun unwind_error(rt, st, vals)
+    while len(st) > 0
+        let fr = pop(st)
+        let k = fr[0]
+        if k == k_try
+            let e = rt.err
+            rt.err = none
+            rt.depth = fr[3]
+            drop(vals, fr[4])
+            let scope = new_env(fr[2])
+            if fr[1].text != ""
+                scope.vars[fr[1].text] = {message: e.msg, line: e.line, col: e.col}
+            append(st, [k_block, fr[1].kids[1], scope, 0])
+            return true
+        if k == k_call
+            std_boundary(rt, fr[1], fr[2], fr[3])
+            rt.depth = rt.depth - 1
+            rt.file = fr[2]
+        else if k == k_module
+            rt.file = fr[2]
+    return false
+
+# assign() with the target's parts already evaluated (obj, idx).
+fun assign_set(rt, target, v, obj, idx, env, value_at)
+    if target.kind == "Name"
+        let e = find(env, target.text)
+        if e == none or host_same(e, rt.builtins)
+            return fail(rt, target, "'{target.text}' is not declared; use 'let {target.text} = ...'")
+        if target.text in e.hints
+            check_type(rt, value_at, e.hints[target.text], v, "'{target.text}' must be")
+            if rt.err != none
+                return
+        e.vars[target.text] = v
+        return
+    let t = type_of(obj)
+    if target.kind == "Field"
+        if t == "module"
+            return fail(rt, target, "cannot change a module's names from outside; give it a function that does it")
+        if t != "map"
+            return fail(rt, target, "cannot set a field on " + a_type(obj))
+        obj[target.text] = v
+        return
+    if t == "list"
+        let i = slot(rt, target.kids[1], idx, len(obj), "list index")
+        if i != none
+            obj[i] = v
+    else if t == "map"
+        if type(idx) != "string"
+            return fail(rt, target.kids[1], "map keys must be strings")
+        obj[idx] = v
+    else
+        fail(rt, target, "cannot set an index on " + a_type(obj))
+
+# load_module() on the stack: a new module's body runs in a k_module frame.
+fun use_module(rt, st, n, en)
+    let path = n.text
+    let file = folder_of(rt.file) + path + ".relic"
+    if len(path) >= 4 and slice(path, 0, 4) == "std/"
+        file = host_std_root() + slice(path, 4, len(path)) + ".relic"
+    let key = norm_path(file)
+    if key in rt.modules
+        return bind_module(n, en, rt.modules[key])
+    if not files.exists(file)
+        return fail(rt, n, "cannot find module '{path}' (no file {path}.relic)")
+    let name = slice(path, last_slash(path) + 1, len(path))
+    let mod = new_module(name, new_env(rt.builtins))
+    rt.modules[key] = mod
+    let lexed = lexer.lex(files.read(file))
+    let err = lexed.err
+    if err == none
+        let parsed = parser.parse(lexed.tokens)
+        err = parsed.err
+        if err == none
+            append(st, [k_module, mod, rt.file, n, en])
+            rt.file = file
+            append(st, [k_block, parsed.tree, mod.scope, 0])
+            return none
+    rt.err = {line: err.line, col: err.col, msg: err.msg, file: file}
+
+fun bind_module(n, en, m)
+    if len(n.kids) > 0
+        en.vars[n.kids[0].text] = m
+    else
+        en.vars[m.name] = m
 
 # ---- built-ins: {value, err}, err is the message without the name ----
 

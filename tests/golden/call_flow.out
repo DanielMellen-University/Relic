@@ -1,0 +1,15 @@
+1
+f() must return int, got string 5 9
+'break' outside a loop 14
+bottom 23
+caught bottom true
+x list index 2 is out of range (size 2)
+x list index 4 is out of range (size 2)
+x list index 5 is out of range (size 2)
+[0, 1]
+h() argument 'a' must be int, got string
+k() must return string, got int 21
+{a: [1, {b: 28}]} 4-2 [2, [3]]
+3 true
+4 none
+end

@@ -3,15 +3,12 @@
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -P tools/compare_interp.cmake
 # Skipped, with the reason:
 #   repl_*         typed into the REPL, not run as files
-#   rt_recursion   the host's 800-call limit is reached by the interpreter itself first
-#   try_recursion  same reason
-#   c_demo         same reason (it also recurses 800 deep)
 file(GLOB files ${SRC}/tests/golden/*.relic)
 set(bad 0)
 set(total 0)
 foreach(f ${files})
   get_filename_component(n ${f} NAME_WE)
-  if(n MATCHES "^repl_" OR n STREQUAL "rt_recursion" OR n STREQUAL "try_recursion" OR n STREQUAL "c_demo")
+  if(n MATCHES "^repl_")
     continue()
   endif()
   math(EXPR total "${total}+1")
