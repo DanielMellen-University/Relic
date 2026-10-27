@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.27 (2026-10-27)
+
+`relic check` written in Relic (the first half of SH4), and one bug fix in the self-hosted interpreter. No language change, and the host's `relic check` is untouched.
+
+- New `selfhost/check.relic`: `relic selfhost/check.relic FILE...` prints the same warnings as `relic check FILE...`, in the same order, with the same exit codes (scopes and late names, use before definition, "did you mean", `return`, `break` and `next` in the wrong place, number literals that do not fit, syntax errors, files that cannot be opened). It uses the Relic-written lexer, parser and interpreter and needs no new built-in.
+- `selfhost/interp.relic`: an integer literal past 64 bits ran as a float. It is now the host's error, `int is too large (the limit is 9223372036854775807)`. New goldens `err_int_literal_large` and `err_float_literal_large`.
+- Tests: `selfhost_check` compares `check.relic` with `relic check` on 15 files in `tests/check_cases` and on every `.relic` file in the tree, and on runs with several files and missing ones; `cgen_selfhost_check` does the same with `check.relic` compiled to C; `selfhost_check_nested` runs it on the Relic-written interpreter. The lexer and parser tests also read `tests/check_cases`. `tools/fuzz_check.py` makes random programs for a bigger comparison by hand (seeds 1 to 1500 agree).
+- The REPL half of SH4 is not done: it needs a built-in that reads standard input, which Relic does not have. SH4 stays open on the roadmap.
+- Speed: `selfhost_interp` 8.78 s median of 3 on a quiet box (1.44x the 6.1 s baseline; the new goldens add little).
+- `ctest`: 161 default, 341 with the host.
+
 ## 1.0.26 (2026-10-27)
 
 Bug fixes in `std/strings`, `std/json`, `relic check` and the self-hosted interpreter's exit codes, a faster `selfhost_interp`, and tests that check what the docs say. No language change.
