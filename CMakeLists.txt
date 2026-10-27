@@ -192,6 +192,11 @@ if(RELIC_BUILD_HOST)
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_selfhost_cli.cmake)
 
+  # The command line as CLI.md describes it.
+  add_test(NAME cli
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DTMP=${CMAKE_CURRENT_BINARY_DIR}/cli_test
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_cli.cmake)
+
   add_test(NAME vm_matches_tree_walker
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_vm.cmake)

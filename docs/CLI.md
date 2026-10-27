@@ -26,7 +26,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 |---|---|
 | 0 | the program ran to the end, or the REPL was left |
 | 1 | a syntax or runtime error nobody caught, or `relic check` found something |
-| 2 | bad usage, or the file could not be opened (`relic: cannot open x.relic`) |
+| 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`) |
 | any | the program called `os.exit(code)` |
 
 ## Output

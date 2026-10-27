@@ -31,6 +31,10 @@ int main(int argc, char** argv) {
         usage();
         return 0;
     }
+    if (argc == 2 && std::string(argv[1]) == "check") {
+        usage();
+        return 2;
+    }
     if (argc >= 3 && std::string(argv[1]) == "check") {
         int code = 0;
         for (int i = 2; i < argc; ++i) {
