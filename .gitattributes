@@ -4,3 +4,4 @@
 *.out text eol=lf
 *.err text eol=lf
 *.args text eol=lf
+*.in -text

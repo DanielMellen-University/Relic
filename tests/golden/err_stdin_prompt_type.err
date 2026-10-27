@@ -1,0 +1,3 @@
+err_stdin_prompt_type.relic:2:10: error: os.prompt(): prompt must be a string, got int
+    os.prompt(42)
+             ^

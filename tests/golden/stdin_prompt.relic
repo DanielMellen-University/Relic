@@ -1,0 +1,7 @@
+# os.prompt(text) reads like os.read_line(). The text is shown only when stdin is
+# a terminal, so with input from a file nothing of it is printed.
+use std/os
+print(os.prompt("name? "))
+print(os.prompt(""))
+print(os.prompt("more? "))
+print([os.read_line()])

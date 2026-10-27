@@ -1,0 +1,11 @@
+first
+
+third line  with  spaces  
+   
+
+crlf line
+
+lone cr at end
+tab	here
+unicode é€😀 ok
+last without newline

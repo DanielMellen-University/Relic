@@ -16,6 +16,17 @@ namespace relic { std::string std_root(); }
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <cstdio>
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#define RELIC_ISATTY(fd) _isatty(fd)
+#define RELIC_FILENO(f) _fileno(f)
+#else
+#include <unistd.h>
+#define RELIC_ISATTY(fd) isatty(fd)
+#define RELIC_FILENO(f) fileno(f)
+#endif
 
 namespace relic {
 
@@ -320,6 +331,40 @@ void Interpreter::install_builtins() {
     add("host_env", 1, [str_arg](std::vector<Value>& a) {
         const char* v = std::getenv(str_arg(a[0], "name").c_str());
         return v ? Value(std::string(v)) : Value();
+    });
+    // host_read_line(prompt): the next line of standard input without its line
+    // end ("\n" or "\r\n"), or none at the end of the input. When stdin is a
+    // terminal the prompt is shown first (and a newline follows at the end of
+    // the input); otherwise the prompt is ignored. Reads the C stdin in binary
+    // mode, so the REPL and a program share one buffer and Windows leaves the
+    // bytes alone.
+    add("host_read_line", 1, [str_arg, this](std::vector<Value>& a) -> Value {
+        const std::string& prompt = str_arg(a[0], "prompt");
+        static bool binary = false;
+        if (!binary) {
+            binary = true;
+#ifdef _WIN32
+            _setmode(_fileno(stdin), _O_BINARY);
+#endif
+        }
+        bool tty = RELIC_ISATTY(RELIC_FILENO(stdin)) != 0;
+        if (tty && !prompt.empty()) out_ << prompt << std::flush;
+        std::string line;
+        int c;
+        bool any = false;
+        while ((c = std::getc(stdin)) != EOF) {
+            any = true;
+            if (c == '\n') {
+                if (!line.empty() && line.back() == '\r') line.pop_back();
+                return Value(line);
+            }
+            line.push_back(static_cast<char>(c));
+        }
+        if (!any) {
+            if (tty && !prompt.empty()) out_ << "\n" << std::flush;
+            return Value();
+        }
+        return Value(line);
     });
     add("host_exit", 1, [whole_arg, this](std::vector<Value>& a) -> Value {
         long long code = whole_arg(a[0], "code");

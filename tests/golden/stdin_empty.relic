@@ -1,0 +1,4 @@
+# Empty input: the first read is already the end.
+use std/os
+print(os.read_line())
+print(os.read_line() == none)

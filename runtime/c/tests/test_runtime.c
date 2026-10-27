@@ -322,6 +322,8 @@ static void test_errors_and_builtins(void) {
     a[0] = S("x");
     ERR(call("host_floor", 1, a, &r), "host_floor(): argument must be a number, got string");
     rl_release(a[0]);
+    a[0] = rl_int(42);   /* the prompt of host_read_line must be a string (nothing is read) */
+    ERR(call("host_read_line", 1, a, &r), "host_read_line(): prompt must be a string, got int");
     a[0] = S("/nonexistent/x");
     ERR(call("host_read_file", 1, a, &r), "host_read_file(): cannot open /nonexistent/x");
     rl_release(a[0]);
@@ -368,7 +370,7 @@ static void test_errors_and_builtins(void) {
     SHOW(call1("type", rl_none()), "none");
     SHOW(call1("type", rl_float(1.5)), "float");
     CHECK(rl_builtin("host_names", &f));
-    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 77);
+    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 78);
     rl_release(r);
     rl_release(f);
     SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");   /* relic_rt has the stub */

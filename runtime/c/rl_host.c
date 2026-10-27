@@ -18,6 +18,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <direct.h>
+#include <fcntl.h>
+#include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #else
@@ -326,6 +328,57 @@ BI(h_env) {
     return RL_OK;
 }
 
+/* host_read_line(prompt): the next line of standard input without its line end
+ * ("\n" or "\r\n"), or none at the end of the input. On a terminal the prompt
+ * is shown first (and a newline follows at the end of the input); otherwise the
+ * prompt is ignored. Same as the C++ host's. */
+BI(h_read_line) {
+    char *data = NULL;
+    size_t n = 0, cap = 0;
+    int c, tty, any = 0;
+    static int binary = 0;
+    UNUSED;
+    if (rl_arg_str(cx, a[0], "prompt")) return RL_ERR;
+    if (!binary) {
+        binary = 1;
+#ifdef _WIN32
+        _setmode(_fileno(stdin), _O_BINARY);
+#endif
+    }
+#ifdef _WIN32
+    tty = _isatty(_fileno(stdin)) != 0;
+#else
+    tty = isatty(0) != 0;
+#endif
+    if (tty && S(a[0])->len > 0) {
+        fwrite(S(a[0])->data, 1, S(a[0])->len, cx->out);
+        fflush(cx->out);
+    }
+    while ((c = getc(stdin)) != EOF) {
+        any = 1;
+        if (c == '\n') {
+            if (n > 0 && data[n - 1] == '\r') --n;
+            *out = rl_str_new(data ? data : "", n);
+            free(data);
+            return RL_OK;
+        }
+        if (n == cap) {
+            cap = cap ? cap * 2 : 128;
+            data = (char *)realloc(data, cap);
+            if (!data) abort();
+        }
+        data[n++] = (char)c;
+    }
+    if (!any) {
+        if (tty && S(a[0])->len > 0) { fputc('\n', cx->out); fflush(cx->out); }
+        *out = rl_none();
+        return RL_OK;
+    }
+    *out = rl_str_new(data, n);
+    free(data);
+    return RL_OK;
+}
+
 BI(h_exit) {
     long long code;
     UNUSED;
@@ -460,7 +513,7 @@ static const rl_builtin_def g_host[] = {
     {"host_exp", 1, h_exp}, {"host_log", 1, h_log}, {"host_pow", 2, h_pow},
     {"host_list_dir", 1, h_list_dir}, {"host_is_dir", 1, h_is_dir}, {"host_make_dir", 1, h_make_dir},
     {"host_remove", 1, h_remove}, {"host_rename", 2, h_rename}, {"host_file_size", 1, h_file_size},
-    {"host_cwd", 0, h_cwd}, {"host_env", 1, h_env}, {"host_exit", 1, h_exit}, {"host_sleep", 1, h_sleep},
+    {"host_cwd", 0, h_cwd}, {"host_env", 1, h_env}, {"host_read_line", 1, h_read_line}, {"host_exit", 1, h_exit}, {"host_sleep", 1, h_sleep},
     {"host_same", 2, h_same}, {"host_std_root", 0, h_std_root}, {"host_names", 0, h_names}, {"host_call", 2, h_call},
     {NULL, 0, NULL}};
 

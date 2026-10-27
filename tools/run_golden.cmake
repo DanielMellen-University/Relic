@@ -1,6 +1,7 @@
 # Golden test runner. Usage:
 #   cmake -DRELIC=path/to/relic -DTEST=tests/golden/name.relic -P tools/run_golden.cmake
 # Optional name.args holds flags to pass first.
+# Optional name.in is fed to the program on stdin (a file without it gets no input).
 # Files named repl_*.relic are fed to `relic` on stdin instead; stdout is
 # compared with .out and stderr with .err (both optional, empty if missing).
 # Compares stdout with name.out, or stderr with name.err (and exit code 1) for error tests.
@@ -12,6 +13,11 @@ if(EXISTS ${dir}/${name}.args)
   file(READ ${dir}/${name}.args args)
   string(STRIP "${args}" args)
   separate_arguments(args)
+endif()
+# Without name.in stdin is empty (an empty file), never the terminal running ctest.
+set(stdin_file ${dir}/${name}.in)
+if(NOT EXISTS ${stdin_file})
+  set(stdin_file ${CMAKE_CURRENT_LIST_DIR}/empty.in)
 endif()
 string(REGEX MATCH "^repl_" is_repl "${name}")
 if(is_repl)
@@ -26,6 +32,7 @@ if(is_repl)
 else()
   execute_process(
     COMMAND ${RELIC} ${args} ${TEST}
+    INPUT_FILE ${stdin_file}
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE out
     ERROR_VARIABLE err

@@ -1,0 +1,14 @@
+1 5 [first]
+2 0 []
+3 26 [third line  with  spaces  ]
+4 3 [   ]
+5 0 []
+6 9 [crlf line]
+7 1 [<CR>]
+8 14 [lone cr at end]
+9 8 [tab	here]
+10 14 [unicode é€😀 ok]
+11 20 [last without newline]
+lines 11
+none none none
+none

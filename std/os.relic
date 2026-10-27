@@ -4,3 +4,9 @@ fun args() = host_args()             # words after the file name
 fun env(name) = host_env(name)    # a string, or none when not set
 fun cwd() = host_cwd()            # current folder, with "/" separators
 fun exit(code) = host_exit(code)  # stops the program now with this exit code
+
+# Standard input. Both give the next line without its line end ("\n" or "\r\n"),
+# or none at the end of the input. prompt(text) shows text first, but only when
+# stdin is a terminal (nothing is shown into a pipe or from a file).
+fun read_line() = host_read_line("")
+fun prompt(text) = host_read_line(text)

@@ -140,10 +140,10 @@ At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: t
 `rl_builtin(name, &out)` gives the shared function object for any built-in, so `print == print` holds. Generated code looks each one up once.
 
 - Language built-ins: `print`, `eprint`, `len`, `append`, `str`, `keys`, `fail`, `gc`, `type`, `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `args`.
-- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_std_root`, `host_names`, `host_call`.
+- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_read_line`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_std_root`, `host_names`, `host_call`.
 - Graphics stubs and the clipboard: see below.
 
-`host_names()` lists the same 77 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
+`host_names()` lists the same 78 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
 `num("...")` follows the host: digits that fit give an int, otherwise the whole text must read as a float through `strtod`, so hex floats, `inf` and `nan` work and an out-of-range number is not a number.
 

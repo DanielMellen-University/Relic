@@ -6,8 +6,14 @@
 # "cgen-skip: ..." and the test is reported as skipped.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
+# name.in is the program's stdin; without it stdin is empty.
+set(stdin_file ${dir}/${name}.in)
+if(NOT EXISTS ${stdin_file})
+  set(stdin_file ${CMAKE_CURRENT_LIST_DIR}/empty.in)
+endif()
 execute_process(
   COMMAND ${CMAKE_COMMAND} -E env RELIC_LEAK_CHECK=1 ${EXE}
+  INPUT_FILE ${stdin_file}
   WORKING_DIRECTORY ${dir}
   OUTPUT_VARIABLE out
   ERROR_VARIABLE err

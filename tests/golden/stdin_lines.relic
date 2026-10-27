@@ -1,0 +1,17 @@
+# os.read_line(): lines without their line end, none at the end of the input.
+# stdin_lines.in has empty lines, blank lines, CRLF line ends, a lone CR before a
+# CRLF, UTF-8 text and a last line with no newline.
+use std/os
+use std/strings
+let n = 0
+while true
+    let line = os.read_line()
+    if line == none
+        break
+    n = n + 1
+    # a CR that is left shows as <CR>, so the output has no raw carriage returns
+    print(n, len(line), "[" + strings.replace(line, chr(13), "<CR>") + "]")
+print("lines", n)
+# At the end the answer stays none, however often you ask.
+print(os.read_line(), os.read_line(), os.read_line())
+print(type(os.read_line()))

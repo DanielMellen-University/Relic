@@ -1,0 +1,17 @@
+# Long lines, a NUL byte, bytes that are not UTF-8, a Ctrl-Z byte (0x1A, which
+# a Windows text-mode stdin would take for the end of the input), and an empty last line.
+# Compared by length and checksum so the output stays small.
+use std/os
+fun sum(s)
+    let t = 0
+    for c in s
+        t = (t * 31 + ord(c)) % 1000003
+    return t
+let n = 0
+while true
+    let line = os.read_line()
+    if line == none
+        break
+    n = n + 1
+    print(n, len(line), sum(line))
+print("lines", n)

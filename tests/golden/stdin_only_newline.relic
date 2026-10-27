@@ -1,0 +1,6 @@
+# One empty line: it is "", and the next read is none (not another "").
+use std/os
+let a = os.read_line()
+print([a], a == "", a == none)
+let b = os.read_line()
+print(b, b == none)
