@@ -65,6 +65,8 @@ fun split(s, sep)
         for c in s
             append(parts, c)
         return parts
+    if len(s) > 4096
+        return _split_long(s, sep)
     let rest = s
     let i = find(rest, sep)
     while i >= 0
@@ -73,6 +75,39 @@ fun split(s, sep)
         i = find(rest, sep)
     append(parts, rest)
     return parts
+
+# split for long text: cutting the rest off again after each piece copied the
+# rest each time, so a file of 20,000 lines took seconds. This walks the
+# characters once and joins each piece from them.
+fun _split_long(s, sep)
+    let cs = []
+    for c in s
+        append(cs, c)
+    let ss = []
+    for c in sep
+        append(ss, c)
+    let n = len(cs)
+    let m = len(ss)
+    let parts = []
+    let start = 0
+    let i = 0
+    while i + m <= n
+        let k = 0
+        while k < m and cs[i + k] == ss[k]
+            k = k + 1
+        if k == m
+            append(parts, _piece(cs, start, i))
+            i = i + m
+            start = i
+        else
+            i = i + 1
+    append(parts, _piece(cs, start, n))
+    return parts
+
+fun _piece(cs, a, b)
+    if b <= a
+        return ""
+    return _join(cs, "", a, b)
 
 fun join(items, sep)
     let parts = []

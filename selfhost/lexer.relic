@@ -48,19 +48,24 @@ fun unicode_escape(st, el, ec)
         return none
     return chr(cp)
 
+# The source is read from a list of its characters: indexing a string walks its
+# UTF-8 from the start, so a long file took time growing with the square of its size.
 fun new_state(src)
-    return {src: src, pos: 0, line: 1, col: 1, last_end: 1, indents: [0], brackets: [], interp: [], out: [], err: none}
+    let chars = []
+    for ch in src
+        append(chars, ch)
+    return {src: src, chars: chars, n: len(chars), pos: 0, line: 1, col: 1, last_end: 1, indents: [0], brackets: [], interp: [], out: [], err: none}
 
-fun eof(st) = st.pos >= len(st.src)
+fun eof(st) = st.pos >= st.n
 
 fun peek(st, ahead)
     let i = st.pos + ahead
-    if i < len(st.src)
-        return st.src[i]
+    if i < st.n
+        return st.chars[i]
     return ""
 
 fun advance(st)
-    let c = st.src[st.pos]
+    let c = st.chars[st.pos]
     st.pos = st.pos + 1
     if c == "\n"
         st.last_end = st.col
@@ -78,6 +83,13 @@ fun fail(st, l, c, msg)
         st.err = {line: l, col: c, msg: msg}
 
 fun last(xs) = xs[len(xs) - 1]
+
+# The characters from start up to the current position, as a string.
+fun text_of(st, start)
+    let t = ""
+    for i in start..st.pos
+        t = t + st.chars[i]
+    return t
 
 fun skip_comment(st)
     while not eof(st) and peek(st, 0) != "\n"
@@ -159,13 +171,13 @@ fun number(st, l, c)
     if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
         fail(st, st.line, st.col, "letter right after a number")
         return
-    emit(st, "NUMBER", slice(st.src, start, st.pos), l, c)
+    emit(st, "NUMBER", text_of(st, start), l, c)
 
 fun name(st, l, c)
     let start = st.pos
     while is_word(peek(st, 0))
         advance(st)
-    let word = slice(st.src, start, st.pos)
+    let word = text_of(st, start)
     if word in keywords
         emit(st, keywords[word], word, l, c)
     else
