@@ -304,9 +304,40 @@ static void test_repl() {
     CHECK(o2.str() == "6\n");
 }
 
+// REPL details from docs/CLI.md: what a bare expression prints, how errors read
+// (line numbers count from the start of that input), :quit, blank input.
+static void test_repl_details() {
+    auto repl = [](const std::string& input, std::string& out, std::string& err) {
+        std::istringstream in(input);
+        std::ostringstream o, e;
+        int rc = relic::repl(in, o, e, false);
+        out = o.str();
+        err = e.str();
+        return rc;
+    };
+    std::string out, err;
+    CHECK(repl("none\n1 + 1\n\"s\"\n[1, \"a\"]\n{a: 1}\n", out, err) == 0);
+    CHECK(out == "2\n\"s\"\n[1, \"a\"]\n{a: 1}\n" && err.empty());
+    // errors keep the session going; a block's error line counts inside the block
+    CHECK(repl("let a = 1\nlet b =\n\nfun g()\n    return nope\n\ng()\nlen(1, 2)\na\n", out, err) == 0);
+    CHECK(out == "1\n");
+    CHECK(err == "<repl>:1:8: error: expected an expression, got end of line\n"
+                 "<repl>:2:12: error: 'nope' is not defined\n"
+                 "<repl>:1:4: error: len() takes 1 argument, got 2\n");
+    // :quit stops reading; blank lines and comments run nothing
+    CHECK(repl("\n  \n# note\n5\n:quit\n6\n", out, err) == 0);
+    CHECK(out == "5\n" && err.empty());
+    // an open bracket keeps reading, a try block runs as one chunk
+    CHECK(repl("[1,\n2]\ntry\n    fail(\"x\")\ncatch e\n    print(e.message)\n\n", out, err) == 0);
+    CHECK(out == "[1, 2]\nx\n" && err.empty());
+    CHECK(repl("let l = [1]\nl[5]\nl\n", out, err) == 0);
+    CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n");
+}
+
 int main() {
     test_parser();
     test_repl();
+    test_repl_details();
     test_interp();
     test_builtins();
     test_core();
