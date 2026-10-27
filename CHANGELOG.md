@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.22 (2026-10-26)
+
+Deep recursion in the self-hosted interpreter (SH3, option C), slice 6 of 6: the old recursive path is gone. SH3 is done.
+
+- `selfhost/interp.relic` loses `eval`, `exec_body`, `call`, `condition`, `assign`, `load_module`, their frame-step constants and the old flow-normal code: about 470 lines nothing called since 1.0.21. `run` and `machine` are the only way a program runs. Nothing in the file recurses on the host for a Relic call, a block or an expression any more. No change in behavior.
+- The depth limit is the host's: 800 calls, the same message (`too much recursion (more than 800 calls deep)`), the same position, catchable. New golden `recursion_limit` pins it: the 800th nested call runs and the 801st fails, for a block body, an expression body and two functions calling each other; `e.line` of the error; and the depth is back to zero after a `catch`, so the limit is the same the next time. The same output on the VM, the tree-walker, compiled C and the self-hosted interpreter.
+- Speed on this box against 1.0.13: `selfhost_interp` 11.66 s median of 3 (11.66, 11.66, 11.82; was 6.1 s with 136 programs, now 148; 1.91x, budget under 2x), `selfhost_nested` 0.97 s, `bench/fib.relic` on `selfhost/run.relic` about 8.8 s (fib(25)).
+- `ctest`: 148 default, 311 with the host, 327 in the `sdl` CI job. `selfhost_interp` compares 148 programs (only `repl_*` skipped).
+
 ## 1.0.21 (2026-10-26)
 
 Deep recursion in the self-hosted interpreter (SH3, option C), slices 4 and 5 of 6: calls, returns and errors on the frame stack. The self-hosted interpreter now reaches the host's 800-call limit.

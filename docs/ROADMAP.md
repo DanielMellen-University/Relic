@@ -32,7 +32,7 @@ Relic-written front end and interpreter. These run on the host today and are kep
 - [x] Interpreter rewritten in Relic (`selfhost/interp.relic`, tree-walk; `use` for local files and `std/`)
 - [x] SH1: the self-hosted interpreter runs real programs with their args (`selfhost_args`)
 - [x] SH2: it runs itself: `run.relic` on `run.relic` on a test program (`selfhost_nested`)
-- [ ] SH3: parity with the host: `num()` and `gc()` (done), deep recursion (open; Daniel picked option C on Oct 24 2026, an explicit frame stack in `eval`, in slices; slices 1 to 5 done in 1.0.14, 1.0.15, 1.0.19 and 1.0.21; slice 6 removes the unused recursive path), every skipped comparison test passing (done in 1.0.21)
+- [x] SH3: parity with the host: `num()` and `gc()` (1.0.13), deep recursion (Daniel picked option C on Oct 24 2026, an explicit frame stack in slices: 1.0.14, 1.0.15, 1.0.19, 1.0.21 and 1.0.22, which removed the old recursive path), every comparison test passing but the REPL ones
 - [ ] SH4: `relic check` and the REPL written in Relic
 
 Compiler to C:
