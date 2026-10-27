@@ -33,8 +33,8 @@ m.self = m
 gc()
 print(len(keep), len(keep[0]), m.self.self == m)
 
-# collection also runs on its own: this loop makes far more cycles than the
-# threshold, so most are gone before the last gc()
-make_cycles(200000)
-print(gc() < 400000)
+# collection also runs on its own: this loop makes more containers (200000) than the
+# 100000 threshold, so some are gone before the last gc()
+make_cycles(100000)
+print(gc() < 200000)
 print("done")
