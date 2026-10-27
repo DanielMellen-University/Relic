@@ -14,8 +14,8 @@ foreach(f ${goldens})
     math(EXPR compiled "${compiled}+1")
   endif()
 endforeach()
-# what selfhost_lexer and selfhost_parser read: goldens, their helper modules, std/ and selfhost/
-file(GLOB lexed ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic ${SRC}/selfhost/*.relic)
+# what selfhost_lexer and selfhost_parser read: goldens, their helper modules, std/, selfhost/ and the check cases
+file(GLOB lexed ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic ${SRC}/selfhost/*.relic ${SRC}/tests/check_cases/*.relic)
 list(LENGTH lexed lexed_count)
 
 file(READ ${SRC}/docs/TESTING.md testing)

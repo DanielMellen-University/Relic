@@ -3,7 +3,7 @@
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -P tools/compare_lexers.cmake
 # With -DTOOL=path, that program (selfhost/tokens.relic compiled to C) is
 # checked instead of running selfhost/tokens.relic on the host.
-file(GLOB files ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic ${SRC}/selfhost/*.relic)
+file(GLOB files ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic ${SRC}/selfhost/*.relic ${SRC}/tests/check_cases/*.relic)
 set(bad 0)
 foreach(f ${files})
   execute_process(COMMAND ${RELIC} --tokens ${f} OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err)

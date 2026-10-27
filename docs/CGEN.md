@@ -146,7 +146,7 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 | Test | Checks |
 |---|---|
-| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/` and `selfhost/` file (194 today) |
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (207 today) |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 
