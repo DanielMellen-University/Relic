@@ -222,6 +222,44 @@ static void test_parser() {
     CHECK(parse_error("for i x\n    a") == "1:7 expected 'in' after the loop name, got name 'x'");
 }
 
+// Parse errors for each kind of statement and expression: where the caret goes
+// and what the message says (the unclosed-bracket cases come from the lexer, so
+// they are in test_layout).
+static void test_parse_errors() {
+    CHECK(parse_error("use\n") == "1:4 expected a module name after 'use', got end of line");
+    CHECK(parse_error("use 5\n") == "1:5 expected a module name after 'use', got number 5");
+    CHECK(parse_error("use a as\n") == "1:9 expected a name after 'as', got end of line");
+    CHECK(parse_error("fun\n") == "1:4 expected a function name after 'fun', got end of line");
+    CHECK(parse_error("fun f\n") == "1:6 expected '(' after the function name, got end of line");
+    CHECK(parse_error("fun f(a b)\n    a\n") == "1:9 expected ')' after the parameters, got name 'b'");
+    CHECK(parse_error("fun f(a as)\n    a\n") == "1:11 expected a type name after 'as', got ')'");
+    CHECK(parse_error("fun f() as\n    1\n") == "1:11 expected a type name after 'as', got end of line");
+    CHECK(parse_error("let\n") == "1:4 expected a name after 'let', got end of line");
+    CHECK(parse_error("let x as\n") == "1:9 expected a type name after 'as', got end of line");
+    CHECK(parse_error("let x as int\n") == "1:13 expected '=' after the name, got end of line");
+    CHECK(parse_error("try\n    1\n") == "3:1 expected 'catch' after the 'try' block, got end of file");
+    CHECK(parse_error("try\n    1\ncatch 5\n    2\n") == "3:7 expected end of line before the block, got number 5");
+    CHECK(parse_error("while\n    1\n") == "1:6 expected an expression, got end of line");
+    CHECK(parse_error("for\n    1\n") == "1:4 expected a loop name after 'for', got end of line");
+    CHECK(parse_error("for i in\n    1\n") == "1:9 expected an expression, got end of line");
+    CHECK(parse_error("break 5\n") == "1:7 expected end of line, got number 5");
+    CHECK(parse_error("return 1 2\n") == "1:10 expected end of line, got number 2");
+    CHECK(parse_error("x.\n") == "1:3 expected a field name after '.', got end of line");
+    CHECK(parse_error("x.5\n") == "1:3 expected a field name after '.', got number 5");
+    CHECK(parse_error("[1 2]\n") == "1:4 expected ']' to close the list, got number 2");
+    CHECK(parse_error("{a 1}\n") == "1:4 expected ':' after the map key, got number 1");
+    CHECK(parse_error("{a: 1 b: 2}\n") == "1:7 expected '}' to close the map, got name 'b'");
+    CHECK(parse_error("{\"a\"}\n") == "1:5 expected ':' after the map key, got '}'");
+    CHECK(parse_error("()\n") == "1:2 expected an expression, got ')'");
+    CHECK(parse_error("1..\n") == "1:4 expected an expression, got end of line");
+    CHECK(parse_error("f(,)\n") == "1:3 expected an expression, got ','");
+    CHECK(parse_error("x = = 1\n") == "1:5 expected an expression, got '='");
+    CHECK(parse_error("fun f() = \n") == "1:11 expected an expression, got end of line");
+    CHECK(parse_error("catch e\n    1\n") == "1:1 'catch' without a matching 'try'");
+    // 'catch' may leave out the name
+    CHECK(parse_error("try\n    1\ncatch\n    2\n").empty());
+}
+
 // Runs a program and returns stdout, or "error: ..." on failure.
 static std::string run(const std::string& src) {
     auto r = relic::run_source("t.relic", src);
@@ -336,6 +374,7 @@ static void test_repl_details() {
 
 int main() {
     test_parser();
+    test_parse_errors();
     test_repl();
     test_repl_details();
     test_interp();
