@@ -193,79 +193,83 @@ fun show(v)
         return v
     return repr(v)
 
-fun repr(v)
-    return repr_in(v, [])
-
 # A list or map that holds itself prints as [...] or {...} where it repeats,
-# like the host, and so does anything nested 1000 deep.
-fun repr_in(v, path)
+# like the host, and so does anything nested 1000 deep. It runs on its own stack of
+# pieces (["v", value] still to print, ["s", text] to write, ["pop"] to leave a
+# list or map), so deep nesting costs no host calls (the host's limit is 800).
+fun repr(v)
     let t = type_of(v)
-    if t == "string"
-        return tokens_fmt.quote(v)
-    if t == "list" or t == "map"
+    if t != "list" and t != "map"
+        return repr_leaf(v, t)
+    let path = []
+    let parts = []
+    let work = [["v", v]]
+    while len(work) > 0
+        let w = pop(work)
+        if w[0] == "s"
+            append(parts, w[1])
+            next
+        if w[0] == "pop"
+            pop(path)
+            next
+        let x = w[1]
+        let tx = type_of(x)
+        if tx != "list" and tx != "map"
+            append(parts, repr_leaf(x, tx))
+            next
         let seen = len(path) >= 1000
         for p in path
-            if host_same(p, v)
+            if host_same(p, x)
                 seen = true
         if seen
-            if t == "list"
-                return "[...]"
-            return "{{...}}"
-        append(path, v)
-    if t == "list"
-        let s = "["
-        let first = true
-        for x in v
-            if not first
-                s = s + ", "
-            s = s + repr_in(x, path)
-            first = false
-        pop(path)
-        return s + "]"
-    if t == "map"
-        let s = "{{"
-        let first = true
-        for k in v
-            if not first
-                s = s + ", "
-            if is_plain_name(k)
-                s = s + k
+            if tx == "list"
+                append(parts, "[...]")
             else
-                s = s + tokens_fmt.quote(k)
-            s = s + ": " + repr_in(v[k], path)
-            first = false
-        pop(path)
-        return s + "}}"
+                append(parts, "{{...}}")
+            next
+        append(path, x)
+        append(work, ["pop"])
+        if tx == "list"
+            append(parts, "[")
+            append(work, ["s", "]"])
+            let i = len(x) - 1
+            while i >= 0
+                append(work, ["v", x[i]])
+                if i > 0
+                    append(work, ["s", ", "])
+                i = i - 1
+        else
+            append(parts, "{{")
+            append(work, ["s", "}}"])
+            let ks = keys(x)
+            let i = len(ks) - 1
+            while i >= 0
+                append(work, ["v", x[ks[i]]])
+                let k = ks[i]
+                let name = tokens_fmt.quote(k)
+                if is_plain_name(k)
+                    name = k
+                append(work, ["s", name + ": "])
+                if i > 0
+                    append(work, ["s", ", "])
+                i = i - 1
+    return strings.join(parts, "")
+
+fun repr_leaf(v, t)
+    if t == "string"
+        return tokens_fmt.quote(v)
     if t == "function"
         return "<fun " + v.name + ">"
     if t == "module"
         return "<module " + v.name + ">"
     return str(v)
 
-fun equal(a, b)
-    let ta = type_of(a)
+# Everything but lists and maps: numbers by value, functions by identity, the rest as the host.
+fun equal_leaf(a, ta, b)
     if is_num(ta) and is_num(type(b))
         return a == b
     if ta != type_of(b)
         return false
-    if ta == "list"
-        if host_same(a, b)
-            return true
-        if len(a) != len(b)
-            return false
-        for i in 0..len(a)
-            if not equal(a[i], b[i])
-                return false
-        return true
-    if ta == "map"
-        if host_same(a, b)
-            return true
-        if len(a) != len(b)
-            return false
-        for k in a
-            if not (k in b) or not equal(a[k], b[k])
-                return false
-        return true
     if ta == "function"
         if a[tag] != b[tag]
             return false
@@ -273,6 +277,54 @@ fun equal(a, b)
             return a.name == b.name
         return a.id == b.id
     return a == b
+
+# Lists and maps by contents, like the host: the same list or map is equal at once, and
+# pairs nested deeper than 10000 count as different. It runs on its own stack of
+# [a, b, depth] triples, so deep nesting costs no host calls (the host's limit is 800).
+fun equal(a, b)
+    let ta = type_of(a)
+    if ta != "list" and ta != "map"
+        return equal_leaf(a, ta, b)
+    if ta != type_of(b)
+        return false
+    let stack = [a, b, 0]
+    while len(stack) > 0
+        let d = pop(stack)
+        let y = pop(stack)
+        let x = pop(stack)
+        if host_same(x, y)
+            next
+        if len(x) != len(y)
+            return false
+        let keys = none
+        let n = len(x)
+        if type_of(x) == "map"
+            keys = keys_of(x)
+        for i in 0..n
+            let p = none
+            let q = none
+            if keys == none
+                p = x[i]
+                q = y[i]
+            else
+                if not (keys[i] in y)
+                    return false
+                p = x[keys[i]]
+                q = y[keys[i]]
+            if d + 1 > 10000
+                return false
+            let tp = type_of(p)
+            if tp == "list" or tp == "map"
+                if tp != type_of(q)
+                    return false
+                append(stack, p)
+                append(stack, q)
+                append(stack, d + 1)
+            else if not equal_leaf(p, tp, q)
+                return false
+    return true
+
+fun keys_of(m) = keys(m)
 
 fun is_whole(d) = d % 1 == 0
 
