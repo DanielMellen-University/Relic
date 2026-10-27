@@ -10,7 +10,7 @@ Clearer errors for wrong arguments, a folder given as a file, and control charac
 - The lexer names a control character in the source: `unexpected character U+0001 (a control character; delete it)`, on the host and in `selfhost/lexer.relic` (the message used to hold the raw character).
 - `selfhost/errfmt.relic` cuts very long source lines to the host's 160-byte window around the column, so errors from `selfhost/run.relic` and `check.relic` on such lines read the same.
 - Tests: goldens `std_paths_edges`, `std_lists_edges`, `index_big_floats`, `err_long_line`, `err_control_char`; `std_math_edges` and `std_strings_edges` cover the new messages; new `relicc_cli`; `cli`, `selfhost_cli` and `selfhost_check` try a folder; `c_runtime` covers float indexes and a folder (786 checks).
-- Speed: `selfhost_interp` MEDIAN_PLACEHOLDER.
+- Speed: `selfhost_interp` 9.29 s median of 3 on a quiet box (1.52x the 6.1 s baseline; an earlier set read 9.44 s; five new goldens).
 - `ctest`: 167 default, 352 with the host.
 
 ## 1.0.27 (2026-10-27)
