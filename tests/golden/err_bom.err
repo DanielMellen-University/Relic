@@ -1,0 +1,3 @@
+err_bom.relic:1:1: error: unexpected character U+FEFF (a byte order mark; save the file as UTF-8 without one)
+    ﻿print(1)
+    ^

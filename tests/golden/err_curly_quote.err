@@ -1,0 +1,3 @@
+err_curly_quote.relic:1:7: error: unexpected character '“' (a curly double quote; use a straight one)
+    print(“hi”)
+          ^

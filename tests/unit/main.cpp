@@ -143,6 +143,19 @@ static void test_layout() {
     CHECK(lex_error("f(1]") == "1:4 unmatched ']'");
     CHECK(lex_error("f(1") == "1:2 unclosed '('");
     CHECK(lex_error("a ! b") == "1:3 unexpected '!'; use 'not' for logic");
+    // characters that look like something else, or like nothing, say what they are
+    CHECK(lex_error("\xEF\xBB\xBFprint(1)") ==
+          "1:1 unexpected character U+FEFF (a byte order mark; save the file as UTF-8 without one)");
+    CHECK(lex_error("let a\xC2\xA0= 1") ==
+          "1:6 unexpected character U+00A0 (a no-break space; use a plain space)");
+    CHECK(lex_error("a\xE2\x80\x8B") == "1:2 unexpected character U+200B (a zero-width space; delete it)");
+    CHECK(lex_error("a\xE3\x80\x80" "b") ==
+          "1:2 unexpected character U+3000 (an ideographic space; use a plain space)");
+    CHECK(lex_error("print(\xE2\x80\x9Chi\xE2\x80\x9D)") ==
+          "1:7 unexpected character '\xE2\x80\x9C' (a curly double quote; use a straight one)");
+    CHECK(lex_error("\xE2\x80\x98x\xE2\x80\x99") ==
+          "1:1 unexpected character '\xE2\x80\x98' (a curly single quote; strings use straight double quotes)");
+    CHECK(lex_error("a $ b") == "1:3 unexpected character '$'");
 }
 
 // Parses and returns the tree dump with the "Program" line removed.

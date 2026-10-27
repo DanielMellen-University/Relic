@@ -294,7 +294,26 @@ fun token(st)
         if st.err == none
             emit(st, "RBRACE", "}}", l, c)
     else
-        fail(st, l, c, "unexpected character '{ch}'")
+        fail(st, l, c, unexpected(ch))
+
+# The message for a character that starts no token (same words as src/lexer/lexer.cpp).
+# A character that looks like something else, or like nothing, says what it is
+# and what to type.
+fun unexpected(ch)
+    let code = ord(ch)
+    if code == 65279
+        return "unexpected character U+FEFF (a byte order mark; save the file as UTF-8 without one)"
+    if code == 160
+        return "unexpected character U+00A0 (a no-break space; use a plain space)"
+    if code == 8203
+        return "unexpected character U+200B (a zero-width space; delete it)"
+    if code == 12288
+        return "unexpected character U+3000 (an ideographic space; use a plain space)"
+    if code == 8216 or code == 8217
+        return "unexpected character '{ch}' (a curly single quote; strings use straight double quotes)"
+    if code == 8220 or code == 8221
+        return "unexpected character '{ch}' (a curly double quote; use a straight one)"
+    return "unexpected character '{ch}'"
 
 fun lex(src)
     let st = new_state(src)

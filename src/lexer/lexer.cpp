@@ -232,9 +232,31 @@ private:
             default: {
                 std::string whole(1, ch);  // the whole UTF-8 character, not just its first byte
                 while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
-                error(l, c, "unexpected character '" + whole + "'");
+                error(l, c, unexpected(whole));
             }
         }
+    }
+
+    // The message for a character that starts no token. A character that looks
+    // like something else, or like nothing, says what it is and what to type.
+    static std::string unexpected(const std::string& whole) {
+        struct Note { const char* utf8; const char* code; const char* what; };  // code: set for invisible ones
+        static const Note notes[] = {
+            {"\xEF\xBB\xBF", "U+FEFF", "a byte order mark; save the file as UTF-8 without one"},
+            {"\xC2\xA0", "U+00A0", "a no-break space; use a plain space"},
+            {"\xE2\x80\x8B", "U+200B", "a zero-width space; delete it"},
+            {"\xE3\x80\x80", "U+3000", "an ideographic space; use a plain space"},
+            {"\xE2\x80\x98", nullptr, "a curly single quote; strings use straight double quotes"},
+            {"\xE2\x80\x99", nullptr, "a curly single quote; strings use straight double quotes"},
+            {"\xE2\x80\x9C", nullptr, "a curly double quote; use a straight one"},
+            {"\xE2\x80\x9D", nullptr, "a curly double quote; use a straight one"},
+        };
+        for (const Note& n : notes) {
+            if (whole != n.utf8) continue;
+            if (n.code) return std::string("unexpected character ") + n.code + " (" + n.what + ")";
+            return "unexpected character '" + whole + "' (" + n.what + ")";
+        }
+        return "unexpected character '" + whole + "'";
     }
 
     void open(char ch, int l, int c) {
