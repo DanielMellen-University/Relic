@@ -15,9 +15,67 @@ math.ceil(): argument must be a number, got string
 math.round(): argument must be a number, got list
 math.abs(): argument must be a number, got none
 cannot compare a string and an int
-int(): number is out of the int range
+math.floor(): number is out of the int range
 math.pow(): base must be a number, got string
 math.pow(): base must be a number, got string
 math.pow(): power must be a number, got string
 math.pow(): base must be a number, got none
 8.0
+inf math.floor(): number is out of the int range
+inf math.ceil(): number is out of the int range
+inf math.round(): number is out of the int range
+-inf math.floor(): number is out of the int range
+-inf math.ceil(): number is out of the int range
+-inf math.round(): number is out of the int range
+nan math.floor(): number is out of the int range
+nan math.ceil(): number is out of the int range
+nan math.round(): number is out of the int range
+1e+300 math.floor(): number is out of the int range
+1e+300 math.ceil(): number is out of the int range
+1e+300 math.round(): number is out of the int range
+-1e+300 math.floor(): number is out of the int range
+-1e+300 math.ceil(): number is out of the int range
+-1e+300 math.round(): number is out of the int range
+a math.floor(): argument must be a number, got string
+a math.ceil(): argument must be a number, got string
+a math.round(): argument must be a number, got string
+none math.floor(): argument must be a number, got none
+none math.ceil(): argument must be a number, got none
+none math.round(): argument must be a number, got none
+-0.5 -1
+-0.5 0
+-0.5 0
+-0.4 -1
+-0.4 0
+-0.4 0
+0.5 0
+0.5 1
+0.5 1
+1.5 1
+1.5 2
+1.5 2
+-1.5 -2
+-1.5 -1
+-1.5 -1
+-0.0 0
+-0.0 0
+-0.0 0
+9.2e+18 9200000000000000000
+9.2e+18 9200000000000000000
+9.2e+18 9200000000000000000
+-9.2e+18 -9200000000000000000
+-9.2e+18 -9200000000000000000
+-9.2e+18 -9200000000000000000
+9223372036854775807 9223372036854775807
+9223372036854775807 9223372036854775807
+9223372036854775807 9223372036854775807
+-9223372036854775808 -9223372036854775808
+-9223372036854775808 -9223372036854775808
+-9223372036854775808 -9223372036854775808
+2.0 2
+2.0 2
+2.0 2
+-7.25 -8
+-7.25 -7
+-7.25 -7
+9007199254740993 0 4503599627370497

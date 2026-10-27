@@ -18,6 +18,6 @@ float idx 2
 remove error: remove(): index 9223372036854775807 is out of range
 assign idx error: list index must be a whole number
 is_whole true
-floor error: int(): number is out of the int range
-round error: int(): number is out of the int range
+floor error: math.floor(): number is out of the int range
+round error: math.round(): number is out of the int range
 clamp 5

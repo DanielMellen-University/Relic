@@ -70,12 +70,12 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Call | Returns |
 |---|---|
 | `abs(x)`, `min(a, b)`, `max(a, b)`, `clamp(x, lo, hi)` | number |
-| `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2` |
+| `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2`; an int comes back as it is; nan, an infinity or a float past the int range is `math.floor(): number is out of the int range` |
 | `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
-`abs`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
+`abs`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
 
 ## std/files
 

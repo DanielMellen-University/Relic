@@ -3,7 +3,7 @@
 let pi = 3.141592653589793
 let e = 2.718281828459045
 
-# abs, ceil and round check their argument, so a string gives a math error and not a "cannot negate" one.
+# abs, floor, ceil and round check their argument, so a string gives a math error and not a "cannot negate" one.
 fun _number(name, x)
     if type(x) != "int" and type(x) != "float"
         fail("math." + name + "(): argument must be a number, got " + type(x))
@@ -27,15 +27,35 @@ fun max(a, b)
     return a
 
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
-# floor, ceil and round give an int.
-fun floor(x) = int(host_floor(x))
+# floor, ceil and round give an int. An int comes back as it is (going through a
+# float lost digits past 2^53); a float must land in the int range.
+fun _int(name, f)
+    if f >= -9223372036854775808.0 and f < 9223372036854775808.0
+        return int(f)
+    fail("math." + name + "(): number is out of the int range")
+
+fun floor(x)
+    _number("floor", x)
+    if type(x) == "int"
+        return x
+    return _int("floor", host_floor(x))
+
 fun ceil(x)
     _number("ceil", x)
-    return -int(host_floor(-x))
+    if type(x) == "int"
+        return x
+    return _int("ceil", 0.0 - host_floor(0.0 - x))
 
+# Halves go up. x + 0.5 could round up first (0.49999999999999994 + 0.5 is 1.0),
+# so this looks at what is left over the floor instead.
 fun round(x)
     _number("round", x)
-    return int(host_floor(x + 0.5))
+    if type(x) == "int"
+        return x
+    let f = host_floor(x)
+    if x - f >= 0.5
+        f = f + 1
+    return _int("round", f)
 fun sqrt(x) = host_sqrt(x)
 fun pow(x, y) = host_pow(x, y)
 fun sin(x) = host_sin(x)

@@ -49,3 +49,15 @@ for args in [["a", "b"], ["a", 2], [2, "b"], [none, []], [2, 3]]
         print(math.pow(args[0], args[1]))
     catch e
         print(e.message)
+
+# floor, ceil and round: an int comes back as it is (past 2^53 it lost digits), round
+# looks at the part over the floor (0.49999999999999994 gave 1), and nan, inf or a
+# float past the int range is a math error (since 1.0.35)
+let inf2 = 1e308 * 10
+for x in [inf2, 0 - inf2, inf2 - inf2, 1e300, -1e300, "a", none, -0.5, -0.4, 0.5, 1.5, -1.5, -0.0, 9.2e18, -9.2e18, 9223372036854775807, -9223372036854775807 - 1, 2.0, -7.25]
+    for f in [math.floor, math.ceil, math.round]
+        try
+            print(x, f(x))
+        catch e
+            print(x, e.message)
+print(math.floor(9007199254740993), math.round(0.49999999999999994), math.round(4503599627370497.0))
