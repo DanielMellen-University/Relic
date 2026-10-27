@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.33 (2026-10-27)
+
+Long chains and long strings in compiled programs and the Relic-written tools. No change to the language.
+
+- `else if` chains: `relicc` wrote one more nested C block per link. MSVC stops at 128 nested blocks and clang at 256 brackets, so a chain of a couple of hundred links would not compile there. The branches are now side by side behind a flag (5 levels of braces for 200 links, was 203). The Relic-written parser and `relicc` also walked the chain with recursion and stopped near 770 links with `too much recursion`; both use a loop now. Golden `else_if_long`.
+- `relicc` walks calls, fields and indexes on one value (`f()()`, `m.a.b[0]`) with a loop, like `a + b + c`. It stopped near 264 calls or 396 fields in a row. Every golden compiles to the same C as before. Golden `long_postfix`.
+- `selfhost/ast.relic` and `selfhost/check.relic` walk expressions and `else if` chains with a loop. About 790 links in one chain stopped them, while `relic --ast` and `relic check` went on. Same output as the host on 2000-link chains.
+- A string constant whose C literal would pass 4000 characters is written as an array of bytes. MSVC takes 16380 characters in one literal and 65535 joined. New compiled-side case `tests/cgen/long_string` (about 75 KB), green on MSVC.
+- `tools/fuzz_gen.py` covers `std/json`, `std/paths`, interpolation, more `std` calls, `else if` chains and closures. 1400 more programs agree on all four engines. `fuzz_repl` (1500 scripts), `fuzz_mutate` and `fuzz_check` (seeds 1 to 300 again after the `check.relic` change) found nothing.
+- Docs: the chain limits as measured, the `else if` and long-string layouts in CGEN.md, the ctest counts.
+- Speed: `selfhost_interp` 9.79 s median of 3 (9.79, 9.94, 9.76) on a quiet box, under the 12.2 s cap. Two tries at speeding up `selfhost/interp.relic` (scopes without a hints map until needed, literal caching earlier) gained under 2%, so they were left out.
+- `ctest`: 182 default, 384 with the host.
+
 ## 1.0.32 (2026-10-27)
 
 Fixes found by fuzzing, a new fuzzer, and one more test for Windows. No change to the language.
