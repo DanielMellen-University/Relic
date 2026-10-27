@@ -15,6 +15,7 @@
 use lexer
 use parser
 use interp
+use floatlit
 use errfmt
 use std/files
 use std/lists
@@ -132,7 +133,8 @@ fun number(ck, n)
         if type(v) == "float" and not ("." in n.text or "e" in n.text or "E" in n.text)
             add_item(ck, n, "int is too large (the limit is 9223372036854775807)")
     catch err
-        add_item(ck, n, "float is too large")
+        if floatlit.too_large(n.text)
+            add_item(ck, n, "float is too large")
 
 # Visits the nodes in the same order as a recursive walk, from a list used as
 # a stack, so a long chain (a + b + ..., f()()...) does not reach the 800-call limit.

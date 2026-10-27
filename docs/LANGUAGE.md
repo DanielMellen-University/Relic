@@ -198,7 +198,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 
 - `3` is an `int`. `3.0`, `0.5` and anything with an exponent (`1e3`, `6E+2`) is a `float`.
 - `+ - * %` on two ints give an int. Anything with a float gives a float. `/` always gives a float: `6 / 2` is `3.0`.
-- Ints are 64-bit. Going past the range is `int overflow`, not a wrap. A float literal past the float range is `float is too large`.
+- Ints are 64-bit. Going past the range is `int overflow`, not a wrap. A float literal past the float range is `float is too large`. One too small for a float rounds to the nearest one, down to `0.0` (`1e-400` is `0.0`, `4.9e-324` the smallest float above zero); `num()` refuses both.
 - Floats always print with a point or an exponent: `3.0`, `0.3`, `1e+20`. Ints never do.
 - Indexes, `slice`, `chr` and range ends take ints, or floats with no fraction.
 - `len`, `ord`, ranges and `num("12")` give ints. `std/math` `floor`, `ceil` and `round` give ints; `sqrt`, `pow` and the rest give floats.

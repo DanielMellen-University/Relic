@@ -16,6 +16,7 @@
 use lexer
 use parser
 use errfmt
+use floatlit
 use std/files
 use std/strings
 
@@ -351,7 +352,11 @@ fun number_value(fc, n)
         catch err
             big = true
         if big
-            return none
+            # too large, or tiny: the host rounds that to a subnormal or 0.0, and a
+            # C compiler warns about a literal it truncates to zero
+            if floatlit.too_large(t)
+                return none
+            return "rl_float(" + str(floatlit.steps(t)) + ".0 * (2.2250738585072014e-308 / 4503599627370496.0))"
         return "rl_float(" + t + ")"
     let digits = t
     while len(digits) > 1 and digits[0] == "0"

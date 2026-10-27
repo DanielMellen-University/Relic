@@ -1,0 +1,107 @@
+# selfhost/floatlit.relic: float literals that num() refuses.
+#
+# num() gives up on a number outside the normal float range in either
+# direction. The host reads a literal with strtod, which refuses only one that
+# is too large and rounds a tiny one to the nearest subnormal float, or to 0.0
+# (1e-400 is 0.0, 4.9e-324 is the smallest float above 0). This works out the
+# same float from the digits, exactly, for interp.relic, check.relic and
+# cgen.relic.
+
+# 2^-1022, the smallest normal float, and the steps of the subnormals below it.
+let min_normal = num("2.2250738585072014e-308")
+let step = min_normal / 4503599627370496.0
+
+# {digits, exp}: the literal as digits * 10^exp, digits without leading zeros
+# ("" for zero). An exponent with more than 9 digits is clamped; it is far out
+# of range either way.
+fun split(t)
+    let mant = t
+    let x = 0
+    let i = 0
+    while i < len(t)
+        if t[i] == "e" or t[i] == "E"
+            mant = slice(t, 0, i)
+            let e = slice(t, i + 1, len(t))
+            let sign = 1
+            if len(e) > 0 and (e[0] == "-" or e[0] == "+")
+                if e[0] == "-"
+                    sign = -1
+                e = slice(e, 1, len(e))
+            while len(e) > 1 and e[0] == "0"
+                e = slice(e, 1, len(e))
+            if len(e) > 9
+                x = sign * 999999999
+            else
+                x = sign * int(e)
+            break
+        i = i + 1
+    let ip = mant
+    let fp = ""
+    let j = 0
+    while j < len(mant)
+        if mant[j] == "."
+            ip = slice(mant, 0, j)
+            fp = slice(mant, j + 1, len(mant))
+            break
+        j = j + 1
+    let d = ip + fp
+    let k = 0
+    while k < len(d) and d[k] == "0"
+        k = k + 1
+    return {digits: slice(d, k, len(d)), exp: x - len(fp)}
+
+# True when a float literal that num() refused is too large, false when it
+# is too small (then it rounds to a subnormal or to 0.0).
+fun too_large(t)
+    let s = split(t)
+    return s.digits != "" and s.exp + len(s.digits) - 1 > 0
+
+# How many steps (2^-1074) the tiny literal t rounds to, half to even, like
+# strtod: digits * 10^exp * 2^1074, worked out on decimal digits.
+fun steps(t)
+    let s = split(t)
+    if s.digits == "" or s.exp + len(s.digits) - 1 < -400
+        return 0
+    # little-endian decimal digits of digits * 2^1074 (2^30 35 times, then 2^24)
+    let n = []
+    let i = len(s.digits) - 1
+    while i >= 0
+        append(n, ord(s.digits[i]) - 48)
+        i = i - 1
+    for r in 0..36
+        let f = 1073741824
+        if r == 35
+            f = 16777216
+        let carry = 0
+        for p in 0..len(n)
+            let v = n[p] * f + carry
+            n[p] = v % 10
+            carry = int(v / 10)
+        while carry > 0
+            append(n, carry % 10)
+            carry = int(carry / 10)
+    # divide by 10^-exp: the digits from `cut` up are the whole steps
+    let cut = 0 - s.exp
+    let k = 0
+    let p = len(n) - 1
+    while p >= cut
+        k = k * 10 + n[p]
+        p = p - 1
+    if cut > len(n)
+        return 0
+    let first = n[cut - 1]
+    let rest = false
+    let q = cut - 2
+    while q >= 0 and not rest
+        if n[q] != 0
+            rest = true
+        q = q - 1
+    if first > 5 or (first == 5 and (rest or k % 2 == 1))
+        k = k + 1
+    return k
+
+# The float of a literal num() refused, or none when it is too large.
+fun tiny(t)
+    if too_large(t)
+        return none
+    return steps(t) * step

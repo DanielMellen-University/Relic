@@ -1,0 +1,12 @@
+# float literals below the normal range round like strtod does: to the
+# nearest subnormal, or to 0.0; only a literal that is too large is an error
+print(1e-400, 0.0001e-320, 1e-99999999999)
+print(4.9e-324, 3e-324, 2.4703282292062328e-324, 2.4703282292062327e-324)
+print(1e-310, 2.2250738585072011e-308, 123456789e-320, 0.000001e-305)
+let step = 4.9406564584124654e-324
+print(1e-310 / step, 2.2250738585072011e-308 / step, 7.4e-323 / step, 7.5e-323 / step)
+print(-1e-400, -4.9e-324, 1e-310 > 0, 1e-400 == 0)
+try
+    print(num("1e-400"))
+catch e
+    print(e.message)

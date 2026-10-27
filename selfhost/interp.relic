@@ -14,6 +14,7 @@
 use lexer
 use parser
 use tokens_fmt
+use floatlit
 use std/files
 use std/strings
 
@@ -642,7 +643,12 @@ fun machine(rt, st)
                         else
                             append(vals, v)
                     catch err
-                        fail(rt, m, "float is too large")
+                        # num() refuses a tiny float too; the host rounds it to a subnormal or 0.0
+                        let v = floatlit.tiny(m.text)
+                        if v == none
+                            fail(rt, m, "float is too large")
+                        else
+                            append(vals, v)
                 else if mk == "True"
                     append(vals, true)
                 else if mk == "False"
