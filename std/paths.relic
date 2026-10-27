@@ -42,11 +42,15 @@ fun dir(p)
         return ""
     return slice(x, 0, cut)
 
-# ext("notes.txt") is ".txt"; "" when there is none.
+# ext("notes.txt") is ".txt"; "" when there is none. Leading dots are part of the
+# name, so ".hidden", ".." and "...a" have none.
 fun ext(p)
     let b = base(p)
+    let start = 0
+    while start < len(b) and b[start] == "."
+        start = start + 1
     let i = len(b) - 1
-    while i > 0
+    while i > start
         if b[i] == "."
             return slice(b, i, len(b))
         i = i - 1

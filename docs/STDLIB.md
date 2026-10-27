@@ -106,7 +106,7 @@ Always `/`. A `\` in input is read as `/`.
 | `join(a, b)` | string | `join("a", "b")` → `"a/b"`; absolute `b` wins |
 | `base(p)` | string | `"a/b.txt"` → `"b.txt"` |
 | `dir(p)` | string | `"a/b.txt"` → `"a"`; no slash → `""` |
-| `ext(p)` | string | with the dot: `".txt"`, or `""` |
+| `ext(p)` | string | with the dot: `".txt"`, or `""`; leading dots belong to the name, so `".hidden"` and `".."` have none (`".."` gave `"."` before 1.0.35) |
 | `stem(p)` | string | `"b.txt"` → `"b"` |
 | `normalize(p)` | string | collapses `.` and `..` |
 
