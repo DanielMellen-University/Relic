@@ -21,7 +21,8 @@ fun find(s, sub)
 
 # Long text. slice(s, i, ...) walks s from the start to character i, so the loop
 # above takes time growing with the square of where `sub` is (80,000 characters
-# took 0.9 s); this compares characters from lists instead.
+# took 0.9 s); this compares characters from lists instead, with _match so that
+# text like "aaaa...a" and a `sub` like "aa...ab" does not take long either.
 fun _find_long(s, sub, n, ls)
     if n == 0
         return 0
@@ -31,15 +32,37 @@ fun _find_long(s, sub, n, ls)
     let ss = []
     for c in sub
         append(ss, c)
-    let first = ss[0]
-    let i = 0
-    while i + n <= ls
-        if cs[i] == first
-            let k = 1
-            while k < n and cs[i + k] == ss[k]
-                k = k + 1
-            if k == n
-                return i
+    return _match(cs, ls, ss, n, _borders(ss), 0)
+
+# borders[q]: the length of the longest part of ss[0..q] that is both its start
+# and its end (not all of it). When a compare fails after k characters matched,
+# the search goes on from borders[k - 1] matched instead of from 0, so each
+# character of the text is passed once (Knuth-Morris-Pratt).
+fun _borders(ss)
+    let f = [0]
+    let k = 0
+    for q in 1..len(ss)
+        let c = ss[q]
+        while k > 0 and c != ss[k]
+            k = f[k - 1]
+        if c == ss[k]
+            k = k + 1
+        append(f, k)
+    return f
+
+# The first i >= from where ss (m characters, borders f) starts in cs (n
+# characters), or -1.
+fun _match(cs, n, ss, m, f, from)
+    let j = 0
+    let i = from
+    while i < n
+        let c = cs[i]
+        while j > 0 and c != ss[j]
+            j = f[j - 1]
+        if c == ss[j]
+            j = j + 1
+            if j == m
+                return i - m + 1
         i = i + 1
     return -1
 
@@ -126,19 +149,14 @@ fun _split_long(s, sep)
         append(ss, c)
     let n = len(cs)
     let m = len(ss)
+    let f = _borders(ss)
     let parts = []
     let start = 0
-    let i = 0
-    while i + m <= n
-        let k = 0
-        while k < m and cs[i + k] == ss[k]
-            k = k + 1
-        if k == m
-            append(parts, _piece(cs, start, i))
-            i = i + m
-            start = i
-        else
-            i = i + 1
+    let i = _match(cs, n, ss, m, f, 0)
+    while i >= 0
+        append(parts, _piece(cs, start, i))
+        start = i + m
+        i = _match(cs, n, ss, m, f, start)
     append(parts, _piece(cs, start, n))
     return parts
 
