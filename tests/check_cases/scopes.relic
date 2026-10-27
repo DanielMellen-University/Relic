@@ -1,0 +1,41 @@
+# shadowing, names that end with their block, and names pending in several scopes
+let x = 1
+fun shadow(x)
+    let y = x
+    if y
+        let y = 2
+        print(y)
+    print(y, z_after_block)
+    if true
+        let z_after_block = 3
+fun nested(a)
+    fun mid()
+        fun inner()
+            return a + b_in_nested + c_never
+        return inner
+    let b_in_nested = 1
+    return mid
+for loop_var in [1, 2]
+    fun keeps()
+        return loop_var + after_loop_pending
+    let after_loop_pending = loop_var
+print(loop_var)
+try
+    let t = 1
+catch err
+    print(t, err)
+fun twice(p)
+    let p = p + 1
+    fun p_again(p)
+        return p
+    return p_again
+fun same_name_as_fun()
+    fun same_name_as_fun()
+        return same_name_as_fun
+    return same_name_as_fun
+fun f_late_assign()
+    fun g()
+        v = 1
+        return v + w_never
+    let v = 0
+    return g

@@ -46,7 +46,7 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (207 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (209 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
 | `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (160 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (160 today) |
@@ -57,7 +57,7 @@ Three more self-host cases check the interpreter on real use:
 |---|---|---|
 | `selfhost_args` | `selfhost/run.relic tests/selfhost/args.relic one --two` | the program gets its args |
 | `selfhost_nested` | `selfhost/run.relic selfhost/run.relic tests/selfhost/args.relic deep` | the interpreter runs itself |
-| `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 13 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
+| `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 15 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
 | `selfhost_check_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two cases | the interpreter runs `check.relic` right |
 | `cgen_selfhost_check` | the compiled `selfhost/check.relic` (host build with C) | the same comparison as `selfhost_check` |
 | `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |

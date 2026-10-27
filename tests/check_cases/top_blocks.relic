@@ -1,0 +1,24 @@
+# top-level blocks: names declared in them stay in them, a bare `use` does not
+if true
+    use std/math
+    print(math)
+print(math)
+if true
+    let only_here = 1
+print(only_here)
+while false
+    use std/os
+    print(os)
+print(os)
+try
+    use std/json
+catch e
+    print(json)
+print(json)
+for i in 0..1
+    fun local_fun()
+        return i
+print(local_fun)
+fun uses_later_use()
+    return later_use_name
+use std/lists as later_use_name
