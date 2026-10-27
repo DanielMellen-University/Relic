@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.38 (2026-10-27)
+
+More code whose time grew with the square of its input. No change to the language or to any result.
+
+- Parser: a duplicate map key or parameter was found by comparing each new one with every one before it, in the host and in `selfhost/parser.relic`. It uses a set now (a map literal with 40,000 keys: host 2.9 s, now 0.05 s; 8,000 keys in `check.relic` 8.9 s, now 0.5 s; 4,000 parameters 1.7 s, now 0.25 s). The same errors at the same places. `bootstrap/` regenerated.
+- `std/paths`: `normalize`, `base`, `dir`, `join`, `ext` and `stem` read the path as a list of characters and join pieces in halves (a 40,000-character path: `normalize` 0.30 s, now 0.10 s; `ext` 0.21 s, now 0.04 s). `strings.trim` looks at a list of characters (0.25 s, now 0.06 s). Golden `std_paths_edges`.
+- `std/vfs`: `remove_tree` takes a folder from its parent at once. It emptied the folder one name at a time, copying the folder's names for each (4,000 files: 3.0 s, now 3 ms).
+- Each change was checked against the old code on random input on the VM, `--tree`, `selfhost/run.relic` and compiled: 1,300 paths, 6,700 `vfs` operations, and maps and parameter lists with repeats.
+- LANGUAGE.md says what long strings cost and how to read and build long text in time that grows with its length.
+- Fuzzing found nothing new: `fuzz_gen` (450 programs), `fuzz_mutate` (`ast`, `check`, `run`, 1,100 cases), `fuzz_repl` (500 scripts), `fuzz_check` (seeds 3000 to 3400), `fuzz_depth` (seed 5, 40 cases).
+- Speed: `selfhost_interp` 10.54 s median of 3 (10.76, 10.44, 10.54), under the 12.2 s cap.
+- `ctest`: 185 default, 389 with the host.
+
 ## 1.0.37 (2026-10-27)
 
 Speed and fuzzing: code that built a long string one piece at a time, or indexed one, took time growing with the square of its size. No change to the language or to any result.
