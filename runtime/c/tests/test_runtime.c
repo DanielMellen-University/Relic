@@ -573,6 +573,77 @@ static void test_gfx_scale(void) {
     CHECK(gfx_units_up(0, 2.0) == 0);
 }
 
+/* The small public calls the other tests only reach through built-ins:
+ * type names, repr against show, fields, range starts and error strings. */
+static void test_small_api(void) {
+    rl_value r, l = rl_list_new(0), m = rl_map_new();
+    CHECK(strcmp(rl_type_name(rl_int(1)), "int") == 0);
+    CHECK(strcmp(rl_type_name(rl_float(1)), "float") == 0);
+    CHECK(strcmp(rl_type_name(rl_none()), "none") == 0);
+    CHECK(strcmp(rl_type_name(rl_bool(0)), "bool") == 0);
+    CHECK(strcmp(rl_type_name(l), "list") == 0);
+    CHECK(strcmp(rl_type_name(m), "map") == 0);
+    CHECK(strcmp(rl_type_name(T("a")), "string") == 0);
+    CHECK(strcmp(rl_a_type(rl_int(1)), "an int") == 0);
+    CHECK(strcmp(rl_a_type(rl_float(1)), "a float") == 0);
+    CHECK(strcmp(rl_a_type(rl_none()), "a none") == 0);
+    CHECK(strcmp(rl_a_type(l), "a list") == 0);
+    CHECK(strcmp(rl_a_type(T("a")), "a string") == 0);
+
+    /* show prints a string as it is, repr quotes it (as inside a list) */
+    SHOW(rl_show(T("a\"b")), "a\"b");
+    SHOW(rl_repr(T("a\"b")), "\"a\\\"b\"");
+    SHOW(rl_repr(rl_int(5)), "5");
+
+    /* fields on a map; none anywhere else */
+    CHECK(rl_set_field(&cx, m, "k", rl_int(1)) == RL_OK);
+    CHECK(rl_set_field(&cx, m, "k", rl_int(2)) == RL_OK);   /* replaces */
+    SHOW(rl_retain(m), "{k: 2}");
+    ERR(rl_set_field(&cx, rl_int(5), "k", rl_int(1)), "cannot set a field on an int");
+    ERR(rl_set_field(&cx, l, "k", rl_int(1)), "cannot set a field on a list");
+    ERR(rl_set_field(&cx, T("s"), "k", rl_int(1)), "cannot set a field on a string");
+    {
+        rl_value mod = rl_module_new("m");
+        ERR(rl_set_field(&cx, mod, "k", rl_int(1)),
+            "cannot change a module's names from outside; give it a function that does it");
+        ERR(rl_field(&cx, mod, "k", &r), "module 'm' has no 'k' (yet)");
+        rl_release(mod);
+    }
+
+    /* a range start is checked on its own (the for loop does it first) */
+    CHECK(rl_range_start(&cx, rl_int(3)) == RL_OK);
+    CHECK(rl_range_start(&cx, rl_float(3.0)) == RL_OK);
+    ERR(rl_range_start(&cx, rl_float(1.5)), "range start must be a whole number");
+    ERR(rl_range_start(&cx, T("a")), "range start must be a number, got string");
+
+    /* the number reader, called directly */
+    CHECK(rl_parse_num(&cx, "12", 2, &r) == RL_OK && r.k == RL_INT && r.u.i == 12);
+    CHECK(rl_parse_num(&cx, "-7", 2, &r) == RL_OK && r.k == RL_INT && r.u.i == -7);
+    CHECK(rl_parse_num(&cx, "1.5", 3, &r) == RL_OK && r.k == RL_FLOAT && r.u.f == 1.5);
+    ERR(rl_parse_num(&cx, "12abc", 5, &r), "not a number: \"12abc\"");
+    ERR(rl_parse_num(&cx, "", 0, &r), "not a number: \"\"");
+
+    /* an error made from a string object */
+    {
+        rl_value msg = S("made by hand");
+        CHECK(rl_fail_str(&cx, (rl_str *)msg.u.o) == RL_ERR);
+        rl_release(msg);
+        ERR(RL_ERR, "made by hand");
+    }
+
+    /* rl_obj_value wraps an object the caller owns */
+    {
+        rl_value s = rl_str_c("wrapped");
+        rl_value w = rl_obj_value((rl_obj *)s.u.o);
+        CHECK(w.k == s.k && w.u.o == s.u.o);
+        SHOW(rl_retain(w), "wrapped");
+        rl_release(w);   /* the one reference, s was not retained for it */
+    }
+    rl_release(l);
+    rl_release(m);
+    drop_temps();
+}
+
 int main(void) {
     char *argv[2];
     argv[0] = (char *)"one";
@@ -588,6 +659,7 @@ int main(void) {
     test_host();
     test_cycles();
     test_gfx_scale();
+    test_small_api();
     drop_temps();
     CHECK(!cx.has_err);
     rl_ctx_free(&cx);
