@@ -250,4 +250,5 @@ Names starting with `host_` are the host's own pieces (files, clocks, float math
 
 - Calls: 800 deep.
 - Source nesting (brackets, `-`, `not`, blocks): 32 levels (`too deeply nested (more than 32 levels)`), the same in every engine and in `relicc`. It was 100 before 1.0.16; see [CGEN.md](CGEN.md#decided-choices) for why.
+- Chained operators in one expression (`1 + 1 + 1 + ...`): the host walks them recursively, so tens of thousands in a row run out of C stack and the process crashes (about 55,000 terms with Linux's usual 8 MB stack). Nothing real comes near this; split the expression up.
 - One graphics window at a time.
