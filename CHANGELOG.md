@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.31 (2026-10-27)
+
+Standard input for Relic programs, and with it the REPL written in Relic, which finishes SH4. Daniel approved the new built-in on Oct 27 2026. One new `os` pair of calls; no change to the language itself.
+
+- New built-in `host_read_line(prompt)`, wrapped as `os.read_line()` and `os.prompt(text)` in `std/os`: the next line of standard input without its line end (`"\n"` or `"\r\n"`), or `none` at the end of the input, every time after that too. An empty line is `""`, so `none` always means the end. Only the line end is cut; a last line with no newline comes back as it is. Any length, any bytes (NUL, bytes that are not UTF-8, Ctrl-Z); stdin is read in binary mode on Windows. `os.prompt(text)` shows `text` first, but only when stdin is a terminal (so a program prints the same into a pipe), and writes a newline when the input ends there; a non-string prompt is `os.prompt(): prompt must be a string, got int`. Same behavior and messages in the tree-walker, the VM, compiled programs (`runtime/c/rl_host.c`, and the name in `selfhost/cgen.relic`, `bootstrap/cgen.c` regenerated) and `selfhost/run.relic` (it reaches the primitive through `host_call`). `host_names()` lists 78 primitives now (77 before).
+- New `selfhost/repl.relic`: `relic selfhost/repl.relic` is the host's REPL written in Relic (the second half of SH4), on the Relic-written lexer, parser and interpreter. Same output, errors and exit code as the host's on every script tried: values, state, errors, blocks, multi-line headers (1.0.29), `:quit`, input that ends inside a block, CRLF, long lines, a program reading the same stdin, `use`, `os.exit`. Two differences for a person at a terminal: the banner has no version number and `:quit` prints no extra empty line. SH4 is ticked in the roadmap and the project plan.
+- Test runners: a golden can have a `name.in` file, fed on stdin by `golden_name`, `cgen_name`, `vm_matches_tree_walker` and `selfhost_interp`; no file means empty input, not the terminal. `*.in` is `-text` in `.gitattributes`, so CRLF and odd bytes in them are kept.
+- Tests: goldens `stdin_lines`, `stdin_edge`, `stdin_empty`, `stdin_only_newline`, `stdin_prompt` and `err_stdin_prompt_type` (lines, empty lines, CRLF, a lone CR, UTF-8, a last line with no newline, 5000- and 70000-byte lines, NUL, non-UTF-8, Ctrl-Z, end of input read again and again, an empty input) on all engines; `selfhost_repl` (the host REPL against `repl.relic` on the 4 `repl_*` goldens and 41 new scripts in `tests/repl_cases/`), `selfhost_repl_nested` (on `selfhost/run.relic`, 2 scripts) and `cgen_selfhost_repl` (compiled); `c_runtime` checks the new primitive's argument error and the 78 names. `tools/fuzz_repl.py` (by hand, needs Python) runs random scripts through both REPLs; about 5000 agreed. A terminal session (banner, prompts, Ctrl-D) was checked by hand through a pty on both REPLs.
+- Speed: `selfhost_interp` 10.17 s median of 3 on a quiet box (1.67x the 6.1 s baseline; 9.84 s in 1.0.29, which had 6 fewer goldens). A first version of `stdin_edge` summed a 70000-byte line one character at a time and added 3 s to it, so long lines are sampled instead.
+- `ctest`: 177 default, 376 with the host.
+
 ## 1.0.30 (2026-10-27)
 
 One error message fix and a fuzz tool fix. No language change.

@@ -74,6 +74,8 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tools/fuzz_check.py SEED` writes a random program (nested functions, blocks, loops, `try`, `use`, a pool of names with typos). It is not in ctest because it needs Python; after changing `selfhost/check.relic`, compare the two `check`s on a thousand seeds by hand (the command is in the file). Seeds 1 to 1500 agreed in 1.0.27.
 
+`tools/fuzz_repl.py SEED [COUNT]` feeds random scripts (lines picked from the REPL cases and the goldens, LF or CRLF) to the host's REPL and to `selfhost/repl.relic` and reports any difference in stdout, stderr or exit code. Also by hand; about 5000 scripts agreed in 1.0.31.
+
 `tools/fuzz_mutate.py MODE SEED COUNT` edits the golden and check-case programs a little (a quote, a bracket, a keyword, a multi-byte or control character) and compares the Relic-written tools with the host: `tokens`, `ast` and `check` against `--tokens`, `--ast` and `relic check`, and `run` for the VM against the tree-walker, `selfhost/run.relic` and the compiled program. It prints the path of each mismatch. Not in ctest (it needs Python); run it after changing the lexer, parser, `check`, `errfmt` or the interpreter in `selfhost/`.
 
 ## Unit tests
