@@ -129,10 +129,10 @@ One `Value` type: none, bool, int, float, string, list, map, function, built-in,
 | File | What it is |
 |---|---|
 | `lexer.relic` | `lex(src)` gives `{tokens, err}`; stops at the first error |
-| `tokens.relic` | `relic selfhost/tokens.relic FILE` prints the same dump as `--tokens` |
+| `tokens.relic` | `relic selfhost/tokens.relic FILE` prints the same dump as `--tokens`, with the same exit codes (1 for a lex error, 2 for no file or one that cannot be opened) |
 | `tokens_fmt.relic` | string quoting shared by the dumps |
 | `parser.relic` | `parse(tokens)` gives `{tree, err}`; nodes are maps `{kind, text, line, col, kids}` |
-| `ast.relic` | `relic selfhost/ast.relic FILE` prints the same tree as `--ast` |
+| `ast.relic` | `relic selfhost/ast.relic FILE` prints the same tree as `--ast`, with the same exit codes |
 | `interp.relic` | tree-walk interpreter with every built-in, `try` / `catch`, `as` hints, int and float, UTF-8, `use` (own files and `std/`) |
 | `errfmt.relic` | prints errors the way the host does |
 | `run.relic` | `relic selfhost/run.relic FILE` runs a program like `relic FILE`, with the host's exit codes (1 for an uncaught error, 2 for no file or one that cannot be opened) |

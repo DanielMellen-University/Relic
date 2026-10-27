@@ -1,5 +1,6 @@
 # selfhost/tokens.relic: same output as `relic --tokens FILE`, using the Relic lexer.
 #   relic selfhost/tokens.relic FILE
+# Exit codes like the host's: 1 for a lex error, 2 for bad usage or a file that cannot be opened.
 use lexer
 use tokens_fmt
 use std/files
@@ -11,11 +12,16 @@ let stringy = {STRING: true, STRING_PART: true, STRING_END: true}
 let argv = args()
 if len(argv) != 1
     eprint("usage: relic selfhost/tokens.relic FILE")
+    host_exit(2)
+else if not files.exists(argv[0]) or files.is_dir(argv[0])
+    eprint("relic: cannot open {argv[0]}")
+    host_exit(2)
 else
     let path = argv[0]
     let r = lexer.lex(files.read(path))
     if r.err != none
         errfmt.show(path, r.err)
+        host_exit(1)
     else
         for t in r.tokens
             let line = "{t.line}:{t.col} {t.kind}"
