@@ -362,6 +362,34 @@ static void test_errors_and_builtins(void) {
         rl_release(r);
     }
 
+    /* a NUL byte in the source line does not cut the line short (read from the file, as a compiled program does) */
+    {
+        static const char text[] = "let a = 1\nprint(\"a\0b\", x + \"c\")\n";
+        static const char want[] = "rl_nul_src.relic:2:14: error: boom\n"
+                                   "    print(\"a\0b\", x + \"c\")\n"
+                                   "    " "             ^\n";
+        const char *name = "rl_nul_src.relic";
+        FILE *sf = fopen(name, "wb"), *tf;
+        char got[256];
+        size_t n;
+        CHECK(sf != NULL);
+        if (sf) {
+            fwrite(text, 1, sizeof text - 1, sf);
+            fclose(sf);
+            tf = tmpfile();
+            rl_fail(&cx, "boom");
+            rl_at(&cx, name, 2, 14);
+            rl_report(&cx, tf, NULL);
+            rewind(tf);
+            n = fread(got, 1, sizeof got - 1, tf);
+            fclose(tf);
+            remove(name);
+            CHECK(n == sizeof want - 1 && memcmp(got, want, n) == 0);
+            CHECK(rl_catch(&cx, &r));
+            rl_release(r);
+        }
+    }
+
     CHECK(rl_builtin("print", &f));
     CHECK(rl_builtin("print", &r) && r.u.o == f.u.o);   /* one shared object */
     SHOW(rl_retain(f), "<fun print>");

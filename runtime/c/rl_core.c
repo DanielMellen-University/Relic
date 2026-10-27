@@ -751,18 +751,18 @@ int rl_catch(rl_ctx *cx, rl_value *out) {
 }
 
 /* Port of diag::snippet in src/diag/diag.cpp. */
-static void snippet(FILE *to, const char *src, int line, int col) {
-    const char *p = src, *end;
+static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
+    const char *p = src, *end, *stop = src + len;
     size_t n, from = 0, i;
     int k;
     if (!src || line < 1 || col < 1) return;
-    for (k = 1; k < line; ++k) {
-        p = strchr(p, '\n');
+    for (k = 1; k < line; ++k) {   /* by length, not to a NUL: a line can hold NUL bytes */
+        p = (const char *)memchr(p, '\n', (size_t)(stop - p));
         if (!p) return;
         ++p;
     }
-    end = strchr(p, '\n');
-    n = end ? (size_t)(end - p) : strlen(p);
+    end = (const char *)memchr(p, '\n', (size_t)(stop - p));
+    n = end ? (size_t)(end - p) : (size_t)(stop - p);
     if (n && p[n - 1] == '\r') --n;
     for (i = 0; i < n && (p[i] == ' ' || p[i] == '\t'); ++i) {}
     if (i == n) return;
@@ -789,7 +789,7 @@ static void snippet(FILE *to, const char *src, int line, int col) {
 }
 
 /* With no source text, the file is read now, as the host does. */
-static char *read_whole(const char *path) {
+static char *read_whole(const char *path, size_t *len) {
     FILE *f = fopen(path, "rb");
     char *data = NULL;
     size_t n = 0, cap = 0, got;
@@ -802,16 +802,18 @@ static char *read_whole(const char *path) {
     }
     fclose(f);
     data[n] = 0;
+    *len = n;
     return data;
 }
 
 void rl_report(rl_ctx *cx, FILE *to, const char *source) {
     char *owned = NULL;
+    size_t len = source ? strlen(source) : 0;
     if (!cx->has_err) return;
     fprintf(to, "%s:%d:%d: error: %s\n", cx->err_file ? cx->err_file : "<program>", cx->err_line,
             cx->err_col, cx->err_msg->data);
-    if (!source && cx->err_file) source = owned = read_whole(cx->err_file);
-    snippet(to, source, cx->err_line, cx->err_col);
+    if (!source && cx->err_file) source = owned = read_whole(cx->err_file, &len);
+    snippet(to, source, len, cx->err_line, cx->err_col);
     free(owned);
 }
 
