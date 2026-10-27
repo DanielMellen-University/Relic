@@ -10,9 +10,19 @@ abc 007 xyxyabc
 abc abc
 HéLLO ß hÉllo 
 [x y] [] []
-error: pad_left(): fill must not be empty
-error: pad_right(): fill must not be empty
+error: strings.pad_left(): fill must not be empty
+error: strings.pad_right(): fill must not be empty
 strings.upper(): argument must be a string, got int
 strings.trim(): argument must be a string, got none
 strings.split(): separator must be a string, got int
 strings.repeat(): text must be a string, got list
+strings.repeat(): count must be a whole number
+strings.repeat(): count must be a number, got string
+strings.repeat(): count must be a whole number
+strings.pad_left(): width must not be infinite
+strings.pad_left(): width must be a number, got string
+strings.pad_left(): fill must be a string, got int
+strings.pad_left(): text must be a string, got int
+xxa axx
+a a
+a a

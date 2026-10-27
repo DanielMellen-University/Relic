@@ -1,4 +1,4 @@
-# std/strings on empty and odd inputs: results, and the one error pad_* has
+# std/strings on empty and odd inputs: results, and the errors for bad arguments
 use std/strings
 
 fun show_error(f)
@@ -42,3 +42,17 @@ try
     print(strings.repeat([1], 2))
 catch e
     print(e.message)
+
+# repeat wants a whole count, pad_* a number width that is not +infinity (it padded
+# forever) and text for the fill (since 1.0.35)
+let inf = 1e308 * 10
+for args in [["ab", 2.5], ["ab", "3"], ["ab", inf]]
+    try
+        print(strings.repeat(args[0], args[1]))
+    catch e
+        print(e.message)
+for args in [["a", inf, "x"], ["a", "5", "x"], ["a", 5, 3], [5, 3, "x"], ["a", 2.5, "x"], ["a", inf - inf, "x"], ["a", 0 - inf, "x"]]
+    try
+        print(strings.pad_left(args[0], args[1], args[2]), strings.pad_right(args[0], args[1], args[2]))
+    catch e
+        print(e.message)

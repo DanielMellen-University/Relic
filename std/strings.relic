@@ -96,24 +96,37 @@ fun replace(s, old, new) = join(split(s, old), new)
 
 fun repeat(s, n)
     _text("repeat", "text", s)
+    if type(n) != "int" and type(n) != "float"
+        fail("strings.repeat(): count must be a number, got " + type(n))
+    if n % 1 != 0
+        fail("strings.repeat(): count must be a whole number")
     let out = ""
     for i in 0..n
         out = out + s
     return out
 
+# The checks pad_left and pad_right share. An infinite width would pad forever.
+fun _pad(name, s, width, fill)
+    _text(name, "text", s)
+    _text(name, "fill", fill)
+    if type(width) != "int" and type(width) != "float"
+        fail("strings." + name + "(): width must be a number, got " + type(width))
+    if width > 0 and width - width != 0
+        fail("strings." + name + "(): width must not be infinite")
+    if fill == "" and len(s) < width
+        fail("strings." + name + "(): fill must not be empty")
+
 # pad_left("7", 3, "0") is "007"; pad_right pads on the right.
 fun pad_left(s, width, fill)
+    _pad("pad_left", s, width, fill)
     let out = s
-    if fill == "" and len(out) < width
-        fail("pad_left(): fill must not be empty")
     while len(out) < width
         out = fill + out
     return out
 
 fun pad_right(s, width, fill)
+    _pad("pad_right", s, width, fill)
     let out = s
-    if fill == "" and len(out) < width
-        fail("pad_right(): fill must not be empty")
     while len(out) < width
         out = out + fill
     return out

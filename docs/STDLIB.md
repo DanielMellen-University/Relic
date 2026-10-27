@@ -33,11 +33,11 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `split(s, sep)` | list | |
 | `join(items, sep)` | string | |
 | `replace(s, old, new)` | string | all non-overlapping |
-| `repeat(s, n)` | string | |
-| `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error |
+| `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
+| `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity |
 | `is_space(c)` | bool | space, tab, newline, CR |
 
-`upper`, `lower`, `trim`, `split` and `repeat` fail with `strings.upper(): argument must be a string, got int` (since 1.0.28) when given something else (`split` says `text` or `separator`, `repeat` says `text`).
+`upper`, `lower`, `trim`, `split` and `repeat` fail with `strings.upper(): argument must be a string, got int` (since 1.0.28) when given something else (`split` says `text` or `separator`, `repeat` says `text`). Since 1.0.35 `repeat` also wants a whole-number count (`strings.repeat(): count must be a whole number`), and `pad_left` and `pad_right` check `text`, `fill` and `width` (`strings.pad_left(): width must not be infinite`; an infinite width used to pad forever). Their messages start with `strings.` like the rest.
 
 ## std/lists
 
