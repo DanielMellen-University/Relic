@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.37 (2026-10-27)
+
+Speed and fuzzing: code that built a long string one piece at a time, or indexed one, took time growing with the square of its size. No change to the language or to any result.
+
+- `std/json`: `decode` read its text by indexing the string; it reads a list of the characters now (200 KB: 3.7 s, now 0.2 s). `encode`, `pretty` and the strings `decode` builds join their pieces in halves (200,000 characters: 4.4 s, now 0.34 s; a list of 100,000 ints: 3.9 s, now 0.22 s). `decode` of a value that is not a string says `json.decode(): text must be a string, got int` (it said `len(): cannot get the length of an int`). Golden `std_json_edges`.
+- `std/strings`: `find` on long text, `upper`, `lower`, `repeat`, `pad_left` and `pad_right` (80,000 characters: `find` 0.9 s, now 0.03 s; `repeat` of 200,000 characters 0.86 s, now under 1 ms). Golden `std_strings_edges`.
+- `std/vfs`: every call ran `paths.normalize` twice and a split on its path; it reads the path once. `list` sorts with an in-place merge. A folder of 3,000 names: `list` 20 ms, now 12 ms; `is_dir` on each name 62 ms, now 16 ms. Same results and messages. Golden `std_vfs` covers `\`, `..`, `.` and doubled slashes.
+- `selfhost/lexer.relic` built long names and strings one character at a time (a 400,000-character string: 4.3 s in `check.relic`, now 0.8 s), and `errfmt.relic` reads a long line's window in one pass. Same tokens and errors. `bootstrap/` regenerated.
+- Each module change was checked against the old module on random input on the VM, `--tree`, `selfhost/run.relic` and compiled.
+- `tools/fuzz_gen.py` writes text for `num()`, `float()` and `int()`: signs, `nan` / `inf` / `infinity` in mixed case, hex at the int range's edges, tiny and huge floats, near misses. 450 programs and 3,565 strings agreed on all four engines and with a model of the rules.
+- New `tools/fuzz_depth.py`: expressions and nested `else if` chains within three levels of the 10,000 limit, read by `relic check`, `check.relic` and `relicc`. 132 cases agreed and failed exactly past 10,000.
+- Speed: `selfhost_interp` 10.29 s median of 3 (10.29, 10.10, 10.60), under the 12.2 s cap.
+- `ctest`: 185 default, 389 with the host.
+
 ## 1.0.36 (2026-10-27)
 
 Two changes Daniel approved: `num()` reads more numbers, and a limit of 10,000 on how deep code goes, where the host used to crash.

@@ -72,7 +72,7 @@ The `relic_core` static library holds everything except `main`. Link it and incl
 | `repl(in, out, err, interactive)` | the whole REPL loop |
 | `check_source(path, source)` | `relic check` for one file |
 | `dump_tokens`, `dump_tree`, `dump_bytecode` | the debug dumps |
-| `version_string()` | `"relic 1.0.36"` |
+| `version_string()` | `"relic 1.0.37"` |
 | `script_args()` | the list `args()` returns; fill it before running |
 
 `RunResult` has `exit_code`, `out` and `err`. `path` is used for error messages and to resolve `use`.
