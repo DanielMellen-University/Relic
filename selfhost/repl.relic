@@ -1,0 +1,139 @@
+# selfhost/repl.relic: the REPL written in Relic (SH4, second half). The same
+# loop as the host's (`repl` in src/core.cpp), on the lexer, parser and
+# interpreter written in Relic and the standard input built-in (os.prompt):
+#   relic selfhost/repl.relic
+# What it does, as the host's REPL does:
+#   - names stay defined between inputs
+#   - a bare expression prints its value (none prints nothing)
+#   - a line that opens a block (`fun`, `if`, `else`, `while`, `for`, `try`,
+#     `catch`) reads lines until an empty one; an open ( [ or { keeps reading
+#     too, also in the header of a block
+#   - an error prints `<repl>:line:col: error: ...` without the source line,
+#     and the REPL goes on
+#   - `:quit`, or the end of the input, leaves it; the exit code is 0
+# Prompts (and a banner before the first one) are shown only when stdin is a
+# terminal, so piped input (`relic selfhost/repl.relic < script.relic`) runs
+# chunk by chunk with no prompts, like the host's.
+# One difference: the banner has no version number, and on a terminal `:quit`
+# does not print an extra empty line.
+use lexer
+use parser
+use interp
+use errfmt
+use std/os
+
+let banner = "relic REPL written in Relic. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n"
+
+# The name the value of an input's last expression is kept under while it runs.
+# It cannot be typed, so it never meets a name of the program.
+let echo_name = chr(3) + "last"
+
+fun only_spaces(s)
+    for c in s
+        if c != " "
+            return false
+    return true
+
+# A line opens a block when it starts with a block keyword, except the
+# one-line `fun f(x) = expr` form.
+fun opens_block(text)
+    let lexed = lexer.lex(text)
+    if lexed.err != none or len(lexed.tokens) == 0
+        return false
+    let toks = lexed.tokens
+    let k = toks[0].kind
+    if k == "IF" or k == "WHILE" or k == "FOR" or k == "ELSE" or k == "TRY" or k == "CATCH"
+        return true
+    if k == "FUN"
+        let depth = 0
+        for t in toks
+            if t.kind == "LPAREN"
+                depth = depth + 1
+            if t.kind == "RPAREN"
+                depth = depth - 1
+            if t.kind == "ASSIGN" and depth == 0
+                return false
+        return true
+    return false
+
+# True when the text has an open bracket that a later line could close.
+fun unclosed(text)
+    let lexed = lexer.lex(text)
+    if lexed.err == none
+        return false
+    return slice(lexed.err.msg, 0, 8) == "unclosed"
+
+# Runs one input in the session; errors are printed, never raised.
+fun run_chunk(rt, text)
+    let lexed = lexer.lex(text)
+    let err = lexed.err
+    if err == none
+        let parsed = parser.parse(lexed.tokens)
+        err = parsed.err
+        if err == none
+            let tree = parsed.tree
+            # a final bare expression is kept, to be printed when it ends well
+            let last = len(tree.kids) - 1
+            let echo = last >= 0 and tree.kids[last].kind == "ExprStmt"
+            if echo
+                tree.kids[last].kind = "Let"
+                tree.kids[last].text = echo_name
+            interp.run(rt, tree)
+            err = rt.err
+            rt.err = none
+            if err == none and echo
+                let v = rt.globals.vars[echo_name]
+                remove(rt.globals.vars, echo_name)
+                if v != none
+                    print(interp.repr(v))
+            else if echo and echo_name in rt.globals.vars
+                remove(rt.globals.vars, echo_name)
+    if err != none
+        let path = "<repl>"
+        if "file" in err and err.file != ""
+            path = err.file
+        errfmt.show(path, err)
+
+fun main()
+    let rt = interp.new_runtime()
+    interp.set_main(rt, "<repl>")
+    let chunk = ""
+    let block = false
+    let first = true
+    while true
+        let ask = "> "
+        if chunk != ""
+            ask = "... "
+        if first
+            ask = banner + ask
+            first = false
+        let line = os.prompt(ask)
+        if line == none
+            break
+        if len(line) > 0 and line[len(line) - 1] == chr(13)
+            line = slice(line, 0, len(line) - 1)
+        if chunk == ""
+            if line == ":quit"
+                break
+            if only_spaces(line)
+                next
+            block = opens_block(line)
+        let blank = only_spaces(line)
+        chunk = chunk + line + "\n"
+        # A header spread over several lines cannot be read as a block opener until
+        # its bracket closes, so ask again once it has.
+        if not block and not unclosed(chunk)
+            block = opens_block(chunk)
+        let more = unclosed(chunk)
+        if block
+            more = not blank
+        if more
+            next
+        run_chunk(rt, chunk)
+        chunk = ""
+        block = false
+    if chunk != ""
+        # input ended in the middle of a block
+        run_chunk(rt, chunk)
+
+main()

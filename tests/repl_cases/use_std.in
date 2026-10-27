@@ -1,0 +1,7 @@
+use std/strings
+strings.upper("abc")
+strings.nope(1)
+use std/lists
+lists.sum([1, 2, 3])
+use std/nothing
+1

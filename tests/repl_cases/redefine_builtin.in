@@ -1,0 +1,4 @@
+print = 1
+let print = 2
+print
+len("abc")

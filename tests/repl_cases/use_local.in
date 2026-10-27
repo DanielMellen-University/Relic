@@ -1,0 +1,8 @@
+use modules/mathx
+mathx.square(7)
+mathx.pi
+use modules/broken
+broken.boom(1)
+use modules/bad_syntax
+use modules/not_there
+mathx

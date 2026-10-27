@@ -1,0 +1,13 @@
+let a = 1
+let b = a + 1
+a = a + 10
+a
+b
+let a = 5
+a
+let l = [1]
+append(l, 2)
+l
+let m = {x: 1}
+m.x = 9
+m

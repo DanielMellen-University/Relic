@@ -1,0 +1,7 @@
+fun a()
+    fail("first")
+
+a()
+print("still here")
+a()
+print("and here")

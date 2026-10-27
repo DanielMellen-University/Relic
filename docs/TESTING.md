@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 171 ctest cases: 170 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 344: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 177 ctest cases: 170 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 376: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -26,10 +26,12 @@ Each test is a set of files in `tests/golden/` with the same name:
 | `name.out` | the exact stdout |
 | `name.err` | for error tests: the exact stderr; the program must exit with code 1 |
 | `name.args` | optional flags passed before the file, such as `--tokens` |
+| `name.in` | optional standard input for the program (since 1.0.31); without it the program gets empty input, never the terminal |
 
 - Each `tests/golden/*.relic` file is its own ctest case (`golden_name`), run by `tools/run_golden.cmake` from inside `tests/golden/`. Helper modules live in `tests/golden/modules/` and are not run on their own.
 - Paths in `.err` files are written relative to `tests/golden/`.
 - Files named `repl_*.relic` are typed into `relic` on stdin. Their stdout must match `.out` and their stderr `.err` (each empty if the file is missing).
+- A program that reads standard input (`os.read_line()`) gets `name.in` on stdin, in `golden_name`, `cgen_name` and in the VM and `selfhost_interp` comparisons. `.gitattributes` marks `*.in` as binary (`-text`), so CRLF and odd bytes in them are kept as written, on Windows too.
 - Line endings are normalized to `\n` before comparing.
 - The README sample is checked by `readme_sample`. Change both together.
 
@@ -46,7 +48,7 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (225 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (226 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
 | `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (175 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (175 today) |
@@ -60,6 +62,9 @@ Three more self-host cases check the interpreter on real use:
 | `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 15 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
 | `selfhost_check_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two cases | the interpreter runs `check.relic` right |
 | `cgen_selfhost_check` | the compiled `selfhost/check.relic` (host build with C) | the same comparison as `selfhost_check` |
+| `selfhost_repl` | `selfhost/repl.relic` against the host's REPL (`tools/compare_repl.cmake`) | stdout, stderr and exit code on every REPL script: the four `tests/golden/repl_*.relic` and the 41 cases in `tests/repl_cases/*.in` (values, state, errors, blocks, multi-line headers, `:quit`, input that ends inside a block, CRLF, long lines, a program reading the same stdin, `use`, `os.exit`) |
+| `selfhost_repl_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two scripts | the interpreter runs `repl.relic` right |
+| `cgen_selfhost_repl` | the compiled `selfhost/repl.relic` (host build with C) | the same comparison as `selfhost_repl` |
 | `relicc_cli` | `relicc` with no arguments, no `-o`, a clean file, a syntax error, a missing file and a folder (`tools/check_relicc_cli.cmake`) | exit codes 0, 1 and 3, and `relicc: cannot open FILE` |
 | `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, a folder, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |
 

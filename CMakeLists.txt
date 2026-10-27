@@ -188,6 +188,17 @@ if(RELIC_BUILD_HOST)
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DNESTED=1
       "-DONLY=late.relic|suggest.relic" -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
 
+  # SH4: selfhost/repl.relic behaves like the host's REPL on every REPL script
+  # (tests/golden/repl_*.relic and tests/repl_cases/*.in).
+  add_test(NAME selfhost_repl
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_repl.cmake)
+
+  # ... and the same on the Relic-written interpreter (slow: a few scripts).
+  add_test(NAME selfhost_repl_nested
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DNESTED=1
+      "-DONLY=repl_state|stdin_shared" -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_repl.cmake)
+
   # Self-host: args reach the program, and run.relic can run itself (two levels).
   add_test(NAME selfhost_args
     COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/run.relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/args.relic one --two)
@@ -354,6 +365,7 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     relic_cgen_exe(selfhost_ast ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/ast.relic)
     relic_cgen_exe(selfhost_cgen ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/cgen.relic)
     relic_cgen_exe(selfhost_check ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/check.relic)
+    relic_cgen_exe(selfhost_repl ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/repl.relic)
     add_test(NAME cgen_selfhost_lexer
       COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DTOOL=$<TARGET_FILE:cgen_selfhost_tokens> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_lexers.cmake)
@@ -363,6 +375,9 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     add_test(NAME cgen_selfhost_check
       COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DCORPUS=1
         -DTOOL=$<TARGET_FILE:cgen_selfhost_check> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
+    add_test(NAME cgen_selfhost_repl
+      COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+        -DTOOL=$<TARGET_FILE:cgen_selfhost_repl> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_repl.cmake)
     add_test(NAME cgen_fixed_point
       COMMAND ${CMAKE_COMMAND} -DSTAGE1=$<TARGET_FILE:cgen_selfhost_cgen> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DSTAGE0_C=${CMAKE_CURRENT_BINARY_DIR}/cgen/selfhost_cgen.c -DOUT=${CMAKE_CURRENT_BINARY_DIR}/cgen/selfhost_cgen.stage2.c

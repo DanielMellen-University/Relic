@@ -1,0 +1,6 @@
+if true
+    :quit
+    print("x")
+
+print("after")
+:quit

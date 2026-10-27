@@ -1,0 +1,4 @@
+use std/os
+os.prompt("ask? ")
+answer
+os.prompt(7)

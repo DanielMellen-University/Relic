@@ -1,0 +1,6 @@
+let l = [1]
+append(l, l)
+l
+let m = {}
+m.me = m
+m

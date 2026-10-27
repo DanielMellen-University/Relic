@@ -1,0 +1,11 @@
+fun f(x) = x + 1
+f
+print
+len
+[f, print]
+{k: f}
+0.1 + 0.2
+1e20
+2 * 3.0
+"tab\there \"q\""
+"é€😀"

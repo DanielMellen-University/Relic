@@ -1,0 +1,19 @@
+nope
+1 +
+)
+let x =
+1 / 0
+[1][5]
+len(1, 2)
+"a" - 1
+fail("boom")
+return 1
+break
+next
+let ok = 1
+ok
+missing_fn(1)
+(1
+)
+"unterminated
+let y = (2

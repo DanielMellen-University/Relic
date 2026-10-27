@@ -1,0 +1,8 @@
+gc()
+type(1)
+type("a")
+type([])
+type(none)
+int("12")
+float("1.5")
+int("zz")

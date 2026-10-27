@@ -1,0 +1,12 @@
+1 + 2
+"a" + "b"
+3.5 * 2
+10 / 4
+true and false
+[1, 2, 3]
+{a: 1, "b c": [1, {d: none}]}
+none
+let z = none
+z
+7 % 3
+-5

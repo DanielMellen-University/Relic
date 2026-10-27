@@ -1,0 +1,7 @@
+print("p")
+"v"
+print("p2")
+5
+for i in 0..2
+    i
+

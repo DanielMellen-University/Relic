@@ -1,0 +1,22 @@
+try
+    fail("x")
+catch e
+    print(e.message)
+
+try
+    1 + "a"
+catch
+    print("bare catch")
+
+let n = 0
+try
+    n = num("x")
+catch
+    n = -1
+
+n
+try
+    print("fine")
+catch e
+    print("no")
+

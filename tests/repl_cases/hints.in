@@ -1,0 +1,7 @@
+let n as int = 5
+n
+let s as string = 1
+fun f(x as int) = x
+f("a")
+f(2)
+n = "a"

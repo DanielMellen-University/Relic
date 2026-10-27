@@ -1,0 +1,14 @@
+fun g()
+    return nope
+
+fun h(x)
+    return x + "a"
+
+fun deep(n)
+    return deep(n + 1)
+
+g()
+h(1)
+deep(0)
+1
+g

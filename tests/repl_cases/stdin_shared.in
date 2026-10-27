@@ -1,0 +1,7 @@
+use std/os
+let taken = os.read_line()
+this line goes to the program
+taken
+os.read_line()
+second taken line
+os.read_line()

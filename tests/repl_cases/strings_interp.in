@@ -1,0 +1,4 @@
+let who = "D"
+"hi {who}"
+print("hi {who}, {1 + 2}")
+"{{literal}}"
