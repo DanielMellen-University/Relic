@@ -134,20 +134,27 @@ fun number(ck, n)
     catch err
         add_item(ck, n, "float is too large")
 
-fun expr(ck, n)
-    let k = n.kind
-    if k == "Name"
-        load_name(ck, n)
-    else if k == "Number"
-        number(ck, n)
-    else if k == "Map"
-        for p in n.kids
-            expr(ck, p.kids[0])
-    else if k == "String" or k == "True" or k == "False" or k == "None"
-        return
-    else
-        for kid in n.kids
-            expr(ck, kid)
+# Visits the nodes in the same order as a recursive walk, from a list used as
+# a stack, so a long chain (a + b + ..., f()()...) does not reach the 800-call limit.
+fun expr(ck, top)
+    let todo = [top]
+    while len(todo) > 0
+        let n = pop(todo)
+        let k = n.kind
+        if k == "Name"
+            load_name(ck, n)
+        else if k == "Number"
+            number(ck, n)
+        else if k == "Map"
+            let i = len(n.kids) - 1
+            while i >= 0
+                append(todo, n.kids[i].kids[0])
+                i = i - 1
+        else if k != "String" and k != "True" and k != "False" and k != "None"
+            let i = len(n.kids) - 1
+            while i >= 0
+                append(todo, n.kids[i])
+                i = i - 1
 
 fun block(ck, b, new_scope)
     let scoped = new_scope and declares(b)
@@ -203,14 +210,18 @@ fun stmt(ck, n)
     else if k == "ExprStmt"
         expr(ck, n.kids[0])
     else if k == "If"
-        expr(ck, n.kids[0])
-        block(ck, n.kids[1], true)
-        if len(n.kids) > 2
-            let alt = n.kids[2]
-            if alt.kind == "If"
-                stmt(ck, alt)
-            else
-                block(ck, alt, true)
+        # else if links in a loop, for the same reason as expr()
+        let cur = n
+        while cur != none
+            expr(ck, cur.kids[0])
+            block(ck, cur.kids[1], true)
+            let alt = none
+            if len(cur.kids) > 2
+                alt = cur.kids[2]
+                if alt.kind != "If"
+                    block(ck, alt, true)
+                    alt = none
+            cur = alt
     else if k == "While"
         expr(ck, n.kids[0])
         loop_in(ck)
