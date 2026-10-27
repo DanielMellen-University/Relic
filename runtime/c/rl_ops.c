@@ -248,8 +248,17 @@ static int no_key(rl_ctx *cx, rl_map *m, const char *k, size_t len) {
         if (d >= len || d > limit) continue;
         if (d < best_d || (d == best_d && strcmp(c->data, pick->data) < 0)) { best_d = d; pick = c; }
     }
-    if (pick) return rl_fail(cx, "map has no key '%s' (did you mean '%s'?)", k, pick->data);
-    return rl_fail(cx, "map has no key '%s'", k);
+    if (pick) {   /* the key may hold NUL bytes, so it goes in by length */
+        size_t n = strlen(pick->data) + 32;
+        char *after = (char *)malloc(n);
+        int r;
+        if (!after) abort();
+        snprintf(after, n, "' (did you mean '%s'?)", pick->data);
+        r = rl_fail_wrap(cx, "map has no key '", k, len, after);
+        free(after);
+        return r;
+    }
+    return rl_fail_wrap(cx, "map has no key '", k, len, "'");
 }
 
 /* op_suggest on the host: the closest name within a small edit distance. */
@@ -449,5 +458,5 @@ int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     *out = rl_float(d);
     return RL_OK;
 bad:
-    return rl_fail(cx, "not a number: \"%s\"", s);
+    return rl_fail_wrap(cx, "not a number: \"", s, len, "\"");
 }

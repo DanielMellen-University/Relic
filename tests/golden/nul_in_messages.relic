@@ -1,0 +1,36 @@
+# A NUL byte in a string that ends up in an error message stays there, on every
+# engine (the host cut the message at the NUL; compiled programs cut the string).
+# Messages are shown by length and by the code of each character, so the output
+# has no NUL.
+let z = chr(0)
+fun codes(s)
+    let out = []
+    for c in s
+        append(out, ord(c))
+    return out
+try
+    fail("x" + z + "y")
+catch e
+    print(len(e.message), codes(e.message))
+try
+    float("3" + z)
+catch e
+    print(len(e.message), codes(slice(e.message, 22, len(e.message))))
+try
+    num(z + "4")
+catch e
+    print(len(e.message), codes(slice(e.message, 20, len(e.message))))
+try
+    int("7" + z + "8")
+catch e
+    print(len(e.message), codes(slice(e.message, 21, len(e.message))))
+let m = {a: 1}
+try
+    print(m["a" + z + "b"])
+catch e
+    print(len(e.message), codes(slice(e.message, 16, len(e.message))))
+try
+    remove(m, "q" + z)
+catch e
+    print(len(e.message), codes(slice(e.message, 26, len(e.message))))
+print(len("a" + z + "b"), codes("a" + z + "b"))

@@ -325,7 +325,7 @@ Value op_call_builtin(const Ast& n, const Builtin& b, std::vector<Value>& args) 
 
 Value op_error_value(const RuntimeError& e) {
     auto m = std::make_shared<Map>();
-    m->set("message", Value(std::string(e.what())));
+    m->set("message", Value(e.message()));
     m->set("line", Value(static_cast<long long>(e.line)));
     m->set("col", Value(static_cast<long long>(e.col)));
     return Value(m);
@@ -410,7 +410,7 @@ void op_std_boundary(RuntimeError& e, const std::string& callee_file, const std:
     if (!e.file.empty() && !in_std(e.file)) return;  // error was in user code, e.g. a callback
     std::string stem = callee_file.substr(callee_file.find_last_of("/\\") + 1);
     stem = stem.substr(0, stem.rfind('.'));
-    std::string msg = e.what();
+    std::string msg = e.message();
     std::string head = stem + "." + fname + "(): ";
     if (msg.rfind("host_", 0) == 0 && msg.find("(): ") != std::string::npos)
         msg = head + msg.substr(msg.find("(): ") + 4);

@@ -688,7 +688,7 @@ private:
                 try {
                     emit(Op::Const, constant(op_number(n)));
                 } catch (const RuntimeError& e) {
-                    emit(Op::Fail, str(e.what()), 0, &n);
+                    emit(Op::Fail, str(e.message()), 0, &n);
                 }
                 return;
             case Node::String: emit(Op::Const, constant(Value(n.text))); return;

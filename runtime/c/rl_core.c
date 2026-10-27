@@ -686,6 +686,21 @@ int rl_fail_str(rl_ctx *cx, rl_str *msg) {
     return RL_ERR;
 }
 
+/* A message made of text, a string that may hold NUL bytes, and text: rl_fail's %s would stop at the NUL. */
+int rl_fail_wrap(rl_ctx *cx, const char *before, const char *mid, size_t mid_len, const char *after) {
+    size_t a = strlen(before), z = strlen(after);
+    char *p = (char *)xmalloc(a + mid_len + z + 1);
+    rl_value s;
+    memcpy(p, before, a);
+    memcpy(p + a, mid, mid_len);
+    memcpy(p + a + mid_len, after, z);
+    s = rl_str_new(p, a + mid_len + z);
+    free(p);
+    rl_fail_str(cx, (rl_str *)s.u.o);
+    rl_release(s);
+    return RL_ERR;
+}
+
 int rl_fail(rl_ctx *cx, const char *fmt, ...) {
     char small[256];
     char *p = small;

@@ -50,7 +50,7 @@ relic_add_program(paint apps/paint.relic GRAPHICS)   # links relic_rt_gfx (SDL2)
 
 When the C is written again: when `relicc` changes, when `file` changes, or when any `.relic` file under the folder of `file` (subfolders too) or in Relic's `std/` changes. That is a safe superset of what the program uses, since a module is usually in the program's folder or below it. A module somewhere else (`use ../shared/util`) is not seen on its own, so list it under `DEPENDS`. A new `.relic` file is picked up at the next build (the folder is globbed with `CONFIGURE_DEPENDS`), and files inside the build folder are left out.
 
-Added to another project, Relic builds `relicc` and the runtime but leaves out its own 170 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
+Added to another project, Relic builds `relicc` and the runtime but leaves out its own 171 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
 
 The generated program takes its command-line args like `relic FILE args...` does. With `RELIC_LEAK_CHECK` set in the environment it checks at exit that every container and string was freed, and exits 3 with `leak: ...` if not.
 
@@ -136,7 +136,7 @@ Errors such as `'x' is not defined`, `'x' is not declared; use 'let x = ...'`, `
 
 Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`; `relicc` in the default build, cgen on the host in a host build), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
 
-Today: 170 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
+Today: 171 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are none now. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
 
 The `build`, `no-cxx` and `cgen` CI jobs build and run these with relicc, and the `host` jobs with the host. The `cgen` job does it strict (warnings as errors) on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
 
@@ -146,7 +146,7 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 | Test | Checks |
 |---|---|
-| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (226 today) |
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (227 today) |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 

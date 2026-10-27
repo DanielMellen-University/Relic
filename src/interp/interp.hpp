@@ -15,7 +15,10 @@ struct RuntimeError : std::runtime_error {
     int line;
     int col;
     RuntimeError(int l, int c, const std::string& msg)
-        : std::runtime_error(msg), line(l), col(c) {}
+        : std::runtime_error(msg), line(l), col(c), text(msg) {}
+    // what() ends at a NUL byte; a message can hold one (fail("a" + chr(0)), a bad key), so read this
+    const std::string& message() const { return text; }
+    std::string text;
     std::string file;  // set when the error happened in another file than the one being run
 };
 

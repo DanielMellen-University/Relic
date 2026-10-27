@@ -91,7 +91,7 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         r.err = diag::format(path, e.line, e.col, e.what());
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
+        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
     }
     return r;
 }
@@ -116,7 +116,7 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
         r.err = diag::format(path, e.line, e.col, e.what());
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.what());
+        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
     }
     return r;
 }

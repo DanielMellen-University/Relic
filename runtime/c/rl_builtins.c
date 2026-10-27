@@ -228,7 +228,7 @@ BI(b_remove) {
     if (a[0].k == RL_MAP) {
         if (a[1].k != RL_STR) return rl_fail(cx, "map keys must be strings");
         if (!rl_map_remove(M(a[0]), S(a[1])->data, S(a[1])->len, out))
-            return rl_fail(cx, "map has no key '%s'", S(a[1])->data);
+            return rl_fail_wrap(cx, "map has no key '", S(a[1])->data, S(a[1])->len, "'");
         return RL_OK;
     }
     return rl_fail(cx, "cannot remove from %s", rl_a_type(a[0]));
