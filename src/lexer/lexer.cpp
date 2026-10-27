@@ -349,7 +349,11 @@ private:
                     case '"': text += '"'; break;
                     case '\\': text += '\\'; break;
                     case 'u': text += unicode_escape(el, ec); break;
-                    default: error(el, ec, std::string("unknown escape '\\") + e + "'");
+                    default: {
+                        std::string whole(1, e);  // the whole UTF-8 character, not just its first byte
+                        while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
+                        error(el, ec, "unknown escape '\\" + whole + "'");
+                    }
                 }
                 continue;
             }

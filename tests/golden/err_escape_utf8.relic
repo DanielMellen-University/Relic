@@ -1,0 +1,3 @@
+let name = "Zoë"
+print("tab\there", name)
+print("sm\érgas")
