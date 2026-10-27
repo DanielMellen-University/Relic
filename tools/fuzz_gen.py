@@ -6,7 +6,8 @@
 Where fuzz_mutate.py edits existing programs (most of its cases stop at a syntax
 error), this writes programs that run: expressions over ints, floats, strings,
 lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
-std/maps, std/math, functions, loops and `try` / `catch`. Every statement is
+std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths,
+string interpolation, functions, loops and `try` / `catch`. Every statement is
 wrapped in `try`, so an error shows up as its message and the program goes on.
 Compares `relic` (VM) with `--tree`, `selfhost/run.relic` and the program compiled
 to C (stdout, stderr, exit code). A mismatch prints the path of the program under
@@ -29,6 +30,8 @@ NAMES = ['a', 'b', 'c', 'xs', 'ys', 'm', 's', 't']
 # programs get past the first error and test values and messages deeper; some pick any type.
 INTS = ['0', '1', '2', '3', '-1', '7', '10', '255', '1000', '-5', '9223372036854775807', '60', 'n']
 FLOATS = ['0.5', '1.5', '-2.25', '3.0', '1e3', '2.5e-3', '0.1', '1e20', '100.0', 'c']
+PATHS = ['"a/b.txt"', '"/x/y/"', '"."', '".."', '"a/../b"', '"./a//b/"', '""', '"/"', '"f.tar.gz"', '".hidden"', '"é/ü.ç"', '"a\\\\b"']
+JSONS = ['"[1, 2.5, \\"x\\", null, true]"', '"{\\"a\\": {\\"b\\": []}}"', '" 1e400 "', '"\\"\\\\u00e9\\\\ud83d\\\\ude00\\""', '"[1,]"', '"-0"', '"01"', '"{\\"a\\":1,\\"a\\":2}"', '""']
 STRS = ['"abc"', '""', '"hello world"', '"é€😀"', '"a,b,c"', '"  pad  "', '"x"', '"12"', '"3.5"', '"{{}}"', '"tab\\tq"', 's', 'b']
 
 def gen(t, d=0):
@@ -38,8 +41,13 @@ def gen(t, d=0):
         t = R.choice(['int', 'float', 'str', 'list', 'map', 'bool'])
     deep = d > 3
     k = R.random()
+    if t == 'path':
+        return R.choice(PATHS + [gen('str', d + 1)])
     if t == 'int':
         if deep or k < 0.3: return R.choice(INTS)
+        if k < 0.04: return 'lists.index_of(%s, %s)' % (gen('list', d + 1), gen('any', d + 1))
+        if k < 0.07: return 'lists.reduce(%s, lists.fun_add, %s)' % (gen('list', d + 1), gen('int', d + 1))
+        if k < 0.1: return 'math.clamp(%s, %s, %s)' % (gen('int', d + 1), gen('int', d + 1), gen('int', d + 1))
         if k < 0.5: return '(%s %s %s)' % (gen('int', d + 1), R.choice(['+', '-', '*', '%', '/']), gen('int', d + 1))
         if k < 0.6: return 'len(%s)' % gen(R.choice(['str', 'list', 'map']), d + 1)
         if k < 0.7: return 'ord(%s)' % gen('str', d + 1)
@@ -67,8 +75,15 @@ def gen(t, d=0):
         if k < 0.85: return 'strings.pad_%s(%s, %s, %s)' % (R.choice(['left', 'right']), gen('str', d + 1), R.choice(['0', '5', '12', gen('int', d + 1)]), gen('str', d + 1))
         if k < 0.9: return 'strings.join(%s, %s)' % (gen('list', d + 1), gen('str', d + 1))
         if k < 0.95: return 'chr(%s)' % R.choice(['65', '233', '8364', '128512', '0', '1114111', gen('int', d + 1)])
+        if k < 0.97: return R.choice(['json.encode(%s)', 'json.pretty(%s)']) % gen('any', d + 1)
+        if k < 0.98: return 'paths.%s(%s)' % (R.choice(['base', 'dir', 'ext', 'stem', 'normalize']), gen('path', d + 1))
+        if k < 0.99: return 'paths.join(%s, %s)' % (gen('path', d + 1), gen('path', d + 1))
+        if k < 0.995: return '"<{%s}|{%s}>"' % (gen('any', d + 1), gen('str', d + 1))
         return '%s[%s]' % (gen('str', d + 1), gen('int', d + 1))
     if t == 'list':
+        if k < 0.04: return 'json.decode(%s)' % R.choice(JSONS + [gen('str', d + 1)])
+        if k < 0.07: return 'lists.sort_by(%s, lists.natural)' % gen('list', d + 1)
+        if k < 0.1: return 'maps.get(%s, %s, %s)' % (gen('map', d + 1), gen('str', d + 1), gen('any', d + 1))
         if deep or k < 0.25: return R.choice(['[]', '[1, 2, 3]', '[3, 1, 2]', '["b", "a"]', '[[1], [2, 3]]', 'xs', 'ys', 't', '[1.5, 2]', '[none, true]'])
         if k < 0.4: return '[' + ', '.join(gen('any', d + 1) for _ in range(R.randint(0, 4))) + ']'
         if k < 0.5: return 'slice(%s, %s, %s)' % (gen('list', d + 1), gen('int', d + 1), gen('int', d + 1))
@@ -122,7 +137,7 @@ def stmt(ind):
     return [p + 'print(str(%s), type(%s))' % (expr(), expr())]
 
 def program():
-    out = ['use std/strings', 'use std/lists', 'use std/maps', 'use std/math',
+    out = ['use std/strings', 'use std/lists', 'use std/maps', 'use std/math', 'use std/json', 'use std/paths',
            'fun f0(x, y) = x + y', 'fun f1(x, y)', '    return [x, y][len(x)]', 'fun f2(x, y)', '    let r = []', '    for i in 0..3', '        append(r, x)', '    return r',
            'fun f2x(x) = [x, x]', 'fun fun_x(x) = x', 'fun is_big(x) = x > 2', 'fun fun_pos(x) = type(x) == "int" and x > 0',
            'fun range_list(n)', '    let r = []', '    for i in 0..n', '        append(r, i)', '    return r', 'let n = 4',
