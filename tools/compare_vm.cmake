@@ -1,5 +1,5 @@
 # Bytecode VM check (M10): `relic FILE` (the VM) must give the same stdout
-# and stderr as `relic --tree FILE` (the tree-walker) for every golden program
+# and stderr, and exit with the same code, as `relic --tree FILE` (the tree-walker) for every golden program
 # except repl_*, which are typed into the REPL.
 file(GLOB files ${SRC}/tests/golden/*.relic)
 set(bad 0)
@@ -11,10 +11,10 @@ foreach(f ${files})
   endif()
   math(EXPR total "${total}+1")
   get_filename_component(dir ${f} DIRECTORY)
-  execute_process(COMMAND ${RELIC} --tree ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err)
-  execute_process(COMMAND ${RELIC} ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err)
-  if(NOT a_out STREQUAL b_out OR NOT a_err STREQUAL b_err)
-    message("mismatch: ${n}\n--- tree-walker\n${a_out}${a_err}--- vm\n${b_out}${b_err}")
+  execute_process(COMMAND ${RELIC} --tree ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err RESULT_VARIABLE a_code)
+  execute_process(COMMAND ${RELIC} ${f} WORKING_DIRECTORY ${dir} OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err RESULT_VARIABLE b_code)
+  if(NOT a_out STREQUAL b_out OR NOT a_err STREQUAL b_err OR NOT a_code STREQUAL b_code)
+    message("mismatch: ${n}\n--- tree-walker (exit ${a_code})\n${a_out}${a_err}--- vm (exit ${b_code})\n${b_out}${b_err}")
     math(EXPR bad "${bad}+1")
   endif()
 endforeach()
