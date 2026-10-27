@@ -207,13 +207,14 @@ fun fun_stmt(p)
     let n = node("Fun", kw, name.text)
     let open = expect(p, "LPAREN", "'(' after the function name")
     let params = node("Params", open, "")
+    let names = {}
     if not at(p, "RPAREN")
         let more = true
         while more and p.err == none
             let t = expect(p, "NAME", "a parameter name")
-            for seen in params.kids
-                if seen.text == t.text
-                    fail(p, t, "duplicate parameter '{t.text}'")
+            if t.text in names
+                fail(p, t, "duplicate parameter '{t.text}'")
+            names[t.text] = true
             let prm = node("Name", t, t.text)
             let hint = type_hint(p)
             if hint != none
@@ -476,6 +477,7 @@ fun primary(p)
 fun map_literal(p)
     let open = advance(p)
     let m = node("Map", open, "")
+    let seen = {}
     let h = 0
     if not at(p, "RBRACE")
         let more = true
@@ -484,9 +486,10 @@ fun map_literal(p)
             if key.kind != "NAME" and key.kind != "STRING"
                 fail_expected(p, "a map key (a name or a string)")
             advance(p)
-            for seen in m.kids
-                if seen.text == key.text
-                    fail(p, key, "duplicate map key '{key.text}'")
+            # a map of the keys so far: comparing with each one made a long literal quadratic
+            if key.text in seen
+                fail(p, key, "duplicate map key '{key.text}'")
+            seen[key.text] = true
             expect(p, "COLON", "':' after the map key")
             let pair = add(node("Pair", key, key.text), expression(p))
             grow(p, pair, 0)

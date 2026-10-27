@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 
 namespace relic {
 
@@ -201,11 +202,11 @@ private:
         auto n = make(Node::Fun, kw, name.text);
         const Token& open = expect(Tok::LParen, "'(' after the function name");
         auto params = make(Node::Params, open);
+        std::unordered_set<std::string> names;
         if (!at(Tok::RParen)) {
             do {
                 const Token& p = expect(Tok::Name, "a parameter name");
-                for (const auto& seen : params->kids)
-                    if (seen->text == p.text) fail(p, "duplicate parameter '" + p.text + "'");
+                if (!names.insert(p.text).second) fail(p, "duplicate parameter '" + p.text + "'");
                 params->kids.push_back(make(Node::Name, p, p.text));
                 if (auto hint = type_hint()) params->kids.back()->kids.push_back(std::move(hint));
             } while (match(Tok::Comma));
@@ -497,6 +498,7 @@ private:
     AstPtr map_literal() {
         const Token& open = advance();
         auto map = make(Node::Map, open);
+        std::unordered_set<std::string> keys;
         int h = 0;
         if (!at(Tok::RBrace)) {
             do {
@@ -504,8 +506,8 @@ private:
                 if (key.kind != Tok::Name && key.kind != Tok::String)
                     fail_expected("a map key (a name or a string)");
                 advance();
-                for (const auto& seen : map->kids)
-                    if (seen->text == key.text) fail(key, "duplicate map key '" + key.text + "'");
+                // a set of the keys so far: comparing with each one made a long literal quadratic
+                if (!keys.insert(key.text).second) fail(key, "duplicate map key '" + key.text + "'");
                 expect(Tok::Colon, "':' after the map key");
                 auto pair = make(Node::Pair, key, key.text);
                 pair->kids.push_back(expression());
