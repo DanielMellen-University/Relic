@@ -2,6 +2,8 @@
 # written in Relic. Same output and errors as `relic FILE`.
 #   relic selfhost/run.relic FILE [args...]
 # Words after FILE are what the program gets from args().
+# Exit codes like the host's: 1 for an error nobody caught, 2 for bad usage or a
+# file that cannot be opened. A program's own os.exit(code) is passed through.
 use lexer
 use parser
 use interp
@@ -11,6 +13,10 @@ use errfmt
 let argv = args()
 if len(argv) < 1
     eprint("usage: relic selfhost/run.relic FILE [args...]")
+    host_exit(2)
+else if not files.exists(argv[0])
+    eprint("relic: cannot open {argv[0]}")
+    host_exit(2)
 else
     let path = argv[0]
     let lexed = lexer.lex(files.read(path))
@@ -28,3 +34,4 @@ else
         if "file" in err and err.file != ""
             path = err.file
         errfmt.show(path, err)
+        host_exit(1)

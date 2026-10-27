@@ -187,6 +187,11 @@ if(RELIC_BUILD_HOST)
   set_tests_properties(selfhost_nested PROPERTIES
     PASS_REGULAR_EXPRESSION "^args \\[\"deep\"\\] \\[\"deep\"\\]")
 
+  # Self-host: exit codes and the "cannot open" message match the host.
+  add_test(NAME selfhost_cli
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_selfhost_cli.cmake)
+
   add_test(NAME vm_matches_tree_walker
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_vm.cmake)
