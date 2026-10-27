@@ -46,3 +46,7 @@ inf ERR json: bad number at 0
 -0x10 ERR json: extra text at 2
 1e400 ERR json: bad number at 5
 [1e-400, 2] [0.0, 2]
+ERR json.decode(): text must be a string, got int
+ERR json.decode(): text must be a string, got none
+ERR json.decode(): text must be a string, got list
+250 true true

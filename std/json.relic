@@ -84,6 +84,21 @@ fun pretty(v) = _enc(v, "  ", 0)
 
 fun _bad(p, what) = fail("json: {what} at {p.i}")
 
+# The text is read from p.s, a list of its characters: indexing a string walks
+# its UTF-8 from the start, so decoding took time growing with the square of
+# the text (200 KB took 3.7 s). _cat(p, a, b) gives characters a to b - 1 as a
+# string, joined in halves so a long string value is not copied over and over.
+fun _cat(p, a, b)
+    if b > p.n
+        b = p.n
+    if b - a <= 16
+        let out = ""
+        for i in a..b
+            out = out + p.s[i]
+        return out
+    let m = a + int((b - a) / 2)
+    return _cat(p, a, m) + _cat(p, m, b)
+
 fun _ws(p)
     while p.i < p.n
         let c = p.s[p.i]
@@ -93,7 +108,7 @@ fun _ws(p)
             return none
 
 fun _lit(p, word, value)
-    if slice(p.s, p.i, p.i + len(word)) != word
+    if _cat(p, p.i, p.i + len(word)) != word
         _bad(p, "unexpected text")
     p.i = p.i + len(word)
     return value
@@ -124,11 +139,11 @@ fun _str(p)
             _bad(p, "unterminated string")
         let c = p.s[p.i]
         if c == "\""
-            out = out + slice(p.s, start, p.i)
+            out = out + _cat(p, start, p.i)
             p.i = p.i + 1
             return out
         if c == "\\"
-            out = out + slice(p.s, start, p.i)
+            out = out + _cat(p, start, p.i)
             p.i = p.i + 1
             if p.i >= p.n
                 _bad(p, "unterminated string")
@@ -146,7 +161,7 @@ fun _str(p)
                 out = out + chr(12)
             else if e == "u"
                 let k = _hexval(p)
-                if k >= 55296 and k <= 56319 and slice(p.s, p.i, p.i + 2) == "\\u"
+                if k >= 55296 and k <= 56319 and _cat(p, p.i, p.i + 2) == "\\u"
                     p.i = p.i + 2
                     let lo = _hexval(p)
                     k = 65536 + (k - 55296) * 1024 + (lo - 56320)
@@ -187,7 +202,7 @@ fun _num(p)
             p.i = p.i + 1
         _digits(p)
     try
-        return num(slice(p.s, start, p.i))
+        return num(_cat(p, start, p.i))
     catch err
         _bad(p, "bad number")
 
@@ -255,7 +270,12 @@ fun _val(p)
     return _num(p)
 
 fun decode(text)
-    let p = {s: text, i: 0, n: len(text)}
+    if type(text) != "string"
+        fail("json.decode(): text must be a string, got " + type(text))
+    let chars = []
+    for c in text
+        append(chars, c)
+    let p = {s: chars, i: 0, n: len(chars)}
     let v = _val(p)
     _ws(p)
     if p.i != p.n

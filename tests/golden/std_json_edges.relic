@@ -26,3 +26,17 @@ for t in ["NaN", "nan", "Infinity", "-Infinity", "inf", "0x1F", "-0x10", "1e400"
         print(t, json.decode(t))
     catch e
         print(t, "ERR", e.message)
+
+# decode wants a string (it said "len(): cannot get the length of an int" before 1.0.37)
+for v in [5, none, [1]]
+    try
+        print(json.decode(v))
+    catch e
+        print("ERR", e.message)
+# a long string value (joined in halves) and escapes in it decode the same
+let long = ""
+for i in 0..8
+    long = long + "ab\"é{i}\n"
+let big = [{k: long, n: 0.5, ok: true}, long, [long, 1e-310]]
+let text = json.encode(big)
+print(len(text), json.decode(text) == big, json.decode(json.encode(text)) == text)
