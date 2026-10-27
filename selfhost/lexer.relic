@@ -84,12 +84,20 @@ fun fail(st, l, c, msg)
 
 fun last(xs) = xs[len(xs) - 1]
 
+# xs[a] to xs[b - 1] joined, in halves: adding one character at a time to a
+# growing string copies it each time, so a long name or string took time
+# growing with the square of its length.
+fun _cat(xs, a, b)
+    if b - a <= 16
+        let out = ""
+        for i in a..b
+            out = out + xs[i]
+        return out
+    let m = a + int((b - a) / 2)
+    return _cat(xs, a, m) + _cat(xs, m, b)
+
 # The characters from start up to the current position, as a string.
-fun text_of(st, start)
-    let t = ""
-    for i in start..st.pos
-        t = t + st.chars[i]
-    return t
+fun text_of(st, start) = _cat(st.chars, start, st.pos)
 
 fun skip_comment(st)
     while not eof(st) and peek(st, 0) != "\n"
@@ -185,7 +193,7 @@ fun name(st, l, c)
 
 # String text up to the closing quote or the next {. first: right after the quote.
 fun string_body(st, l, c, first)
-    let text = ""
+    let parts = []
     while true
         if eof(st) or peek(st, 0) == "\n"
             fail(st, l, c, "unterminated string")
@@ -193,9 +201,9 @@ fun string_body(st, l, c, first)
         let ch = advance(st)
         if ch == "\""
             if first
-                emit(st, "STRING", text, l, c)
+                emit(st, "STRING", _cat(parts, 0, len(parts)), l, c)
             else
-                emit(st, "STRING_END", text, l, c)
+                emit(st, "STRING_END", _cat(parts, 0, len(parts)), l, c)
             return
         if ch == "\\"
             let el = st.line
@@ -205,18 +213,18 @@ fun string_body(st, l, c, first)
                 return
             let e = advance(st)
             if e == "n"
-                text = text + "\n"
+                append(parts, "\n")
             else if e == "t"
-                text = text + "\t"
+                append(parts, "\t")
             else if e == "\""
-                text = text + "\""
+                append(parts, "\"")
             else if e == "\\"
-                text = text + "\\"
+                append(parts, "\\")
             else if e == "u"
                 let u = unicode_escape(st, el, ec)
                 if u == none
                     return
-                text = text + u
+                append(parts, u)
             else
                 let code = ord(e)
                 if code < 32 or code == 127
@@ -230,17 +238,17 @@ fun string_body(st, l, c, first)
         if ch == "{{"
             if peek(st, 0) == "{{"
                 advance(st)
-                text = text + "{{"
+                append(parts, "{{")
                 next
-            emit(st, "STRING_PART", text, l, c)
+            emit(st, "STRING_PART", _cat(parts, 0, len(parts)), l, c)
             emit(st, "INTERP_START", "{{", st.line, st.col - 1)
             append(st.interp, {depth: 0, line: l, col: c})
             return
         if ch == "}}" and peek(st, 0) == "}}"
             advance(st)
-            text = text + "}}"
+            append(parts, "}}")
             next
-        text = text + ch
+        append(parts, ch)
 
 fun two(st, nxt, yes, no, ty, tn, l, c)
     if peek(st, 0) == nxt

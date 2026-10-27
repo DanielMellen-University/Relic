@@ -40,8 +40,11 @@ fun _window(text, col)
     let stop = from + 160
     let pos = from
     let i = first
-    while i < len(text) and pos < stop
-        pos = pos + _byte_len(text[i])
+    # (text[i] walks the line from its start, so the rest is read in one pass)
+    for c in slice(text, first, len(text))
+        if pos >= stop
+            break
+        pos = pos + _byte_len(c)
         i = i + 1
     return [slice(text, first, i), col - from]
 
