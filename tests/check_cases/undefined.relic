@@ -1,0 +1,21 @@
+fun f(a, b)
+    return a + b + c
+print(a)
+if true
+    let inner = 1
+print(inner)
+for i in 0..2
+    let in_loop = i
+print(i, in_loop)
+try
+    print(1)
+catch e
+    print(e)
+print(e)
+use std/math as mm
+print(math, mm)
+fun later_defined()
+    return nothere_anywhere
+print(f, later_defined)
+print(undefined_one, undefined_two)
+let x = x_not_yet + 1

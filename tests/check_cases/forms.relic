@@ -1,0 +1,15 @@
+let m = {k: undefined_in_map, "s t": 1}
+print(m.nonexistent, m[undefined_idx], undefined_obj.field)
+print([unknown_a, unknown_b], unknown_c..unknown_d)
+print(not unknown_e, -unknown_f, unknown_g and unknown_h or unknown_i)
+unknown_call(unknown_arg)
+for k in unknown_iter
+    print(k)
+for z in unknown_start..unknown_end
+    print(z)
+if unknown_cond
+    print(1)
+else if unknown_cond2
+    print(2)
+while unknown_while
+    print(3)

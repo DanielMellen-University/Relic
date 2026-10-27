@@ -1,0 +1,14 @@
+nothere = 1
+print(nothere)
+fun f()
+    pending_one = 1
+    let pending_one = 2
+    fun g()
+        later_in_f = 3
+    let later_in_f = 4
+let x = 1
+x = y_unknown
+x = x + z_unknown
+m = {a: 1}
+m.k = unknown_value
+m[unknown_index] = 1

@@ -1,0 +1,36 @@
+print(early_let, early_fun, early_use)
+let early_let = 1
+fun early_fun()
+    return early_let
+use std/os as early_use
+fun body_reads()
+    return late_let_global + late_fun_global
+let late_let_global = 2
+fun late_fun_global() = 3
+if true
+    print(blocked)
+let blocked = 1
+for i in 0..1
+    print(in_loop_early)
+let in_loop_early = 1
+while false
+    print(in_while_early)
+let in_while_early = 2
+try
+    print(in_try_early)
+catch e
+    print(in_try_early)
+let in_try_early = 3
+let selfref = selfref
+print(print)
+print(shadowed_builtin)
+let len = 5
+print(len)
+if true
+    use std/json
+print(json)
+let after = before_use_use
+use std/lists as before_use_use
+fun recursive(n)
+    return recursive(n - 1)
+print(recursive)

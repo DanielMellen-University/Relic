@@ -1,0 +1,25 @@
+# nothing to report
+use std/strings
+use std/files as f
+let count as int = 0
+let names = ["a", "b"]
+fun greet(who, punct as string) as string
+    let line = "hello " + who + punct
+    return line
+fun twice(x) = x * 2
+for n in names
+    print(greet(n, "!"), twice(count), strings.upper(n))
+for i in 0..3
+    if i == 1
+        next
+    count = count + i
+let i = 0
+while i < 3
+    i = i + 1
+    if i == 2
+        break
+try
+    print(f.exists("x"))
+catch err
+    print(err.message)
+print("{count} {names[0]} {{literal}}", {k: count}.k)

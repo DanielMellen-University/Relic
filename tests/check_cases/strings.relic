@@ -1,0 +1,6 @@
+let who = "x"
+print("hello {who} {nobody}")
+print("{who}{ghost}{{}}")
+print("a {len(who) + missing_in_str} b")
+fun f(p)
+    return "{p} {q}"

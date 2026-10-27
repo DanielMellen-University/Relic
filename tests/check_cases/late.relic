@@ -1,0 +1,33 @@
+fun outer()
+    fun inner()
+        return later + never
+    let later = 5
+    return inner()
+fun a()
+    fun b()
+        fun c()
+            return deep_later + deeper_never
+        return c
+    let deep_later = 1
+    return b
+fun shadow()
+    let v = 1
+    fun use_v()
+        return v + w
+    let w = 2
+    return use_v
+if true
+    fun in_block()
+        return block_later
+    let block_later = 3
+for i in 0..1
+    fun in_loop()
+        return loop_later + i
+    let loop_later = 1
+fun same_level()
+    print(not_yet)
+    let not_yet = 1
+fun params(p)
+    fun q()
+        return p + r
+    let r = 1

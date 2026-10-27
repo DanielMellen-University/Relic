@@ -1,0 +1,14 @@
+let count = 1
+let counter = 2
+let width = 3
+fun area(width, height)
+    return widht * heigth
+print(cuont, countr, wdth)
+prnt(1)
+lenn([])
+print(host_cwdd, host_cwd)
+let longer_name = 1
+print(longer_nme, longr_name, lonter_name)
+print(zzzzzz, a, aa)
+print(Count, COUNT, cnt)
+print(sttr(1), strr(2), str_(3))

@@ -1,0 +1,27 @@
+return 1
+break
+next
+fun f()
+    return 2
+    break
+    next
+    while true
+        break
+        next
+    for i in 0..2
+        next
+    fun g()
+        break
+for j in 0..2
+    fun h()
+        next
+        break
+    if j
+        return
+while true
+    try
+        break
+    catch e
+        next
+if true
+    return none

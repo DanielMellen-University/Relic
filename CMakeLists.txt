@@ -177,6 +177,12 @@ if(RELIC_BUILD_HOST)
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_interp.cmake)
 
+  # SH4: selfhost/check.relic prints what `relic check` prints, on the hand-written
+  # cases in tests/check_cases and on every .relic file in the tree.
+  add_test(NAME selfhost_check
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DCORPUS=1
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
+
   # Self-host: args reach the program, and run.relic can run itself (two levels).
   add_test(NAME selfhost_args
     COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/run.relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/args.relic one --two)
