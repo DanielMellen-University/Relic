@@ -11,8 +11,9 @@ Four places where the engines or the self-hosted tools disagreed with the host, 
 - REPL: a block header spread over several lines (`fun add(` with the parameters on the next lines) ran the header alone and failed with `expected an indented block`; it reads the indented body once the bracket closes (golden `repl_multiline_header`).
 - New `tools/fuzz_mutate.py` (by hand, needs Python): edits the test programs a little and compares `--tokens`, `--ast`, `relic check` and `run` (VM, tree-walker, `selfhost/run.relic`, compiled) with the Relic-written ones. It found the escape and exit-code bugs above; thousands of other cases agreed. A second scan of random statement programs (about 120 seeds), random expressions with 150 values each (about 160 seeds) and random JSON (80 seeds) found only the recursion-limit difference.
 - Not fixed: when the source line an error points at holds a NUL byte, a compiled program stops printing that line at the NUL (the host prints it whole).
+- C runtime: `==` on two cyclic lists (or maps nested 10000 levels) recursed 10000 calls deep and overflowed the 1 MB stack of a compiled program on Windows (the new `deep_values` golden found it in CI). It now uses an explicit stack; the 10000-level limit and the results are the same.
 - Tests: goldens `recursion_builtins`, `deep_values`, `err_escape_utf8`, `repl_multiline_header`; `std_lists_edges` is smaller.
-- Speed: `selfhost_interp` 9.88 s median of 3 on a quiet box (1.62x the 6.1 s baseline; 9.29 s in 1.0.28). Two new goldens cost about 0.5 s, and `==` and printing are a little slower on their own stacks.
+- Speed: `selfhost_interp` 9.84 s median of 3 on a quiet box (1.61x the 6.1 s baseline; 9.29 s in 1.0.28). Two new goldens cost about 0.5 s, and `==` and printing are a little slower on their own stacks.
 - `ctest`: 170 default, 359 with the host.
 
 ## 1.0.28 (2026-10-27)

@@ -605,44 +605,71 @@ rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const cha
 
 #define RL_MAX_EQUAL_DEPTH 10000
 
-static int equal_at(rl_value a, rl_value b, int depth) {
-    size_t i;
-    if (depth > RL_MAX_EQUAL_DEPTH) return 0;
-    if ((a.k == RL_INT || a.k == RL_FLOAT) && (b.k == RL_INT || b.k == RL_FLOAT)) {
-        if (a.k == RL_INT && b.k == RL_INT) return a.u.i == b.u.i;
-        return (a.k == RL_INT ? (double)a.u.i : a.u.f) == (b.k == RL_INT ? (double)b.u.i : b.u.f);
+/* One pair still to compare, and how deep it sits. */
+typedef struct { rl_value a, b; int depth; } eq_pair;
+
+static eq_pair *eq_push(eq_pair *st, size_t *n, size_t *cap, rl_value a, rl_value b, int depth) {
+    if (*n == *cap) {
+        *cap = *cap ? *cap * 2 : 64;
+        st = (eq_pair *)xrealloc(st, *cap * sizeof *st);
     }
-    if (a.k != b.k) return 0;
-    switch (a.k) {
-        case RL_NONE: return 1;
-        case RL_BOOL: return a.u.b == b.u.b;
-        case RL_STR: {
-            rl_str *x = (rl_str *)a.u.o, *y = (rl_str *)b.u.o;
-            return x->len == y->len && memcmp(x->data, y->data, x->len) == 0;
-        }
-        case RL_LIST: {
-            rl_list *x = (rl_list *)a.u.o, *y = (rl_list *)b.u.o;
-            if (x == y) return 1;
-            if (x->n != y->n) return 0;
-            for (i = 0; i < x->n; ++i)
-                if (!equal_at(x->items[i], y->items[i], depth + 1)) return 0;
-            return 1;
-        }
-        case RL_MAP: {
-            rl_map *x = (rl_map *)a.u.o, *y = (rl_map *)b.u.o;
-            if (x == y) return 1;
-            if (x->n != y->n) return 0;
-            for (i = 0; i < x->n; ++i) {
-                rl_value *w = rl_map_get(y, x->keys[i]->data, x->keys[i]->len);
-                if (!w || !equal_at(x->vals[i], *w, depth + 1)) return 0;
-            }
-            return 1;
-        }
-        default: return a.u.o == b.u.o;
-    }
+    st[*n].a = a; st[*n].b = b; st[*n].depth = depth;
+    ++*n;
+    return st;
 }
 
-int rl_equal(rl_value a, rl_value b) { return equal_at(a, b, 0); }
+/* An explicit stack, not recursion: two cyclic lists go 10000 levels deep before
+ * this gives up, which overflowed the 1 MB stack of a Windows program. */
+int rl_equal(rl_value a, rl_value b) {
+    eq_pair *st = NULL;
+    size_t n = 0, cap = 0, i;
+    int res = 0;
+    st = eq_push(st, &n, &cap, a, b, 0);
+    while (n) {
+        int depth;
+        --n;
+        a = st[n].a; b = st[n].b; depth = st[n].depth;
+        if (depth > RL_MAX_EQUAL_DEPTH) goto done;
+        if ((a.k == RL_INT || a.k == RL_FLOAT) && (b.k == RL_INT || b.k == RL_FLOAT)) {
+            if (a.k == RL_INT && b.k == RL_INT) { if (a.u.i != b.u.i) goto done; continue; }
+            if ((a.k == RL_INT ? (double)a.u.i : a.u.f) != (b.k == RL_INT ? (double)b.u.i : b.u.f)) goto done;
+            continue;
+        }
+        if (a.k != b.k) goto done;
+        switch (a.k) {
+            case RL_NONE: break;
+            case RL_BOOL: if (a.u.b != b.u.b) goto done; break;
+            case RL_STR: {
+                rl_str *x = (rl_str *)a.u.o, *y = (rl_str *)b.u.o;
+                if (x->len != y->len || memcmp(x->data, y->data, x->len) != 0) goto done;
+                break;
+            }
+            case RL_LIST: {
+                rl_list *x = (rl_list *)a.u.o, *y = (rl_list *)b.u.o;
+                if (x == y) break;
+                if (x->n != y->n) goto done;
+                for (i = 0; i < x->n; ++i) st = eq_push(st, &n, &cap, x->items[i], y->items[i], depth + 1);
+                break;
+            }
+            case RL_MAP: {
+                rl_map *x = (rl_map *)a.u.o, *y = (rl_map *)b.u.o;
+                if (x == y) break;
+                if (x->n != y->n) goto done;
+                for (i = 0; i < x->n; ++i) {
+                    rl_value *w = rl_map_get(y, x->keys[i]->data, x->keys[i]->len);
+                    if (!w) goto done;
+                    st = eq_push(st, &n, &cap, x->vals[i], *w, depth + 1);
+                }
+                break;
+            }
+            default: if (a.u.o != b.u.o) goto done; break;
+        }
+    }
+    res = 1;
+done:
+    free(st);
+    return res;
+}
 
 /* ------------------------------------------------------------------ */
 /* errors                                                               */
