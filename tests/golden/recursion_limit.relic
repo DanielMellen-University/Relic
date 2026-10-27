@@ -1,0 +1,59 @@
+# The call-depth limit is 800 calls, the same in every engine: the 800th
+# nested call runs, the 801st gives the error, and a try can catch it.
+let reached = 0
+
+fun down(n)
+    reached = n
+    return down(n + 1)
+
+fun down_expr(n) = down_expr(n + 1)
+
+fun ping(n)
+    reached = n
+    return pong(n + 1)
+
+fun pong(n)
+    reached = n
+    return ping(n + 1)
+
+# Block body: down(1) is the first call, so 800 calls fit.
+try
+    down(1)
+catch e
+    print("block body: " + e.message)
+print("deepest call: {reached}")
+
+# Mutual recursion counts the same way.
+reached = 0
+try
+    ping(1)
+catch e
+    print("mutual: " + e.message)
+print("deepest call: {reached}")
+
+# The error says where it happened, and the depth is back to zero after a
+# catch, so the same limit is there the next time.
+reached = 0
+try
+    down_expr(1)
+catch e
+    print("expression body: " + e.message)
+    print("line {e.line}")
+try
+    down(1)
+catch e
+    print("again: " + e.message)
+print("deepest call: {reached}")
+
+# 800 nested calls are fine, the 801st is not.
+fun chain(n)
+    if n == 0
+        return 0
+    return 1 + chain(n - 1)
+
+print(chain(798))
+print(chain(799))
+try
+    print(chain(800))
+catch e
+    print(e.message)

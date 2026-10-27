@@ -1,0 +1,11 @@
+block body: too much recursion (more than 800 calls deep)
+deepest call: 800
+mutual: too much recursion (more than 800 calls deep)
+deepest call: 800
+expression body: too much recursion (more than 800 calls deep)
+line 9
+again: too much recursion (more than 800 calls deep)
+deepest call: 800
+798
+799
+too much recursion (more than 800 calls deep)
