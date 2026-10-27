@@ -7,7 +7,8 @@ Where fuzz_mutate.py edits existing programs (most of its cases stop at a syntax
 error), this writes programs that run: expressions over ints, floats, strings,
 lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
 std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths,
-string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
+text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
+near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
 kept next to the program as g.in). Every statement is
 wrapped in `try`, so an error shows up as its message and the program goes on.
@@ -39,6 +40,23 @@ PATHS = ['"a/b.txt"', '"/x/y/"', '"."', '".."', '"a/../b"', '"./a//b/"', '""', '
 JSONS = ['"[1, 2.5, \\"x\\", null, true]"', '"{\\"a\\": {\\"b\\": []}}"', '" 1e400 "', '"\\"\\\\u00e9\\\\ud83d\\\\ude00\\""', '"[1,]"', '"-0"', '"01"', '"{\\"a\\":1,\\"a\\":2}"', '""']
 STRS = ['"abc"', '""', '"hello world"', '"é€😀"', '"a,b,c"', '"  pad  "', '"x"', '"12"', '"3.5"', '"{{}}"', '"tab\\tq"', 's', 'b']
 
+# Text for num(), float() and int(): signs, nan / inf / infinity in mixed case,
+# hex ints and hex floats at the int range's edges, tiny and huge floats, and
+# near misses (a space, a letter too many, a doubled sign).
+NUM_BODIES = ['nan', 'NaN', 'inf', 'INF', 'Infinity', 'infinit', 'infinityx', 'nan(1)', '0x1F', '0X1f', '0x', '0xg',
+              '0x7fffffffffffffff', '0x8000000000000000', '0xffffffffffffffffff', '0x0001', '0x1p3', '0x1.8', '0x1p99999',
+              '1e-400', '4.9e-324', '2.4703282292062328e-324', '2.4703282292062329e-324', '2.2250738585072011e-308',
+              '1.7976931348623157e308', '1.8e308', '1e400', '12', '007', '.5', '5.', '1e', '1e+5', '1_0', '0b1', '',
+              '9223372036854775807', '9223372036854775808', '-', '1.5e-320']
+def num_text():
+    body = R.choice(NUM_BODIES)
+    if R.random() < 0.2:
+        body = ''.join(R.choice('0123456789abcdefxXeE.+-pn') for _ in range(R.randint(1, 8)))
+    text = R.choice(['', '', '', '-', '+', '--', '-+']) + body + R.choice(['', '', '', '', ' ', 'x', '0', 'e3'])
+    if R.random() < 0.05:
+        text = ' ' + text
+    return '"%s"' % text
+
 def gen(t, d=0):
     if R.random() < 0.08:
         t = R.choice(['int', 'float', 'str', 'list', 'map', 'bool', 'none'])   # a wrong type now and then
@@ -56,7 +74,8 @@ def gen(t, d=0):
         if k < 0.5: return '(%s %s %s)' % (gen('int', d + 1), R.choice(['+', '-', '*', '%', '/']), gen('int', d + 1))
         if k < 0.6: return 'len(%s)' % gen(R.choice(['str', 'list', 'map']), d + 1)
         if k < 0.7: return 'ord(%s)' % gen('str', d + 1)
-        if k < 0.75: return 'int(%s)' % gen(R.choice(['str', 'float', 'int']), d + 1)
+        if k < 0.72: return 'int(%s)' % gen(R.choice(['str', 'float', 'int']), d + 1)
+        if k < 0.75: return 'int(%s)' % num_text()
         if k < 0.8: return 'strings.find(%s, %s)' % (gen('str', d + 1), gen('str', d + 1))
         if k < 0.85: return 'lists.sum(%s)' % gen('list', d + 1)
         if k < 0.9: return 'math.%s(%s)' % (R.choice(['floor', 'ceil', 'round', 'abs']), gen(R.choice(['int', 'float']), d + 1))
@@ -66,7 +85,8 @@ def gen(t, d=0):
         if deep or k < 0.3: return R.choice(FLOATS)
         if k < 0.6: return '(%s %s %s)' % (gen(R.choice(['float', 'int']), d + 1), R.choice(['+', '-', '*', '/', '%']), gen('float', d + 1))
         if k < 0.7: return 'float(%s)' % gen(R.choice(['str', 'int']), d + 1)
-        if k < 0.8: return 'num(%s)' % gen('str', d + 1)
+        if k < 0.75: return 'num(%s)' % gen('str', d + 1)
+        if k < 0.8: return '%s(%s)' % (R.choice(['num', 'float']), num_text())
         if k < 0.9: return 'math.%s(%s)' % (R.choice(['sqrt', 'sin', 'cos', 'exp', 'log']), gen(R.choice(['int', 'float']), d + 1))
         return 'math.pow(%s, %s)' % (gen(R.choice(['int', 'float']), d + 1), gen(R.choice(['int', 'float']), d + 1))
     if t == 'str':
@@ -116,7 +136,8 @@ def gen(t, d=0):
         if k < 0.78: return '(%s in %s)' % (gen('any', d + 1), gen(R.choice(['list', 'map', 'str']), d + 1))
         if k < 0.85: return '(%s == %s)' % (gen('any', d + 1), gen('any', d + 1))
         if k < 0.92: return 'strings.%s(%s, %s)' % (R.choice(['contains', 'starts_with', 'ends_with']), gen('str', d + 1), gen('str', d + 1))
-        return 'math.is_whole(%s)' % gen(R.choice(['int', 'float']), d + 1)
+        if k < 0.96: return 'math.is_whole(%s)' % gen(R.choice(['int', 'float']), d + 1)
+        return '(type(num(%s)) == "int")' % num_text()
     return 'none'
 
 def expr(d=0):
