@@ -56,3 +56,9 @@ for args in [["a", inf, "x"], ["a", "5", "x"], ["a", 5, 3], [5, 3, "x"], ["a", 2
         print(strings.pad_left(args[0], args[1], args[2]), strings.pad_right(args[0], args[1], args[2]))
     catch e
         print(e.message)
+
+# long text (over 1024 characters) takes find's character-list path; repeat
+# doubles and pad works out the count (all three were quadratic before 1.0.37)
+let long = strings.repeat("ab", 520) + "XéZ"
+print(strings.find(long, "éZ"), strings.find(long, ""), strings.find(long, "Zé"))
+print(strings.pad_left("7", 41, "ab") == strings.repeat("ab", 20) + "7", len(strings.pad_right("x", 6.5, "ab")), strings.pad_left("x", 4, "abc"), strings.repeat("xy", 5), strings.repeat("q", 0), strings.repeat("q", -2), strings.repeat("ab", 3.0), strings.upper("aé") + strings.lower("ÉB"))

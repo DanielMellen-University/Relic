@@ -9,12 +9,46 @@ fun _text(name, what, s)
 fun find(s, sub)
     # index of the first `sub` in `s`, or -1
     let n = len(sub)
+    let ls = len(s)
+    if ls > 1024
+        return _find_long(s, sub, n, ls)
     let i = 0
-    while i + n <= len(s)
+    while i + n <= ls
         if slice(s, i, i + n) == sub
             return i
         i = i + 1
     return -1
+
+# Long text. slice(s, i, ...) walks s from the start to character i, so the loop
+# above takes time growing with the square of where `sub` is (80,000 characters
+# took 0.9 s); this compares characters from lists instead.
+fun _find_long(s, sub, n, ls)
+    if n == 0
+        return 0
+    let cs = []
+    for c in s
+        append(cs, c)
+    let ss = []
+    for c in sub
+        append(ss, c)
+    let first = ss[0]
+    let i = 0
+    while i + n <= ls
+        if cs[i] == first
+            let k = 1
+            while k < n and cs[i + k] == ss[k]
+                k = k + 1
+            if k == n
+                return i
+        i = i + 1
+    return -1
+
+# The characters of `cs` joined; out = out + c one at a time copies the text
+# so far each time, which is slow for long text.
+fun _chars(cs)
+    if len(cs) == 0
+        return ""
+    return _join(cs, "", 0, len(cs))
 
 fun contains(s, sub) = find(s, sub) >= 0
 
@@ -24,25 +58,25 @@ fun ends_with(s, suf) = len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s
 
 fun upper(s)
     _text("upper", "argument", s)
-    let out = ""
+    let out = []
     for c in s
         let k = ord(c)
         if k >= 97 and k <= 122
-            out = out + chr(k - 32)
+            append(out, chr(k - 32))
         else
-            out = out + c
-    return out
+            append(out, c)
+    return _chars(out)
 
 fun lower(s)
     _text("lower", "argument", s)
-    let out = ""
+    let out = []
     for c in s
         let k = ord(c)
         if k >= 65 and k <= 90
-            out = out + chr(k + 32)
+            append(out, chr(k + 32))
         else
-            out = out + c
-    return out
+            append(out, c)
+    return _chars(out)
 
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
@@ -135,9 +169,16 @@ fun repeat(s, n)
         fail("strings.repeat(): count must be a number, got " + type(n))
     if n % 1 != 0
         fail("strings.repeat(): count must be a whole number")
+    # doubling, so the text is copied about twice in all, not once per copy added
     let out = ""
-    for i in 0..n
-        out = out + s
+    let piece = s
+    let k = n
+    while k > 0
+        if k % 2 == 1
+            out = out + piece
+        k = int(k / 2)
+        if k > 0
+            piece = piece + piece
     return out
 
 # The checks pad_left and pad_right share. An infinite width would pad forever.
@@ -151,17 +192,22 @@ fun _pad(name, s, width, fill)
     if fill == "" and len(s) < width
         fail("strings." + name + "(): fill must not be empty")
 
+# How many whole copies of fill bring s to at least width.
+fun _fills(s, width, fill)
+    let ls = len(s)
+    if ls >= width
+        return 0
+    let lf = len(fill)
+    let k = int((width - ls) / lf)
+    if ls + k * lf < width
+        k = k + 1
+    return k
+
 # pad_left("7", 3, "0") is "007"; pad_right pads on the right.
 fun pad_left(s, width, fill)
     _pad("pad_left", s, width, fill)
-    let out = s
-    while len(out) < width
-        out = fill + out
-    return out
+    return repeat(fill, _fills(s, width, fill)) + s
 
 fun pad_right(s, width, fill)
     _pad("pad_right", s, width, fill)
-    let out = s
-    while len(out) < width
-        out = out + fill
-    return out
+    return s + repeat(fill, _fills(s, width, fill))

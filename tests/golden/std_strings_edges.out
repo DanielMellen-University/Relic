@@ -26,3 +26,5 @@ strings.pad_left(): text must be a string, got int
 xxa axx
 a a
 a a
+1041 0 -1
+true 7 abcx xyxyxyxyxy   ababab AéÉb
