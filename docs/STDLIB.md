@@ -154,7 +154,7 @@ the `fail` inside `std/json`, not at a spot in the JSON text.
 | `args()` | list of strings | words after the file name |
 | `env(name)` | string or `none` | |
 | `cwd()` | string | `/` separators |
-| `exit(code)` | never returns | flushes output first |
+| `exit(code)` | never returns | flushes output first; `code` must be a whole number (`os.exit(): code must be a whole number`); the system keeps only part of it, so on Linux and macOS `-1` exits with 255 and `256` with 0 |
 | `read_line()` | string or `none` | the next line of standard input (see below) |
 | `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
 
