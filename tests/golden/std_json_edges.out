@@ -1,0 +1,38 @@
+1 => 1
+-1 => -1
+0 => 0
+-0 => 0
+01 => ERR json: extra text at 1
+1.5 => 1.5
+1. => ERR json: bad number at 2
+.5 => ERR json: bad number at 0
+1.e3 => ERR json: bad number at 2
+1e3 => 1000.0
+1E+3 => 1000.0
+1e-3 => 0.001
+1e => ERR json: bad number at 2
+1e+ => ERR json: bad number at 3
+- => ERR json: bad number at 1
++1 => ERR json: bad number at 0
+--1 => ERR json: bad number at 1
+-a => ERR json: bad number at 1
+[01] => ERR json: expected ',' or ']' at 2
+[1.5e2,-0.0] => [150.0, -0.0]
+123456789012345678901234 => 1.23456789012346e+23
+9223372036854775807 => 9223372036854775807
+9223372036854775808 => 9.22337203685478e+18
+0x10 => ERR json: extra text at 1
+nan => ERR json: unexpected text at 0
+Infinity => ERR json: bad number at 0
+-Infinity => ERR json: bad number at 1
+1_000 => ERR json: extra text at 1
+[1,] => ERR json: bad number at 3
+[-] => ERR json: bad number at 2
+{"a":-} => ERR json: bad number at 6
+  7   => 7
+2.5e400 => ERR json: bad number at 7
+ERR json: cannot encode inf or nan
+ERR json: cannot encode inf or nan
+0.5
+1e+21
+ERR json: cannot encode inf or nan

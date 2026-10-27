@@ -33,6 +33,8 @@ fun _enc(v, indent, depth)
     let t = type(v)
     if t == "none"
         return "null"
+    if t == "float" and v - v != 0
+        fail("json: cannot encode inf or nan")
     if t == "bool" or t == "int" or t == "float"
         return str(v)
     if t == "string"
@@ -159,10 +161,31 @@ fun _str(p)
         else
             p.i = p.i + 1
 
+# JSON's number grammar: -? (0 | 1-9 digits) (. digits)? ((e|E) (+|-)? digits)?
+# The error points at the character that cannot continue the number.
+fun _digits(p)
+    let start = p.i
+    while p.i < p.n and ord(p.s[p.i]) >= 48 and ord(p.s[p.i]) <= 57
+        p.i = p.i + 1
+    if p.i == start
+        _bad(p, "bad number")
+
 fun _num(p)
     let start = p.i
-    while p.i < p.n and _has("+-0123456789.eE", p.s[p.i])
+    if p.s[p.i] == "-"
         p.i = p.i + 1
+    if p.i < p.n and p.s[p.i] == "0"
+        p.i = p.i + 1
+    else
+        _digits(p)
+    if p.i < p.n and p.s[p.i] == "."
+        p.i = p.i + 1
+        _digits(p)
+    if p.i < p.n and (p.s[p.i] == "e" or p.s[p.i] == "E")
+        p.i = p.i + 1
+        if p.i < p.n and (p.s[p.i] == "+" or p.s[p.i] == "-")
+            p.i = p.i + 1
+        _digits(p)
     try
         return num(slice(p.s, start, p.i))
     catch err

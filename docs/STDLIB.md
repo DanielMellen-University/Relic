@@ -135,9 +135,9 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 
 | Call | Returns | On failure |
 |---|---|---|
-| `encode(v)` | string | `json: cannot encode a {type}` for function/module |
+| `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode inf or nan` for those floats |
 | `pretty(v)` | string | same; 2-space indent |
-| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index |
+| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`) |
 
 `catch err` after a bad `decode` gives `{message, line, col}`. The useful
 part is `err.message` (includes the `at N` index). `line` / `col` point at

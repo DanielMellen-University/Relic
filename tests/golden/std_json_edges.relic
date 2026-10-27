@@ -1,0 +1,18 @@
+# std/json: the number grammar is JSON's (no leading zeros, no '+', a digit after '.' and 'e'), and inf / nan cannot be encoded
+use std/json
+for t in ["1", "-1", "0", "-0", "01", "1.5", "1.", ".5", "1.e3", "1e3", "1E+3", "1e-3", "1e", "1e+", "-", "+1", "--1", "-a", "[01]", "[1.5e2,-0.0]", "123456789012345678901234", "9223372036854775807", "9223372036854775808", "0x10", "nan", "Infinity", "-Infinity", "1_000", "[1,]", "[-]", "{{\"a\":-}}", "  7  ", "2.5e400"]
+    try
+        print(t, "=>", json.decode(t))
+    catch e
+        print(t, "=> ERR", e.message)
+for v in [1e300 * 1e300, -1e300 * 1e300, 0.5, 1e21]
+    try
+        print(json.encode(v))
+    catch e
+        print("ERR", e.message)
+let inf = 1e300 * 1e300
+let nan = inf - inf
+try
+    json.encode([1, {a: nan}])
+catch e
+    print("ERR", e.message)
