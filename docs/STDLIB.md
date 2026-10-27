@@ -141,7 +141,7 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 |---|---|---|
 | `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode inf or nan` for those floats |
 | `pretty(v)` | string | same; 2-space indent |
-| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`) |
+| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`, no `NaN`, `Infinity` or hex); since 1.0.36 a number too small for a normal float (one `encode` wrote for a subnormal, or `1e-400`) reads as that float or `0.0`, and one too large is still `bad number` |
 
 `catch err` after a bad `decode` gives `{message, line, col}`. The useful
 part is `err.message` (includes the `at N` index). `line` / `col` point at

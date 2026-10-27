@@ -16,7 +16,6 @@
 use lexer
 use parser
 use errfmt
-use floatlit
 use std/files
 use std/strings
 
@@ -343,20 +342,28 @@ fun fail_here(fc, n, msg)
 
 # ---- expressions ----
 
+# True when the digits of a number literal, before any exponent, are not all 0.
+fun _nonzero_digit(t)
+    for c in t
+        if c == "e" or c == "E"
+            return false
+        if c >= "1" and c <= "9"
+            return true
+    return false
+
 fun number_value(fc, n)
     let t = n.text
     if "." in t or "e" in t or "E" in t
-        let big = false
+        let v = 0.0
         try
-            num(t)
+            v = num(t)
         catch err
-            big = true
-        if big
-            # too large, or tiny: the host rounds that to a subnormal or 0.0, and a
-            # C compiler warns about a literal it truncates to zero
-            if floatlit.too_large(t)
-                return none
-            return "rl_float(" + str(floatlit.steps(t)) + ".0 * (2.2250738585072014e-308 / 4503599627370496.0))"
+            return none  # too large
+        if v < 2.2250738585072014e-308 and _nonzero_digit(t)
+            # tiny: num() rounds it like the host's strtod, to a subnormal or 0.0, but
+            # a C compiler warns about a literal it truncates to zero, so this writes
+            # the float as a whole number of steps of 2^-1074 (exact: v is one)
+            return "rl_float(" + str(int(v / 4.9406564584124654e-324)) + ".0 * (2.2250738585072014e-308 / 4503599627370496.0))"
         return "rl_float(" + t + ")"
     let digits = t
     while len(digits) > 1 and digits[0] == "0"

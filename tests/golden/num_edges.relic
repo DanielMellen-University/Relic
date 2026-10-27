@@ -4,3 +4,18 @@ for s in ["+5", "-0", ".5", "5.", "2e3", "1e", " 1", "1_0", "", "1e400", "12abc"
         print("'{s}'", num(s))
     catch e
         print("'{s}'", "error:", e.message)
+
+# Since 1.0.36: nan, inf and infinity in any case, hex (an int when it fits),
+# and floats too small for a normal float (1e-400 is 0.0). Too large is still an error.
+for s in ["nan", "-NaN", "inf", "-inf", "+Inf", "infinity", "-INFINITY", "infin", "nan(1)", "-", "0x1F", "-0x1f", "0X10", "0x", "0x1g", "-0x8000000000000000", "0x7fffffffffffffff", "0x8000000000000000", "0x1p3", "0x1.8", "1e-400", "-1e-400", "4.9e-324", "2e-324", "1e400", "0b101", "1e-99999999999"]
+    try
+        let v = num(s)
+        print("'{s}'", v, type(v))
+    catch e
+        print("'{s}'", "error:", e.message)
+print(int("0x1F"), float("0x10"), float("INF"), int("1e-400"), float("4.9e-324") > 0)
+for s in ["nan", "0x8000000000000000"]
+    try
+        print(int(s))
+    catch e
+        print("int('{s}')", "error:", e.message)

@@ -6,7 +6,5 @@ print(1e-310, 2.2250738585072011e-308, 123456789e-320, 0.000001e-305)
 let step = 4.9406564584124654e-324
 print(1e-310 / step, 2.2250738585072011e-308 / step, 7.4e-323 / step, 7.5e-323 / step)
 print(-1e-400, -4.9e-324, 1e-310 > 0, 1e-400 == 0)
-try
-    print(num("1e-400"))
-catch e
-    print(e.message)
+# num() reads them the same way (since 1.0.36; it refused them before)
+print(num("1e-400"), num("4.9e-324"), num("1e-310") == 1e-310, float("-1e-400"), num("2.4703282292062328e-324"))

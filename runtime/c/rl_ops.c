@@ -432,29 +432,67 @@ int rl_check_type(rl_ctx *cx, const char *type, rl_value v, const char *what) {
     return RL_OK;
 }
 
-/* num("...") rules from the host's parse_num: digits give an int when they
- * fit, otherwise the whole text must read as a float (strtod, so hex,
- * inf and nan work); out-of-range floats are not numbers. */
+/* num("...") follows the host's parse_num: an optional sign, then digits (an
+ * int when it fits, else a float), "nan", "inf" or "infinity" in any case, hex
+ * "0x1F" (an int when it fits), or a decimal float. A float too small rounds
+ * like a literal (1e-400 is 0.0); one too large is not a number. */
+static int same_word(const char *s, size_t n, const char *w) {
+    size_t k, wn = strlen(w);
+    if (n != wn) return 0;
+    for (k = 0; k < n; ++k) {
+        char c = s[k];
+        if (c >= 'A' && c <= 'Z') c = (char)(c - 'A' + 'a');
+        if (c != w[k]) return 0;
+    }
+    return 1;
+}
+
 int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     size_t i, j;
-    int digits;
+    int neg;
     char *end;
     double d;
     *out = rl_none();
     if (len == 0 || s[0] == ' ' || (s[0] >= '\t' && s[0] <= '\r') || strlen(s) != len) goto bad;
+    neg = s[0] == '-';
     i = (s[0] == '-' || s[0] == '+') ? 1 : 0;
-    digits = i < len;
-    for (j = i; j < len; ++j)
-        if (s[j] < '0' || s[j] > '9') digits = 0;
-    if (digits) {
-        long long v;
-        errno = 0;
-        v = strtoll(s, NULL, 10);
-        if (errno != ERANGE) { *out = rl_int(v); return RL_OK; }
+    if (i == len) goto bad;
+    if (same_word(s + i, len - i, "nan")) { *out = rl_float(NAN); return RL_OK; }
+    if (same_word(s + i, len - i, "inf") || same_word(s + i, len - i, "infinity")) {
+        *out = rl_float(neg ? -HUGE_VAL : HUGE_VAL);
+        return RL_OK;
     }
+    if (len - i > 2 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X')) {
+        unsigned long long m = 0;
+        int fits = 1, all = 1;
+        for (j = i + 2; j < len; ++j) {
+            int c = s[j], dg;
+            if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
+            dg = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : -1;
+            if (dg < 0) { all = 0; break; }
+            if (m > (~0ULL >> 4)) fits = 0;
+            else m = m * 16 + (unsigned)dg;
+        }
+        if (all && fits && m <= (neg ? 9223372036854775808ULL : 9223372036854775807ULL)) {
+            *out = rl_int(neg ? (m == 9223372036854775808ULL ? LLONG_MIN : -(long long)m) : (long long)m);
+            return RL_OK;
+        }
+    } else {
+        int digits = 1;
+        if (!(s[i] >= '0' && s[i] <= '9') && s[i] != '.') goto bad;
+        for (j = i; j < len; ++j)
+            if (s[j] < '0' || s[j] > '9') digits = 0;
+        if (digits) {
+            long long v;
+            errno = 0;
+            v = strtoll(s, NULL, 10);
+            if (errno != ERANGE) { *out = rl_int(v); return RL_OK; }
+        }
+    }
+    /* a decimal float, a hex float (0x1.8p3) or a hex int past the int range */
     errno = 0;
     d = strtod(s, &end);
-    if (end == s || (size_t)(end - s) != len || errno == ERANGE) goto bad;
+    if ((size_t)(end - s) != len || isinf(d)) goto bad;
     *out = rl_float(d);
     return RL_OK;
 bad:

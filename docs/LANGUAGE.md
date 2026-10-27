@@ -198,7 +198,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 
 - `3` is an `int`. `3.0`, `0.5` and anything with an exponent (`1e3`, `6E+2`) is a `float`.
 - `+ - * %` on two ints give an int. Anything with a float gives a float. `/` always gives a float: `6 / 2` is `3.0`.
-- Ints are 64-bit. Going past the range is `int overflow`, not a wrap. A float literal past the float range is `float is too large`. One too small for a float rounds to the nearest one, down to `0.0` (`1e-400` is `0.0`, `4.9e-324` the smallest float above zero); `num()` refuses both.
+- Ints are 64-bit. Going past the range is `int overflow`, not a wrap. A float literal past the float range is `float is too large`. One too small for a float rounds to the nearest one, down to `0.0` (`1e-400` is `0.0`, `4.9e-324` the smallest float above zero); since 1.0.36 `num()` reads them the same way.
 - Floats always print with a point or an exponent: `3.0`, `0.3`, `1e+20`. Ints never do.
 - Indexes, `slice`, `chr` and range ends take ints, or floats with no fraction.
 - `len`, `ord`, ranges and `num("12")` give ints. `std/math` `floor`, `ceil` and `round` give ints; `sqrt`, `pow` and the rest give floats.
@@ -232,7 +232,7 @@ Always available, no `use` needed.
 | `str(x)` | the value as text, the way `print` shows it |
 | `type(x)` | `"none"`, `"bool"`, `"int"`, `"float"`, `"string"`, `"list"`, `"map"`, `"function"` or `"module"` |
 | `int(x)` / `float(x)` | a number or numeric string as an int (cut toward zero) or a float |
-| `num(s)` | a number from a string: digits give an int, a point or exponent gives a float |
+| `num(s)` | a number from a string: digits give an int (a float when they do not fit), a point or exponent gives a float; also `nan`, `inf` and `infinity` in any case, and hex like `0x1F` (an int when it fits). A sign may come first. A float too small rounds to a subnormal or `0.0` like a literal; one too large, spaces or anything else is `not a number` (since 1.0.36; before, hex always gave a float and a tiny float was an error) |
 | `ord(c)` / `chr(n)` | code point of a one-character string, and back (0 to 1114111, no surrogates) |
 | `slice(x, a, b)` | part of a string or list from `a` up to `b - 1`; the ends are clamped |
 | `append(list, x)` | adds `x` to the end |

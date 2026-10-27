@@ -16,3 +16,13 @@ try
     json.encode([1, {a: nan}])
 catch e
     print("ERR", e.message)
+
+# Since 1.0.36 decode reads back a subnormal that encode wrote; nan, inf and hex
+# are still not JSON, and a number too large is still bad.
+let tiny = 4.9406564584124654e-324 * 3
+print(json.encode([tiny, 1e-310]), json.decode(json.encode([tiny, 1e-310])) == [tiny, 1e-310], json.decode("1e-400"), json.decode("-4.9e-324"))
+for t in ["NaN", "nan", "Infinity", "-Infinity", "inf", "0x1F", "-0x10", "1e400", "[1e-400, 2]"]
+    try
+        print(t, json.decode(t))
+    catch e
+        print(t, "ERR", e.message)

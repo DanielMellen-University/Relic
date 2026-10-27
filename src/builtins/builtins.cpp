@@ -37,22 +37,57 @@ std::vector<std::string>& script_args() {
 
 // Text to a number: digits (with an optional sign) give an int, anything with
 // a point or an exponent gives a float.
+// num("..."): an optional sign, then digits (an int when it fits, else a float),
+// "nan", "inf" or "infinity" in any case, hex "0x1F" (an int when it fits), or a
+// decimal float. A float too small rounds like a literal (1e-400 is 0.0, 4.9e-324
+// the smallest float above zero); one too large is not a number. The C runtime's
+// rl_parse_num follows the same steps.
+static bool same_word(const std::string& s, size_t i, const char* w) {
+    size_t n = std::char_traits<char>::length(w);
+    if (s.size() - i != n) return false;
+    for (size_t k = 0; k < n; ++k)
+        if (std::tolower(static_cast<unsigned char>(s[i + k])) != w[k]) return false;
+    return true;
+}
+
 static Value parse_num(const std::string& s) {
     auto bad = [&]() { return std::string("not a number: \"") + s + "\""; };
-    if (s.empty() || std::isspace(static_cast<unsigned char>(s[0]))) throw bad();
+    if (s.empty() || std::isspace(static_cast<unsigned char>(s[0])) || s.find('\0') != std::string::npos) throw bad();
+    bool neg = s[0] == '-';
     size_t i = (s[0] == '-' || s[0] == '+') ? 1 : 0;
-    bool digits = i < s.size();
-    for (size_t j = i; j < s.size(); ++j)
-        if (!std::isdigit(static_cast<unsigned char>(s[j]))) digits = false;
-    if (digits) {
-        errno = 0;
-        long long v = std::strtoll(s.c_str(), nullptr, 10);
-        if (errno != ERANGE) return Value(v);
+    if (i == s.size()) throw bad();
+    if (same_word(s, i, "nan")) return Value(std::numeric_limits<double>::quiet_NaN());
+    if (same_word(s, i, "inf") || same_word(s, i, "infinity"))
+        return Value(neg ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity());
+    bool hex = s.size() - i > 2 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X');
+    if (hex) {
+        unsigned long long m = 0;
+        bool fits = true, all = true;
+        for (size_t j = i + 2; j < s.size(); ++j) {
+            int c = std::tolower(static_cast<unsigned char>(s[j]));
+            int d = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : -1;
+            if (d < 0) { all = false; break; }
+            if (m > (~0ULL >> 4)) fits = false;
+            else m = m * 16 + static_cast<unsigned>(d);
+        }
+        if (all && fits && m <= (neg ? 9223372036854775808ULL : 9223372036854775807ULL))
+            return Value(neg ? static_cast<long long>(0ULL - m) : static_cast<long long>(m));
+    } else {
+        if (!std::isdigit(static_cast<unsigned char>(s[i])) && s[i] != '.') throw bad();
+        bool digits = true;
+        for (size_t j = i; j < s.size(); ++j)
+            if (!std::isdigit(static_cast<unsigned char>(s[j]))) digits = false;
+        if (digits) {
+            errno = 0;
+            long long v = std::strtoll(s.c_str(), nullptr, 10);
+            if (errno != ERANGE) return Value(v);
+        }
     }
-    size_t used = 0;
-    double d = 0;
-    try { d = std::stod(s, &used); } catch (...) { used = 0; }
-    if (used != s.size()) throw bad();
+    // A decimal float, a hex float (0x1.8p3) or a hex int past the int range.
+    char* end = nullptr;
+    errno = 0;
+    double d = std::strtod(s.c_str(), &end);
+    if (end != s.c_str() + s.size() || std::isinf(d)) throw bad();
     return Value(d);
 }
 

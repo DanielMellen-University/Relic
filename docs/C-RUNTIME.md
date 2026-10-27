@@ -147,7 +147,7 @@ At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: t
 
 `host_names()` lists the same 78 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
-`num("...")` follows the host: digits that fit give an int, otherwise the whole text must read as a float through `strtod`, so hex floats, `inf` and `nan` work and an out-of-range number is not a number.
+`num("...")` follows the host step by step (`rl_parse_num`): a sign, then digits that fit give an int; `nan`, `inf` and `infinity` in any case; hex like `0x1F` an int when it fits; anything else must read as a float through `strtod` (decimal, or a hex float like `0x1.8p3`). A float too small rounds to a subnormal or `0.0`, and one too large is not a number.
 
 ## Memory and the cycle collector
 

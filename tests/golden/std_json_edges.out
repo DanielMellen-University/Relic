@@ -36,3 +36,13 @@ ERR json: cannot encode inf or nan
 0.5
 1e+21
 ERR json: cannot encode inf or nan
+[1.48219693752374e-323,9.99999999999997e-311] true 0.0 -4.94065645841247e-324
+NaN ERR json: bad number at 0
+nan ERR json: unexpected text at 0
+Infinity ERR json: bad number at 0
+-Infinity ERR json: bad number at 1
+inf ERR json: bad number at 0
+0x1F ERR json: extra text at 1
+-0x10 ERR json: extra text at 2
+1e400 ERR json: bad number at 5
+[1e-400, 2] [0.0, 2]
