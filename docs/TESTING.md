@@ -61,7 +61,7 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 ## Unit tests
 
-`tests/unit/main.cpp` (`relic_tests`, ctest case `unit`) checks the lexer, parser, interpreter and REPL from C++, where token lists or tree shape are easier to check than output. It uses a small hand-written harness, no test library.
+`tests/unit/main.cpp` (`relic_tests`, ctest case `unit`) checks the lexer, parser, interpreter and REPL from C++, where token lists or tree shape are easier to check than output. It uses a small hand-written harness, no test library. It also holds the checks that would only add programs to `selfhost_interp` for little gain: lexer, parse and built-in error messages with their positions, the REPL's details, and the built-in font.
 
 ## C runtime tests
 
@@ -69,7 +69,7 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 | Test | Checks |
 |---|---|
-| `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, the high-DPI rounding (`src/builtins/gfx_scale.h`), and that nothing leaks |
+| `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, the high-DPI rounding (`src/builtins/gfx_scale.h`), the small public calls (type names, `repr`, fields, range starts, the number reader), and that nothing leaks |
 | `c_demo` | the hand-compiled `tests/demo.c` prints exactly `tests/golden/c_demo.out` |
 
 `golden_c_demo` runs the same program on the C++ host, so a change to either side shows up. `selfhost_interp` compares it too (since 1.0.21; it recurses 800 calls deep).
