@@ -1,6 +1,7 @@
 # Long lines, a NUL byte, bytes that are not UTF-8, a Ctrl-Z byte (0x1A, which
 # a Windows text-mode stdin would take for the end of the input), and an empty last line.
-# Compared by length and checksum so the output stays small.
+# A long line is described by its length and three characters (a loop over it would
+# make the slow self-hosted interpreter take seconds); a short one also by a checksum.
 use std/os
 fun sum(s)
     let t = 0
@@ -13,5 +14,8 @@ while true
     if line == none
         break
     n = n + 1
-    print(n, len(line), sum(line))
+    if len(line) > 100
+        print(n, len(line), line[0], line[100], line[len(line) - 1])
+    else
+        print(n, len(line), sum(line))
 print("lines", n)
