@@ -1,0 +1,41 @@
+[] -> [.]
+[/] -> [/]
+[//] -> [/]
+[a//b] -> [a/b]
+[./a] -> [a]
+[a/.] -> [a]
+[a/./b] -> [a/b]
+[a/../b] -> [b]
+[../a] -> [../a]
+[a/../../b] -> [../b]
+[/a/../..] -> [/]
+[/a/b/] -> [/a/b]
+[a\b\..\c] -> [a/c]
+[.] -> [.]
+[..] -> [..]
+[./] -> [.]
+[a/b/../..] -> [.]
+[a/b/../../..] -> [..]
+[/./a] -> [/a]
+[//a///b//] -> [/a/b]
+[] base [] dir [] ext [] stem []
+[/] base [] dir [/] ext [] stem []
+[a] base [a] dir [] ext [] stem [a]
+[a/] base [] dir [a] ext [] stem []
+[/a] base [a] dir [/] ext [] stem [a]
+[a/b.txt] base [b.txt] dir [a] ext [.txt] stem [b]
+[a.b/c] base [c] dir [a.b] ext [] stem [c]
+[a/.hidden] base [.hidden] dir [a] ext [] stem [.hidden]
+[.a.b] base [.a.b] dir [] ext [.b] stem [.a]
+[a.] base [a.] dir [] ext [.] stem [a]
+[a..b] base [a..b] dir [] ext [.b] stem [a.]
+[/x/y.tar.gz] base [y.tar.gz] dir [/x] ext [.gz] stem [y.tar]
+[a\b.c] base [b.c] dir [a] ext [.c] stem [b]
+["", ""] 
+["a", ""] a/
+["", "b"] b
+["/", "b"] /b
+["a", "/b"] /b
+["a/", "/b"] /b
+["a\\", "b"] a/b
+["a", "b\\c"] a/b/c

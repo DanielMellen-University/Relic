@@ -1,0 +1,56 @@
+# std/lists and std/maps on empty, odd and repeated input.
+use std/lists
+use std/maps
+
+fun double(x) = x * 2
+fun is_even(x) = x % 2 == 0
+fun add(a, b) = a + b
+fun by_len(a, b) = len(a) < len(b)
+fun by_first(a, b) = a[0] < b[0]
+
+print(lists.map([], double), lists.filter([], is_even), lists.reduce([], add, 7), lists.sum([]))
+print(lists.sum([1, 2.5]), lists.sum([0.1, 0.2]), lists.reduce(["a", "b"], add, ""))
+print(lists.index_of([], 1), lists.index_of([1, 2, 1], 1), lists.index_of([1, 2.0], 2), lists.index_of(["a"], "b"))
+print(lists.reverse([]), lists.reverse([1]), lists.reverse([1, 2, 3]))
+
+# sort: empty, one item, sorted, reversed, repeats, floats against ints, strings
+print(lists.sort([]), lists.sort([1]), lists.sort([1, 2, 3]), lists.sort([3, 2, 1]), lists.sort([2, 1, 2, 1, 2]))
+print(lists.sort([2, 1.5, 1, 2.0, -0.5]), lists.sort(["b", "a", "B", "", "ab"]))
+
+# sort_by is stable and gives a new list
+print(lists.sort_by(["bb", "a", "cc", "d", "eee", "f"], by_len))
+print(lists.sort_by([[2, "x"], [1, "y"], [2, "a"], [1, "b"], [0, "z"]], by_first))
+let original = [3, 1, 2]
+let sorted = lists.sort(original)
+append(sorted, 9)
+print(original, sorted)
+let c = lists.copy(original)
+append(c, 4)
+print(original, c, lists.copy([]))
+
+# a long list through the merge sort
+let big = []
+for i in 0..300
+    append(big, (i * 7919) % 301)
+let s = lists.sort(big)
+let ok = true
+for i in 1..len(s)
+    if s[i - 1] > s[i]
+        ok = false
+print(len(s), ok, s[0], s[len(s) - 1], lists.index_of(s, 300))
+
+# maps
+print(maps.values({}), maps.items({}), maps.merge({}, {}))
+print(maps.values({b: 1, a: 2}), maps.items({b: 1, a: 2}))
+print(maps.get({a: 1}, "a", 5), maps.get({a: none}, "a", 5), maps.get({}, "a", 5), maps.get({a: false}, "a", 5))
+print(maps.merge({a: 1, b: 2}, {b: 3, c: 4}), maps.merge({b: 3, c: 4}, {a: 1, b: 2}))
+let m = {x: 1}
+let n = maps.merge(m, {})
+n.y = 2
+print(m, n)
+let l = {k: [1]}
+let l2 = maps.merge(l, {})
+append(l2.k, 2)
+print(l)
+remove(m, "x")
+print(maps.values(m), maps.items(m), len(m))

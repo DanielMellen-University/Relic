@@ -1,0 +1,8 @@
+# std/paths on odd input: empty, root, doubled and trailing slashes, dots, backslashes.
+use std/paths
+for p in ["", "/", "//", "a//b", "./a", "a/.", "a/./b", "a/../b", "../a", "a/../../b", "/a/../..", "/a/b/", "a\\b\\..\\c", ".", "..", "./", "a/b/../..", "a/b/../../..", "/./a", "//a///b//"]
+    print("[{p}] -> [{paths.normalize(p)}]")
+for p in ["", "/", "a", "a/", "/a", "a/b.txt", "a.b/c", "a/.hidden", ".a.b", "a.", "a..b", "/x/y.tar.gz", "a\\b.c"]
+    print("[{p}] base [{paths.base(p)}] dir [{paths.dir(p)}] ext [{paths.ext(p)}] stem [{paths.stem(p)}]")
+for pr in [["", ""], ["a", ""], ["", "b"], ["/", "b"], ["a", "/b"], ["a/", "/b"], ["a\\", "b"], ["a", "b\\c"]]
+    print(pr, paths.join(pr[0], pr[1]))
