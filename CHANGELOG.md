@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.30 (2026-10-27)
+
+One error message fix and a fuzz tool fix. No language change.
+
+- The lexer's `unknown escape` error copied the character after the backslash into the message. A NUL there cut the host's message short (`unknown escape '\` and nothing more), and other control characters printed as nothing. A control character now gets its code, like `unexpected character` does: `unknown escape: a backslash then U+0001 (a control character; delete it)`. Host and `selfhost/` agree (golden `err_escape_control`). Found with `tools/fuzz_mutate.py`.
+- `tools/fuzz_mutate.py` writes to `/tmp/relic_fuzz/MODE_SEED/`, so several runs can go at once. Before, parallel runs shared one scratch file and reported false mismatches.
+- `ctest`: 171 default.
+
 ## 1.0.29 (2026-10-27)
 
 Four places where the engines or the self-hosted tools disagreed with the host, a REPL fix, and a fuzz tool that finds this kind of thing. No language change.
