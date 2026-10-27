@@ -3,7 +3,13 @@
 let pi = 3.141592653589793
 let e = 2.718281828459045
 
+# abs, ceil and round check their argument, so a string gives a math error and not a "cannot negate" one.
+fun _number(name, x)
+    if type(x) != "int" and type(x) != "float"
+        fail("math." + name + "(): argument must be a number, got " + type(x))
+
 fun abs(x)
+    _number("abs", x)
     if x < 0
         return -x
     if x == 0 and type(x) == "float"
@@ -23,8 +29,13 @@ fun max(a, b)
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
 # floor, ceil and round give an int.
 fun floor(x) = int(host_floor(x))
-fun ceil(x) = -int(host_floor(-x))
-fun round(x) = int(host_floor(x + 0.5))
+fun ceil(x)
+    _number("ceil", x)
+    return -int(host_floor(-x))
+
+fun round(x)
+    _number("round", x)
+    return int(host_floor(x + 0.5))
 fun sqrt(x) = host_sqrt(x)
 fun pow(x, y) = host_pow(x, y)
 fun sin(x) = host_sin(x)

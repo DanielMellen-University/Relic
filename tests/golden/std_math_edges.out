@@ -10,6 +10,9 @@ true false true false
 1.0 0.0 -1.0
 math.floor(): argument must be a number, got string
 math.sqrt(): argument must be a number, got string
-cannot compare a string and an int
+math.abs(): argument must be a number, got string
+math.ceil(): argument must be a number, got string
+math.round(): argument must be a number, got list
+math.abs(): argument must be a number, got none
 cannot compare a string and an int
 int(): number is out of the int range

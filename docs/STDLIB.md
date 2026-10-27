@@ -73,6 +73,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
+`abs`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
+
 ## std/files
 
 Paths are relative to where `relic` runs. Caught errors use the std name

@@ -23,6 +23,18 @@ try
 catch e
     print(e.message)
 try
+    print(math.ceil("x"))
+catch e
+    print(e.message)
+try
+    print(math.round([1]))
+catch e
+    print(e.message)
+try
+    print(math.abs(none))
+catch e
+    print(e.message)
+try
     print(math.min(1, "a"))
 catch e
     print(e.message)
