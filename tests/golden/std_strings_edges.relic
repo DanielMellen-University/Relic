@@ -1,0 +1,26 @@
+# std/strings on empty and odd inputs: results, and the one error pad_* has
+use std/strings
+
+fun show_error(f)
+    try
+        f()
+    catch e
+        print("error:", e.message)
+
+print(strings.split("", ","), strings.split(",", ","), strings.split("a,b,,c", ","))
+print(strings.split("a--b--", "--"), strings.split("abc", ""), strings.split("héé", ""))
+print(strings.join([], ","), strings.join(["a"], ","), strings.join([1, 2.5, true], "-"))
+print(strings.find("abc", ""), strings.find("", "a"), strings.find("héllo wörld", "wör"))
+print(strings.contains("abc", ""), strings.starts_with("ab", "abc"), strings.ends_with("ab", "abc"))
+print(strings.replace("aaa", "aa", "b"), strings.replace("abc", "", "-"), strings.replace("", "a", "b"))
+print("[{strings.repeat("ab", 0)}] [{strings.repeat("ab", -1)}] [{strings.repeat("é", 3)}]")
+print(strings.pad_left("abc", 2, "x"), strings.pad_left("7", 3, "0"), strings.pad_left("abc", 6, "xy"))
+print(strings.pad_right("é", 3, "-"), strings.pad_right("abc", 3, "-"), strings.pad_right("", 2, "ab"))
+print(strings.pad_left("abc", 3, ""), strings.pad_right("abc", 2, ""))
+print(strings.upper("héllo ß"), strings.lower("HÉLLO"), strings.upper(""))
+print("[{strings.trim("  \t\n x y \n")}] [{strings.trim("")}] [{strings.trim("   ")}]")
+
+fun pad_left_empty() = strings.pad_left("abc", 6, "")
+fun pad_right_empty() = strings.pad_right("", 1, "")
+show_error(pad_left_empty)
+show_error(pad_right_empty)

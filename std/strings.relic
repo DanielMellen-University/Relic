@@ -92,12 +92,16 @@ fun repeat(s, n)
 # pad_left("7", 3, "0") is "007"; pad_right pads on the right.
 fun pad_left(s, width, fill)
     let out = s
+    if fill == "" and len(out) < width
+        fail("pad_left(): fill must not be empty")
     while len(out) < width
         out = fill + out
     return out
 
 fun pad_right(s, width, fill)
     let out = s
+    if fill == "" and len(out) < width
+        fail("pad_right(): fill must not be empty")
     while len(out) < width
         out = out + fill
     return out

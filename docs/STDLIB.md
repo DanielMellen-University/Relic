@@ -34,7 +34,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `join(items, sep)` | string | |
 | `replace(s, old, new)` | string | all non-overlapping |
 | `repeat(s, n)` | string | |
-| `pad_left(s, width, fill)` / `pad_right(...)` | string | |
+| `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error |
 | `is_space(c)` | bool | space, tab, newline, CR |
 
 ## std/lists

@@ -1,0 +1,14 @@
+[""] ["", ""] ["a", "b", "", "c"]
+["a", "b", ""] ["a", "b", "c"] ["h", "é", "é"]
+ a 1-2.5-true
+0 -1 6
+true false false
+ba a-b-c 
+[] [] [ééé]
+abc 007 xyxyabc
+é-- abc ab
+abc abc
+HéLLO ß hÉllo 
+[x y] [] []
+error: pad_left(): fill must not be empty
+error: pad_right(): fill must not be empty
