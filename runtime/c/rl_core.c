@@ -815,12 +815,14 @@ int rl_call(rl_ctx *cx, rl_value fv, int argc, const rl_value *argv, rl_value *o
     if (f->arity >= 0 && argc != f->arity)
         return rl_fail(cx, "%s() takes %d argument%s, got %d", f->name->data, f->arity,
                        f->arity == 1 ? "" : "s", argc);
-    if (cx->depth >= RL_MAX_DEPTH)
+    /* Only Relic functions count toward the limit, as on the host: a built-in
+     * (print, len, str, ...) can be called from the 800th frame. */
+    if (!f->builtin && cx->depth >= RL_MAX_DEPTH)
         return rl_fail(cx, "too much recursion (more than %d calls deep)", RL_MAX_DEPTH);
-    ++cx->depth;
+    if (!f->builtin) ++cx->depth;
     ++f->h.rc;   /* the callee stays alive while it runs */
     r = f->code(cx, f, argc, argv, out);
-    --cx->depth;
+    if (!f->builtin) --cx->depth;
     if (r != RL_OK && f->builtin && cx->has_err && !cx->err_line && strcmp(f->name->data, "fail") != 0) {
         /* Built-in errors read "name(): message", as on the host. */
         rl_value m;

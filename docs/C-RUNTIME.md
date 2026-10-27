@@ -105,7 +105,7 @@ typedef int (*rl_code)(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
 - `argv` is borrowed. `*out` gets an owned result, or none.
 - The return is `RL_OK` (0) or `RL_ERR` (1).
 
-Call any function value through `rl_call(cx, f, argc, argv, &out)`. It checks that `f` is a function (`cannot call an int`), checks the arity (`fib() takes 1 argument, got 2`), enforces the 800-call depth limit (`too much recursion (more than 800 calls deep)`), adds the `name(): ` prefix to errors from built-ins (except `fail`, which raises its message as written), and gives the cycle collector a chance to run.
+Call any function value through `rl_call(cx, f, argc, argv, &out)`. It checks that `f` is a function (`cannot call an int`), checks the arity (`fib() takes 1 argument, got 2`), enforces the 800-call depth limit on Relic functions (`too much recursion (more than 800 calls deep)`; built-ins do not count), adds the `name(): ` prefix to errors from built-ins (except `fail`, which raises its message as written), and gives the cycle collector a chance to run.
 
 ## Errors and try / catch
 
