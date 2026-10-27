@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.26 (2026-10-27)
+
+Bug fixes in `std/strings`, `std/json`, `relic check` and the self-hosted interpreter's exit codes, a faster `selfhost_interp`, and tests that check what the docs say. No language change.
+
+- `std/strings`: `pad_left` and `pad_right` with an empty `fill` never ended. They fail with `pad_left(): fill must not be empty` when padding is needed (an empty `fill` that is not needed is fine).
+- `std/json`: `decode` follows JSON's number grammar. `01`, `1.e3`, `1e` and `+1` were accepted or reported at the wrong place; a number now ends where JSON says, and the error points at the character that cannot continue it. `encode` fails on inf and nan (`json: cannot encode inf or nan`) instead of writing `inf` and `nan`, which no JSON reader takes.
+- `relic check` with no file used to say `relic: cannot open check`; it prints the usage and exits 2.
+- `selfhost/run.relic` exited 0 after an error. It exits 1 like `relic`, 2 with no file or a file that cannot be opened (with the host's `relic: cannot open x` line), and still passes a program's own `os.exit` code through. `selfhost_interp` and `vm_matches_tree_walker` now compare exit codes, so this cannot come back unseen.
+- Tests: new goldens `std_strings_edges` and `std_json_edges`; `c_runtime` covers operator and condition errors (`not`, `-`, `*`, negation, `%`, comparisons), `equal`, `cond`, `loop_items`, `check_type`, `map_remove` and the built-in table; `cli` (exit codes, usage errors, args, `relic check`, the REPL on piped input) and `selfhost_cli` are new; golden and compiled error tests must exit with code 1, not just any nonzero code; `doc_counts` fails when the program counts in `TESTING.md` and `CGEN.md` stop matching `tests/golden`.
+- Speed: golden `gc_cycles` makes 100000 pairs of cycles instead of 200000 (still past the collector's 100000-container threshold, so the automatic collection is still tested). `selfhost_interp` takes 8.49 s median of 3 on a quiet box (8.49, 8.49, 8.75; 1.0.25 measured 11.37 s the same way, 1.0.13 was 6.1 s with 136 programs, now 158; 1.39x, budget under 2x).
+- `ctest`: 159 default, 334 with the host.
+
 ## 1.0.25 (2026-10-26)
 
 A bug fix in `std/vfs`. No language change.

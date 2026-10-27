@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 156 ctest cases: 153 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point` and `example_compiled`. A host build (`-DRELIC_BUILD_HOST=ON`) has 327: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 159 ctest cases: 153 compiled goldens (`cgen_*`), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 334: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -51,12 +51,15 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 | `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (158 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (158 today) |
 
-Two more self-host cases check the interpreter on real use:
+Three more self-host cases check the interpreter on real use:
 
 | Test | Runs | Checks |
 |---|---|---|
 | `selfhost_args` | `selfhost/run.relic tests/selfhost/args.relic one --two` | the program gets its args |
 | `selfhost_nested` | `selfhost/run.relic selfhost/run.relic tests/selfhost/args.relic deep` | the interpreter runs itself |
+| `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |
+
+`selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
 
 The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.md](ARCHITECTURE.md#self-host).
 
