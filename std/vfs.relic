@@ -8,19 +8,30 @@ use std/lists
 # A file node is {dir: false, text: "..."}.
 # The VFS value is {root: dir_node}.
 
-fun _norm(p)
-    let x = paths.normalize(p)
-    if x == "." or x == ""
-        return "/"
-    if not strings.starts_with(x, "/")
-        x = "/" + x
-    return paths.normalize(x)
-
+# The names along a path, in one pass: what paths.normalize gives for the path
+# made absolute ("\" is "/"; ".", empty names and ".." at the top dropped; a
+# ".." takes the name before it away). Every call here starts with this, so a
+# Files window checking each of 3,000 names spent most of its time in it.
 fun _parts(p)
-    let x = _norm(p)
-    if x == "/"
-        return []
-    return strings.split(slice(x, 1, len(x)), "/")
+    let parts = []
+    let cur = ""
+    for c in p
+        if c == "/" or c == "\\"
+            parts = _put(parts, cur)
+            cur = ""
+        else
+            cur = cur + c
+    return _put(parts, cur)
+
+fun _put(parts, name)
+    if name == ".."
+        if len(parts) > 0
+            pop(parts)
+    else if name != "." and name != ""
+        parts = parts + [name]
+    return parts
+
+fun _norm(p) = "/" + strings.join(_parts(p), "/")
 
 fun _node(fs, path)
     let cur = fs.root
@@ -51,11 +62,53 @@ fun is_dir(fs, path)
     let n = _node(fs, path)
     return n != none and n.dir
 
+# Names in order, merged in place in widening runs: the same order as
+# lists.sort (names are strings, all different) in about half the time, which
+# a folder of 3,000 names listed every frame notices.
+fun _sorted(xs)
+    let n = len(xs)
+    let a = slice(xs, 0, n)
+    let b = slice(xs, 0, n)
+    let w = 1
+    while w < n
+        let lo = 0
+        while lo < n
+            let mid = lo + w
+            if mid > n
+                mid = n
+            let hi = mid + w
+            if hi > n
+                hi = n
+            let i = lo
+            let j = mid
+            let k = lo
+            while i < mid and j < hi
+                if a[j] < a[i]
+                    b[k] = a[j]
+                    j = j + 1
+                else
+                    b[k] = a[i]
+                    i = i + 1
+                k = k + 1
+            while i < mid
+                b[k] = a[i]
+                i = i + 1
+                k = k + 1
+            while j < hi
+                b[k] = a[j]
+                j = j + 1
+                k = k + 1
+            lo = hi
+        let t = a
+        a = b
+        b = t
+        w = w * 2
+    return a
 fun list(fs, path)
     let n = _node(fs, path)
     if n == none or not n.dir
         fail("cannot list " + _norm(path))
-    return lists.sort(keys(n.kids))
+    return _sorted(keys(n.kids))
 
 fun read(fs, path)
     let n = _node(fs, path)

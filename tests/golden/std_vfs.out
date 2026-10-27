@@ -21,3 +21,6 @@ cannot remove /home/welcome.txt/x
 cannot write /home/welcome.txt/x
 cannot get the size of /home/welcome.txt/x/y
 ["welcome.txt"]
+true true true
+cannot list /b/c
+["0", "B", "_", "a", "aa", "b", "m", "z", "é"]

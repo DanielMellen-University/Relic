@@ -57,3 +57,14 @@ try
 catch err
     print(err.message)
 print(vfs.list(fs, "/home"))
+# paths are read as if they started at /: "\" is "/", "." and doubled slashes go, ".." stops at the top
+print(vfs.exists(fs, "home\\welcome.txt"), vfs.exists(fs, "../../home//./welcome.txt"), vfs.is_dir(fs, "tmp/../home/"))
+try
+    vfs.list(fs, "a\\..\\..\\b//c/.")
+catch err
+    print(err.message)
+# list sorts the names (an odd count, so the last run merges alone)
+fs = vfs.new()
+for n in ["m", "b", "z", "a", "B", "aa", "é", "_", "0"]
+    vfs.write(fs, "/tmp/" + n, n)
+print(vfs.list(fs, "/tmp"))
