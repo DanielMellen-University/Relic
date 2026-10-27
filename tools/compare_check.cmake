@@ -3,7 +3,9 @@
 # the scope rules) and, with -DCORPUS=1, every .relic file the other
 # comparisons read: the goldens and their helper modules, std/, selfhost/,
 # examples/ and bench/. Also checks a few runs with several files, some missing.
-#   cmake -DRELIC=path/to/relic -DSRC=source/dir [-DCORPUS=1] -P tools/compare_check.cmake
+#   cmake -DRELIC=path/to/relic -DSRC=source/dir [-DCORPUS=1] [-DTOOL=path] -P tools/compare_check.cmake
+# With -DTOOL=path, that program (selfhost/check.relic compiled to C) is checked
+# instead of running selfhost/check.relic on the host.
 file(GLOB files ${SRC}/tests/check_cases/*.relic)
 if(CORPUS)
   file(GLOB more ${SRC}/tests/golden/*.relic ${SRC}/tests/golden/modules/*.relic ${SRC}/std/*.relic
@@ -18,7 +20,12 @@ foreach(f ${files})
   math(EXPR total "${total}+1")
   execute_process(COMMAND ${RELIC} check ${name} WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err RESULT_VARIABLE a_code)
-  execute_process(COMMAND ${RELIC} ${SRC}/selfhost/check.relic ${name} WORKING_DIRECTORY ${dir}
+  if(TOOL)
+    set(mine ${TOOL})
+  else()
+    set(mine ${RELIC} ${SRC}/selfhost/check.relic)
+  endif()
+  execute_process(COMMAND ${mine} ${name} WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err RESULT_VARIABLE b_code)
   foreach(v a_out a_err b_out b_err)
     string(REPLACE "\r\n" "\n" ${v} "${${v}}")
@@ -46,7 +53,12 @@ foreach(combo ${combos})
   math(EXPR total "${total}+1")
   execute_process(COMMAND ${RELIC} check ${argv} WORKING_DIRECTORY ${cases}
     OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err RESULT_VARIABLE a_code)
-  execute_process(COMMAND ${RELIC} ${SRC}/selfhost/check.relic ${argv} WORKING_DIRECTORY ${cases}
+  if(TOOL)
+    set(mine ${TOOL})
+  else()
+    set(mine ${RELIC} ${SRC}/selfhost/check.relic)
+  endif()
+  execute_process(COMMAND ${mine} ${argv} WORKING_DIRECTORY ${cases}
     OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err RESULT_VARIABLE b_code)
   foreach(v a_out a_err b_out b_err)
     string(REPLACE "\r\n" "\n" ${v} "${${v}}")

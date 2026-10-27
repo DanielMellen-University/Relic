@@ -345,12 +345,16 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     relic_cgen_exe(selfhost_tokens ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/tokens.relic)
     relic_cgen_exe(selfhost_ast ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/ast.relic)
     relic_cgen_exe(selfhost_cgen ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/cgen.relic)
+    relic_cgen_exe(selfhost_check ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/check.relic)
     add_test(NAME cgen_selfhost_lexer
       COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DTOOL=$<TARGET_FILE:cgen_selfhost_tokens> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_lexers.cmake)
     add_test(NAME cgen_selfhost_parser
       COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DTOOL=$<TARGET_FILE:cgen_selfhost_ast> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_parsers.cmake)
+    add_test(NAME cgen_selfhost_check
+      COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DCORPUS=1
+        -DTOOL=$<TARGET_FILE:cgen_selfhost_check> -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_check.cmake)
     add_test(NAME cgen_fixed_point
       COMMAND ${CMAKE_COMMAND} -DSTAGE1=$<TARGET_FILE:cgen_selfhost_cgen> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DSTAGE0_C=${CMAKE_CURRENT_BINARY_DIR}/cgen/selfhost_cgen.c -DOUT=${CMAKE_CURRENT_BINARY_DIR}/cgen/selfhost_cgen.stage2.c
