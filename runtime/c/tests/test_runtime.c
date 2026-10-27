@@ -644,6 +644,87 @@ static void test_small_api(void) {
     drop_temps();
 }
 
+/* Operator errors and the small helpers generated code leans on. The
+ * messages are the host's (checked against `relic` 1.0.25). */
+static void test_operator_errors(void) {
+    rl_value r, l = rl_list_new(0), m = rl_map_new(), none = rl_none();
+    int truth = -1;
+    push(l, rl_int(1));
+
+    ERR(rl_not(&cx, rl_int(1), &r), "'not' needs true or false, got int");
+    CHECK(rl_not(&cx, rl_bool(0), &r) == RL_OK && r.k == RL_BOOL && r.u.b == 1);
+    CHECK(rl_not(&cx, rl_bool(1), &r) == RL_OK && r.k == RL_BOOL && r.u.b == 0);
+
+    ERR(rl_sub(&cx, rl_int(1), T("a"), &r), "cannot subtract an int and a string");
+    ERR(rl_sub(&cx, T("a"), rl_int(1), &r), "cannot subtract a string and an int");
+    ERR(rl_sub(&cx, rl_int(1), none, &r), "cannot subtract an int and a none");
+    ERR(rl_sub(&cx, rl_float(2.5), l, &r), "cannot subtract a float and a list");
+    ERR(rl_mul(&cx, rl_int(1), T("a"), &r), "cannot multiply an int and a string");
+    ERR(rl_mul(&cx, l, rl_int(2), &r), "cannot multiply a list and an int");
+    ERR(rl_neg(&cx, none, &r), "cannot negate a none");
+    ERR(rl_neg(&cx, T("a"), &r), "cannot negate a string");
+    ERR(rl_mod(&cx, rl_int(5), rl_int(0), &r), "division by zero");
+    ERR(rl_mod(&cx, rl_int(5), rl_float(0.0), &r), "division by zero");
+    ERR(rl_div(&cx, rl_float(5.0), rl_int(0), &r), "division by zero");
+
+    ERR(rl_compare(&cx, "<", none, rl_int(1), &r), "cannot compare a none and an int");
+    ERR(rl_compare(&cx, "<=", l, l, &r), "cannot compare a list and a list");
+    ERR(rl_compare(&cx, ">=", rl_int(1), T("a"), &r), "cannot compare an int and a string");
+    ERR(rl_compare(&cx, ">", m, m, &r), "cannot compare a map and a map");
+    ERR(rl_compare(&cx, "<", rl_bool(1), rl_bool(0), &r), "cannot compare a bool and a bool");
+    CHECK(rl_compare(&cx, "<", rl_int(1), rl_float(1.5), &r) == RL_OK && r.u.b == 1);
+    CHECK(rl_compare(&cx, ">=", T("b"), T("a"), &r) == RL_OK && r.u.b == 1);
+    CHECK(rl_compare(&cx, "<", T("B"), T("a"), &r) == RL_OK && r.u.b == 1);   /* by code point */
+
+    /* == never fails: mixed types are just unequal, 1 == 1.0, none only equals none */
+    CHECK(rl_equal(rl_int(1), rl_float(1.0)));
+    CHECK(!rl_equal(T("1"), rl_int(1)));
+    CHECK(rl_equal(none, none));
+    CHECK(!rl_equal(none, rl_bool(0)));
+    CHECK(rl_equal(T("ab"), T("ab")));
+    CHECK(rl_equal(l, l));
+    CHECK(!rl_equal(l, m));
+
+    /* conditions */
+    CHECK(rl_cond(&cx, rl_bool(1), "'if' condition", &truth) == RL_OK && truth == 1);
+    CHECK(rl_cond(&cx, rl_bool(0), "'if' condition", &truth) == RL_OK && truth == 0);
+    ERR(rl_cond(&cx, T("s"), "'if' condition", &truth), "'if' condition must be true or false, got string");
+    ERR(rl_cond(&cx, none, "'while' condition", &truth), "'while' condition must be true or false, got none");
+
+    /* a loop walks a copy of a list, the characters of a string, the keys of a map */
+    CHECK(rl_loop_items(&cx, l, &r) == RL_OK && r.k == RL_LIST && r.u.o != l.u.o && L(r)->n == 1);
+    rl_release(r);
+    CHECK(rl_loop_items(&cx, T("hé"), &r) == RL_OK);
+    SHOW(r, "[\"h\", \"é\"]");
+    set(m, "k", rl_int(1));
+    CHECK(rl_loop_items(&cx, m, &r) == RL_OK);
+    SHOW(r, "[\"k\"]");
+    ERR(rl_loop_items(&cx, none, &r), "cannot loop over a none");
+    ERR(rl_loop_items(&cx, rl_int(5), &r), "cannot loop over an int");
+
+    /* hints: the message is the caller's prefix, then "<type>, got <type>" */
+    CHECK(rl_check_type(&cx, "int", rl_int(1), "'n' must be") == RL_OK);
+    CHECK(rl_check_type(&cx, "number", rl_float(1.5), "'n' must be") == RL_OK);
+    CHECK(rl_check_type(&cx, "any", none, "'n' must be") == RL_OK);
+    ERR(rl_check_type(&cx, "int", T("a"), "'n' must be"), "'n' must be int, got string");
+    ERR(rl_check_type(&cx, "float", rl_int(1), "'n' must be"), "'n' must be float, got int");
+    ERR(rl_check_type(&cx, "list", m, "'n' must be"), "'n' must be list, got map");
+
+    /* removing a map key hands the value back, once */
+    CHECK(rl_map_remove(M(m), "k", 1, &r) && r.k == RL_INT && r.u.i == 1);
+    CHECK(!rl_map_remove(M(m), "k", 1, &r));
+    SHOW(rl_retain(m), "{}");
+
+    /* the built-in table */
+    CHECK(!rl_builtin("no_such_builtin", &r));
+    CHECK(rl_builtin("len", &r) && r.k == RL_FUN);
+    rl_release(r);
+
+    rl_release(l);
+    rl_release(m);
+    drop_temps();
+}
+
 int main(void) {
     char *argv[2];
     argv[0] = (char *)"one";
@@ -660,6 +741,7 @@ int main(void) {
     test_cycles();
     test_gfx_scale();
     test_small_api();
+    test_operator_errors();
     drop_temps();
     CHECK(!cx.has_err);
     rl_ctx_free(&cx);
