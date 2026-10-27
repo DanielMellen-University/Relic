@@ -1,0 +1,23 @@
+slice -inf abc
+slice inf end bcdef
+slice list [1, 2, 3]
+index inf error: list index must be a whole number
+index -inf error: string index must be a whole number
+range error: range end must be a whole number
+range2 error: range start must be a whole number
+int error: int(): number is out of the int range
+chr error: chr(): code must be 0 to 1114111 and not 55296 to 57343 (surrogates)
+insert error: insert(): index 9223372036854775807 is out of range
+mod nan
+strrepeat error: range end must be a whole number
+padleft a
+pop error: pop(): list is empty
+nan slice error: slice(): start must be a whole number
+nan idx error: list index must be a whole number
+float idx 2
+remove error: remove(): index 9223372036854775807 is out of range
+assign idx error: list index must be a whole number
+is_whole true
+floor error: int(): number is out of the int range
+round error: int(): number is out of the int range
+clamp 5

@@ -1,0 +1,101 @@
+# an infinity is a whole number to the built-ins (like floor(x) == x), so they take
+# the nearest int; an index must still be within 9e15, and a nan is never whole
+use std/strings
+use std/math
+let big = 1e308 * 10
+let nbig = 0 - big
+fun set_at(l, i)
+    l[i] = 9
+    return l
+try
+    print("slice -inf", slice("abcdef", nbig, 3))
+catch e
+    print("slice -inf", "error:", e.message)
+try
+    print("slice inf end", slice("abcdef", 1, big))
+catch e
+    print("slice inf end", "error:", e.message)
+try
+    print("slice list", slice([1, 2, 3], nbig, big))
+catch e
+    print("slice list", "error:", e.message)
+try
+    print("index inf", [1, 2, 3][big])
+catch e
+    print("index inf", "error:", e.message)
+try
+    print("index -inf", "abc"[nbig])
+catch e
+    print("index -inf", "error:", e.message)
+try
+    print("range", len(0..big))
+catch e
+    print("range", "error:", e.message)
+try
+    print("range2", len(nbig..2))
+catch e
+    print("range2", "error:", e.message)
+try
+    print("int", int(big))
+catch e
+    print("int", "error:", e.message)
+try
+    print("chr", chr(big))
+catch e
+    print("chr", "error:", e.message)
+try
+    print("insert", insert([1, 2], big, 3))
+catch e
+    print("insert", "error:", e.message)
+try
+    print("mod", big % 1)
+catch e
+    print("mod", "error:", e.message)
+try
+    print("strrepeat", len(strings.repeat("a", nbig)))
+catch e
+    print("strrepeat", "error:", e.message)
+try
+    print("padleft", strings.pad_left("a", nbig, " "))
+catch e
+    print("padleft", "error:", e.message)
+try
+    print("pop", pop([]))
+catch e
+    print("pop", "error:", e.message)
+try
+    print("nan slice", slice("abc", big - big, 2))
+catch e
+    print("nan slice", "error:", e.message)
+try
+    print("nan idx", [1][big - big])
+catch e
+    print("nan idx", "error:", e.message)
+try
+    print("float idx", [1, 2][1.0])
+catch e
+    print("float idx", "error:", e.message)
+try
+    print("remove", remove([1, 2], big))
+catch e
+    print("remove", "error:", e.message)
+try
+    print("assign idx", set_at([1, 2], big))
+catch e
+    print("assign idx", "error:", e.message)
+try
+    print("is_whole", math.is_whole(big))
+catch e
+    print("is_whole", "error:", e.message)
+try
+    print("floor", math.floor(big))
+catch e
+    print("floor", "error:", e.message)
+try
+    print("round", math.round(nbig))
+catch e
+    print("round", "error:", e.message)
+try
+    print("clamp", math.clamp(big, 0, 5))
+catch e
+    print("clamp", "error:", e.message)

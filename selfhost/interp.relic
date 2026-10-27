@@ -327,7 +327,9 @@ fun equal(a, b)
 
 fun keys_of(m) = keys(m)
 
-fun is_whole(d) = d % 1 == 0
+# Whole like the host's floor(d) == d: an infinity is whole too (built-ins then
+# take the nearest int), a nan is not.
+fun is_whole(d) = d % 1 == 0 or (d == d and d - d != d - d)
 
 # Number to whole-number index, or an error (gives none).
 fun whole(rt, at, v, what)
