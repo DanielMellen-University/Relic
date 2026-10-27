@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.35 (2026-10-27)
+
+Standard library edge cases: wrong answers, a hang and error messages that named the wrong function. No change to the language.
+
+- `strings.pad_left` and `strings.pad_right` with a `width` of +infinity padded forever. They now check `text`, `fill` and `width` (`strings.pad_left(): width must not be infinite`), and the empty-fill message starts with `strings.` like the rest: `strings.pad_left(): fill must not be empty` (was `pad_left(): ...`). `strings.repeat` wants a whole-number count. Goldens `std_strings_edges`, `inf_args`.
+- `math.floor`, `math.ceil` and `math.round` went through a float, so an int past 2^53 lost digits (`math.floor(9007199254740993)` gave `9007199254740992`) and `math.floor` of the largest int failed. An int now comes back as it is. `math.round(0.49999999999999994)` gave 1 and `math.round(4503599627370497.0)` gave `4503599627370498`, because `x + 0.5` rounded first; it now looks at what is over the floor. Nan, an infinity or a float past the int range says `math.floor(): number is out of the int range` (was `int(): ...`), and `math.floor("a")` gets the same argument check as `ceil` and `round`. Golden `std_math_edges`.
+- `paths.ext("..")` was `"."`. Leading dots are part of the name, as for `".hidden"`, so `".."` and `"...a"` have no extension. Golden `std_paths_edges`.
+- `tools/fuzz_gen.py`, `fuzz_mutate.py` and `fuzz_check.py` print their usage on bad arguments (they showed a Python traceback) and find the source tree from their own path, so they run from any folder.
+- Docs: STDLIB.md for all of the above, and what `os.exit` does with its code.
+- All four engines agreed on every case above before and after; the fixes are in `std/`, which they share. `fuzz_gen`, `fuzz_mutate` and `fuzz_repl` with new seeds found nothing.
+- Speed: `selfhost_interp` 10.31 s median of 3 (10.70, 10.13, 10.31) on a quiet box, under the 12.2 s cap.
+- `ctest`: 184 default, 388 with the host.
+
 ## 1.0.34 (2026-10-27)
 
 Float edge cases where the Relic-written tools and compiled programs differed from the host. No change to the language.
