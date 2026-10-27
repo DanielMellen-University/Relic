@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.23 (2026-10-26)
+
+A bug fix in `std/math` and more golden tests for behavior that had none. No language change.
+
+- `math.abs(-0.0)` gave `-0.0`; it gives `0.0` now. `abs` of an int and of any other float is as before.
+- Six new goldens, each the same on the VM, the tree-walker, compiled C and the self-hosted interpreter: `std_math_edges` (negatives, halves, int against float results, argument errors), `arith_edges` (division and remainder signs, float printing, `int()`, `float()`, `num()`, `str()`), `string_ops` (multi-byte indexing and slicing, comparing, `in`, interpolation, brace escapes), `equality` (`==` on lists, maps, none, functions), `aliasing` (shared lists and maps, `slice` copies) and `loop_forms` (empty ranges, a `for` over a copy, nested `break` and `next`, loop variable scope).
+- Docs: `PROJECT_PLAN.md` no longer lists `rt_recursion`, `try_recursion` and `c_demo` as skipped, and `selfhost_nested` is about 1 s.
+- Speed on this box against 1.0.13: `selfhost_interp` 11.69 s median of 3 (11.42, 11.69, 11.97; was 6.1 s with 136 programs, now 154; 1.92x, budget under 2x), `selfhost_nested` 0.95 s.
+- `ctest`: 154 default, 323 with the host, 339 in the `sdl` CI job.
+
 ## 1.0.22 (2026-10-26)
 
 Deep recursion in the self-hosted interpreter (SH3, option C), slice 6 of 6: the old recursive path is gone. SH3 is done.
