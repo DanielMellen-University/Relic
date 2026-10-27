@@ -214,5 +214,5 @@ The expected strings in `test_runtime.c` were taken from the C++ host. CI builds
 
 ## Not in the runtime yet
 
-Left for later:
+Nothing is left on this list. The last item, CI jobs for the graphics module, was done in 1.0.10 (`sdl` on Linux, macOS and Windows).
 
