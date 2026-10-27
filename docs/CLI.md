@@ -54,6 +54,8 @@ area.relic:2:20: warning: 'hieght' is not defined (did you mean 'height'?)
 
 The exit code is 1 if anything was found, 0 if every file is clean. Graphics programs can be checked in a build without SDL.
 
+`selfhost/check.relic` is the same command written in Relic (`relic selfhost/check.relic a.relic b.relic`), with the same output and exit codes; it is a test of the self-hosted front end, not a replacement.
+
 ## The REPL
 
 ```

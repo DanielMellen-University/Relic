@@ -135,7 +135,8 @@ One `Value` type: none, bool, int, float, string, list, map, function, built-in,
 | `ast.relic` | `relic selfhost/ast.relic FILE` prints the same tree as `--ast` |
 | `interp.relic` | tree-walk interpreter with every built-in, `try` / `catch`, `as` hints, int and float, UTF-8, `use` (own files and `std/`) |
 | `errfmt.relic` | prints errors the way the host does |
-| `run.relic` | `relic selfhost/run.relic FILE` runs a program like `relic FILE` |
+| `run.relic` | `relic selfhost/run.relic FILE` runs a program like `relic FILE`, with the host's exit codes (1 for an uncaught error, 2 for no file or one that cannot be opened) |
+| `check.relic` | `relic selfhost/check.relic FILE...` prints what `relic check FILE...` prints and exits with the same code (SH4, since 1.0.27) |
 | `cgen.relic` | `relic selfhost/cgen.relic FILE -o OUT.c` writes C99 for the C runtime, with every module the program uses; see [CGEN.md](CGEN.md) |
 
 How the interpreter works:
@@ -151,12 +152,13 @@ What works:
 - It can run itself: `relic selfhost/run.relic selfhost/run.relic FILE` works (`selfhost_nested`, about 1 s). To make that possible, tagged maps also carry a list under `chr(2)` that is checked by identity (`host_same`), so the inner copy's functions look like plain maps to the outer copy.
 - `num()` hands the string to the host's `num()`, so the answers and errors are the same (golden `num_edges`).
 - `eval` runs on an explicit frame stack (SH3, option C, 1.0.14 onward): leaves are answered at once, any other node gets a small list frame `[step, node, env]` with a whole-number step code. Since 1.0.15 every expression kind runs on the stack except calls, and since 1.0.19 statements run on a frame stack too (blocks, `if`, `while`, `for`, `try`). Since 1.0.21 `run` drives one stack, `machine`, for statements, expressions and calls: a call pushes a `k_call` frame (arity and `as` checks first, then `rt.file` switched to the function's file) with the body on top, and a `use` of a new module pushes a `k_module` frame with the module's body on top. `return` unwinds to the nearest `k_call`, `break` and `next` to the nearest loop (not past a function or module), and an error to the nearest `try` frame, leaving each call on the way like the host does (std boundary, depth, file). So a Relic call costs no host call. The old recursive `eval`, `exec_body` and `call` were deleted in 1.0.22 (slice 6), so nothing in the file recurses on the host for a Relic call, a block or an expression.
+- `check.relic` (SH4) walks the tree the way the host's VM compiler does (`vm_check` in `src/vm/vm.cpp`), with the same scopes: a function scope holds its parameters and the names of its body, a block gets a scope only if it has its own `let` or `fun`, and a name a block declares further down is pending, so a function nested in that block may read it. A read found nowhere is "not defined" with the same "did you mean" hint (`interp.suggest`), unless a top-level `let`, `fun` or `use` anywhere in the file declares it; a read in the main code of a top-level name before its line is "used before it is defined". `return` outside a function, `break` and `next` outside a loop, and number literals that do not fit come out too. `selfhost_check` compares it with `relic check` on 13 hand-written cases (`tests/check_cases`) and on every `.relic` file in the tree, and the same compiled to C (`cgen_selfhost_check`) and on the Relic-written interpreter (`selfhost_check_nested`) give the same warnings. `tools/fuzz_check.py` makes random programs for a bigger comparison by hand.
 - `gc()` runs the host's collector, since the interpreter's values live on the host heap. The count includes the interpreter's own containers, but `gc_cycles` gives the same output (1.0.13).
 
 Limits today:
 
 - Recursion reaches the host's limit since 1.0.21: `too much recursion (more than 800 calls deep)` at the same call, catchable, like the host (`rt_recursion`, `try_recursion` and `c_demo` are compared now). Before, every Relic call cost several host calls, and recursion stopped at about 262 levels for a block body and 395 for an expression body, with an error the program could not catch. A third nested level of `run.relic` works now too (about 67 s for `hello`).
-- No REPL, no VM, no `check`.
+- No REPL (it needs a way to read standard input, which Relic does not have yet) and no VM. `check` is `selfhost/check.relic`, run by hand: `relic check` itself is still the host's.
 - It is slow: `bench/fib.relic` takes about 9 s on it against about 35 ms on the host VM (Release).
 
 What still comes from the C++ host: running all of it, reference counting and the cycle collector, number parsing, files, clocks, float math, process access and graphics (`host_*`), and the command line.
