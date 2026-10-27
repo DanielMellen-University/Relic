@@ -16,13 +16,16 @@ so runs with different modes or seeds can go in parallel. Not part of
 ctest (it needs Python); run it by hand after changing the lexer, parser, check,
 errfmt or interp in selfhost/. It found the host lexer printing half a
 character in "unknown escape" and the selfhost tokens/ast tools exiting 0 on
-errors (1.0.29). Run it from the source tree; BUILD_DIR defaults to build.
+errors (1.0.29). It can run from any folder; BUILD_DIR defaults to build/ in the
+source tree.
 """
 import glob, os, random, re, subprocess, sys
 
+if len(sys.argv) < 4 or sys.argv[1] not in ('tokens', 'ast', 'check', 'run') or not (sys.argv[2].isdigit() and sys.argv[3].isdigit()):
+    sys.exit(__doc__)
 mode, seed, count = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-root = os.getcwd()
-build = os.path.abspath(sys.argv[4] if len(sys.argv) > 4 else 'build')
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+build = os.path.abspath(sys.argv[4]) if len(sys.argv) > 4 else root + '/build'
 relic = build + '/relic'
 random.seed(seed)
 work = '/tmp/relic_fuzz/%s_%d' % (mode, seed)  # one folder per mode and seed, so several runs can go at once

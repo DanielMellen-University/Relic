@@ -58,5 +58,6 @@ def stmt(r,depth,ind,infn,inloop):
     if t<0.85: return [f'{p}return {expr(r)}']
     if t<0.9: return [f'{p}break' if r.random()<0.5 else f'{p}next']
     return [f'{p}print({expr(r)})']
+if len(sys.argv) != 2 or not sys.argv[1].isdigit(): sys.exit(__doc__)
 seed=int(sys.argv[1]); r=random.Random(seed)
 print('\n'.join(block(r,0,0,False,False)))

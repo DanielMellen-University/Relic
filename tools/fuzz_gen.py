@@ -13,13 +13,16 @@ kept next to the program as g.in). Every statement is
 wrapped in `try`, so an error shows up as its message and the program goes on.
 Compares `relic` (VM) with `--tree`, `selfhost/run.relic` and the program compiled
 to C (stdout, stderr, exit code). A mismatch prints the path of the program under
-/tmp/relic_fuzz/gen_SEED/ (and its input, badN.in).
+/tmp/relic_fuzz/gen_SEED/ (and its input, badN.in). It can run from any folder;
+BUILD_DIR defaults to build/ in the source tree.
 """
 import os, random, subprocess, sys
 
+if len(sys.argv) < 3 or not (sys.argv[1].isdigit() and sys.argv[2].isdigit()):
+    sys.exit(__doc__)
 seed, count = int(sys.argv[1]), int(sys.argv[2])
-root = os.getcwd()
-build = os.path.abspath(sys.argv[3] if len(sys.argv) > 3 else 'build')
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+build = os.path.abspath(sys.argv[3]) if len(sys.argv) > 3 else root + '/build'
 relic = build + '/relic'
 random.seed(seed)
 work = '/tmp/relic_fuzz/gen_%d' % seed
