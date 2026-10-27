@@ -202,6 +202,10 @@ if(RELIC_BUILD_HOST)
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_vm.cmake)
 endif() # RELIC_BUILD_HOST
 
+# The program counts quoted in docs/TESTING.md and docs/CGEN.md match the tree.
+add_test(NAME doc_counts
+  COMMAND ${CMAKE_COMMAND} -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_doc_counts.cmake)
+
 # ---- C: runtime, bootstrap compiler, compiled goldens ----
 if(RELIC_C_RUNTIME)
   add_subdirectory(runtime/c)
