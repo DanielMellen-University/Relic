@@ -209,7 +209,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 - `{expr}` inserts a value. `{{` and `}}` write literal braces. A lone `{` starts an interpolation, so escape it when you mean a brace.
 - Strings are UTF-8 and count characters (code points): `len("héllo")` is `5`, `s[1]` is `"é"`, and `slice` and `for c in s` go by character. Error columns count characters too.
 - A byte that is not valid UTF-8 counts as one character, so binary files still load.
-- A curly quote or a no-break space pasted from a document, and a byte order mark at the start of a file, are `unexpected character` errors that say what the character is and what to type instead.
+- A curly quote or a no-break space pasted from a document, a byte order mark at the start of a file, and a control character (shown as `U+0001`, since it prints as nothing), are `unexpected character` errors that say what the character is and what to type instead.
 - Strings are immutable: `s[0] = "x"` is an error.
 - `std/strings` `upper` and `lower` change ASCII letters only.
 

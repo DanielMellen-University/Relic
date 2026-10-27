@@ -1,0 +1,3 @@
+err_control_char.relic:2:9: error: unexpected character U+0001 (a control character; delete it)
+    print(a)
+            ^

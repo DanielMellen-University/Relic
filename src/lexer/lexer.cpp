@@ -1,5 +1,6 @@
 #include "lexer/lexer.hpp"
 
+#include <cstdio>
 #include <cctype>
 
 #include "interp/value.hpp"
@@ -251,6 +252,12 @@ private:
             {"\xE2\x80\x9C", nullptr, "a curly double quote; use a straight one"},
             {"\xE2\x80\x9D", nullptr, "a curly double quote; use a straight one"},
         };
+        // A control character prints as nothing useful, so it gets its code.
+        if (whole.size() == 1 && (static_cast<unsigned char>(whole[0]) < 0x20 || whole[0] == 0x7F)) {
+            char code[16];
+            std::snprintf(code, sizeof code, "U+%04X", static_cast<unsigned>(static_cast<unsigned char>(whole[0])));
+            return std::string("unexpected character ") + code + " (a control character; delete it)";
+        }
         for (const Note& n : notes) {
             if (whole != n.utf8) continue;
             if (n.code) return std::string("unexpected character ") + n.code + " (" + n.what + ")";

@@ -301,6 +301,9 @@ fun token(st)
 # and what to type.
 fun unexpected(ch)
     let code = ord(ch)
+    if code < 32 or code == 127
+        let hex = "0123456789ABCDEF"
+        return "unexpected character U+00{hex[int(code / 16)]}{hex[code % 16]} (a control character; delete it)"
     if code == 65279
         return "unexpected character U+FEFF (a byte order mark; save the file as UTF-8 without one)"
     if code == 160
