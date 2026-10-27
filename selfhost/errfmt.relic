@@ -13,6 +13,38 @@ fun _byte_len(c)
         return 3
     return 4
 
+# Very long lines are cut to a window of 160 bytes around the column, on character edges,
+# the way the host does. Gives [text, col] with the column moved to match.
+fun _window(text, col)
+    let total = 0
+    for c in text
+        total = total + _byte_len(c)
+    if total <= 160
+        return [text, col]
+    let want = 0
+    if col > 80
+        want = col - 80
+    # first character that starts at or before byte `want` (the host steps back to a character start)
+    let from = 0
+    let at = 0
+    let first = 0
+    let n = 0
+    for c in text
+        if at > want
+            break
+        from = at
+        first = n
+        at = at + _byte_len(c)
+        n = n + 1
+    # past from + 160 bytes, up to the next character start
+    let stop = from + 160
+    let pos = from
+    let i = first
+    while i < len(text) and pos < stop
+        pos = pos + _byte_len(text[i])
+        i = i + 1
+    return [slice(text, first, i), col - from]
+
 fun snippet(path, line, col)
     if line < 1 or col < 1 or not files.exists(path)
         return ""
@@ -24,6 +56,9 @@ fun snippet(path, line, col)
         text = slice(text, 0, len(text) - 1)
     if strings.trim(text) == ""
         return ""
+    let w = _window(text, col)
+    text = w[0]
+    col = w[1]
     let pad = ""
     let bytes = 0
     for c in text
