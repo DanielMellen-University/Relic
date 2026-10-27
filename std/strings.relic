@@ -1,5 +1,11 @@
 # std/strings: text helpers, written in Relic on top of slice, ord and chr.
 
+# upper, lower, trim, split and repeat check that they got text, so a number
+# gives "strings.upper(): argument must be a string, got int" and not "cannot loop over an int".
+fun _text(name, what, s)
+    if type(s) != "string"
+        fail("strings." + name + "(): " + what + " must be a string, got " + type(s))
+
 fun find(s, sub)
     # index of the first `sub` in `s`, or -1
     let n = len(sub)
@@ -17,6 +23,7 @@ fun starts_with(s, pre) = slice(s, 0, len(pre)) == pre
 fun ends_with(s, suf) = len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s)) == suf
 
 fun upper(s)
+    _text("upper", "argument", s)
     let out = ""
     for c in s
         let k = ord(c)
@@ -27,6 +34,7 @@ fun upper(s)
     return out
 
 fun lower(s)
+    _text("lower", "argument", s)
     let out = ""
     for c in s
         let k = ord(c)
@@ -39,6 +47,7 @@ fun lower(s)
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
 fun trim(s)
+    _text("trim", "argument", s)
     let a = 0
     let b = len(s)
     while a < b and is_space(s[a])
@@ -49,6 +58,8 @@ fun trim(s)
 
 fun split(s, sep)
     # split("a,b", ",") is ["a", "b"]; an empty sep splits into characters
+    _text("split", "text", s)
+    _text("split", "separator", sep)
     let parts = []
     if sep == ""
         for c in s
@@ -84,6 +95,7 @@ fun _join(parts, sep, a, b)
 fun replace(s, old, new) = join(split(s, old), new)
 
 fun repeat(s, n)
+    _text("repeat", "text", s)
     let out = ""
     for i in 0..n
         out = out + s

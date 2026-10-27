@@ -37,6 +37,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error |
 | `is_space(c)` | bool | space, tab, newline, CR |
 
+`upper`, `lower`, `trim`, `split` and `repeat` fail with `strings.upper(): argument must be a string, got int` (since 1.0.28) when given something else (`split` says `text` or `separator`, `repeat` says `text`).
+
 ## std/lists
 
 | Call | Returns | Notes |

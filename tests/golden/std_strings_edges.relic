@@ -24,3 +24,21 @@ fun pad_left_empty() = strings.pad_left("abc", 6, "")
 fun pad_right_empty() = strings.pad_right("", 1, "")
 show_error(pad_left_empty)
 show_error(pad_right_empty)
+
+# text functions say what they got when it is not text
+try
+    print(strings.upper(5))
+catch e
+    print(e.message)
+try
+    print(strings.trim(none))
+catch e
+    print(e.message)
+try
+    print(strings.split("a,b", 1))
+catch e
+    print(e.message)
+try
+    print(strings.repeat([1], 2))
+catch e
+    print(e.message)

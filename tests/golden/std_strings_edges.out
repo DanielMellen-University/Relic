@@ -12,3 +12,7 @@ HéLLO ß hÉllo
 [x y] [] []
 error: pad_left(): fill must not be empty
 error: pad_right(): fill must not be empty
+strings.upper(): argument must be a string, got int
+strings.trim(): argument must be a string, got none
+strings.split(): separator must be a string, got int
+strings.repeat(): text must be a string, got list
