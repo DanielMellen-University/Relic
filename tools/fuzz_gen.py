@@ -7,11 +7,13 @@ Where fuzz_mutate.py edits existing programs (most of its cases stop at a syntax
 error), this writes programs that run: expressions over ints, floats, strings,
 lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
 std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths,
-string interpolation, functions, closures, `else if` chains, loops and `try` / `catch`. Every statement is
+string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
+and reading a random standard input (`os.read_line`, `os.prompt`; the input is
+kept next to the program as g.in). Every statement is
 wrapped in `try`, so an error shows up as its message and the program goes on.
 Compares `relic` (VM) with `--tree`, `selfhost/run.relic` and the program compiled
 to C (stdout, stderr, exit code). A mismatch prints the path of the program under
-/tmp/relic_fuzz/gen_SEED/.
+/tmp/relic_fuzz/gen_SEED/ (and its input, badN.in).
 """
 import os, random, subprocess, sys
 
@@ -120,6 +122,7 @@ def expr(d=0):
 def stmt(ind):
     p = '    ' * ind
     k = R.random()
+    if k < 0.04: return [p + 'print(%s)' % R.choice(['os.read_line()', 'os.prompt(%s)' % gen('str', 2), 'type(os.read_line())', 'len(os.read_line())'])]
     if k < 0.3: return [p + 'print(%s)' % expr()]
     if k < 0.5: return [p + '%s = %s' % (R.choice(NAMES), expr())]
     if k < 0.58: return [p + '%s[%s] = %s' % (R.choice(NAMES), expr(1), expr(1))]
@@ -150,7 +153,7 @@ def stmt(ind):
             p + '        return box.n', p + '    return step', p + 'let st = mk()', p + 'print(st(%s), st(1)%s)' % (gen('int', 2), R.choice(['', '()', '.n', '[0]']))]
 
 def program():
-    out = ['use std/strings', 'use std/lists', 'use std/maps', 'use std/math', 'use std/json', 'use std/paths',
+    out = ['use std/strings', 'use std/lists', 'use std/maps', 'use std/math', 'use std/json', 'use std/paths', 'use std/os',
            'fun f0(x, y) = x + y', 'fun f1(x, y)', '    return [x, y][len(x)]', 'fun f2(x, y)', '    let r = []', '    for i in 0..3', '        append(r, x)', '    return r',
            'fun f2x(x) = [x, x]', 'fun fun_x(x) = x', 'fun is_big(x) = x > 2', 'fun fun_pos(x) = type(x) == "int" and x > 0',
            'fun range_list(n)', '    let r = []', '    for i in 0..n', '        append(r, i)', '    return r', 'let n = 4',
@@ -162,9 +165,21 @@ def program():
         out.append('    print("error:", e.message)')
     return '\n'.join(out) + '\n'
 
+# Standard input for the program: a few lines, LF or CRLF, empty ones, odd bytes,
+# with or without a last newline. The same bytes go to every engine.
+def stdin_input():
+    parts = []
+    for _ in range(R.randint(0, 6)):
+        parts.append(R.choice([b'', b'abc', b'  12 ', b'3.5', b'\xc3\xa9\xe2\x82\xac', b'\x00x', b'\xff\xfe', b'tab\tq', b'x' * 300]))
+    nl = R.choice([b'\n', b'\r\n'])
+    data = nl.join(parts)
+    if parts and R.random() < 0.7:
+        data += nl
+    return data
+
 def run(cmd):
     try:
-        r = subprocess.run(cmd, capture_output=True, timeout=30, cwd=work, stdin=subprocess.DEVNULL)
+        r = subprocess.run(cmd, capture_output=True, timeout=30, cwd=work, input=stdin_bytes)
         return (r.returncode, r.stdout, r.stderr)
     except subprocess.TimeoutExpired:
         return (-9, b'', b'')
@@ -172,6 +187,8 @@ def run(cmd):
 bad = skipped = 0
 for n in range(count):
     src = program()
+    stdin_bytes = stdin_input()
+    open(work + '/g.in', 'wb').write(stdin_bytes)
     open(work + '/g.relic', 'w', encoding='utf-8', newline='').write(src)
     a = run([relic, 'g.relic'])
     if a[0] == -9:
@@ -193,6 +210,7 @@ for n in range(count):
         bad += 1
         q = '%s/bad%d.relic' % (work, bad)
         open(q, 'w', encoding='utf-8', newline='').write(src)
+        open(q[:-6] + '.in', 'wb').write(stdin_bytes)
         print('MISMATCH', diffs, q)
         if bad >= 5: break
 print('done: %d mismatches, %d skipped' % (bad, skipped))
