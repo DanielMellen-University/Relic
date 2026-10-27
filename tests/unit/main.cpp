@@ -237,6 +237,44 @@ static void test_interp() {
     CHECK(run("append(1, 2)") == "error: append(): first argument must be a list, got int\n");
 }
 
+// Built-in error messages and edge results (the host's wording is the spec the
+// self-hosted interpreter and compiled programs copy).
+static void test_builtins() {
+    CHECK(run("insert([1], 5, 9)") == "error: insert(): index 5 is out of range\n");
+    CHECK(run("insert([1], \"a\", 9)") == "error: insert(): index must be a number, got string\n");
+    CHECK(run("remove([1], 7)") == "error: remove(): index 7 is out of range\n");
+    CHECK(run("remove({a: 1}, \"b\")") == "error: remove(): map has no key 'b'\n");
+    CHECK(run("pop([])") == "error: pop(): list is empty\n");
+    CHECK(run("ord(\"\")") == "error: ord(): needs a one-character string\n");
+    CHECK(run("ord(\"ab\")") == "error: ord(): needs a one-character string\n");
+    CHECK(run("chr(-1)") ==
+          "error: chr(): code must be 0 to 1114111 and not 55296 to 57343 (surrogates)\n");
+    CHECK(run("chr(55296)") ==
+          "error: chr(): code must be 0 to 1114111 and not 55296 to 57343 (surrogates)\n");
+    CHECK(run("chr(\"a\")") == "error: chr(): argument must be a number, got string\n");
+    CHECK(run("int(\"x\")") == "error: int(): not a number: \"x\"\n");
+    CHECK(run("int([])") == "error: int(): cannot turn a list into an int\n");
+    CHECK(run("float(none)") == "error: float(): cannot turn a none into a float\n");
+    CHECK(run("keys([1])") == "error: keys(): argument must be a map, got list\n");
+    CHECK(run("len(none)") == "error: len(): cannot get the length of a none\n");
+    CHECK(run("str()") == "error: str() takes 1 argument, got 0\n");
+    CHECK(run("args(1)") == "error: args() takes 0 arguments, got 1\n");
+    CHECK(run("append([1])") == "error: append() takes 2 arguments, got 1\n");
+    CHECK(run("fail(5)") == "error: fail(): message must be a string, got int\n");
+    CHECK(run("fail(\"boom\")") == "error: boom\n");
+    // results: slice clamps, pop / remove / insert change the list in place
+    CHECK(run("print(slice([1, 2, 3], 2, 9), slice(\"abc\", -1, 2), slice([1], 1, 0))") ==
+          "[3] ab []\n");
+    CHECK(run("let xs = [1, 2, 3]\nprint(pop(xs), remove(xs, 0))\nprint(xs)") == "3 1\n[2]\n");
+    CHECK(run("let xs = [2]\ninsert(xs, 0, 1)\ninsert(xs, 2, 3)\nprint(xs)") == "[1, 2, 3]\n");
+    CHECK(run("print(ord(\"A\"), chr(955), ord(chr(955)), len(chr(955)))") == "65 λ 955 1\n");
+    CHECK(run("print(int(3.9), int(-3.9), float(2), int(\"42\"), float(\"2.5\"))") ==
+          "3 -3 2.0 42 2.5\n");
+    CHECK(run("print(str(1.0), str(-0.0), str([1, \"a\"]), str(none), str(true))") ==
+          "1.0 -0.0 [1, \"a\"] none true\n");
+    CHECK(run("print(keys({b: 1, a: 2}))") == "[\"b\", \"a\"]\n");  // insertion order
+}
+
 static void test_repl() {
     std::istringstream in("let x = 1\nx = x + 1\nnope\nx\nfun f()\n    return x * 10\n\nf()\n[1,\n2]\n");
     std::ostringstream out, err;
@@ -257,6 +295,7 @@ int main() {
     test_parser();
     test_repl();
     test_interp();
+    test_builtins();
     test_core();
     test_font();
     test_basic_tokens();
