@@ -16,3 +16,8 @@ math.round(): argument must be a number, got list
 math.abs(): argument must be a number, got none
 cannot compare a string and an int
 int(): number is out of the int range
+math.pow(): base must be a number, got string
+math.pow(): base must be a number, got string
+math.pow(): power must be a number, got string
+math.pow(): base must be a number, got none
+8.0

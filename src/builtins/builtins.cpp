@@ -277,7 +277,10 @@ void Interpreter::install_builtins() {
     math1("host_exp", [](double x) { return std::exp(x); });
     math1("host_log", [](double x) { return std::log(x); });
     add("host_pow", 2, [num_arg](std::vector<Value>& a) {
-        return Value(std::pow(num_arg(a[0], "base"), num_arg(a[1], "power")));
+        // checked in this order (as arguments of std::pow they ran right to left on GCC)
+        double base = num_arg(a[0], "base");
+        double power = num_arg(a[1], "power");
+        return Value(std::pow(base, power));
     });
 
     // ---- M12 host pieces for MONOLITH 2: folders, process, and a way for the

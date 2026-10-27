@@ -42,3 +42,10 @@ try
     print(math.floor(1e30))
 catch e
     print(e.message)
+# pow checks the base first, then the power, on every engine (the host used to
+# check the power first when both were wrong)
+for args in [["a", "b"], ["a", 2], [2, "b"], [none, []], [2, 3]]
+    try
+        print(math.pow(args[0], args[1]))
+    catch e
+        print(e.message)
