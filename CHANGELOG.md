@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.32 (2026-10-27)
+
+Fixes found by fuzzing, a new fuzzer, and one more test for Windows. No change to the language.
+
+- `math.pow(a, b)` with both arguments wrong named the power first on the host (C++ ran the argument reads right to left on GCC) and the base first in compiled programs. The base comes first everywhere now. Golden `std_math_edges` covers it.
+- A compiled program's error report stopped printing the source line at a NUL byte in that line; the host prints it whole. The C runtime cuts the line by length now (`c_runtime` has a case).
+- NUL bytes in error messages: the host cut a message at the first NUL (`RuntimeError::what()`), and compiled programs cut the text put into `not a number: "..."` and `map has no key ...`. Both keep the whole message. Golden `nul_in_messages`.
+- New `tools/fuzz_gen.py SEED COUNT`: random well-formed programs run on the VM, the tree-walker, `selfhost/run.relic` and compiled, then compared. About 2300 programs, no mismatches left. `fuzz_mutate` (150 cases per mode) and `fuzz_check` (seeds 2000 to 2400) found nothing new.
+- New compiled-side case `tests/cgen/json_deep` (JSON nested to the recursion limit). A Windows program gets 1 MB of stack and MSVC frames are bigger than GCC's, so `relic_rt` now passes `/STACK:8388608` to the programs that link it on MSVC.
+- Docs: the limit on very long operator chains (the host runs out of C stack at about 55,000 terms on Linux), `fuzz_gen` in TESTING.md, the ctest counts.
+- Speed: `selfhost_interp` 9.71 s median of 3 (9.99, 9.71, 9.59) on a quiet box, under the 12.2 s cap. The deep JSON case is compiled-side only because it took 8.4 s on the Relic-written interpreter.
+- `ctest`: 179 default, 379 with the host.
+
 ## 1.0.31 (2026-10-27)
 
 Standard input for Relic programs, and with it the REPL written in Relic, which finishes SH4. Daniel approved the new built-in on Oct 27 2026. One new `os` pair of calls; no change to the language itself.
