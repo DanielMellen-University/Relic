@@ -2,7 +2,7 @@
 # the same code, for every program in tests/check_cases/ (hand-written to cover
 # the scope rules) and, with -DCORPUS=1, every .relic file the other
 # comparisons read: the goldens and their helper modules, std/, selfhost/,
-# examples/ and bench/.
+# examples/ and bench/. Also checks a few runs with several files, some missing.
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir [-DCORPUS=1] -P tools/compare_check.cmake
 file(GLOB files ${SRC}/tests/check_cases/*.relic)
 if(CORPUS)
@@ -28,7 +28,35 @@ foreach(f ${files})
     math(EXPR bad "${bad}+1")
   endif()
 endforeach()
+# Several files in one run, a file that cannot be opened (first, last, between),
+# and a clean file next to a bad one: the exit code is the first nonzero one,
+# except that a missing file always gives 2.
+set(cases ${SRC}/tests/check_cases)
+set(combos
+  "clean.relic|undefined.relic"
+  "undefined.relic|clean.relic"
+  "nofile.relic|undefined.relic"
+  "undefined.relic|nofile.relic"
+  "undefined.relic|nofile.relic|syntax_error.relic"
+  "syntax_error.relic|undefined.relic"
+  "nofile.relic|clean.relic"
+  "clean.relic|clean.relic")
+foreach(combo ${combos})
+  string(REPLACE "|" ";" argv "${combo}")
+  math(EXPR total "${total}+1")
+  execute_process(COMMAND ${RELIC} check ${argv} WORKING_DIRECTORY ${cases}
+    OUTPUT_VARIABLE a_out ERROR_VARIABLE a_err RESULT_VARIABLE a_code)
+  execute_process(COMMAND ${RELIC} ${SRC}/selfhost/check.relic ${argv} WORKING_DIRECTORY ${cases}
+    OUTPUT_VARIABLE b_out ERROR_VARIABLE b_err RESULT_VARIABLE b_code)
+  foreach(v a_out a_err b_out b_err)
+    string(REPLACE "\r\n" "\n" ${v} "${${v}}")
+  endforeach()
+  if(NOT a_out STREQUAL b_out OR NOT a_err STREQUAL b_err OR NOT a_code STREQUAL b_code)
+    message("mismatch: ${combo}\n--- host (exit ${a_code})\n${a_out}${a_err}--- relic (exit ${b_code})\n${b_out}${b_err}")
+    math(EXPR bad "${bad}+1")
+  endif()
+endforeach()
 if(bad GREATER 0)
-  message(FATAL_ERROR "${bad} of ${total} files differ")
+  message(FATAL_ERROR "${bad} of ${total} runs differ")
 endif()
-message("all ${total} files match")
+message("all ${total} runs match")
