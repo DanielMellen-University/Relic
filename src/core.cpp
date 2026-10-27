@@ -215,6 +215,9 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         }
         bool blank = line.find_first_not_of(' ') == std::string::npos;
         chunk += line + "\n";
+        // A header spread over several lines (`fun f(` ... `)`) cannot be read as a
+        // block opener until its bracket closes, so ask again once it has.
+        if (!block && !unclosed(chunk)) block = opens_block(chunk);
         if (block ? !blank : unclosed(chunk)) continue;
         RunResult r = session.run("<repl>", chunk, true);
         out << std::flush;

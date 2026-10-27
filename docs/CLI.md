@@ -74,7 +74,7 @@ hello Daniel
 - Names stay defined until you leave.
 - A bare expression prints its value. `none` is not printed.
 - A line starting with `fun`, `if`, `else`, `while`, `for`, `try` or `catch` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.
-- An open `(`, `[` or `{` keeps reading lines until it closes.
+- An open `(`, `[` or `{` keeps reading lines until it closes. That includes the header of a block, so `fun add(` with its parameters on the next lines, then the closing `)`, still reads an indented body (before 1.0.29 it ran the header alone and failed).
 - An error prints `<repl>:line:col: error: ...` without the source line, and the REPL keeps going. Line numbers count from the start of that input.
 - `use` paths are relative to the current folder.
 - Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 0 even if a chunk failed.
