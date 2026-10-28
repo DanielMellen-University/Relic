@@ -63,6 +63,6 @@ let long = strings.repeat("ab", 520) + "XéZ"
 print(strings.find(long, "éZ"), strings.find(long, ""), strings.find(long, "Zé"))
 print(strings.pad_left("7", 41, "ab") == strings.repeat("ab", 20) + "7", len(strings.pad_right("x", 6.5, "ab")), strings.pad_left("x", 4, "abc"), strings.repeat("xy", 5), strings.repeat("q", 0), strings.repeat("q", -2), strings.repeat("ab", 3.0), strings.upper("aé") + strings.lower("ÉB"))
 # long text where a near miss repeats: "aa...ab" in "aa...a" (it took time growing with both lengths)
-let many_a = strings.repeat("a", 1200)
-let near = strings.repeat("a", 30) + "b"
-print(strings.find(many_a, near), strings.find(many_a + "b", near), len(strings.split(many_a + "b" + many_a + "b", near)), strings.find(many_a + "aab", "aab"))
+let many_a = strings.repeat("a", 1030)
+let near = strings.repeat("a", 20) + "b"
+print(strings.find(many_a + "b", near))

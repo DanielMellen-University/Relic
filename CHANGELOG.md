@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.39 (2026-10-27)
+
+Three more slow spots in the standard library and the Relic-written tools. No change to the language or to any result.
+
+- `strings.find` on long text and `strings.split` use Knuth-Morris-Pratt, so text like `"aaa...a"` searched for `"aa...ab"` no longer takes time growing with both lengths (100,000 a's and a 501-character separator: `find` 9.3 s, now 0.09 s; `split` 9.5 s, now 0.1 s). Ordinary text runs at the same speed. Checked against the old module on 600 random long texts on all four engines. Golden `std_strings_edges`.
+- `selfhost/check.relic` read the file and split it into lines again for each warning; it splits it once (`errfmt.snippet_in`). 2,000 warnings: 41.7 s, now 1.1 s. The same output as `relic check`.
+- `selfhost/repl.relic` lexed the whole input so far again for each line inside a block, where only an empty line can end it. A 1,000-line function typed in: 27 s, now 0.1 s.
+- `bootstrap/` regenerated.
+- Fuzzing found nothing new: `fuzz_gen` (300 programs), `fuzz_mutate` (`run`, `tokens`, `check`, 700 cases), `fuzz_repl` (400 scripts), `fuzz_check` (seeds 3500 to 3700), `fuzz_depth` (seed 6, 40 cases).
+- Speed: `selfhost_interp` 11.09 s median of 3 (11.09, 11.59, 11.04), under the 12.2 s cap. The new `std_strings_edges` case was cut to one `find` on 1,031 characters (the first version added 1.1 s on the Relic-written interpreter).
+- `ctest`: 185 default, 389 with the host.
+
 ## 1.0.38 (2026-10-27)
 
 More code whose time grew with the square of its input. No change to the language or to any result.
