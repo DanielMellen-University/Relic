@@ -17,19 +17,22 @@ fun _parts(p)
     let cur = ""
     for c in p
         if c == "/" or c == "\\"
-            parts = _put(parts, cur)
+            _put(parts, cur)
             cur = ""
         else
             cur = cur + c
-    return _put(parts, cur)
+    _put(parts, cur)
+    return parts
 
+# Adds `name` to `parts` in place. insert at the end, not `parts + [name]`
+# (a new list each time made a 20,000-name path take about 1 s) and not the
+# builtin append, which this module's own append hides.
 fun _put(parts, name)
     if name == ".."
         if len(parts) > 0
             pop(parts)
     else if name != "." and name != ""
-        parts = parts + [name]
-    return parts
+        insert(parts, len(parts), name)
 
 fun _norm(p) = "/" + strings.join(_parts(p), "/")
 
