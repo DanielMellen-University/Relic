@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.42 (2026-10-30)
+
+Removing from the front of a list, removing from a `std/vfs` folder and listing a big folder no longer take time growing with its size, and `std/vfs` gains `entries`. Daniel approved these three on Oct 30. No change to the language or to any result.
+
+- Lists: `remove` and `insert` move the items on the shorter side of the index, on the VM, `--tree` and compiled programs, so the front is as quick as the back. The host `List` and the C runtime's `rl_list` can start some slots into their storage; the host gives the slots back once they are over half, `rl_list` reuses them on a push. 20,000 removes off the front of a 100,000-item list: VM 3.4 s, now 0.002 s (strings 3.8 s, now 0.002 s); `--tree` 3.7 s, now 0.004 s; compiled 0.48 s, now 0.001 s. 20,000 inserts at the front: 3.8 s, now 0.003 s. A queue of 200,000 appends with every third removed from the front: VM 8.4 s, now 0.04 s; compiled 1.2 s, now 0.03 s. 2,000 removes in the middle: 0.22 s, now 0.18 s. Golden `list_front`, a unit test and `c_runtime` checks.
+- `std/maps.drop(m, k)` removes a key in place and says whether it was there. `std/vfs` `remove`, `remove_tree` and `rename` use it instead of copying the rest of the folder: removing 3,000 files one at a time from one folder, 1.46 s, now 0.063 s.
+- `std/vfs.entries(fs, path)` gives `[name, is_folder]` in `list`'s order, so a file browser needs no `is_dir` per name (3,000 names: 17.7 ms of `is_dir`). The last 8 folders of 64 names or more keep their sorted names until they change, found by comparing the folder's names, so listing the same big folder again skips the sort: `list` of 3,000 names 9.4 ms, then 0.14 ms; `entries` 1.9 ms. `list` still returns a new list each call. Golden `std_vfs` covers both.
+- `tools/fuzz_lists.py` and `tools/fuzz_vfs.py` compare the VM, `--tree`, `selfhost/run.relic` and compiled programs with an older build's, like `fuzz_maps.py`: lists seeds 1 to 9 (540 programs), vfs seeds 1 to 8 and 11 to 18 (640), maps seed 11 (60), all 0 mismatches against 1.0.41. `fuzz_gen` and `fuzz_mutate run` (150 each) found nothing.
+- `ctest`: the cases that write in `tests/golden` share a resource lock, so a parallel run cannot remove a folder another is using.
+- Speed: `selfhost_interp` 9.94 s median of 3 (9.94, 9.94, 9.98, with fuzzers running), under the 12.2 s cap. `bench/*` unchanged.
+- `ctest`: 187 default, 395 with the host.
+
 ## 1.0.41 (2026-10-30)
 
 Map removes and string reads no longer take time growing with the size of the map or string. No change to the language or to any result.
