@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.41 (2026-10-30)
+
+Map removes and string reads no longer take time growing with the size of the map or string. No change to the language or to any result.
+
+- Maps: `remove` is O(1) on average on the VM, `--tree` and compiled programs, with the same order as before. A removed key leaves a hole in the key order (the host finds it through a key-to-position index built at the first remove; the C runtime's `rl_map` keeps a NULL key that its hash index skips), and holes are squeezed out once there are more than 16 and they are over half of the entries. Emptying a 40,000-key map one key at a time: VM 2.0 s, now 0.017 s; `--tree` 2.0 s, now 0.018 s; compiled 5.9 s, now 0.005 s. Filling and reading maps is unchanged. Golden `map_remove_order`; `c_runtime` checks holes, re-adding a removed key, printing and `==`.
+- `tools/fuzz_maps.py` writes programs of random map operations and compares the VM, `--tree`, `selfhost/run.relic` and compiled programs, and an older build's: seeds 1 to 10 (560 programs) match 1.0.40 exactly.
+- Host strings share one buffer between copies, so reading a string variable, passing a string or putting it in a list no longer copies its text. The buffer keeps its character count and, for long text past ASCII, the offset of every 64th character (replacing a 4-entry cache matched by content). A 200,000-character string, 50,000 times: reading it 0.19 s, now 0.002 s; `len` 0.51 s, now 0.006 s; `s[i]` 0.23 s, now 0.005 s (in `é`: 0.78 s, now 0.007 s). `bench/utf8` 0.19 s, now 0.12 s; the other benches are unchanged. Unit test for shared strings.
+- `vm.cpp`: every field of `relic check`'s list is initialized (no `-Wmissing-field-initializers` warnings since 1.0.40).
+- Fuzzing found nothing new: `fuzz_gen` (150 programs), `fuzz_mutate` (`run` and `tokens`, 150 each), `fuzz_repl` (150 scripts), `fuzz_check` (seeds 4300 to 4400), `fuzz_depth` (seed 9, 40 cases). `ctest` under ASan and UBSan passes but for `depth_limit` and `tree_stack`, whose deep recursion overflows a Debug ASan build's bigger frames.
+- Speed: `selfhost_interp` 9.53 s median of 3 (9.53, 9.77, 9.52), under the 12.2 s cap.
+- `ctest`: 186 default, 393 with the host.
+
 ## 1.0.40 (2026-10-30)
 
 Fixes Daniel approved on Oct 30, a new event field, and the std/vfs speedups that were waiting on main. No change to the language.
