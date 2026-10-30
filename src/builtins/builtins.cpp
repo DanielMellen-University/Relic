@@ -109,7 +109,7 @@ void Interpreter::install_builtins() {
         if (v.is<std::shared_ptr<List>>())
             return Value(static_cast<long long>(v.as<std::shared_ptr<List>>()->size()));
         if (v.is<std::shared_ptr<Map>>())
-            return Value(static_cast<long long>(v.as<std::shared_ptr<Map>>()->keys.size()));
+            return Value(static_cast<long long>(v.as<std::shared_ptr<Map>>()->size()));
         throw std::string("cannot get the length of ") + a_type(v);
     });
 
@@ -126,7 +126,7 @@ void Interpreter::install_builtins() {
         if (!a[0].is<std::shared_ptr<Map>>())
             throw std::string("argument must be a map, got ") + type_name(a[0]);
         auto l = std::make_shared<List>();
-        for (const auto& k : a[0].as<std::shared_ptr<Map>>()->keys) l->emplace_back(k);
+        a[0].as<std::shared_ptr<Map>>()->each_key([&](const std::string& k) { l->emplace_back(k); });
         return Value(l);
     });
 
@@ -247,9 +247,7 @@ void Interpreter::install_builtins() {
             const std::string& k = a[1].as<std::string>();
             if (!m.has(k)) throw std::string("map has no key '") + k + "'";
             Value v = m.items[k];
-            m.items.erase(k);
-            for (size_t i = 0; i < m.keys.size(); ++i)
-                if (m.keys[i] == k) { m.keys.erase(m.keys.begin() + i); break; }
+            m.remove(k);
             return v;
         }
         throw std::string("cannot remove from ") + a_type(a[0]);

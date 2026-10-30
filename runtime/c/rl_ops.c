@@ -238,9 +238,11 @@ static size_t edit_distance(const char *a, size_t n, const char *b, size_t m) {
 static int no_key(rl_ctx *cx, rl_map *m, const char *k, size_t len) {
     size_t i, limit = len >= 5 ? 2 : 1, best_d = limit + 1;
     const rl_str *pick = NULL;
-    for (i = 0; i < m->n; ++i) {
+    for (i = 0; i < m->used; ++i) {
         const rl_str *c = m->keys[i];
-        size_t d, lo = c->len < len ? len - c->len : c->len - len;
+        size_t d, lo;
+        if (!c) continue;
+        lo = c->len < len ? len - c->len : c->len - len;
         if (c->len == 0 || (c->len == len && memcmp(c->data, k, len) == 0)) continue;
         if (strncmp(c->data, "host_", 5) == 0 && strncmp(k, "host_", 5) != 0) continue;
         if (lo > limit) continue;
@@ -417,8 +419,9 @@ int rl_loop_items(rl_ctx *cx, rl_value src, rl_value *out) {
             i += n;
         }
     } else if (src.k == RL_MAP) {
-        l = rl_list_new(M(src)->n);
-        for (i = 0; i < M(src)->n; ++i) rl_list_push(L(l), rl_obj_value(&M(src)->keys[i]->h));
+        l = rl_list_new(M(src)->count);
+        for (i = 0; i < M(src)->used; ++i)
+            if (M(src)->keys[i]) rl_list_push(L(l), rl_obj_value(&M(src)->keys[i]->h));
     } else {
         return rl_fail(cx, "cannot loop over %s", rl_a_type(src));
     }

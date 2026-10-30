@@ -60,7 +60,7 @@ BI(b_len) {
     UNUSED;
     if (a[0].k == RL_STR) *out = rl_int((long long)rl_str_chars(S(a[0])));
     else if (a[0].k == RL_LIST) *out = rl_int((long long)L(a[0])->n);
-    else if (a[0].k == RL_MAP) *out = rl_int((long long)M(a[0])->n);
+    else if (a[0].k == RL_MAP) *out = rl_int((long long)M(a[0])->count);
     else return rl_fail(cx, "cannot get the length of %s", rl_a_type(a[0]));
     return RL_OK;
 }
@@ -79,8 +79,9 @@ BI(b_keys) {
     size_t i;
     UNUSED;
     if (a[0].k != RL_MAP) return rl_fail(cx, "argument must be a map, got %s", rl_type_name(a[0]));
-    *out = rl_list_new(M(a[0])->n);
-    for (i = 0; i < M(a[0])->n; ++i) rl_list_push(L(*out), rl_obj_value(&M(a[0])->keys[i]->h));
+    *out = rl_list_new(M(a[0])->count);
+    for (i = 0; i < M(a[0])->used; ++i)
+        if (M(a[0])->keys[i]) rl_list_push(L(*out), rl_obj_value(&M(a[0])->keys[i]->h));
     return RL_OK;
 }
 

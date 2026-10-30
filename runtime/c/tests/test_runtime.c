@@ -255,7 +255,7 @@ static void test_containers(void) {
         int i;
         char k[16];
         for (i = 0; i < 1000; ++i) { sprintf(k, "k%d", i); set(m, k, rl_int(i)); }
-        CHECK(M(m)->n == 1001);
+        CHECK(M(m)->count == 1001);
         CHECK(rl_map_get(M(m), "k777", 4)->u.i == 777);
         for (i = 0; i < 1000; i += 2) {
             rl_value key, old;
@@ -265,7 +265,31 @@ static void test_containers(void) {
             rl_release(old);
             rl_release(key);
         }
-        CHECK(M(m)->n == 501 && rl_map_get(M(m), "k999", 4) && !rl_map_get(M(m), "k998", 4));
+        CHECK(M(m)->count == 501 && rl_map_get(M(m), "k999", 4) && !rl_map_get(M(m), "k998", 4));
+        /* removes leave holes, squeezed out once they are over half */
+        CHECK(M(m)->used - M(m)->holes == 501 && M(m)->holes * 2 <= M(m)->used);
+        set(m, "k998", rl_int(-1));  /* a removed key comes back at the end */
+        SHOW(call1("len", m), "502");
+        r = call1("keys", m);
+        CHECK(L(r)->n == 502 && strcmp(SD(L(r)->items[0]), "alpha") == 0
+              && strcmp(SD(L(r)->items[1]), "k1") == 0
+              && strcmp(SD(L(r)->items[501]), "k998") == 0);
+        rl_release(r);
+    }
+    rl_release(m);
+
+    /* holes in printing, equality and len */
+    m = rl_map_new();
+    set(m, "a", rl_int(1)); set(m, "b", rl_int(2)); set(m, "c", rl_int(3));
+    {
+        rl_value old, m2 = rl_map_new();
+        CHECK(rl_map_remove(M(m), "a", 1, &old));
+        rl_release(old);
+        SHOW(rl_retain(m), "{b: 2, c: 3}");
+        SHOW(call1("len", m), "2");
+        set(m2, "c", rl_int(3)); set(m2, "b", rl_int(2));
+        CHECK(rl_equal(m, m2));
+        rl_release(m2);
     }
     rl_release(m);
 

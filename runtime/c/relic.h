@@ -62,10 +62,15 @@ typedef struct rl_list {
 } rl_list;
 
 /* Maps keep insertion order. Keys are strings. */
+/* Entries are in insertion order. rl_map_remove leaves a hole (a NULL key)
+   so it does not shift the rest; holes are squeezed out when they are over
+   half of the entries. Loops over keys[0..used) skip NULL keys. */
 typedef struct rl_map {
     rl_obj h;
-    size_t n, cap;            /* entries in order */
-    rl_str **keys;
+    size_t count;             /* keys in the map */
+    size_t used, cap;         /* entries in order, holes included */
+    size_t holes;
+    rl_str **keys;            /* NULL for a hole */
     rl_value *vals;
     size_t *index;            /* open addressing: entry position + 1, 0 = empty */
     size_t index_cap;         /* power of two, or 0 */

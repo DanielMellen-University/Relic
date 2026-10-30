@@ -1,0 +1,8 @@
+34 k0 k3 k99
+35 k0 k1 back kept
+{c: 3, d: 4, e: 5, b: 6}
+true
+35 0 {}
+{x: 1} ["x"]
+remove(): map has no key 'k1'
+map has no key 'y'

@@ -68,7 +68,10 @@ void Map::trace(std::vector<GcObj*>& out) const {
 void Map::clear_refs() {
     std::unordered_map<std::string, Value> gone;
     gone.swap(items);
-    keys.clear();
+    order_.clear();
+    gone_.clear();
+    pos_.clear();
+    holes_ = 0;
 }
 
 void Function::clear_refs() {
@@ -79,8 +82,54 @@ void Function::clear_refs() {
 bool Map::has(const std::string& k) const { return items.count(k) != 0; }
 
 void Map::set(const std::string& k, Value v) {
-    if (!has(k)) keys.push_back(k);
-    items[k] = std::move(v);
+    auto it = items.find(k);
+    if (it != items.end()) {
+        it->second = std::move(v);
+        return;
+    }
+    if (!gone_.empty()) {
+        pos_[k] = order_.size();
+        gone_.push_back(0);
+    }
+    order_.push_back(k);
+    items.emplace(k, std::move(v));
+}
+
+bool Map::remove(const std::string& k) {
+    if (!items.erase(k)) return false;
+    if (gone_.empty()) {
+        // first remove: index the order (once per map)
+        gone_.assign(order_.size(), 0);
+        pos_.reserve(order_.size());
+        for (size_t i = 0; i < order_.size(); ++i) pos_[order_[i]] = i;
+    }
+    auto p = pos_.find(k);
+    gone_[p->second] = 1;
+    order_[p->second].clear();  // the hole keeps no copy of the key
+    pos_.erase(p);
+    ++holes_;
+    if (holes_ > 16 && holes_ * 2 > order_.size()) compact();
+    return true;
+}
+
+void Map::compact() {
+    size_t j = 0;
+    for (size_t i = 0; i < order_.size(); ++i) {
+        if (gone_[i]) continue;
+        if (j != i) order_[j] = std::move(order_[i]);
+        pos_[order_[j]] = j;
+        ++j;
+    }
+    order_.resize(j);
+    gone_.assign(j, 0);
+    holes_ = 0;
+}
+
+std::vector<std::string> Map::key_list() const {
+    std::vector<std::string> out;
+    out.reserve(size());
+    each_key([&](const std::string& k) { out.push_back(k); });
+    return out;
 }
 
 // Variant order: none, bool, float, int, string, list, map, function, builtin, module.
@@ -170,10 +219,11 @@ static std::string repr_in(const Value& v, std::vector<const void*>& path) {
             return s + "]";
         }
         const Map& m = *v.as<std::shared_ptr<Map>>();
-        for (size_t i = 0; i < m.keys.size(); ++i) {
-            const std::string& k = m.keys[i];
-            s += (i ? ", " : "") + (is_plain_name(k) ? k : quoted(k)) + ": " + repr_in(m.items.at(k), path);
-        }
+        bool first = true;
+        m.each_key([&](const std::string& k) {
+            s += (first ? "" : ", ") + (is_plain_name(k) ? k : quoted(k)) + ": " + repr_in(m.items.at(k), path);
+            first = false;
+        });
         return s + "}";
     }
     switch (v.v.index()) {
@@ -341,9 +391,11 @@ static bool equal_at(const Value& a, const Value& b, int depth) {
             const Map& x = *a.as<std::shared_ptr<Map>>();
             const Map& y = *b.as<std::shared_ptr<Map>>();
             if (&x == &y) return true;
-            if (x.keys.size() != y.keys.size()) return false;
-            for (const auto& k : x.keys)
-                if (!y.has(k) || !equal_at(x.items.at(k), y.items.at(k), depth + 1)) return false;
+            if (x.size() != y.size()) return false;
+            for (const auto& kv : x.items) {
+                auto it = y.items.find(kv.first);
+                if (it == y.items.end() || !equal_at(kv.second, it->second, depth + 1)) return false;
+            }
             return true;
         }
         case 7: return a.as<std::shared_ptr<Function>>() == b.as<std::shared_ptr<Function>>();

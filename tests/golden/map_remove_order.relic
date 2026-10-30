@@ -1,0 +1,34 @@
+# remove leaves the order of the other keys as it was, also after enough
+# removes to compact the map, and a removed key comes back at the end
+let m = {}
+for i in 0..100
+    m["k{i}"] = i
+for i in 0..100
+    if i % 3 != 0
+        remove(m, "k{i}")
+print(len(m), keys(m)[0], keys(m)[1], keys(m)[len(m) - 1])
+m["k1"] = "back"
+m["k0"] = "kept"
+print(len(m), keys(m)[0], keys(m)[len(m) - 1], m.k1, m.k0)
+let small = {a: 1, b: 2, c: 3, d: 4}
+remove(small, "b")
+small.e = 5
+remove(small, "a")
+small.b = 6
+print(small)
+print(small == {d: 4, b: 6, c: 3, e: 5})
+let n = 0
+for k in keys(m)
+    remove(m, k)
+    n = n + 1
+print(n, len(m), m)
+m.x = 1
+print(m, keys(m))
+try
+    remove(m, "k1")
+catch e
+    print(e.message)
+try
+    print(m.y)
+catch e
+    print(e.message)

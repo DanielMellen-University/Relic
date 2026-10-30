@@ -117,10 +117,11 @@ static void clear_refs(rl_obj *o) {
         }
         case RL_MAP: {
             rl_map *m = (rl_map *)o;
-            size_t i, n = m->n;
-            m->n = 0;
+            size_t i, n = m->used;
+            m->used = m->count = m->holes = 0;
             if (m->index) memset(m->index, 0, m->index_cap * sizeof *m->index);
-            for (i = 0; i < n; ++i) { release_obj(&m->keys[i]->h); rl_release(m->vals[i]); }
+            for (i = 0; i < n; ++i)
+                if (m->keys[i]) { release_obj(&m->keys[i]->h); rl_release(m->vals[i]); }
             break;
         }
         case RL_SCOPE: {
@@ -207,7 +208,7 @@ static void children(rl_obj *o, objvec *out) {
     size_t i;
     switch (o->kind) {
         case RL_LIST: { rl_list *l = (rl_list *)o; for (i = 0; i < l->n; ++i) kid(out, l->items[i]); break; }
-        case RL_MAP: { rl_map *m = (rl_map *)o; for (i = 0; i < m->n; ++i) kid(out, m->vals[i]); break; }
+        case RL_MAP: { rl_map *m = (rl_map *)o; for (i = 0; i < m->used; ++i) if (m->keys[i]) kid(out, m->vals[i]); break; }
         case RL_SCOPE: {
             rl_scope *s = (rl_scope *)o;
             for (i = 0; i < s->n; ++i) kid(out, s->slots[i]);
@@ -404,9 +405,12 @@ static void repr_in(buf *b, rl_value v, objvec *path) {
             b_cstr(b, "]");
         } else {
             rl_map *m = (rl_map *)v.u.o;
+            int first = 1;
             b_cstr(b, "{");
-            for (i = 0; i < m->n; ++i) {
-                if (i) b_cstr(b, ", ");
+            for (i = 0; i < m->used; ++i) {
+                if (!m->keys[i]) continue;
+                if (!first) b_cstr(b, ", ");
+                first = 0;
                 if (is_plain_name(m->keys[i])) b_add(b, m->keys[i]->data, m->keys[i]->len);
                 else quoted(b, m->keys[i]);
                 b_cstr(b, ": ");
@@ -463,7 +467,7 @@ static size_t hash_bytes(const char *s, size_t n) {
 rl_value rl_map_new(void) {
     rl_map *m = (rl_map *)xmalloc(sizeof *m);
     track(&m->h, RL_MAP);
-    m->n = m->cap = 0;
+    m->count = m->used = m->cap = m->holes = 0;
     m->keys = NULL;
     m->vals = NULL;
     m->index = NULL;
@@ -477,8 +481,10 @@ static void map_reindex(rl_map *m, size_t cap) {
     m->index_cap = cap;
     m->index = (size_t *)xmalloc(cap * sizeof *m->index);
     memset(m->index, 0, cap * sizeof *m->index);
-    for (i = 0; i < m->n; ++i) {
-        size_t h = hash_bytes(m->keys[i]->data, m->keys[i]->len) & (cap - 1);
+    for (i = 0; i < m->used; ++i) {
+        size_t h;
+        if (!m->keys[i]) continue;
+        h = hash_bytes(m->keys[i]->data, m->keys[i]->len) & (cap - 1);
         while (m->index[h]) h = (h + 1) & (cap - 1);
         m->index[h] = i + 1;
     }
@@ -490,7 +496,7 @@ static size_t map_find(const rl_map *m, const char *key, size_t len) {
     h = hash_bytes(key, len) & (m->index_cap - 1);
     while (m->index[h]) {
         const rl_str *k = m->keys[m->index[h] - 1];
-        if (k->len == len && memcmp(k->data, key, len) == 0) return m->index[h] - 1;
+        if (k && k->len == len && memcmp(k->data, key, len) == 0) return m->index[h] - 1;
         h = (h + 1) & (m->index_cap - 1);
     }
     return (size_t)-1;
@@ -509,21 +515,37 @@ void rl_map_set(rl_map *m, rl_str *key, rl_value v) {
         rl_release(old);
         return;
     }
-    if (m->n == m->cap) {
+    if (m->used == m->cap) {
         m->cap = m->cap ? m->cap * 2 : 4;
         m->keys = (rl_str **)xrealloc(m->keys, m->cap * sizeof *m->keys);
         m->vals = (rl_value *)xrealloc(m->vals, m->cap * sizeof *m->vals);
     }
     ++key->h.rc;
-    m->keys[m->n] = key;
-    m->vals[m->n] = rl_retain(v);
-    ++m->n;
-    if ((m->n) * 2 > m->index_cap) map_reindex(m, m->index_cap ? m->index_cap * 2 : 8);
+    m->keys[m->used] = key;
+    m->vals[m->used] = rl_retain(v);
+    ++m->used;
+    ++m->count;
+    /* the index holds an entry for every slot, holes too, until a reindex */
+    if (m->used * 2 > m->index_cap) map_reindex(m, m->index_cap ? m->index_cap * 2 : 8);
     else {
         size_t h = hash_bytes(key->data, key->len) & (m->index_cap - 1);
         while (m->index[h]) h = (h + 1) & (m->index_cap - 1);
-        m->index[h] = m->n;
+        m->index[h] = m->used;
     }
+}
+
+/* Squeezes the holes out of the entries and rebuilds the index. */
+static void map_compact(rl_map *m) {
+    size_t i, j = 0;
+    for (i = 0; i < m->used; ++i) {
+        if (!m->keys[i]) continue;
+        m->keys[j] = m->keys[i];
+        m->vals[j] = m->vals[i];
+        ++j;
+    }
+    m->used = j;
+    m->holes = 0;
+    map_reindex(m, m->index_cap);
 }
 
 /* Removes key, keeping the order of the rest. *out gets the old value. */
@@ -532,10 +554,11 @@ int rl_map_remove(rl_map *m, const char *key, size_t len, rl_value *out) {
     if (i == (size_t)-1) return 0;
     *out = m->vals[i];
     release_obj(&m->keys[i]->h);
-    memmove(m->keys + i, m->keys + i + 1, (m->n - i - 1) * sizeof *m->keys);
-    memmove(m->vals + i, m->vals + i + 1, (m->n - i - 1) * sizeof *m->vals);
-    --m->n;
-    map_reindex(m, m->index_cap);
+    m->keys[i] = NULL;      /* a hole: its index entry stays and finds nothing */
+    m->vals[i] = rl_none();
+    --m->count;
+    ++m->holes;
+    if (m->holes > 16 && m->holes * 2 > m->used) map_compact(m);
     return 1;
 }
 
@@ -654,9 +677,11 @@ int rl_equal(rl_value a, rl_value b) {
             case RL_MAP: {
                 rl_map *x = (rl_map *)a.u.o, *y = (rl_map *)b.u.o;
                 if (x == y) break;
-                if (x->n != y->n) goto done;
-                for (i = 0; i < x->n; ++i) {
-                    rl_value *w = rl_map_get(y, x->keys[i]->data, x->keys[i]->len);
+                if (x->count != y->count) goto done;
+                for (i = 0; i < x->used; ++i) {
+                    rl_value *w;
+                    if (!x->keys[i]) continue;
+                    w = rl_map_get(y, x->keys[i]->data, x->keys[i]->len);
                     if (!w) goto done;
                     st = eq_push(st, &n, &cap, x->vals[i], *w, depth + 1);
                 }

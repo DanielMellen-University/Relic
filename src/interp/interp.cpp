@@ -182,7 +182,7 @@ Value op_unary(const Ast& n, const Value& v) {
     return Value(!v.as<bool>());
 }
 
-static const std::vector<std::string>& map_keys(const Map& m) { return m.keys; }
+static std::vector<std::string> map_keys(const Map& m) { return m.key_list(); }
 
 Value op_field(const Ast& n, const Value& obj) {
             if (obj.is<std::shared_ptr<Module>>()) {
@@ -284,7 +284,7 @@ List op_loop_items(const Ast& at, const Value& src) {
             i += n;
         }
     } else if (src.is<std::shared_ptr<Map>>()) {
-        for (const auto& k : src.as<std::shared_ptr<Map>>()->keys) items.emplace_back(k);
+        src.as<std::shared_ptr<Map>>()->each_key([&](const std::string& k) { items.emplace_back(k); });
     } else {
         fail(at, std::string("cannot loop over ") + a_type(src));
     }
