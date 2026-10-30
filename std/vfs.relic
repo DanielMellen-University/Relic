@@ -3,6 +3,7 @@
 use std/paths
 use std/strings
 use std/lists
+use std/maps
 
 # A dir node is {dir: true, kids: {name: node, ...}}.
 # A file node is {dir: false, text: "..."}.
@@ -47,14 +48,6 @@ fun _node(fs, path)
             return none
         cur = cur.kids[name]
     return cur
-
-# Drop a key without calling the builtin remove (this module exports remove).
-fun _drop(m, name)
-    let out = {}
-    for k in m
-        if k != name
-            out[k] = m[k]
-    return out
 
 fun new()
     let fs = {root: {dir: true, kids: {}}}
@@ -172,13 +165,14 @@ fun remove(fs, path)
     if d == none or not d.dir or not name in d.kids
         fail("cannot remove " + p)
     let n = d.kids[name]
-    if n.dir and len(keys(n.kids)) > 0
+    if n.dir and len(n.kids) > 0
         fail("cannot remove " + p)
-    d.kids = _drop(d.kids, name)
+    maps.drop(d.kids, name)
 
 # The folder goes from its parent with everything in it at once. It was emptied
 # one name at a time, and each removal copied the folder's map of names, so a
-# folder of 4,000 files took 3 s.
+# folder of 4,000 files took 3 s. Since 1.0.42 a name is removed from the map in
+# place (maps.drop), not by copying the rest of the folder.
 fun remove_tree(fs, path)
     let p = _norm(path)
     if p == "/"
@@ -186,7 +180,7 @@ fun remove_tree(fs, path)
     if _node(fs, p) == none
         return
     let d = _node(fs, paths.dir(p))
-    d.kids = _drop(d.kids, paths.base(p))
+    maps.drop(d.kids, paths.base(p))
 
 fun rename(fs, from, to)
     let src = _norm(from)
@@ -207,7 +201,7 @@ fun rename(fs, from, to)
     if dd == none or not dd.dir
         fail("cannot rename " + src)
     dd.kids[dn] = n
-    sd.kids = _drop(sd.kids, sn)
+    maps.drop(sd.kids, sn)
 
 fun size(fs, path)
     let n = _node(fs, path)

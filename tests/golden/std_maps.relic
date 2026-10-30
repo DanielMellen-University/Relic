@@ -4,3 +4,8 @@ print(maps.values(m), maps.items(m))
 print(maps.get(m, "a", 0), maps.get(m, "z", 0))
 print(maps.merge(m, {b: 3, c: 4}), m)
 print(remove(m, "a"), m, keys(m))
+# drop: in place, keeps the order of the rest, false for a missing key
+let dm = {a: 1, b: 2, c: 3}
+print(maps.drop(dm, "b"), maps.drop(dm, "zz"), dm, len(dm))
+dm.b = 4
+print(maps.drop(dm, "a"), dm)

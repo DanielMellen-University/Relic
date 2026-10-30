@@ -88,6 +88,8 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tools/fuzz_lists.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for lists: appends, removes and inserts at the front, the back and the middle, emptying a list from the front, `pop`, indexing and setting (out of range under `try`), `for`, `==`, `+` and printing, and lists that hold each other. By hand, after changing lists in `src/interp/value.*` or `runtime/c`; seeds 1 to 8 (480 programs) matched 1.0.41 exactly in 1.0.42.
 
+`tools/fuzz_vfs.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for `std/vfs`: folders, writes (some a hundred files at once), `remove`, `remove_tree` and `rename` that work or fail, removes while going through a listing, and printing listings and the whole tree. By hand, after changing `std/vfs` or `std/maps`; seeds 1 to 8 (320 programs) matched 1.0.41 exactly in 1.0.42.
+
 ## Unit tests
 
 `tests/unit/main.cpp` (`relic_tests`, ctest case `unit`) checks the lexer, parser, interpreter and REPL from C++, where token lists or tree shape are easier to check than output. It uses a small hand-written harness, no test library. It also holds the checks that would only add programs to `selfhost_interp` for little gain: lexer, parse and built-in error messages with their positions, the REPL's details, and the built-in font.

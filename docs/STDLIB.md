@@ -10,7 +10,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 |---|---|
 | [std/strings](#stdstrings) | searching, splitting, case, padding |
 | [std/lists](#stdlists) | map, filter, reduce, sorting |
-| [std/maps](#stdmaps) | values, items, get with a fallback, merge |
+| [std/maps](#stdmaps) | values, items, get with a fallback, merge, drop |
 | [std/math](#stdmath) | rounding, roots, trig, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths |
@@ -64,6 +64,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `items(m)` | list | `[key, value]` pairs |
 | `get(m, k, fallback)` | any | fallback when `k` missing |
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
+| `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` |
 
 ## std/math
 

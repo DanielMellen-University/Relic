@@ -26,3 +26,12 @@ fun merge(a, b)
     for k in b
         out[k] = b[k]
     return out
+
+fun drop(m, k)
+    # removes k from m in place if it is there; true if it was. The built-in
+    # remove fails on a missing key, and a module that defines its own remove
+    # (std/vfs) hides the built-in: this reaches it from here.
+    if k in m
+        remove(m, k)
+        return true
+    return false
