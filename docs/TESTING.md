@@ -12,7 +12,7 @@ ctest --test-dir build --output-on-failure
 
 That is the C-only build. Add `-DRELIC_BUILD_HOST=ON` to the first line for the host and all of its tests. Every section below that runs `relic` needs it: the golden, comparison, unit and graphics tests. The C runtime, compiled golden and bootstrap tests run in both.
 
-- Add `-j8` to `ctest` to run cases in parallel.
+- Add `-j8` to `ctest` to run cases in parallel. The cases that write files in `tests/golden` (`std_files` and `std_folders`, compiled and not, and `selfhost_interp` and `vm_matches_tree_walker`, which run every golden) take turns through a `RESOURCE_LOCK`, so a parallel run cannot remove one's folder under another.
 - With a multi-config generator (Visual Studio), pass `--config Release` to the build and `-C Release` to `ctest`.
 - `ctest --test-dir build -R golden_std_json` runs one case.
 
