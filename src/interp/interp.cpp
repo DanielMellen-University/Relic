@@ -579,14 +579,19 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
         }
         case Node::Try: {
             int saved_depth = depth_;
+            Value err;
             try {
                 return exec_block(*n.kids[0], std::make_shared<Env>(env));
             } catch (RuntimeError& e) {
-                depth_ = saved_depth;
-                auto scope = std::make_shared<Env>(env);
-                if (!n.text.empty()) scope->vars[n.text] = op_error_value(e);
-                return exec_block(*n.kids[1], scope);
+                err = op_error_value(e);
             }
+            // The catch block runs here, after the throw is done with: MSVC runs a
+            // C++ catch clause on top of the frames that threw, so running it in
+            // there would start it as deep as the error was (see check_stack).
+            depth_ = saved_depth;
+            auto scope = std::make_shared<Env>(env);
+            if (!n.text.empty()) scope->vars[n.text] = err;
+            return exec_block(*n.kids[1], scope);
         }
         case Node::Break:
             flow_node_ = &n;
