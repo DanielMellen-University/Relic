@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.40 (2026-10-30)
+
+Fixes Daniel approved on Oct 30, a new event field, and the std/vfs speedups that were waiting on main. No change to the language.
+
+- `relic check` gives a "did you mean" hint to the first 50 undefined names in a file, in line order; the rest are still reported, without one. Each hint looks at every name in scope, so a file full of typos spent most of its time on them (500 typos: `selfhost/check.relic` 12.5 s, now 1.4 s; the host 0.03 s, now 0.01 s). The host and `check.relic` use the same limit. Golden `check_many_typos`.
+- `relic --tree` walks the tree on the native stack, so a big expression inside deep recursion (`f(n) = f(n - 1) + 1 + 1 ...` with 9,990 terms, called 700 deep) ran out of it and crashed (exit 139) before the 800-call limit. It now stops with `too much recursion (calls and expressions nest too deeply for the stack)` once it has used three quarters of the thread's stack, and `try` catches it. The VM, which does not recurse natively, runs the same program as before. `--tree` benches within 2%. Test `tree_stack`.
+- `--tree`: a `catch` block runs after the C++ exception is done with, not inside the C++ catch clause (on MSVC that clause runs on top of the frames that threw).
+- `std/graphics`: `key_down` and `key_up` events carry `gui` (Cmd on macOS, the Windows key elsewhere) next to `shift`, `ctrl` and `alt`, on the host and in compiled programs; `simulate` takes `"gui"` as a modifier. For Cmd+S in M0N0LITH-2.
+- `std/vfs`: path names are cut out with `slice` and added to the list in place, so very long paths and names no longer take time growing with the square of their length (`vfs.exists` on 20,000 names: 0.97 s, now 0.012 s; on a 400,000-character name: 4.2 s, now 0.06 s, compiled); ordinary paths are 10 to 15% faster.
+- Fuzzing found nothing new: `fuzz_gen` (150 programs), `fuzz_mutate` (`check` 200, `run` 150), `fuzz_check` (seeds 4000 to 4200), `fuzz_depth` (seed 8, 40 cases).
+- Speed: `selfhost_interp` 10.15 s median of 3 (10.15, 10.19, 10.12), under the 12.2 s cap.
+- `ctest`: 185 default, 391 with the host.
+
 ## 1.0.39 (2026-10-27)
 
 Three more slow spots in the standard library and the Relic-written tools. No change to the language or to any result.

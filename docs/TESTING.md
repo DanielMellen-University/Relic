@@ -74,7 +74,7 @@ Three more self-host cases check the interpreter on real use:
 
 The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.md](ARCHITECTURE.md#self-host).
 
-`tools/fuzz_check.py SEED` writes a random program (nested functions, blocks, loops, `try`, `use`, a pool of names with typos). It is not in ctest because it needs Python; after changing `selfhost/check.relic`, compare the two `check`s on a thousand seeds by hand (the command is in the file). Seeds 1 to 1500 agreed in 1.0.27, and 2000 to 2400 in 1.0.32.
+`tools/fuzz_check.py SEED` writes a random program (nested functions, blocks, loops, `try`, `use`, a pool of names with typos). It is not in ctest because it needs Python; after changing `selfhost/check.relic`, compare the two `check`s on a thousand seeds by hand (the command is in the file). Seeds 1 to 1500 agreed in 1.0.27, 2000 to 2400 in 1.0.32, and 4000 to 4200 in 1.0.40 (after the 50-hint limit).
 
 `tools/fuzz_repl.py SEED [COUNT]` feeds random scripts (lines picked from the REPL cases and the goldens, LF or CRLF) to the host's REPL and to `selfhost/repl.relic` and reports any difference in stdout, stderr or exit code. Also by hand; about 5000 scripts agreed in 1.0.31.
 
@@ -82,7 +82,7 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tools/fuzz_gen.py SEED COUNT` writes programs that run instead of editing old ones (expressions over ints, floats including tiny and huge literals, text for `num()`, `float()` and `int()` (signs, `nan` / `inf`, hex at the int range's edges, tiny and huge floats, near misses), strings, lists and maps, the built-ins, `std/strings`, `std/lists`, `std/maps`, `std/math`, `std/json`, `std/paths`, interpolation, functions, closures, `else if` chains, loops, `try`, and `os.read_line` / `os.prompt` on a random standard input), runs each on the VM, the tree-walker, `selfhost/run.relic` and compiled, and prints the path of any program (and its input) where stdout, stderr or the exit code differ. By hand as well. About 2300 programs agreed in 1.0.32 and 3600 more since; in 1.0.34 it found `slice(s, -inf, 3)` failing on the Relic-written interpreter.
 
-`tools/fuzz_depth.py SEED COUNT` builds expressions and nested `else if` chains within three levels of the 10,000 limit (links, `-`, `not`, lists, maps, `{...}` in strings, call arguments, indexes) and checks that `relic check`, `selfhost/check.relic` and relicc agree and fail exactly past 10,000. By hand too; seeds 1 to 4 (132 cases) agreed in 1.0.37, seed 5 (40 more) in 1.0.38, and seed 6 (40 more) in 1.0.39.
+`tools/fuzz_depth.py SEED COUNT` builds expressions and nested `else if` chains within three levels of the 10,000 limit (links, `-`, `not`, lists, maps, `{...}` in strings, call arguments, indexes) and checks that `relic check`, `selfhost/check.relic` and relicc agree and fail exactly past 10,000. By hand too; seeds 1 to 4 (132 cases) agreed in 1.0.37, seed 5 (40 more) in 1.0.38, seed 6 (40 more) in 1.0.39, and seed 8 (40 more) in 1.0.40.
 
 ## Unit tests
 
