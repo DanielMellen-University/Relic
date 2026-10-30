@@ -68,3 +68,24 @@ fs = vfs.new()
 for n in ["m", "b", "z", "a", "B", "aa", "é", "_", "0"]
     vfs.write(fs, "/tmp/" + n, n)
 print(vfs.list(fs, "/tmp"))
+# entries: [name, is_folder] in list's order
+vfs.make_dir(fs, "/tmp/c/inner")
+print(vfs.entries(fs, "/tmp"))
+try
+    vfs.entries(fs, "/tmp/z")
+catch err
+    print(err.message)
+# a big folder: list keeps its sorted names, and any change shows next time
+fs = vfs.new()
+for i in 0..100
+    vfs.write(fs, "/tmp/f{i}", "")
+let first = vfs.list(fs, "/tmp")
+append(first, "mine")
+print(len(vfs.list(fs, "/tmp")), slice(vfs.list(fs, "/tmp"), 0, 4))
+vfs.remove(fs, "/tmp/f10")
+vfs.remove(fs, "/tmp/f5")
+vfs.make_dir(fs, "/tmp/f5")
+let es = vfs.entries(fs, "/tmp")
+print(len(es), slice(es, 0, 4), es[len(es) - 1], vfs.list(fs, "/tmp")[2])
+vfs.rename(fs, "/tmp/f99", "/tmp/a")
+print(vfs.list(fs, "/tmp")[0], len(vfs.list(fs, "/tmp")))

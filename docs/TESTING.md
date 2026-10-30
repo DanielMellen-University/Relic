@@ -88,7 +88,7 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tools/fuzz_lists.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for lists: appends, removes and inserts at the front, the back and the middle, emptying a list from the front, `pop`, indexing and setting (out of range under `try`), `for`, `==`, `+` and printing, and lists that hold each other. By hand, after changing lists in `src/interp/value.*` or `runtime/c`; seeds 1 to 8 (480 programs) matched 1.0.41 exactly in 1.0.42.
 
-`tools/fuzz_vfs.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for `std/vfs`: folders, writes (some a hundred files at once), `remove`, `remove_tree` and `rename` that work or fail, removes while going through a listing, and printing listings and the whole tree. By hand, after changing `std/vfs` or `std/maps`; seeds 1 to 8 (320 programs) matched 1.0.41 exactly in 1.0.42.
+`tools/fuzz_vfs.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for `std/vfs`: folders, writes (some a hundred files at once), `remove`, `remove_tree` and `rename` that work or fail, removes while going through a listing, and printing listings and the whole tree. By hand, after changing `std/vfs` or `std/maps`; seeds 1 to 8 (320 programs) matched 1.0.41 exactly in 1.0.42, and seeds 11 to 18 (320) again after the sorted-names cache.
 
 ## Unit tests
 

@@ -24,3 +24,8 @@ cannot get the size of /home/welcome.txt/x/y
 true true true
 cannot list /b/c
 ["0", "B", "_", "a", "aa", "b", "m", "z", "é"]
+[["0", false], ["B", false], ["_", false], ["a", false], ["aa", false], ["b", false], ["c", true], ["m", false], ["z", false], ["é", false]]
+cannot list /tmp/z
+100 ["f0", "f1", "f10", "f11"]
+99 [["f0", false], ["f1", false], ["f11", false], ["f12", false]] ["f99", false] f11
+a 99

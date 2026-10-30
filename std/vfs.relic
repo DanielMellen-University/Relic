@@ -108,7 +108,41 @@ fun list(fs, path)
     let n = _node(fs, path)
     if n == none or not n.dir
         fail("cannot list " + _norm(path))
-    return _sorted(keys(n.kids))
+    return _names(n)
+
+# A folder's names, sorted. Sorting is most of what listing a big folder costs
+# (3,000 names: 9 ms), and a file browser lists the same folder every frame, so
+# the last few big folders keep their sorted names here, found by comparing
+# the folder's names in their own order (one == of two lists, about 0.1 ms):
+# any change to the folder changes those, so a stale list is never used.
+let _sorted_cache = []   # [names in map order, sorted copy], newest last
+let _cache_min = 64      # smaller folders just sort
+let _cache_size = 8
+
+fun _names(n)
+    let ks = keys(n.kids)
+    if len(ks) < _cache_min
+        return _sorted(ks)
+    for c in _sorted_cache
+        if c[0] == ks
+            return slice(c[1], 0, len(ks))
+    let sorted = _sorted(ks)
+    insert(_sorted_cache, len(_sorted_cache), [ks, slice(sorted, 0, len(ks))])
+    if len(_sorted_cache) > _cache_size
+        _sorted_cache = slice(_sorted_cache, 1, len(_sorted_cache))
+    return sorted
+
+# [name, is_folder] for each name in the folder, in list's order: a file
+# browser gets the "/" marks in the same call instead of an is_dir per name,
+# each of which walks the whole path again.
+fun entries(fs, path)
+    let n = _node(fs, path)
+    if n == none or not n.dir
+        fail("cannot list " + _norm(path))
+    let out = []
+    for name in _names(n)
+        insert(out, len(out), [name, n.kids[name].dir])
+    return out
 
 fun read(fs, path)
     let n = _node(fs, path)

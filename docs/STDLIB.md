@@ -124,7 +124,8 @@ argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 | `new()` | vfs | |
 | `exists(fs, path)` | bool | never fails; a path that goes through a file (`/home/welcome.txt/x`) is not there |
 | `is_dir(fs, path)` | bool | never fails (`false` if missing) |
-| `list(fs, path)` | list of names | sorted; `cannot list {path}` |
+| `list(fs, path)` | list of names | sorted; a new list each call. The last 8 folders of 64 names or more keep their sorted names until they change, so listing the same big folder again skips the sort (3,000 names: 9.4 ms, then 0.14 ms); `cannot list {path}` |
+| `entries(fs, path)` | list of `[name, is_folder]` | in `list`'s order, so a file browser needs no `is_dir` per name; `cannot list {path}` (since 1.0.42) |
 | `read(fs, path)` | string | `cannot read {path}` |
 | `write(fs, path, text)` | none | `cannot write {path}` |
 | `append(fs, path, text)` | none | creates the file if missing; `cannot append {path}` |
