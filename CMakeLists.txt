@@ -41,7 +41,7 @@ file(GLOB GOLDEN_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/*.relic)
 # shared by the host (RELIC_SDL) and compiled (RELIC_C_SDL) runs.
 set(GFX_SMOKE_OUT "4 3\nnone\nbool bool\nint false\ndone")
 set(GFX_EVENTS_OUT "^\\[80, 60\\]\nkey a false\ntext h[^\n]+\nmouse_down 1 12 34\nmouse_up 1 12 34\nwheel -2\nresize 100 70\na\n30 20\nstring\ndone")
-set(GFX_SIMULATE_OUT "^key_down a true true false\nkey_up a true false false\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
+set(GFX_SIMULATE_OUT "^key_down a true true false false\nkey_up a true false false false\nkey_down s false false false true\nmove 40 50 0 0\ndown 1 11 22\nup 1 11 22\nquit true\ndone")
 set(MINI_DESKTOP_OUT "hi\n> ls data\nsettings.json\n> cat nope.txt\nerror: files.read..: cannot open nope.txt\nnotes: hello notes saved\nfocus: 0")
 set(GFX_PNG_OUT "^true\n5 4\n")
 set(GFX_TTF_OUT "^true\nwide true\ntall true\nint int 0\ndone")

@@ -352,7 +352,7 @@ plus the fields below.
 
 | `type` | Fields |
 |---|---|
-| `key_down` / `key_up` | `key` (string), `repeat` (bool), `shift` `ctrl` `alt` (bool) |
+| `key_down` / `key_up` | `key` (string), `repeat` (bool), `shift` `ctrl` `alt` `gui` (bool; `gui` is Cmd on macOS and the Windows key elsewhere, since 1.0.40) |
 | `text` | `text` (UTF-8 string; use this for typing into a box) |
 | `mouse_down` / `mouse_up` | `button` (1/2/3), `x`, `y`, `clicks` (x/y are window pixels) |
 | `mouse_move` | `x`, `y`, `dx`, `dy` (window pixels) |
@@ -382,7 +382,7 @@ for an unused arg.
 | `"resize"` | width | height | one `resize` |
 | `"quit"` | `none` | `none` | one `quit` (and `quit_requested()` becomes true) |
 
-Mods for `"key"` / `"keyup"`: `"shift"`, `"ctrl"`, `"alt"`, or join with `+`
+Mods for `"key"` / `"keyup"`: `"shift"`, `"ctrl"`, `"alt"`, `"gui"`, or join with `+`
 (`"ctrl+shift"`). They set the matching bools on the event. Unknown kind or
 key name fails.
 

@@ -50,7 +50,7 @@ fun image_height(id) = host_gfx_image_height(id)
 fun next_event() = host_gfx_next_event()
 fun size() = host_gfx_size()      # [width, height] of the drawing area
 # simulate(kind, a, b) queues a fake event for tests. Pass none for unused args.
-#   "key"/"keyup"  a=name  b=none or "shift"/"ctrl"/"alt" (join with +)
+#   "key"/"keyup"  a=name  b=none or "shift"/"ctrl"/"alt"/"gui" (join with +)
 #   "text"         a=text  b=none
 #   "click"        a=x     b=y     (left mouse_down then mouse_up)
 #   "mousedown"/"mouseup"  a=x  b=y

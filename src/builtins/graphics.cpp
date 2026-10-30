@@ -116,7 +116,8 @@ void take(const SDL_Event& e) {
         Uint16 mod = e.key.keysym.mod;
         g_events.push_back(event(e.type == SDL_KEYDOWN ? "key_down" : "key_up",
             {{"key", Value(k)}, {"repeat", Value(e.key.repeat != 0)}, {"shift", Value((mod & KMOD_SHIFT) != 0)},
-             {"ctrl", Value((mod & KMOD_CTRL) != 0)}, {"alt", Value((mod & KMOD_ALT) != 0)}}));
+             {"ctrl", Value((mod & KMOD_CTRL) != 0)}, {"alt", Value((mod & KMOD_ALT) != 0)},
+             {"gui", Value((mod & KMOD_GUI) != 0)}}));
     } else if (e.type == SDL_TEXTINPUT) {
         g_events.push_back(event("text", {{"text", Value(std::string(e.text.text))}}));
     } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
@@ -507,7 +508,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
     });
     // Puts a made-up event in SDL's queue, for tests and scripted demos.
     // kind / a / b:
-    //   "key"/"keyup"  a=name  b=none or "shift"/"ctrl"/"alt" (join with +)
+    //   "key"/"keyup"  a=name  b=none or "shift"/"ctrl"/"alt"/"gui" (join with +)
     //   "text"         a=text  b=none
     //   "click"        a=x     b=y     (left down then up)
     //   "mousedown"/"mouseup"  a=x  b=y  (left button)
@@ -534,6 +535,7 @@ void add_graphics_builtins(const AddBuiltin& add) {
             if (has("shift")) mod |= KMOD_SHIFT;
             if (has("ctrl")) mod |= KMOD_CTRL;
             if (has("alt")) mod |= KMOD_ALT;
+            if (has("gui")) mod |= KMOD_GUI;
             if (mod == 0 && !s.empty()) throw std::string("unknown modifier: ") + str(v, "mods");
             return mod;
         };

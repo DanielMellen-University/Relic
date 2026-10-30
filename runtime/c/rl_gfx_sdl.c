@@ -222,6 +222,7 @@ static void take(const SDL_Event *ep) {
         F(ev, "shift", rl_bool((mod & KMOD_SHIFT) != 0));
         F(ev, "ctrl", rl_bool((mod & KMOD_CTRL) != 0));
         F(ev, "alt", rl_bool((mod & KMOD_ALT) != 0));
+        F(ev, "gui", rl_bool((mod & KMOD_GUI) != 0));
         push_event(ev);
     } else if (e.type == SDL_TEXTINPUT) {
         ev = event_new("text");
@@ -795,7 +796,7 @@ BI(g_mouse_down) {
     return RL_OK;
 }
 
-/* "shift", "ctrl", "alt" joined with +, or none. */
+/* "shift", "ctrl", "alt", "gui" joined with +, or none. */
 static int has_word(const char *s, const char *word) {
     size_t n = strlen(s), w = strlen(word);
     const char *p = strstr(s, word);   /* like the host, only the first match counts */
@@ -821,6 +822,7 @@ static int parse_mods(rl_ctx *cx, rl_value v, Uint16 *mod) {
     if (has_word(s, "shift")) *mod |= KMOD_SHIFT;
     if (has_word(s, "ctrl")) *mod |= KMOD_CTRL;
     if (has_word(s, "alt")) *mod |= KMOD_ALT;
+    if (has_word(s, "gui")) *mod |= KMOD_GUI;
     free(s);
     if (*mod == 0 && n > 0) return rl_fail(cx, "unknown modifier: %s", S(v)->data);
     return RL_OK;

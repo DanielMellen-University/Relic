@@ -3,6 +3,7 @@ use std/graphics
 graphics.open(80, 60, "simulate")
 graphics.simulate("key", "a", "ctrl+shift")
 graphics.simulate("keyup", "a", "ctrl")
+graphics.simulate("key", "s", "gui")
 graphics.simulate("move", 40, 50)
 graphics.simulate("mousedown", 11, 22)
 graphics.simulate("mouseup", 11, 22)
@@ -10,9 +11,9 @@ graphics.simulate("quit", none, none)
 let e = graphics.next_event()
 while e != none
     if e.type == "key_down"
-        print("key_down", e.key, e.ctrl, e.shift, e.alt)
+        print("key_down", e.key, e.ctrl, e.shift, e.alt, e.gui)
     else if e.type == "key_up"
-        print("key_up", e.key, e.ctrl, e.shift, e.alt)
+        print("key_up", e.key, e.ctrl, e.shift, e.alt, e.gui)
     else if e.type == "mouse_move"
         print("move", e.x, e.y, e.dx, e.dy)
     else if e.type == "mouse_down"
