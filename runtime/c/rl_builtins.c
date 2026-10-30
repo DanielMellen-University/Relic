@@ -207,9 +207,7 @@ BI(b_insert) {
     if (list_arg(cx, a[0]) || rl_arg_whole(cx, a[1], "index", &i)) return RL_ERR;
     l = L(a[0]);
     if (i < 0 || (unsigned long long)i > l->n) return rl_fail(cx, "index %lld is out of range", i);
-    rl_list_push(l, a[2]);
-    memmove(l->items + i + 1, l->items + i, (l->n - 1 - (size_t)i) * sizeof *l->items);
-    l->items[i] = a[2];
+    rl_list_insert(l, (size_t)i, a[2]);
     *out = rl_none();
     return RL_OK;
 }
@@ -221,9 +219,7 @@ BI(b_remove) {
         long long i = 0;
         if (rl_arg_whole(cx, a[1], "index", &i)) return RL_ERR;
         if (i < 0 || (unsigned long long)i >= l->n) return rl_fail(cx, "index %lld is out of range", i);
-        *out = l->items[i];
-        memmove(l->items + i, l->items + i + 1, (l->n - 1 - (size_t)i) * sizeof *l->items);
-        --l->n;
+        *out = rl_list_take(l, (size_t)i);
         return RL_OK;
     }
     if (a[0].k == RL_MAP) {

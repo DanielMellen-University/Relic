@@ -158,7 +158,11 @@ static void drop_obj(rl_obj *o) {
     clear_refs(o);
     untrack(o);
     switch (o->kind) {
-        case RL_LIST: free(((rl_list *)o)->items); break;
+        case RL_LIST: {
+            rl_list *l = (rl_list *)o;
+            if (l->items) free(l->items - l->off);
+            break;
+        }
         case RL_MAP: {
             rl_map *m = (rl_map *)o;
             free(m->keys); free(m->vals); free(m->index);
@@ -443,16 +447,65 @@ rl_value rl_list_new(size_t cap) {
     track(&l->h, RL_LIST);
     l->n = 0;
     l->cap = cap;
+    l->off = 0;
     l->items = cap ? (rl_value *)xmalloc(cap * sizeof *l->items) : NULL;
     return rl_obj_value(&l->h);
 }
 
-void rl_list_push(rl_list *l, rl_value v) {
-    if (l->n == l->cap) {
-        l->cap = l->cap ? l->cap * 2 : 4;
-        l->items = (rl_value *)xrealloc(l->items, l->cap * sizeof *l->items);
+/* Room for one more at the end: the free slots in front are used again when
+   they are at least half of the allocation, else it doubles. */
+static void list_room(rl_list *l) {
+    rl_value *base;
+    size_t total;
+    if (l->n < l->cap) return;
+    base = l->items ? l->items - l->off : NULL;
+    total = l->off + l->cap;
+    if (l->off > 0 && l->off * 2 >= total) {
+        memmove(base, l->items, l->n * sizeof *l->items);
+        l->items = base;
+        l->cap = total;
+        l->off = 0;
+        return;
     }
+    total = total ? total * 2 : 4;
+    base = (rl_value *)xrealloc(base, total * sizeof *base);
+    l->items = base + l->off;
+    l->cap = total - l->off;
+}
+
+void rl_list_push(rl_list *l, rl_value v) {
+    list_room(l);
     l->items[l->n++] = rl_retain(v);
+}
+
+void rl_list_insert(rl_list *l, size_t i, rl_value v) {
+    if (l->off > 0 && i < l->n / 2) {
+        /* the items before i move into a free slot in front */
+        --l->items;
+        --l->off;
+        ++l->cap;
+        memmove(l->items, l->items + 1, i * sizeof *l->items);
+    } else {
+        list_room(l);
+        memmove(l->items + i + 1, l->items + i, (l->n - i) * sizeof *l->items);
+    }
+    l->items[i] = rl_retain(v);
+    ++l->n;
+}
+
+rl_value rl_list_take(rl_list *l, size_t i) {
+    rl_value v = l->items[i];
+    if (i < l->n / 2) {
+        /* the items before i move up one, and the list starts a slot later */
+        memmove(l->items + 1, l->items, i * sizeof *l->items);
+        ++l->items;
+        ++l->off;
+        --l->cap;
+    } else {
+        memmove(l->items + i, l->items + i + 1, (l->n - 1 - i) * sizeof *l->items);
+    }
+    --l->n;
+    return v;
 }
 
 /* ------------------------------------------------------------------ */

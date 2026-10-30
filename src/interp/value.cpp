@@ -43,6 +43,52 @@ void free_flat(Each each) {
 }
 }  // namespace
 
+List::List(const List& o) : GcObj(o), items_(o.begin(), o.end()) {}
+
+List& List::operator=(const List& o) {
+    if (this != &o) {
+        std::vector<Value> copy(o.begin(), o.end());
+        items_.swap(copy);
+        head_ = 0;
+    }
+    return *this;
+}
+
+void List::clear() {
+    items_.clear();
+    head_ = 0;
+}
+
+List::iterator List::insert(const_iterator pos, Value v) {
+    size_t i = static_cast<size_t>(pos - begin());
+    if (head_ > 0 && i < size() / 2) {
+        // the items before i move down into the free slot in front
+        --head_;
+        std::move(begin() + 1, begin() + 1 + i, begin());
+        (*this)[i] = std::move(v);
+    } else {
+        items_.insert(items_.begin() + static_cast<std::ptrdiff_t>(head_ + i), std::move(v));
+    }
+    return begin() + i;
+}
+
+List::iterator List::erase(const_iterator pos) {
+    size_t i = static_cast<size_t>(pos - begin());
+    if (i < size() / 2) {
+        // the items before i move up one, and the list starts a slot later
+        std::move_backward(begin(), begin() + i, begin() + i + 1);
+        items_[head_] = Value();
+        ++head_;
+        if (head_ > 16 && head_ * 2 > items_.size()) {
+            items_.erase(items_.begin(), items_.begin() + static_cast<std::ptrdiff_t>(head_));
+            head_ = 0;
+        }
+    } else {
+        items_.erase(items_.begin() + static_cast<std::ptrdiff_t>(head_ + i));
+    }
+    return begin() + i;
+}
+
 List::~List() {
     free_flat([this](auto keep) {
         for (Value& v : *this) keep(v);
@@ -60,7 +106,8 @@ void List::trace(std::vector<GcObj*>& out) const {
 }
 void List::clear_refs() {
     std::vector<Value> gone;
-    gone.swap(*this);
+    gone.swap(items_);
+    head_ = 0;
 }
 
 void Map::trace(std::vector<GcObj*>& out) const {

@@ -293,6 +293,28 @@ static void test_containers(void) {
     }
     rl_release(m);
 
+    /* removing at the front moves the list's start, not its items; pushing
+       reuses those slots once they are half of the allocation */
+    l = rl_list_new(0);
+    {
+        int i;
+        for (i = 0; i < 100; ++i) push(l, rl_int(i));
+        for (i = 0; i < 70; ++i) {
+            rl_value v = rl_list_take(L(l), 0);
+            CHECK(v.u.i == i);
+        }
+        CHECK(L(l)->n == 30 && L(l)->off == 70 && L(l)->items[0].u.i == 70);
+        rl_list_insert(L(l), 0, rl_int(-1));  /* into a free slot in front */
+        CHECK(L(l)->off == 69 && L(l)->items[0].u.i == -1 && L(l)->items[1].u.i == 70);
+        rl_list_insert(L(l), 2, rl_int(-2));
+        CHECK(L(l)->items[2].u.i == -2 && L(l)->items[3].u.i == 71 && L(l)->n == 32);
+        CHECK(rl_list_take(L(l), 30).u.i == 98 && L(l)->items[30].u.i == 99);
+        for (i = 0; i < 200; ++i) push(l, rl_int(1000 + i));
+        CHECK(L(l)->n == 231 && L(l)->items[0].u.i == -1 && L(l)->items[30].u.i == 99 && L(l)->items[230].u.i == 1199);
+        CHECK(L(l)->off == 0);  /* the room in front was used again */
+    }
+    rl_release(l);
+
     l = rl_list_new(0);
     push(l, rl_int(1)); push(l, rl_int(2)); push(l, rl_int(3));
     SHOW(call1("pop", l), "3");

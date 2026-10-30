@@ -55,11 +55,17 @@ typedef struct rl_str {
     char data[1];             /* len bytes plus a 0; allocated larger */
 } rl_str;
 
+/* items[0..n) are the list. Removing near the front moves the items before
+   the removed one up instead of the rest down, so the allocation can start
+   `off` slots before items; cap counts the slots from items on. */
 typedef struct rl_list {
     rl_obj h;
     size_t n, cap;
     rl_value *items;
+    size_t off;
 } rl_list;
+void rl_list_insert(rl_list *l, size_t i, rl_value v); /* retains v; i <= n */
+rl_value rl_list_take(rl_list *l, size_t i);          /* removes item i < n, gives its reference */
 
 /* Maps keep insertion order. Keys are strings. */
 /* Entries are in insertion order. rl_map_remove leaves a hole (a NULL key)

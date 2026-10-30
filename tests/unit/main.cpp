@@ -388,7 +388,34 @@ static void test_string_values() {
     CHECK(relic::str_len(e) == 0 && relic::str_offset(e, 0) == 0);
 }
 
+// Lists: erase and insert near the front move the start, not the rest.
+static void test_list_layout() {
+    relic::List l;
+    for (int i = 0; i < 100; ++i) l.push_back(relic::Value(i));
+    for (int i = 0; i < 70; ++i) {
+        CHECK(l[0].as<long long>() == i);
+        l.erase(l.begin());
+    }
+    CHECK(l.size() == 30 && l[0].as<long long>() == 70 && l.back().as<long long>() == 99);
+    l.insert(l.begin(), relic::Value(-1));
+    l.insert(l.begin() + 2, relic::Value(-2));
+    CHECK(l.size() == 32 && l[0].as<long long>() == -1 && l[1].as<long long>() == 70 && l[2].as<long long>() == -2);
+    l.erase(l.begin() + 30);  // near the back
+    CHECK(l.size() == 31 && l[30].as<long long>() == 99);
+    for (int i = 0; i < 50; ++i) l.push_back(relic::Value(i));
+    long long sum = 0;
+    for (const relic::Value& v : l) sum += v.as<long long>();
+    CHECK(sum == -3 + (70 + 97) * 28 / 2 + 99 + 49 * 50 / 2);
+    relic::List c(l);
+    CHECK(c.size() == l.size() && c[0].as<long long>() == -1);
+    while (!l.empty()) l.erase(l.begin());
+    CHECK(l.size() == 0 && c.size() == 81);
+    l.push_back(relic::Value(5));
+    CHECK(l.size() == 1 && l[0].as<long long>() == 5);
+}
+
 int main() {
+    test_list_layout();
     test_string_values();
     test_parser();
     test_parse_errors();

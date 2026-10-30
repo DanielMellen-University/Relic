@@ -446,7 +446,8 @@ void Interpreter::install_builtins() {
         const std::string& n = str_arg(a[0], "name");
         auto it = builtins_->vars.find(n);
         if (n.rfind("host_", 0) != 0 || it == builtins_->vars.end()) throw std::string("no host built-in ") + n;
-        std::vector<Value> args = list_arg(a[1]);
+        const List& given = list_arg(a[1]);
+        std::vector<Value> args(given.begin(), given.end());
         auto b = it->second.as<std::shared_ptr<Builtin>>();
         if (b->arity >= 0 && static_cast<size_t>(b->arity) != args.size())
             throw n + "() takes " + std::to_string(b->arity) + " arguments";

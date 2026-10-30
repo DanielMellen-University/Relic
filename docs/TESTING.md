@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 186 ctest cases: 176 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 393: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 187 ctest cases: 177 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 395: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -48,10 +48,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (233 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (234 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (182 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (182 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (183 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (183 today) |
 
 Three more self-host cases check the interpreter on real use:
 
@@ -86,6 +86,8 @@ The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.m
 
 `tools/fuzz_maps.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` writes programs of random map operations (set, remove, adding a removed key back, removing in a `for` loop, `keys`, `len`, `==`, printing, missing keys under `try`) and compares the VM with `--tree`, `selfhost/run.relic` and the compiled program, and with an older build's VM, `--tree` and compiled program when OLD_BUILD_DIR is given. By hand, after changing maps in `src/interp/value.*` or `runtime/c`; seeds 1 to 10 (560 programs) matched 1.0.40 exactly in 1.0.41.
 
+`tools/fuzz_lists.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]` does the same for lists: appends, removes and inserts at the front, the back and the middle, emptying a list from the front, `pop`, indexing and setting (out of range under `try`), `for`, `==`, `+` and printing, and lists that hold each other. By hand, after changing lists in `src/interp/value.*` or `runtime/c`; seeds 1 to 8 (480 programs) matched 1.0.41 exactly in 1.0.42.
+
 ## Unit tests
 
 `tests/unit/main.cpp` (`relic_tests`, ctest case `unit`) checks the lexer, parser, interpreter and REPL from C++, where token lists or tree shape are easier to check than output. It uses a small hand-written harness, no test library. It also holds the checks that would only add programs to `selfhost_interp` for little gain: lexer, parse and built-in error messages with their positions, the REPL's details, and the built-in font.
@@ -103,7 +105,7 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (176 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 176 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are two: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, and `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal. Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (177 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 177 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are two: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, and `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal. Details in [CGEN.md](CGEN.md#tests).
 
 In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 

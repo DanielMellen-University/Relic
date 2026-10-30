@@ -1,0 +1,43 @@
+# Removing and inserting at the front keep the order and indexes of the rest,
+# also once enough have gone from the front that the list gives the room back,
+# and appending after that reuses it.
+let l = []
+for i in 0..100
+    append(l, i)
+for i in 0..70
+    remove(l, 0)
+print(len(l), l[0], l[len(l) - 1], slice(l, 0, 3))
+insert(l, 0, "a")
+insert(l, 1, "b")
+print(len(l), slice(l, 0, 4), l[len(l) - 1])
+for i in 0..50
+    append(l, "e{i}")
+print(len(l), l[0], l[31], l[32], l[len(l) - 1])
+print(remove(l, 1), remove(l, len(l) - 1), remove(l, 40), len(l))
+let q = [1, 2, 3]
+let got = []
+while len(q) > 0
+    let x = remove(q, 0)
+    append(got, x)
+    if x < 20
+        append(q, x * 2)
+        append(q, x * 2 + 1)
+print(len(got), slice(got, 0, 8), got[len(got) - 1])
+let m = [1, 2, 3, 4, 5, 6]
+remove(m, 1)
+insert(m, 1, 9)
+remove(m, 0)
+insert(m, 0, 8)
+print(m, m == [8, 9, 3, 4, 5, 6], len(m))
+for x in m
+    if x == 9
+        remove(m, 0)
+print(m)
+try
+    remove(m, -1)
+catch e
+    print(e.message)
+try
+    insert(m, 7, 0)
+catch e
+    print(e.message)

@@ -1,0 +1,9 @@
+30 70 99 [70, 71, 72]
+32 ["a", "b", 70, 71] 99
+82 a 99 e0 e49
+b e49 e9 79
+77 [1, 2, 3, 2, 3, 4, 5, 6] 39
+[8, 9, 3, 4, 5, 6] true 6
+[9, 3, 4, 5, 6]
+remove(): index -1 is out of range
+insert(): index 7 is out of range

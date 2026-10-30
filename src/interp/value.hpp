@@ -15,16 +15,47 @@ namespace relic {
 struct Value;
 struct Env;
 
-struct List : std::vector<Value>, GcObj {
-    using std::vector<Value>::vector;
+// A list's items, with the vector calls the interpreter uses. Removing near
+// the front moves the items before the removed one up a slot instead of the
+// rest down, and the list then starts one slot later in `items_` (`head_`);
+// those slots are given back once they are over half. So remove(xs, 0) and
+// insert(xs, 0, x) cost about the same as at the end (1.0.42; before, they
+// moved every item).
+struct List : GcObj {
+    using iterator = Value*;
+    using const_iterator = const Value*;
     List() = default;
-    List(const List&) = default;
+    List(const List& o);
     List(List&&) = default;
-    List& operator=(const List&) = default;
+    template <class It> List(It first, It last) : items_(first, last) {}
+    List& operator=(const List& o);
     List& operator=(List&&) = default;
     ~List() override;  // frees deep nesting without deep C++ recursion
     void trace(std::vector<GcObj*>& out) const override;
     void clear_refs() override;
+
+    size_t size() const { return items_.size() - head_; }
+    bool empty() const { return size() == 0; }
+    Value& operator[](size_t i);
+    const Value& operator[](size_t i) const;
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    Value& back();
+    const Value& back() const;
+    void reserve(size_t n) { items_.reserve(head_ + n); }
+    void push_back(const Value& v);
+    void push_back(Value&& v);
+    template <class... A> Value& emplace_back(A&&... a);
+    void pop_back();
+    void clear();
+    iterator insert(const_iterator pos, Value v);
+    iterator erase(const_iterator pos);
+
+private:
+    std::vector<Value> items_;
+    size_t head_ = 0;  // slots in front of the first item
 };
 
 // Map that keeps insertion order, so printing and `for k in map` are stable.
@@ -133,6 +164,19 @@ struct Value {
     template <class T> bool is() const { return std::holds_alternative<T>(v); }
     template <class T> const T& as() const { return std::get<T>(v); }
 };
+template <class... A> Value& List::emplace_back(A&&... a) { return items_.emplace_back(std::forward<A>(a)...); }
+inline void List::push_back(const Value& v) { items_.push_back(v); }
+inline void List::push_back(Value&& v) { items_.push_back(std::move(v)); }
+inline void List::pop_back() { items_.pop_back(); }
+inline Value& List::operator[](size_t i) { return items_[head_ + i]; }
+inline const Value& List::operator[](size_t i) const { return items_[head_ + i]; }
+inline List::iterator List::begin() { return items_.data() + head_; }
+inline List::iterator List::end() { return items_.data() + items_.size(); }
+inline List::const_iterator List::begin() const { return items_.data() + head_; }
+inline List::const_iterator List::end() const { return items_.data() + items_.size(); }
+inline Value& List::back() { return items_.back(); }
+inline const Value& List::back() const { return items_.back(); }
+
 template <> inline bool Value::is<std::string>() const { return std::holds_alternative<Str>(v); }
 template <> inline const std::string& Value::as<std::string>() const { return std::get<Str>(v).p->s; }
 
