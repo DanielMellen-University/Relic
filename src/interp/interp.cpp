@@ -1,5 +1,6 @@
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
+#include "interp/stack.hpp"
 
 #include <algorithm>
 #include <cerrno>
@@ -474,6 +475,15 @@ Value Interpreter::load_module(const Ast& use) {
 }
 
 void Interpreter::run(const Ast& program, Value* last) {
+    if (!stack_base_) {
+        char here = 0;
+        stack_base_ = &here;
+        // Leave a quarter of the stack (at least 256 KB) for built-ins, the GC
+        // and the error path below the last guarded frame.
+        std::size_t size = native_stack_size();
+        std::size_t spare = size / 4 > (std::size_t(256) << 10) ? size / 4 : (std::size_t(256) << 10);
+        stack_budget_ = size > spare ? size - spare : size / 2;
+    }
     for (size_t i = 0; i < program.kids.size(); ++i) {
         const Ast& s = *program.kids[i];
         if (last && i + 1 == program.kids.size() && s.kind == Node::ExprStmt) {
@@ -607,7 +617,16 @@ void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>&
     op_set_index(target, obj, idx, std::move(v));
 }
 
+void Interpreter::check_stack(const Ast& at) {
+    char here = 0;
+    const char* p = &here;
+    std::size_t used = p < stack_base_ ? static_cast<std::size_t>(stack_base_ - p) : static_cast<std::size_t>(p - stack_base_);
+    if (used > stack_budget_)
+        fail(at, "too much recursion (calls and expressions nest too deeply for the stack)");
+}
+
 Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
+    if (stack_base_) check_stack(n);
     switch (n.kind) {
         case Node::Number: return op_number(n);
         case Node::String: return Value(n.text);

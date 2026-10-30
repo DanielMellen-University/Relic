@@ -68,6 +68,12 @@ private:
     Value ret_;
     const Ast* flow_node_ = nullptr;  // the break/next/return that caused the flow
     int depth_ = 0;
+    // The tree-walker recurses on the native stack: a huge expression inside
+    // deep recursion can run out of it before depth_ reaches its limit. eval
+    // fails cleanly once the stack in use passes stack_budget_ (set by run()).
+    const char* stack_base_ = nullptr;
+    std::size_t stack_budget_ = 0;
+    void check_stack(const Ast& at);
 
     Flow exec_block(const Ast& block, std::shared_ptr<Env> env);
     Flow exec(const Ast& n, const std::shared_ptr<Env>& env);

@@ -116,7 +116,7 @@ fun double(x) = x * 2
 - Functions are values. They can be stored in lists and maps, passed and returned.
 - A function with no `return`, or a bare `return`, gives `none`.
 - Calling with the wrong number of arguments is an error.
-- Calls more than 800 deep stop with `too much recursion (more than 800 calls deep)`.
+- Calls more than 800 deep stop with `too much recursion (more than 800 calls deep)`. `relic --tree` walks the tree on the native stack, so a very big expression inside deep recursion can stop it sooner, with `too much recursion (calls and expressions nest too deeply for the stack)`; it uses up to three quarters of the stack (6 MB of the usual 8 MB). Both errors can be caught with `try`.
 
 ## Type hints
 

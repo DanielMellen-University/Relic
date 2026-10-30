@@ -74,6 +74,7 @@ if(RELIC_BUILD_HOST)
     src/interp/value.cpp
     src/interp/gc.cpp
     src/interp/interp.cpp
+    src/interp/stack.cpp
     src/builtins/builtins.cpp
     src/vm/vm.cpp
     src/builtins/graphics.cpp
@@ -360,6 +361,12 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
   add_test(NAME depth_limit
     COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> ${depth_host} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/depth_limit -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_depth_limit.cmake)
+  if(RELIC_BUILD_HOST)
+    # --tree: a big expression inside deep recursion is a clean error, not a crash
+    add_test(NAME tree_stack
+      COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DTMP=${CMAKE_CURRENT_BINARY_DIR}/tree_stack
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_tree_stack.cmake)
+  endif()
   if(RELIC_BUILD_HOST)
     add_test(NAME cgen_stage1_matches_host
       COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
