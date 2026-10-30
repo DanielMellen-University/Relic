@@ -40,7 +40,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 `relic check a.relic b.relic` reads each file and reports, without running it:
 
 - syntax errors
-- names that are never defined, with a "did you mean" hint
+- names that are never defined, with a "did you mean" hint (for the first 50 in a file; the rest are listed without one, so a file full of typos stays quick)
 - top-level uses of a name before its `fun` or `let` line
 - `break`, `next` or `return` in the wrong place, and other statements that always fail
 

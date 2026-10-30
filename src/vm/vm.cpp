@@ -1251,13 +1251,21 @@ void vm_run(const Ast& program, std::ostream& out, const std::string& path) {
     Machine(out).run_main(program, path == "<repl>" ? "" : path);
 }
 
+// relic check gives a "did you mean" hint to the first 50 undefined names in a
+// file (in line order); past that a file full of typos would spend most of its
+// time on hints. selfhost/check.relic uses the same limit.
+static constexpr int kSuggestLimit = 50;
+
 int vm_check(const Ast& program, const std::string& path, std::string& out) {
     Program prog;
     Compiler(prog).compile_main(program);
     std::ostringstream sink;
     Interpreter host(sink);
     const auto& builtins = host.builtins()->vars;
-    struct Item { int line, col; std::string msg; };
+    // An undefined name keeps what op_suggest needs (its name and the local names
+    // in scope); the "did you mean" lookup runs after sorting, for the first
+    // kSuggestLimit of them only, since each one scans every name in scope.
+    struct Item { int line, col; std::string msg; std::string name; const std::string* locals = nullptr; };
     std::vector<Item> items;
     for (const auto& p : prog.protos) {
         // Top-level names exist only after their `fun` / `let` / `use` line runs.
@@ -1284,18 +1292,24 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
             } else if (in.op == Op::LoadBuiltin && in.at) {
                 const std::string& name = p->strings[in.a];
                 if (builtins.count(name) || prog.global_index.count(name)) continue;
-                std::vector<std::string> names = prog.global_names;
-                const std::string& ls = p->strings[in.b];
-                for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
-                    names.push_back(ls.substr(i, j - i));
-                for (const auto& kv : builtins) names.push_back(kv.first);
-                items.push_back({in.at->line, in.at->col, "'" + name + "' is not defined" + op_suggest(name, names)});
+                items.push_back({in.at->line, in.at->col, "'" + name + "' is not defined", name, &p->strings[in.b]});
             }
         }
     }
     std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
         return a.line != b.line ? a.line < b.line : a.col < b.col;
     });
+    int suggested = 0;
+    for (auto& it : items) {
+        if (!it.locals || suggested >= kSuggestLimit) continue;
+        ++suggested;
+        std::vector<std::string> names = prog.global_names;
+        const std::string& ls = *it.locals;
+        for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
+            names.push_back(ls.substr(i, j - i));
+        for (const auto& kv : builtins) names.push_back(kv.first);
+        it.msg += op_suggest(it.name, names);
+    }
     for (const auto& it : items) out += diag::format(path, it.line, it.col, it.msg, "warning");
     return static_cast<int>(items.size());
 }

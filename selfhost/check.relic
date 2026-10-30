@@ -20,6 +20,10 @@ use std/files
 use std/lists
 use std/strings
 
+# relic check gives a "did you mean" hint to the first 50 undefined names in a
+# file; the host's kSuggestLimit in src/vm/vm.cpp is the same.
+let suggest_limit = 50
+
 fun new_scope() = {names: {}, pending: {}}
 
 # The state of one file's check.
@@ -273,15 +277,24 @@ fun check_tree(tree)
         stmt(ck, s)
     for r in ck.reads
         if not (r.node.text in ck.gset)
+            add_item(ck, r.node, "'{r.node.text}' is not defined")
+            ck.items[len(ck.items) - 1].read = r
+    let items = lists.sort_by(ck.items, before)
+    # "did you mean" for the first suggest_limit undefined names in line order
+    # only, as the host does: each lookup scans every name in scope.
+    let suggested = 0
+    for it in items
+        if "read" in it and suggested < suggest_limit
+            suggested = suggested + 1
             let all = []
             for g in keys(ck.gset)
                 append(all, g)
-            for l in r.locals
+            for l in it.read.locals
                 append(all, l)
             for b in keys(ck.builtins)
                 append(all, b)
-            add_item(ck, r.node, "'{r.node.text}' is not defined" + interp.suggest(r.node.text, all))
-    return lists.sort_by(ck.items, before)
+            it.msg = it.msg + interp.suggest(it.read.node.text, all)
+    return items
 
 fun before(a, b) = a.line < b.line or (a.line == b.line and a.col < b.col)
 

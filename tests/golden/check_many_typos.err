@@ -1,0 +1,159 @@
+check_many_typos.relic:5:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:6:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:7:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:8:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:9:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:10:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:11:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:12:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:13:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:14:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:15:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:16:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:17:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:18:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:19:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:20:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:21:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:22:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:23:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:24:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:25:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:26:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:27:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:28:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:29:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:30:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:31:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:32:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:33:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:34:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:35:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:36:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:37:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:38:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:39:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:40:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:41:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:42:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:43:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:44:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:45:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:46:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:47:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:48:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:49:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:50:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:51:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:52:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:53:7: warning: 'totl' is not defined (did you mean 'total'?)
+    print(totl)
+          ^
+check_many_typos.relic:54:7: warning: 'totla' is not defined (did you mean 'total'?)
+    print(totla)
+          ^
+check_many_typos.relic:55:7: warning: 'totl' is not defined
+    print(totl)
+          ^
+check_many_typos.relic:56:7: warning: 'totla' is not defined
+    print(totla)
+          ^
+check_many_typos.relic:57:7: warning: 'totl' is not defined
+    print(totl)
+          ^
