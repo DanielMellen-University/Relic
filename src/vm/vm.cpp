@@ -1277,7 +1277,7 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
             // The outward fallback of a late read: the name is declared later in an enclosing function.
             if (ci > 0 && (p->code[ci - 1].op == Op::LoadLate || p->code[ci - 1].op == Op::StoreLate)) continue;
             if (in.op == Op::Fail && in.at) {
-                items.push_back({in.at->line, in.at->col, p->strings[in.a]});
+                items.push_back({in.at->line, in.at->col, p->strings[in.a], {}, nullptr});
             } else if (in.op == Op::DefineGlobal && is_main) {
                 if (in.a >= 0 && static_cast<size_t>(in.a) < defined_here.size())
                     defined_here[static_cast<size_t>(in.a)] = 1;
@@ -1287,7 +1287,7 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
                     && !defined_here[static_cast<size_t>(in.a)]
                     && !builtins.count(name)) {
                     items.push_back({in.at->line, in.at->col,
-                                     "'" + name + "' is used before it is defined"});
+                                     "'" + name + "' is used before it is defined", {}, nullptr});
                 }
             } else if (in.op == Op::LoadBuiltin && in.at) {
                 const std::string& name = p->strings[in.a];
