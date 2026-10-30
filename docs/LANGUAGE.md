@@ -237,9 +237,9 @@ Always available, no `use` needed.
 | `ord(c)` / `chr(n)` | code point of a one-character string, and back (0 to 1114111, no surrogates) |
 | `slice(x, a, b)` | part of a string or list from `a` up to `b - 1`; the ends are clamped |
 | `append(list, x)` | adds `x` to the end |
-| `insert(list, i, x)` | puts `x` at index `i` |
+| `insert(list, i, x)` | puts `x` at index `i`; the items after it move up one, so the cost grows with how many there are |
 | `pop(list)` | removes and gives the last item |
-| `remove(list, i)` / `remove(map, k)` | drops an item or key and gives its value |
+| `remove(list, i)` / `remove(map, k)` | drops an item or key and gives its value. On a list the items after `i` move down one, so taking items off the front of a long list one at a time is slow (20,000 off a 100,000-item list: about 3.5 s on the VM); keep an index to the next item instead. On a map it is quick, and the other keys keep their order |
 | `keys(map)` | the keys, in order |
 | `fail(message)` | raises an error; `message` must be a string |
 | `args()` | the words after the file name on the command line |
