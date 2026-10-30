@@ -117,7 +117,7 @@ A `Map` (`src/interp/value.hpp`) is a hash table of the values and a list of the
 
 ## Memory
 
-- Lists, maps, functions and scopes are reference counted with the host's `std::shared_ptr`. Strings and numbers are plain values.
+- Lists, maps, functions and scopes are reference counted with the host's `std::shared_ptr`. Numbers are plain values. A string is a shared, never-changed buffer (`Str` in `value.hpp`) that also keeps its character count and, for long text past ASCII, the offset of every 64th character, once something asks for them (1.0.41; before, every read of a string variable copied it).
 - Cycles: `src/interp/gc.cpp` keeps every list, map, function and scope on one list. A collection counts the references each one gets from other containers. If an object's total count is higher, something outside the heap (a C++ local, the VM stack, a module) holds it, so it is a root. Everything reachable from a root lives; the rest is cleared, and the reference counts free it.
 - When: at calls and loop turns, once more than 100,000 containers exist and the count has doubled since the last collection, or when the program calls `gc()`. The same collector serves both engines.
 - Cost: about 10 percent on `bench/`, from tracking each container.

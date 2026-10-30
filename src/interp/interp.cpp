@@ -214,8 +214,8 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
             if (obj.is<std::string>()) {
                 const std::string& s = obj.as<std::string>();
                 long long i = whole(*n.kids[1], idx, "string index");
-                size_t at = i < 0 ? s.size() : utf8_offset(s, static_cast<size_t>(i));
-                if (at >= s.size()) list_slot(*n.kids[1], idx, utf8_len(s), "string index");  // fails
+                size_t at = i < 0 ? s.size() : str_offset(obj, static_cast<size_t>(i));
+                if (at >= s.size()) list_slot(*n.kids[1], idx, str_len(obj), "string index");  // fails
                 return Value(s.substr(at, utf8_char_size(s, at)));
             }
             if (obj.is<std::shared_ptr<Map>>()) {

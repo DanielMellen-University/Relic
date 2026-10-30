@@ -105,7 +105,7 @@ void Interpreter::install_builtins() {
 
     add("len", 1, [](std::vector<Value>& a) {
         const Value& v = a[0];
-        if (v.is<std::string>()) return Value(static_cast<long long>(utf8_len(v.as<std::string>())));
+        if (v.is<std::string>()) return Value(static_cast<long long>(str_len(v)));
         if (v.is<std::shared_ptr<List>>())
             return Value(static_cast<long long>(v.as<std::shared_ptr<List>>()->size()));
         if (v.is<std::shared_ptr<Map>>())
@@ -170,10 +170,10 @@ void Interpreter::install_builtins() {
         auto clampi = [](long long i, size_t n) { return static_cast<size_t>(i < 0 ? 0 : (static_cast<size_t>(i) > n ? n : i)); };
         if (a[0].is<std::string>()) {
             const std::string& s = a[0].as<std::string>();
-            size_t n = utf8_len(s);
+            size_t n = str_len(a[0]);
             size_t x = clampi(b, n), y = clampi(e, n);
             if (y <= x) return Value(std::string());
-            size_t bx = utf8_offset(s, x), by = utf8_offset(s, y);
+            size_t bx = str_offset(a[0], x), by = str_offset(a[0], y);
             return Value(s.substr(bx, by - bx));
         }
         if (a[0].is<std::shared_ptr<List>>()) {

@@ -212,7 +212,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 - A curly quote or a no-break space pasted from a document, a byte order mark at the start of a file, and a control character (shown as `U+0001`, since it prints as nothing), are `unexpected character` errors that say what the character is and what to type instead.
 - Strings are immutable: `s[0] = "x"` is an error.
 - `std/strings` `upper` and `lower` change ASCII letters only.
-- Cost: a string is one value, so `s + t` copies both, and `s[i]`, `len(s)` and `slice` cost more on a long string than on a short one (on the VM, `len` of a 200,000-character string takes about 12 microseconds; a list index does not grow like that). A loop that adds to a long string one piece at a time, or indexes it one character at a time, takes time growing with the square of its length. Read text with `for c in s` (or put its characters in a list once) and build long text from a list of pieces with `strings.join`. The standard library does this since 1.0.37.
+- Cost: `s + t` makes a new string, copying both, so a loop that adds to a long string one piece at a time takes time growing with the square of its length; build long text from a list of pieces with `strings.join` (the standard library does since 1.0.37). Reading a string variable, passing a string or putting it in a list does not copy it, and `len(s)`, `s[i]` and `slice` on a long string are quick: the first `len` or index of a string counts its characters once (a 200,000-character string: about 0.02 ms in ASCII, 0.3 ms in é), and after that `len` is immediate and an index goes straight to its character, or near it when the string has characters past ASCII (since 1.0.41 on the host; compiled programs before that).
 
 ## Memory
 

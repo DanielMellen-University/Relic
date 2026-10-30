@@ -35,7 +35,8 @@ void free_flat(Each each) {
     });
     if (!outer) return;
     while (!queue.empty()) {
-        Value v = std::move(queue.back());
+        Value v;
+        v.v.swap(queue.back().v);  // (a swap: GCC 14 warns, wrongly, about a move here)
         queue.pop_back();
     }  // each v's destructor may push more onto the queue
     g_dying = nullptr;
@@ -269,48 +270,68 @@ static size_t utf8_count_from(const std::string& s, size_t i, size_t n) {
     return n;
 }
 
-// Offsets for long strings with multi-byte characters, like the C runtime's
-// table: the byte offset of every 64th character, so an index walks at most
-// 63 characters. Host strings are plain std::string values with nowhere to
-// keep the table, so the last few strings indexed keep theirs here, matched
-// by content (a compare is much cheaper than a walk from the start).
+// Long strings with multi-byte characters keep, in their buffer, the byte
+// offset of every 64th character, like the C runtime's table, so an index
+// walks at most 63 characters (built at the first index past kMarkMin bytes).
 namespace {
 constexpr size_t kMarkEvery = 64;
-constexpr size_t kMarkMin = 256;          // shorter strings just walk
-constexpr size_t kMarkMax = 64u << 20;    // longer strings are not copied
-struct Marks {
-    std::string text;
-    std::vector<size_t> at;  // at[k] = byte offset of character k * 64
-    size_t count = 0;        // characters in text
-};
-Marks g_marks[4];
-size_t g_marks_next = 0;
+constexpr size_t kMarkMin = 256;  // shorter strings just walk
 
-const Marks* marks_for(const std::string& s) {
-    for (const Marks& m : g_marks)
-        if (m.text.size() == s.size() && !m.at.empty() && std::memcmp(m.text.data(), s.data(), s.size()) == 0)
-            return &m;
-    Marks& m = g_marks[g_marks_next];
-    g_marks_next = (g_marks_next + 1) % 4;
-    m.text = s;
-    m.at.clear();
-    size_t i = 0, n = 0;
+void count_chars(const StrBuf& b) {
+    const std::string& s = b.s;
+    size_t i = ascii_prefix(s, s.size());
+    if (i == s.size()) {
+        b.chars = i;
+        return;
+    }
+    if (s.size() < kMarkMin) {
+        b.chars = utf8_count_from(s, i, i);
+        return;
+    }
+    b.marks.clear();
+    size_t n = 0;
+    i = 0;
     while (i < s.size()) {
-        if (n % kMarkEvery == 0) m.at.push_back(i);
+        if (n % kMarkEvery == 0) b.marks.push_back(i);
         i += utf8_char_size(s, i);
         ++n;
     }
-    if (m.at.empty()) m.at.push_back(0);
-    m.count = n;
-    return &m;
+    b.chars = n;
 }
 }  // namespace
 
 size_t utf8_len(const std::string& s) {
     size_t i = ascii_prefix(s, s.size());
-    if (i == s.size()) return i;
-    if (s.size() >= kMarkMin && s.size() <= kMarkMax) return marks_for(s)->count;
-    return utf8_count_from(s, i, i);
+    return i == s.size() ? i : utf8_count_from(s, i, i);
+}
+
+size_t str_len(const Value& v) {
+    const StrBuf& b = *std::get<Str>(v.v).p;
+    if (b.chars == static_cast<size_t>(-1)) count_chars(b);
+    return b.chars;
+}
+
+size_t str_offset(const Value& v, size_t index) {
+    const StrBuf& b = *std::get<Str>(v.v).p;
+    const std::string& s = b.s;
+    if (b.chars == static_cast<size_t>(-1)) {
+        // short or not looked at yet: an ASCII start needs no count
+        size_t limit = index < s.size() ? index + 1 : s.size();
+        if (ascii_prefix(s, limit) == limit) return index < s.size() ? index : s.size();
+        count_chars(b);
+    }
+    if (b.chars == s.size()) return index < s.size() ? index : s.size();  // all ASCII
+    if (index >= b.chars) return s.size();
+    size_t i = 0, n = 0;
+    if (!b.marks.empty()) {
+        i = b.marks[index / kMarkEvery];
+        n = index - index % kMarkEvery;
+    }
+    while (i < s.size() && n < index) {
+        i += utf8_char_size(s, i);
+        ++n;
+    }
+    return i;
 }
 
 size_t utf8_offset(const std::string& s, size_t index) {
@@ -318,12 +339,6 @@ size_t utf8_offset(const std::string& s, size_t index) {
     size_t i = ascii_prefix(s, limit);
     if (i == limit) return index < s.size() ? index : s.size();
     size_t n = i;
-    if (s.size() >= kMarkMin && s.size() <= kMarkMax) {
-        const Marks* m = marks_for(s);
-        if (index >= m->count) return s.size();
-        i = m->at[index / kMarkEvery];
-        n = index - index % kMarkEvery;
-    }
     while (i < s.size() && n < index) {
         i += utf8_char_size(s, i);
         ++n;

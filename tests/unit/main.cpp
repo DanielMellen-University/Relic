@@ -3,6 +3,7 @@
 #include "diag/diag.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+#include "interp/value.hpp"
 
 // The built-in 8x12 text font (std/graphics text), shared with runtime/c.
 #include "builtins/font8x12.inc"
@@ -372,7 +373,23 @@ static void test_repl_details() {
     CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n");
 }
 
+// String values share one buffer between copies and keep its character count.
+static void test_string_values() {
+    relic::Value a(std::string("h\xc3\xa9llo")), b = a;
+    CHECK(&a.as<std::string>() == &b.as<std::string>());  // shared, not copied
+    CHECK(relic::str_len(a) == 5 && relic::str_len(b) == 5);
+    CHECK(relic::str_offset(a, 2) == 3 && relic::str_offset(a, 5) == 6 && relic::str_offset(a, 9) == 6);
+    relic::Value c(std::string("plain"));
+    CHECK(relic::str_offset(c, 3) == 3);  // before the count is known
+    CHECK(relic::str_len(c) == 5 && relic::str_offset(c, 3) == 3 && relic::str_offset(c, 7) == 5);
+    b = relic::Value(std::string("other"));
+    CHECK(a.as<std::string>() == "h\xc3\xa9llo" && relic::str_len(a) == 5);
+    relic::Value e(std::string(""));
+    CHECK(relic::str_len(e) == 0 && relic::str_offset(e, 0) == 0);
+}
+
 int main() {
+    test_string_values();
     test_parser();
     test_parse_errors();
     test_repl();

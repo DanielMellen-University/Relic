@@ -95,8 +95,26 @@ struct Module {
 
 struct NoneV {};
 
+// A string value. Strings cannot change in place, so copies of a value share
+// one buffer: reading a string variable, passing it or putting it in a list
+// costs the same for 10 characters or 10 million (before 1.0.41 each of those
+// copied the text). Value::as<std::string>() gives the text. The buffer also
+// remembers its length in characters once something asks (str_len), so len(s)
+// on a long string is quick after the first time; indexing an all-ASCII string
+// goes straight to the byte, and a long one with other characters keeps a
+// table of offsets (str_offset).
+struct StrBuf {
+    explicit StrBuf(std::string text) : s(std::move(text)) {}
+    std::string s;
+    mutable size_t chars = static_cast<size_t>(-1);  // not counted yet
+    mutable std::vector<size_t> marks;  // long non-ASCII text: offset of every 64th character
+};
+struct Str {
+    std::shared_ptr<const StrBuf> p;
+};
+
 struct Value {
-    std::variant<NoneV, bool, double, long long, std::string, std::shared_ptr<List>, std::shared_ptr<Map>,
+    std::variant<NoneV, bool, double, long long, Str, std::shared_ptr<List>, std::shared_ptr<Map>,
                  std::shared_ptr<Function>, std::shared_ptr<Builtin>, std::shared_ptr<Module>>
         v;
 
@@ -105,7 +123,7 @@ struct Value {
     Value(double d) : v(d) {}
     Value(long long i) : v(i) {}
     Value(int i) : v(static_cast<long long>(i)) {}
-    Value(std::string s) : v(std::move(s)) {}
+    Value(std::string s) : v(Str{std::make_shared<const StrBuf>(std::move(s))}) {}
     Value(std::shared_ptr<List> l) : v(std::move(l)) {}
     Value(std::shared_ptr<Map> m) : v(std::move(m)) {}
     Value(std::shared_ptr<Function> f) : v(std::move(f)) {}
@@ -115,6 +133,8 @@ struct Value {
     template <class T> bool is() const { return std::holds_alternative<T>(v); }
     template <class T> const T& as() const { return std::get<T>(v); }
 };
+template <> inline bool Value::is<std::string>() const { return std::holds_alternative<Str>(v); }
+template <> inline const std::string& Value::as<std::string>() const { return std::get<Str>(v).p->s; }
 
 // Type name as shown in errors and by type(): none, bool, int, float, string, list, map, function, module.
 const char* type_name(const Value& v);
@@ -174,6 +194,9 @@ void trace_value(const Value& v, std::vector<GcObj*>& out);
 size_t utf8_char_size(const std::string& s, size_t pos);  // bytes in the character at pos
 size_t utf8_len(const std::string& s);
 size_t utf8_offset(const std::string& s, size_t index);  // byte offset of character index, or s.size()
+// The same for a string Value, using the character count its buffer keeps.
+size_t str_len(const Value& v);
+size_t str_offset(const Value& v, size_t index);
 long utf8_decode(const std::string& s, size_t pos);       // code point at pos
 std::string utf8_encode(long cp);
 
