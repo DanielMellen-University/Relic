@@ -91,10 +91,11 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `abs(x)`, `min(a, b)`, `max(a, b)`, `clamp(x, lo, hi)` | number |
 | `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2`; an int comes back as it is; nan, an infinity or a float past the int range is `math.floor(): number is out of the int range` |
 | `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
+| `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
-`abs`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
+`abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
 
 ## std/files
 

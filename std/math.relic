@@ -27,6 +27,17 @@ fun max(a, b)
     return a
 
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
+
+# Since 1.0.49: -1, 0 or 1 as an int, for an int or a float; nan stays nan.
+fun sign(x)
+    _number("sign", x)
+    if x > 0
+        return 1
+    if x < 0
+        return -1
+    if x == 0
+        return 0
+    return x
 # floor, ceil and round give an int. An int comes back as it is (going through a
 # float lost digits past 2^53); a float must land in the int range.
 fun _int(name, f)

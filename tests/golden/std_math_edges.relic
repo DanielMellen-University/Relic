@@ -61,3 +61,10 @@ for x in [inf2, 0 - inf2, inf2 - inf2, 1e300, -1e300, "a", none, -0.5, -0.4, 0.5
         catch e
             print(x, e.message)
 print(math.floor(9007199254740993), math.round(0.49999999999999994), math.round(4503599627370497.0))
+# sign (since 1.0.49): an int for any number, nan as it is, a math error otherwise
+let nan = 1e308 * 10 - 1e308 * 10
+print(math.sign(5), math.sign(-2.5), math.sign(0), math.sign(-0.0), math.sign(1e-300), math.sign(nan) != math.sign(nan))
+try
+    math.sign("1")
+catch e
+    print(e.message)
