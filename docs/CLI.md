@@ -13,7 +13,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | `relic --tokens FILE` | prints the tokens, one per line as `line:col KIND text` |
 | `relic --ast FILE` | prints the syntax tree |
 | `relic --bytecode FILE` | prints the compiled bytecode |
-| `relic --version` | prints `relic 1.0.46` |
+| `relic --version` | prints `relic 1.0.47` |
 | `relic --help` | prints the usage lines |
 
 - `--vm` is still accepted and means the same as the default.
@@ -60,7 +60,7 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 
 ```
 $ ./build/relic
-relic 1.0.46. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.47. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42

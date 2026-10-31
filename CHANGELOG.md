@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.47 (2026-10-31)
+
+`std/json` follows JSON more closely in two ways Daniel approved on Oct 31. A program whose JSON has no raw control characters in strings and whose floats `str()` already writes exactly sees no difference.
+
+- `json.decode` refuses a raw control character (U+0000 to U+001F, such as a tab or a newline) inside a string: `json: control character in string at N`. JSON wants them escaped (`\t`, `\n`, `\u0000`), and Python's json, for one, refuses them too. Before, they were read as they were. Control characters between values (spaces, tabs, newlines, returns) are fine as before, and `encode` always wrote them escaped.
+- `json.encode` and `json.pretty` write a float that `str()`'s 15 significant digits do not give back with 16 or 17 digits, the fewest that read back as exactly the same float: `0.1 + 0.2` is `0.30000000000000004` (was `0.3`), `-90071992547409.92` stays that (was `-90071992547409.9`), and `1.7976931348623157e+308` no longer comes back as `inf`. So `decode(encode(v)) == v` now holds for every value `encode` takes. A float `str()` gives back exactly (`0.5`, `0.1`, `1e+300`) is written as before.
+- Cost: a float that needs 16 or 17 digits takes about 12 us to encode on the VM instead of about 2 us (25,000 floats, 20,000 of them from random bits: 55 ms, now 310 ms); other floats, ints and strings are as fast as before. `decode` checks each string character once more: 1 MB of ints and strings 1.00 s, now 1.07 s.
+- Golden `std_json_edges` covers both. `tools/fuzz_json.py` checks them strictly against Python, draws floats from random bits and random decimals too, and, against an older build, allows only these two differences: seeds 21 to 28 (320 programs, VM, `--tree`, `selfhost/run.relic` and compiled) match 1.0.46 apart from them. In a separate check, 25,000 floats (20,000 from random bits) all came back exactly, each with as many digits as Python's `repr`.
+- No M0N0LITH-2 app or test uses `std/json`.
+- Speed: `selfhost_interp` 10.49 s median of 3 (10.13, 10.49, 10.50), under the 12.2 s cap; 1.0.46 measured 9.61 s on the same machine today. Most of the difference is the longer `std_json_edges` golden, which it runs too (0.27 s, now 0.68 s).
+- `ctest`: 187 default, 396 with the host.
+
 ## 1.0.46 (2026-10-31)
 
 `std/strings` is quicker on long text. No change to the language or to any result.
