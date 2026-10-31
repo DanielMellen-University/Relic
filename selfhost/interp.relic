@@ -105,8 +105,14 @@ fun find(env, name)
 # number and the run stops, with an error no try catches, after that many
 # steps of the machine; put host_* names in rt.denied and calling one fails
 # with "<name>(): not available here". The defaults change nothing.
+# Since 1.0.45: set rt.load to a function of a file path that gives the file's
+# text, or none, and a `use` other than std/ reads the module through it, not
+# from disk. Set rt.input to a list of lines and host_read_line takes the first
+# (adding prompt + line to rt.out when that is set); with the list empty, the
+# run pauses at that call instead: run returns with rt.waiting the prompt, and
+# resume(rt, line) goes on from there. Steps keep counting across a pause.
 fun new_runtime()
-    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: [], out: none, steps: -1, stopped: false, denied: {}}
+    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: [], out: none, steps: -1, stopped: false, denied: {}, load: none, input: none, waiting: none, paused: none}
     let builtins = new_env(none)
     for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1], ["gc", 0]]
         builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
@@ -367,7 +373,18 @@ fun slot(rt, at, idx, size, what)
 # ---- statements ----
 
 fun run(rt, program)
-    machine(rt, [[k_block, program, rt.globals, 0]])
+    machine(rt, [[k_block, program, rt.globals, 0]], [])
+
+# Goes on with a run paused at host_read_line (rt.waiting is not none), with
+# line as what was read.
+fun resume(rt, line)
+    let p = rt.paused
+    if p == none
+        return none
+    rt.paused = none
+    rt.waiting = none
+    append(rt.input, line)
+    machine(rt, p.st, p.vals)
 
 # The error for a return, break or next that reached the edge of a function
 # body or of a file (file_edge true: a return is an error there too).
@@ -579,8 +596,10 @@ let x_while = 27
 let x_for = 28
 let x_return = 29
 
-fun machine(rt, st)
-    let vals = []
+# A value no built-in returns as an error: host_read_line must wait for a line.
+let wait_mark = {wait: true}
+
+fun machine(rt, st, vals)
     while len(st) > 0
         if rt.err != none
             if not unwind_error(rt, st, vals)
@@ -712,6 +731,15 @@ fun machine(rt, st)
                             append(vals, r.value)
                         else if callee.name == "fail"
                             fail(rt, m, r.err)
+                        else if host_same(r.err, wait_mark)
+                            # Pause: put the call back as it was, to run again on resume.
+                            append(vals, callee)
+                            for v in argv
+                                append(vals, v)
+                            append(st, fr)
+                            rt.waiting = argv[0]
+                            rt.paused = {st: st, vals: vals}
+                            return none
                         else
                             fail(rt, m, callee.name + "(): " + r.err)
                 else
@@ -1045,12 +1073,17 @@ fun use_module(rt, st, n, en)
     let key = norm_path(file)
     if key in rt.modules
         return bind_module(n, en, rt.modules[key])
-    if not files.exists(file)
+    let text = none
+    if rt.load != none and not (len(path) >= 4 and slice(path, 0, 4) == "std/")
+        text = rt.load(file)
+    else if files.exists(file)
+        text = files.read(file)
+    if text == none
         return fail(rt, n, "cannot find module '{path}' (no file {path}.relic)")
     let name = slice(path, last_slash(path) + 1, len(path))
     let mod = new_module(name, new_env(rt.builtins))
     rt.modules[key] = mod
-    let lexed = lexer.lex(files.read(file))
+    let lexed = lexer.lex(text)
     let err = lexed.err
     if err == none
         let parsed = parser.parse(lexed.tokens)
@@ -1124,6 +1157,13 @@ fun builtin(rt, name, a)
     if slice(name, 0, 5) == "host_"
         if name in rt.denied
             return bad("not available here")
+        if name == "host_read_line" and rt.input != none
+            if len(rt.input) == 0
+                return {value: none, err: wait_mark}
+            let line = remove(rt.input, 0)
+            if rt.out != none
+                append(rt.out, show(a[0]) + line)
+            return ok(line)
         try
             return ok(host_call(name, a))
         catch e

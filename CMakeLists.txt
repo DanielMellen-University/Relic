@@ -213,7 +213,7 @@ if(RELIC_BUILD_HOST)
   add_test(NAME selfhost_hooks
     COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/hooks.relic)
   set_tests_properties(selfhost_hooks PROPERTIES
-    PASS_REGULAR_EXPRESSION "^\\[\\[\"1 a\", \"e\", \"\\[2\\]\"\\], \"ok\", false\\]\n\\[\\[\\], \"0: stopped: the program ran too long\", true\\]\n\\[\\[\"before\"\\], \"2: host_exit\\(\\): not available here\", false\\]\n\\[\\[\"host_exit\\(\\): not available here\"\\], \"ok\", false\\]\n\\[\\[\\], \"1: 'nope' is not defined\", false\\]\n$")
+    PASS_REGULAR_EXPRESSION "^hooks ok\n$")
 
   # Self-host: exit codes and the "cannot open" message match the host.
   add_test(NAME selfhost_cli

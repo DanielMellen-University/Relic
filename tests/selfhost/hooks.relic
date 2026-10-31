@@ -1,24 +1,95 @@
 # selfhost/interp's hooks for running a program inside another (an IDE):
 # rt.out collects print and eprint, rt.steps stops a long run even inside
-# try, and rt.denied names host built-ins the program may not call.
+# try, rt.denied names host built-ins the program may not call, rt.load reads
+# modules, and rt.input with resume() lets a run wait for a line.
 use ../../selfhost/lexer
 use ../../selfhost/parser
 use ../../selfhost/interp
 
-fun run(src, steps)
+let bad = [0]
+fun check(what, got, want)
+    if str(got) != str(want)
+        bad[0] = bad[0] + 1
+        print("FAIL", what, "got", got, "want", want)
+
+fun start(src, steps)
     let rt = interp.new_runtime()
     rt.out = []
     rt.steps = steps
     rt.denied = {host_exit: true}
-    interp.set_main(rt, "prog.relic")
+    interp.set_main(rt, "/p/prog.relic")
     interp.run(rt, parser.parse(lexer.lex(src).tokens).tree)
+    return rt
+
+fun result(rt)
     let msg = "ok"
     if rt.err != none
         msg = "{rt.err.line}: {rt.err.msg}"
     return [rt.out, msg, rt.stopped]
 
-print(run("print(1, \"a\")\neprint(\"e\")\nlet x = [2]\nprint(x)\n", -1))
-print(run("try\n    while true\n        let y = 1\ncatch e\n    print(\"caught\")\n", 500))
-print(run("print(\"before\")\nhost_exit(3)\n", -1))
-print(run("try\n    host_exit(3)\ncatch e\n    print(e.message)\n", -1))
-print(run("print(nope)\n", -1))
+fun run(src, steps) = result(start(src, steps))
+
+check("out", run("print(1, \"a\")\neprint(\"e\")\nlet x = [2]\nprint(x)\n", -1), [["1 a", "e", "[2]"], "ok", false])
+check("steps", run("try\n    while true\n        let y = 1\ncatch e\n    print(\"caught\")\n", 500), [[], "0: stopped: the program ran too long", true])
+check("denied", run("print(\"before\")\nhost_exit(3)\n", -1), [["before"], "2: host_exit(): not available here", false])
+check("denied try", run("try\n    host_exit(3)\ncatch e\n    print(e.message)\n", -1), [["host_exit(): not available here"], "ok", false])
+check("error", run("print(nope)\n", -1), [[], "1: 'nope' is not defined", false])
+
+# rt.load: modules from somewhere else; std still from disk
+let disk = {"/p/util.relic": "use std/strings\nfun shout(s) = strings.upper(s) + \"!\"\n", "/p/lib/two.relic": "fun two() = 2\n", "/p/broken.relic": "fun (\n"}
+fun load(path)
+    if path in disk
+        return disk[path]
+    return none
+fun with_load(src)
+    let rt = interp.new_runtime()
+    rt.out = []
+    rt.load = load
+    interp.set_main(rt, "/p/prog.relic")
+    interp.run(rt, parser.parse(lexer.lex(src).tokens).tree)
+    return rt
+check("load", result(with_load("use util\nuse lib/two as t\nprint(util.shout(\"hi\"), t.two())\n")), [["HI! 2"], "ok", false])
+check("load missing", result(with_load("use nothere\n")), [[], "1: cannot find module 'nothere' (no file nothere.relic)", false])
+let rb = with_load("use broken\n")
+check("load broken", [rb.err.file, rb.err.line], ["/p/broken.relic", 1])
+
+# rt.input: queued lines are read at once; an empty queue pauses the run
+let src = "use std/os\nlet name = os.prompt(\"name? \")\nprint(\"hi \" + name)\nlet n = 0\nwhile true\n    let l = os.read_line()\n    if l == \"end\"\n        break\n    n = n + 1\nprint(n, \"lines\")\n"
+let rt = interp.new_runtime()
+rt.out = []
+rt.input = ["Ann"]
+rt.steps = 100000
+interp.set_main(rt, "/p/prog.relic")
+interp.run(rt, parser.parse(lexer.lex(src).tokens).tree)
+check("paused", [rt.out, rt.waiting, rt.err], [["name? Ann", "hi Ann"], "", none])
+interp.resume(rt, "a")
+interp.resume(rt, "b")
+check("still paused", [rt.waiting, len(rt.out)], ["", 4])
+interp.resume(rt, "end")
+check("resumed", [rt.out, rt.waiting, rt.paused, rt.err], [["name? Ann", "hi Ann", "a", "b", "end", "2 lines"], none, none, none])
+check("resume when not paused", interp.resume(rt, "x"), none)
+# a pause inside a function inside try, then an error after it
+let rt3 = interp.new_runtime()
+rt3.out = []
+rt3.input = []
+rt3.steps = 1000
+interp.set_main(rt3, "/p/prog.relic")
+interp.run(rt3, parser.parse(lexer.lex("fun ask()\n    try\n        return host_read_line(\"> \")\n    catch e\n        return \"caught\"\nprint(ask() + 1)\n").tokens).tree)
+check("paused in try", rt3.waiting, "> ")
+interp.resume(rt3, "x")
+check("error after resume", result(rt3), [["> x"], "6: cannot add a string and an int", false])
+# the step limit counts across pauses
+let rt4 = interp.new_runtime()
+rt4.out = []
+rt4.input = []
+rt4.steps = 300
+interp.set_main(rt4, "/p/prog.relic")
+interp.run(rt4, parser.parse(lexer.lex("while true\n    host_read_line(\"\")\n").tokens).tree)
+let rounds = 0
+while rt4.waiting != none and rounds < 1000
+    interp.resume(rt4, "")
+    rounds = rounds + 1
+check("steps across pauses", [rt4.stopped, rounds > 0, rounds < 300], [true, true, true])
+
+if bad[0] == 0
+    print("hooks ok")

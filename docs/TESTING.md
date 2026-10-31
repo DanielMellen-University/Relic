@@ -59,7 +59,7 @@ Three more self-host cases check the interpreter on real use:
 |---|---|---|
 | `selfhost_args` | `selfhost/run.relic tests/selfhost/args.relic one --two` | the program gets its args |
 | `selfhost_nested` | `selfhost/run.relic selfhost/run.relic tests/selfhost/args.relic deep` | the interpreter runs itself |
-| `selfhost_hooks` | `tests/selfhost/hooks.relic` | `rt.out`, `rt.steps` and `rt.denied`, the hooks an IDE uses to run a program inside another |
+| `selfhost_hooks` | `tests/selfhost/hooks.relic` | `rt.out`, `rt.steps`, `rt.denied`, `rt.load`, and `rt.input` with `interp.resume`, the hooks an IDE uses to run a program inside another; prints `hooks ok` |
 | `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 15 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
 | `selfhost_check_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two cases | the interpreter runs `check.relic` right |
 | `cgen_selfhost_check` | the compiled `selfhost/check.relic` (host build with C) | the same comparison as `selfhost_check` |
