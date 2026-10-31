@@ -220,6 +220,24 @@ print(lists.sort([3, 1, 2]))
 - A module runs once, however many times it is used.
 - `std/...` is the standard library: strings, lists, maps, math, files, paths, json, os, time, vfs and graphics. See [STDLIB.md](STDLIB.md).
 
+The list helpers take a function by its name, and their results feed each other:
+
+```
+use std/lists
+use std/maps
+fun double(x) = x * 2
+fun odd(x) = x % 2 == 1
+print(lists.map([1, 2, 3], double), lists.filter([1, 2, 3], odd))
+print(lists.any([2, 4], odd), lists.zip(["a", "b"], [1, 2]))
+print(maps.from_items(lists.zip(["a", "b"], [1, 2])))
+```
+
+```
+[2, 4, 6] [1, 3]
+false [["a", 1], ["b", 2]]
+{a: 1, b: 2}
+```
+
 ## 8. Scripts and graphics
 
 - `relic tool.relic a b` passes `a` and `b` to the program. `os.args()` (or the built-in `args()`) gives `["a", "b"]`.
