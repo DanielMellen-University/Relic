@@ -48,6 +48,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `reduce(xs, f, start)` | any | |
 | `sum(xs)` | number | |
 | `index_of(xs, item)` | int | or `-1` |
+| `contains(xs, item)` | bool | `index_of(xs, item) >= 0`, so `1` and `1.0` match (since 1.0.49) |
+| `unique(xs)` | list | new list without repeats, the first of each kept, in order; strings are checked through a map, so a long list of them stays quick (since 1.0.49) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |
