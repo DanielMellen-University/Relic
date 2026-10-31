@@ -9,3 +9,11 @@ let dm = {a: 1, b: 2, c: 3}
 print(maps.drop(dm, "b"), maps.drop(dm, "zz"), dm, len(dm))
 dm.b = 4
 print(maps.drop(dm, "a"), dm)
+# from_items (since 1.0.49) undoes items; a later pair wins
+let m2 = {b: 1, a: [2]}
+print(maps.from_items(maps.items(m2)), maps.from_items([]), maps.from_items([["k", 1], ["k", 2]]))
+for bad in [[["a", 1], ["b"]], [[1, 2]], ["ab"], 5]
+    try
+        maps.from_items(bad)
+    catch e
+        print(e.message)

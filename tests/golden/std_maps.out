@@ -4,3 +4,8 @@
 1 {b: 2} ["b"]
 true false {a: 1, c: 3} 2
 true {c: 3, b: 4}
+{b: 1, a: [2]} {} {k: 2}
+maps.from_items(): item 1 is not a [string key, value] pair
+maps.from_items(): item 0 is not a [string key, value] pair
+maps.from_items(): item 0 is not a [string key, value] pair
+maps.from_items(): pairs must be a list, got int

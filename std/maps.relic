@@ -46,3 +46,18 @@ fun drop(m, k)
         remove(m, k)
         return true
     return false
+
+# Since 1.0.49: a new map from [key, value] pairs, what items gives back; a
+# later pair with the same key wins. Each item must be a list of two with a
+# string key.
+fun from_items(pairs)
+    if type(pairs) != "list"
+        fail("maps.from_items(): pairs must be a list, got " + type(pairs))
+    let out = {}
+    let i = 0
+    for p in pairs
+        if type(p) != "list" or len(p) != 2 or type(p[0]) != "string"
+            fail("maps.from_items(): item " + str(i) + " is not a [string key, value] pair")
+        out[p[0]] = p[1]
+        i = i + 1
+    return out
