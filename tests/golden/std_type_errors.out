@@ -1,0 +1,7 @@
+paths.join(): path must be a string, got int
+paths.join(): path must be a string, got none
+paths.base(): path must be a string, got none
+paths.dir(): path must be a string, got list
+paths.ext(): path must be a string, got float
+paths.stem(): path must be a string, got bool
+paths.normalize(): path must be a string, got int
