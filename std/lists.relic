@@ -82,6 +82,19 @@ fun all(xs, test)
             return false
     return true
 
+# Since 1.0.49: one level of nesting taken out; an item that is not a list
+# stays as it is, and lists inside the inner lists stay lists.
+fun flatten(xs)
+    _seq("flatten", xs)
+    let out = []
+    for x in xs
+        if type(x) == "list"
+            for y in x
+                append(out, y)
+        else
+            append(out, x)
+    return out
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
