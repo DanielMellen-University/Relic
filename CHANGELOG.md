@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.48 (2026-10-31)
+
+A fix for the Windows build of 1.0.47's tests. No change to the language or to any result.
+
+- `relicc` writes a digit that comes right after an octal escape in a C string literal as an octal escape too. `"\0112"` (a tab, then `2`) is right C, but MSVC warns about it (C4125), and the Windows `cgen` and `sdl` CI jobs build with warnings as errors, so 1.0.47's longer `std_json_edges` golden failed those two jobs (16 of 18 passed). The compiled programs behave the same; only the C text differs.
+- `bootstrap/cgen.c` regenerated.
+- `fuzz_concat`, `fuzz_find_sort` and `fuzz_json` seed 31 and `fuzz_json` seed 32 (160 programs, VM, `--tree`, `selfhost/run.relic` and compiled): 0 mismatches against 1.0.47.
+- Speed: `selfhost_interp` 10.10 s median of 3 (10.10, 10.10, 10.20), under the 12.2 s cap.
+- `ctest`: 187 default, 396 with the host.
+
 ## 1.0.47 (2026-10-31)
 
 `std/json` follows JSON more closely in two ways Daniel approved on Oct 31. A program whose JSON has no raw control characters in strings and whose floats `str()` already writes exactly sees no difference.
