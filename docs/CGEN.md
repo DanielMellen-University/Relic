@@ -152,13 +152,13 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 These three need the host (`-DRELIC_BUILD_HOST=ON`). The C-only build has its own fixed point check, `bootstrap_fixed_point` (below).
 
-Also checked by hand: stage 1 writes the same C as stage 0 for all 131 compiled goldens, and `selfhost/run.relic` compiled to C runs 127 goldens (all but the REPL and `.args` ones and the four `selfhost_interp` skips) and matches the host on every one.
+Stage 1 writing the same C as the host for every compiled golden is a test now, `cgen_stage1_matches_host` (below; 177 today). Checked by hand when C4 was done, with 131 compiled goldens then: `selfhost/run.relic` compiled to C ran 127 goldens (all but the REPL and `.args` ones and the four `selfhost_interp` skips) and matched the host on every one.
 
 ## Bootstrap
 
 C5, Daniel's choice (Oct 21 2026): the C for cgen is committed, so a fresh checkout builds with only a C compiler, and the C++ host stays as an optional cross-check.
 
-- `bootstrap/cgen.c` is `selfhost/cgen.relic` with its five modules (`lexer`, `parser`, `errfmt`, `std/files`, `std/strings`) compiled to one C file by cgen with `--root` at the repo root, plus a comment on top (kept in `tools/bootstrap.cmake`). About 21,000 lines, 1 MB. [bootstrap/README.md](../bootstrap/README.md) has the short version.
+- `bootstrap/cgen.c` is `selfhost/cgen.relic` with its five modules (`lexer`, `parser`, `errfmt`, `std/files`, `std/strings`) compiled to one C file by cgen with `--root` at the repo root, plus a comment on top (kept in `tools/bootstrap.cmake`). About 24,600 lines, 1.2 MB. [bootstrap/README.md](../bootstrap/README.md) has the short version.
 - The default build makes `relicc_stage0` from it and `runtime/c/`. `relicc_stage0` compiles `selfhost/cgen.relic` from the checkout to `build/bootstrap/stage1.c`, built as `relicc`. `relicc` compiles the goldens. A change to `selfhost/` or `std/` is in effect in the same build, before `bootstrap/cgen.c` is regenerated.
 - `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` rewrites `bootstrap/cgen.c`: it builds `relicc`, has it compile `cgen.relic` and writes that, round after round until nothing changes (one round, unless the change was to how cgen writes C, then two). If the committed C can no longer compile the new cgen, the host can write it: `relic selfhost/cgen.relic selfhost/cgen.relic --root . -o out.c`, then add the comment.
 
@@ -167,7 +167,7 @@ C5, Daniel's choice (Oct 21 2026): the C for cgen is committed, so a fresh check
 | `bootstrap_fresh` | all | `relicc_stage0` writes, for `cgen.relic`, exactly the committed C (after its comment). Fails when `bootstrap/cgen.c` is stale |
 | `bootstrap_fixed_point` | all | `relicc` writes, for `cgen.relic`, exactly the C it was built from (stage 2 equals stage 1), with the leak check on |
 | `bootstrap_matches_host` | host | cgen on the host writes exactly the committed C |
-| `cgen_stage1_matches_host` | host | `relicc` writes exactly the C the host wrote, for every compiled golden (164) |
+| `cgen_stage1_matches_host` | host | `relicc` writes exactly the C the host wrote, for every compiled golden (177) |
 
 CI runs the C-only build on Linux (gcc), macOS (clang) and Windows (MSVC) in the `build` job, strict with sanitizers in the `cgen` job, and on Alpine Linux with no C++ compiler installed in the `no-cxx` job, which first checks that `c++`, `g++` and `clang++` are all missing. The `host` job builds the host on all three and runs everything, cross-checks included.
 
