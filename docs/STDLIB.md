@@ -281,6 +281,8 @@ Cursor names: `arrow`, `text`, `wait`, `crosshair`, `hand`, `move`, `no`,
 | `frame_time()` | | float | no window; seconds between the last two presents, 0.0 before two |
 | `present_capped(fps)` | number > 0 | none | no window; `present()` that first waits so frames come no faster than `fps` a second |
 
+In a program that has opened a window and has its own `draw()`:
+
 ```
 while not graphics.quit_requested()
     let dt = graphics.frame_time()   # move things by speed * dt
@@ -330,12 +332,17 @@ While `draw_to(c)` is active, every draw call (including `clear`) goes to that
 canvas only, not the window. `clear` fills the whole canvas.
 
 ```
+use std/graphics
+graphics.open(160, 120, "canvas")
 let c = graphics.canvas(64, 64)
 graphics.draw_to(c)
 graphics.clear(20, 20, 40)
 graphics.rect(8, 8, 48, 48, 200, 80, 40)
 graphics.draw_to(none)
+graphics.clear(0, 0, 0)
 graphics.image(c, 10, 10)   # stamp the canvas onto the window
+graphics.present()
+graphics.close()
 ```
 
 ### Polling input

@@ -168,11 +168,16 @@ mod.on_key(app, key)
 ## Errors
 
 ```
+let text = "12x"
 try
     let n = num(text)
     print(n * 2)
 catch err
-    print("not a number: {err.message}")
+    print("could not read it: {err.message}")
+```
+
+```
+could not read it: num(): not a number: "12x"
 ```
 
 - Every runtime error can be caught: from your code, from built-ins, from `use`, and "too much recursion". Syntax errors in the main file cannot, since nothing runs.
