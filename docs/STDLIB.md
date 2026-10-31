@@ -72,6 +72,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
 
+Each one fails with its own name when given something that is not a map: `maps.values(): m must be a map, got int` (since 1.0.49). Before, most failed inside with `cannot loop over an int`, and `get` on a list quietly gave back the fallback.
+
 ## std/math
 
 | Call | Returns |

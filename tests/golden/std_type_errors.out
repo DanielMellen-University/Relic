@@ -5,3 +5,10 @@ paths.dir(): path must be a string, got list
 paths.ext(): path must be a string, got float
 paths.stem(): path must be a string, got bool
 paths.normalize(): path must be a string, got int
+maps.values(): m must be a map, got int
+maps.items(): m must be a map, got string
+maps.get(): m must be a map, got list
+maps.merge(): a must be a map, got none
+maps.merge(): b must be a map, got int
+maps.drop(): m must be a map, got int
+1 {b: 2}

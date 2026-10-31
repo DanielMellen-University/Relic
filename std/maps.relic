@@ -1,12 +1,19 @@
-# std/maps: map helpers. keys and remove are built in.
+# std/maps: map helpers. keys and remove are built in. Since 1.0.49 a value
+# that is not a map fails as "maps.values(): m must be a map, got int".
+
+fun _map(name, what, m)
+    if type(m) != "map"
+        fail("maps." + name + "(): " + what + " must be a map, got " + type(m))
 
 fun values(m)
+    _map("values", "m", m)
     let out = []
     for k in m
         append(out, m[k])
     return out
 
 fun items(m)
+    _map("items", "m", m)
     # list of [key, value] pairs, in insertion order
     let out = []
     for k in m
@@ -14,11 +21,14 @@ fun items(m)
     return out
 
 fun get(m, k, fallback)
+    _map("get", "m", m)
     if k in m
         return m[k]
     return fallback
 
 fun merge(a, b)
+    _map("merge", "a", a)
+    _map("merge", "b", b)
     # new map: everything in a, then b on top
     let out = {}
     for k in a
@@ -28,6 +38,7 @@ fun merge(a, b)
     return out
 
 fun drop(m, k)
+    _map("drop", "m", m)
     # removes k from m in place if it is there; true if it was. The built-in
     # remove fails on a missing key, and a module that defines its own remove
     # (std/vfs) hides the built-in: this reaches it from here.
