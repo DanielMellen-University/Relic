@@ -21,7 +21,7 @@ Pieces Relic cannot do itself yet come from C++ and are named `host_*`, so the b
 | `host_now()` | `time.now` | seconds since 1970 UTC |
 | `host_sleep(ms)` | `time.sleep`, `time.limit` | |
 | `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow` | `std/math` | float math |
-| `host_find(text, part)` | `strings.find`, `strings.contains`, `strings.split` | first `part` in `text` in characters, or `-1`; linear time (since 1.0.43) |
+| `host_find(text, part)` | `strings.find`, `strings.contains`, `strings.split`, `strings.replace` | first `part` in `text` in characters, or `-1`; linear time (since 1.0.43) |
 | `host_sort(list)` | `lists.sort`, `std/vfs` listings | a sorted copy of a list of only numbers or only strings, in `lists.sort_by`'s order; `none` for anything else (since 1.0.43) |
 | `host_args()` | `os.args` | same list as the `args()` built-in |
 | `host_env(name)` | `os.env` | a string or `none` |

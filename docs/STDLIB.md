@@ -24,15 +24,15 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 
 | Call | Returns | Notes |
 |---|---|---|
-| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43) |
-| `contains(s, sub)` | bool | |
+| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43). An empty `sub` gives `0`. Two lists work too, finding a run of items: `find([1, 2, 3], [2])` is `1` |
+| `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `starts_with(s, pre)` | bool | |
 | `ends_with(s, suf)` | bool | |
 | `upper(s)` / `lower(s)` | string | ASCII letters only |
 | `trim(s)` | string | leading and trailing space |
-| `split(s, sep)` | list | |
+| `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters |
 | `join(items, sep)` | string | |
-| `replace(s, old, new)` | string | all non-overlapping |
+| `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity |
 | `is_space(c)` | bool | space, tab, newline, CR |
@@ -64,7 +64,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `items(m)` | list | `[key, value]` pairs |
 | `get(m, k, fallback)` | any | fallback when `k` missing |
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
-| `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` |
+| `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
 
 ## std/math
 
