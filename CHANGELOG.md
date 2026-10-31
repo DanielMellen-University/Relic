@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.44 (2026-10-30)
+
+The interpreter written in Relic can be embedded: M0N0LITH-2's new IDE app runs a program in it inside the desktop. Daniel approved the IDE on Oct 30. No change to the language or to any result; a program run as before sees no difference.
+
+- `selfhost/interp.relic`: a runtime from `new_runtime` has four new fields, all off by default. `out`, a list, takes what `print` and `eprint` write instead of the terminal. `steps`, when 0 or more, is how many machine steps the program may take; at 0 it stops with the error `stopped: the program ran too long`, which `try` cannot catch, and `stopped` says so. `denied`, a map of host built-in names, makes those fail with `not available here`, so a caller can keep a program from exiting, reading input or writing files. Test `selfhost_hooks`.
+- Speed: `selfhost_interp` 9.47 s median of 3 (9.47, 9.47, 9.56), under the 12.2 s cap; 1.0.43 was 9.32 s, the step check costs about 2%.
+- `fuzz_concat` and `fuzz_find_sort` seed 9 (40 programs each, including `selfhost/run.relic`): 0 mismatches against 1.0.42.
+- `ctest`: 187 default, 396 with the host.
+
 ## 1.0.43 (2026-10-30)
 
 `strings.find`, `lists.sort` and building a string with `x = x + t` no longer take time growing with the square of the size. Daniel approved both on Oct 30. No change to the language or to any result.
