@@ -1,6 +1,6 @@
 # MONOLITH 2 readiness
 
-What a Relic-written OS shell and its apps (editor, terminal, files, paint,
+What a Relic-written OS shell and its apps (editor, terminal, files, IDE, paint,
 settings) need from the language, runtime and stdlib. Status is for Relic main.
 Reference: [STDLIB.md](STDLIB.md).
 
@@ -25,6 +25,10 @@ Reference: [STDLIB.md](STDLIB.md).
 | Sharp drawing on high-DPI screens, coordinates in window units | done (1.0.12) | std/graphics |
 | 60fps redraw on the VM | done, see below | bench/redraw.relic |
 | `use std/...` in the self-hosted interpreter | done | selfhost/ |
+| A shared in-memory filesystem for the apps, with quick listing of big folders | done (1.0.42) | std/vfs |
+| Queues and big text: removing from the front of a list, `x = x + t`, find and sort in linear time | done (1.0.42, 1.0.43) | language, std/strings, std/lists |
+| Running a program inside the desktop (IDE): captured output, a step limit, refused built-ins | done (1.0.44) | selfhost/interp.relic, [ARCHITECTURE.md](ARCHITECTURE.md) |
+| That program's `use` of the desktop's files, and input line by line | done (1.0.45) | selfhost/interp.relic |
 | Stdlib reference docs | done | docs/STDLIB.md |
 
 ## Performance
@@ -33,7 +37,8 @@ Reference: [STDLIB.md](STDLIB.md).
 with no wait between frames. On the Release VM with SDL's software (dummy)
 renderer it takes about 4 ms a frame (about 240 fps). A Debug build takes about
 8 ms. Both are under the 16.7 ms a 60fps frame allows, so no fix was needed.
-10,000 rectangle hit tests take about 4 ms, and sorting 5,000 numbers about 40 ms.
+10,000 rectangle hit tests take about 4 ms. Sorting 5,000 numbers took about 40 ms
+before 1.0.43 and takes about 0.4 ms since.
 
 ## Not in yet, and why
 
