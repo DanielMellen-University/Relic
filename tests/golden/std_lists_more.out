@@ -1,3 +1,10 @@
 true false true false
 ["a", "b", 1, 2, [1], none] []
 500 k499
+1.5 3 c 5 -0.0
+ERR lists.min(): the list is empty
+ERR lists.max(): the list is empty
+ERR cannot compare a string and an int
+ERR cannot compare an int and a string
+ERR cannot compare a list and a list
+ERR cannot compare a list and a list

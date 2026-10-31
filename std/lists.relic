@@ -30,8 +30,10 @@ fun index_of(xs, item)
         i = i + 1
     return -1
 
-# Since 1.0.49: whether item is in xs (==, so 1 and 1.0 match), and the
-# items without repeats (the first of each kept, in order).
+# Since 1.0.49: whether item is in xs (==, so 1 and 1.0 match), the items
+# without repeats (the first of each kept, in order), and the smallest and
+# largest item (by <, so NaN and mixed types follow its rules; an empty list
+# is an error).
 fun contains(xs, item) = index_of(xs, item) >= 0
 
 fun unique(xs)
@@ -45,6 +47,26 @@ fun unique(xs)
         else if index_of(out, x) < 0
             append(out, x)
     return out
+
+fun _empty(name, xs)
+    if len(xs) == 0
+        fail("lists." + name + "(): the list is empty")
+
+fun min(xs)
+    _empty("min", xs)
+    let m = xs[0]
+    for x in xs
+        if x < m
+            m = x
+    return m
+
+fun max(xs)
+    _empty("max", xs)
+    let m = xs[0]
+    for x in xs
+        if m < x
+            m = x
+    return m
 
 fun reverse(xs)
     let out = []

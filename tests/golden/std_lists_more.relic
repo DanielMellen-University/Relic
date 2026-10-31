@@ -1,4 +1,4 @@
-# Since 1.0.49: lists.contains and lists.unique.
+# Since 1.0.49: lists.contains, unique, min and max.
 use std/lists
 print(lists.contains([1, 2], 1.0), lists.contains([], none), lists.contains([[1]], [1]), lists.contains(["a"], "A"))
 print(lists.unique(["a", "b", "a", 1, 1.0, 2, [1], [1], none, none]), lists.unique([]))
@@ -7,3 +7,15 @@ let many = []
 for i in 0..20000
     append(many, "k" + str(i % 500))
 print(len(lists.unique(many)), lists.unique(many)[499])
+# lists.min and lists.max: by <, so ints and floats mix, strings compare, an
+# empty list or a mix that < refuses is an error
+print(lists.min([3, 1.5, 2]), lists.max([3, 1.5, 2]), lists.max(["b", "a", "c"]), lists.min([5]), lists.max([-0.0, 0]))
+for xs in [[], [1, "a"], [[1], [2]]]
+    try
+        print(lists.min(xs))
+    catch e
+        print("ERR", e.message)
+    try
+        print(lists.max(xs))
+    catch e
+        print("ERR", e.message)
