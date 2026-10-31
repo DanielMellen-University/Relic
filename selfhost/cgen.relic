@@ -45,19 +45,24 @@ fun char_bytes(ch)
         return [224 + int(n / 4096), 128 + int(n / 64) % 64, 128 + n % 64]
     return [240 + int(n / 262144), 128 + int(n / 4096) % 64, 128 + int(n / 64) % 64, 128 + n % 64]
 
-# {lit, bytes}: a C string literal for s and its length in bytes.
+# {lit, bytes}: a C string literal for s and its length in bytes. A digit
+# right after an octal escape is written as one too: C reads "\0112" as a tab
+# and "2", but MSVC warns (C4125), and CI builds with warnings as errors.
 fun c_string(s)
     let parts = ["\""]
     let count = 0
+    let after_oct = false
     for ch in s
         let bs = char_bytes(ch)
         count = count + len(bs)
         let n = bs[0]
-        if len(bs) == 1 and n >= 32 and n < 127 and ch != "\"" and ch != "\\" and ch != "?"
+        if len(bs) == 1 and n >= 32 and n < 127 and ch != "\"" and ch != "\\" and ch != "?" and not (after_oct and n >= 48 and n <= 57)
             append(parts, ch)
+            after_oct = false
         else
             for b in bs
                 append(parts, oct3(b))
+            after_oct = true
     append(parts, "\"")
     return {lit: strings.join(parts, ""), bytes: count}
 
