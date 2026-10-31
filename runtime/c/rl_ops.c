@@ -104,6 +104,43 @@ int rl_add(rl_ctx *cx, rl_value a, rl_value b, rl_value *out) {
     return mismatch(cx, "add", a, b);
 }
 
+int rl_add_to(rl_ctx *cx, rl_value *slot, rl_value b, rl_value *out) {
+    rl_value a = *slot;
+    if (a.k == RL_STR && b.k == RL_STR && a.u.o->rc == 1 && a.u.o != b.u.o) {
+        rl_str *s = S(a);
+        const rl_str *t = S(b);
+        size_t n = s->len + t->len;
+        if (n > s->cap) {
+            size_t cap = s->cap * 2;
+            if (cap < n) cap = n;
+            s = (rl_str *)realloc(s, sizeof(rl_str) + cap);
+            if (!s) abort();
+            s->cap = cap;
+            slot->u.o = &s->h;
+        }
+        /* The count goes on unless t starts with a continuation byte, which
+         * could join the last character; marks are built again when asked. */
+        if (s->chars != (size_t)-1) {
+            if (t->len && ((unsigned char)t->data[0] & 0xC0) == 0x80) {
+                s->chars = (size_t)-1;
+            } else if (t->chars != (size_t)-1) {
+                s->chars += t->chars;
+            } else {
+                size_t i = 0;
+                while (i < t->len) { i += rl_utf8_char_size(t->data, t->len, i); ++s->chars; }
+            }
+        }
+        free(s->marks);
+        s->marks = NULL;
+        memcpy(s->data + s->len, t->data, t->len);
+        s->len = n;
+        s->data[n] = 0;
+        *out = rl_retain(*slot);
+        return RL_OK;
+    }
+    return rl_add(cx, a, b, out);
+}
+
 int rl_sub(rl_ctx *cx, rl_value a, rl_value b, rl_value *out) {
     if (!is_num(a) || !is_num(b)) { *out = rl_none(); return mismatch(cx, "subtract", a, b); }
     return math(cx, '-', a, b, out);

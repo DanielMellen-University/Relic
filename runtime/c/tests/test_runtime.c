@@ -476,6 +476,24 @@ static void test_errors_and_builtins(void) {
         SHOW((call("host_sort", 1, &sl, &r), r), "none");
         rl_release(sl);
     }
+    {   /* rl_add_to: in place only when the slot holds the only reference */
+        rl_value x = rl_str_new("ab", 2), y = rl_str_new("c", 1), keep, out;
+        int i;
+        for (i = 0; i < 40; ++i) {
+            CHECK(rl_add_to(&cx, &x, y, &out) == RL_OK && out.u.o == x.u.o);
+            rl_release(x);
+            x = out;
+        }
+        CHECK(((rl_str *)x.u.o)->len == 42 && rl_str_chars(((rl_str *)x.u.o)) == 42 && ((rl_str *)x.u.o)->data[42] == 0);
+        keep = rl_retain(x);
+        CHECK(rl_add_to(&cx, &x, y, &out) == RL_OK && out.u.o != x.u.o && ((rl_str *)keep.u.o)->len == 42 && ((rl_str *)out.u.o)->len == 43);
+        rl_release(out);
+        rl_release(keep);
+        CHECK(rl_add_to(&cx, &x, x, &out) == RL_OK && out.u.o != x.u.o && ((rl_str *)out.u.o)->len == 84);   /* x + x copies */
+        rl_release(out);
+        rl_release(x);
+        rl_release(y);
+    }
     SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");   /* relic_rt has the stub */
     ERR(call("host_gfx_open", 0, NULL, &r), "host_gfx_open() takes 3 arguments, got 0");
 }

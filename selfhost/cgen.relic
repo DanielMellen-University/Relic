@@ -114,7 +114,7 @@ fun has_fun(n)
     return false
 
 fun new_fc(cg, parent, heap, is_module, mod)
-    return {cg: cg, parent: parent, heap: heap, module: is_module, mod: mod, lines: [], nt: 0, maxt: 0, nl: 0, nv: 0, ns: 0, blocks: [], loops: [], targets: ["fail"], used: {}, fun_node: none, outer: [], chain: [], ret_hint: "", ret_what: "", name: ""}
+    return {cg: cg, parent: parent, heap: heap, module: is_module, mod: mod, lines: [], nt: 0, maxt: 0, nl: 0, nv: 0, ns: 0, blocks: [], loops: [], targets: ["fail"], used: {}, fun_node: none, outer: [], chain: [], ret_hint: "", ret_what: "", name: "", add_to: none}
 
 fun emit(fc, line)
     append(fc.lines, "    " + line)
@@ -546,7 +546,10 @@ fun binary_op(fc, n, dst, a)
         emit(fc, RB)
         return
     let b = operand(fc, n.kids[1])
-    if op in arith
+    let into = fc.add_to
+    if op == "+" and into != none and into.line == n.line and into.col == n.col and a.expr == into.slot
+        check(fc, "rl_add_to(cx, &" + a.expr + ", " + b.expr + ", &" + dst + ")", n)
+    else if op in arith
         check(fc, arith[op] + "(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
     else if op == "=="
         emit(fc, dst + " = rl_bool(rl_equal(" + a.expr + ", " + b.expr + "));")
@@ -683,7 +686,16 @@ fun statement(fc, s)
 fun assign(fc, s)
     let target = s.kids[0]
     let t = temp(fc)
+    # x = x + e with x in one known slot: the + is rl_add_to, which adds a
+    # string to x's own when nothing else holds it (binary_op).
+    let v = s.kids[1]
+    fc.add_to = none
+    if target.kind == "Name" and v.kind == "Binary" and v.text == "+" and v.kids[0].kind == "Name" and v.kids[0].text == target.text
+        let r0 = resolve(fc, target, target.text)
+        if len(r0) == 1 and r0[0].static
+            fc.add_to = {slot: r0[0].slot, line: v.line, col: v.col}
     expr(fc, s.kids[1], t)
+    fc.add_to = none
     if target.kind == "Name"
         let r = resolve(fc, target, target.text)
         let first = true

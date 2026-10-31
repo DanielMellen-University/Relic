@@ -274,6 +274,7 @@ rl_value rl_str_new(const char *bytes, size_t len) {
     s->len = len;
     s->chars = (size_t)-1;
     s->marks = NULL;
+    s->cap = len;
     if (len) memcpy(s->data, bytes, len);
     s->data[len] = 0;
     ++g_strings;

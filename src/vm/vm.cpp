@@ -444,9 +444,22 @@ private:
             }
             case Node::Assign: {
                 const Ast& t = *n.kids[0];
-                expr(*n.kids[1]);
+                const Ast& r = *n.kids[1];
+                expr(r);
                 if (t.kind == Node::Name) {
-                    store_name(t, *n.kids[1], scopes_.size());
+                    size_t bin = here() - 1, store = here();
+                    store_name(t, r, scopes_.size());
+                    // x = x + e stored straight back into x: the Binary gets
+                    // x's place in c, so strings can be added in place.
+                    if (r.kind == Node::Binary && r.text == "+" && r.kids[0]->kind == Node::Name &&
+                        r.kids[0]->text == t.text && r.kids[1]->kind != Node::Number && cur().code[bin].op == Op::Binary &&
+                        here() == store + 1) {
+                        const Instr& s = cur().code[store];
+                        if (s.op == Op::Store && s.a < (1 << 14) && s.b < (1 << 16))
+                            cur().code[bin].c = 1 + ((s.a << 16) | s.b);
+                        else if (s.op == Op::StoreGlobal && s.a >= 0)
+                            cur().code[bin].c = -1 - s.a;
+                    }
                 } else if (t.kind == Node::Field) {
                     expr(*t.kids[0]);
                     emit(Op::SetField, 0, 0, &t);
@@ -893,7 +906,25 @@ private:
 
     // Kept out of run() so its stack frame stays small: deep Relic recursion
     // nests one run() per call.
-    RELIC_NOINLINE void binary(const Instr& in, std::vector<Value>& st) {
+    // `x = x + t` with c set by the compiler (see Node::Assign): adds the
+    // string t to x's buffer when only x and a hold it.
+    static bool add_in_place(const Instr& in, const Value& a, const Value& t, Scope* s,
+                             const std::vector<Value>& globals_, const std::vector<char>& defined_) {
+        const Value* slot;
+        if (in.c > 0) {
+            int hops = (in.c - 1) >> 16, i = (in.c - 1) & 0xFFFF;
+            for (int h = 0; h < hops; ++h) s = s->parent.get();
+            slot = &s->slots[static_cast<size_t>(i)];
+        } else {
+            size_t g = static_cast<size_t>(-1 - in.c);
+            if (!defined_[g]) return false;
+            slot = &globals_[g];
+        }
+        return str_append_in_place(*slot, a, t);
+    }
+
+    RELIC_NOINLINE void binary(const Instr& in, std::vector<Value>& st, Scope* sc, const std::vector<Value>& globals_,
+                               const std::vector<char>& defined_) {
         Value b = std::move(st.back());
         st.pop_back();
         Value& a = st.back();
@@ -938,6 +969,7 @@ private:
             }
             if (done) return;
         }
+        if (in.c != 0 && in.a == BAdd && add_in_place(in, a, b, sc, globals_, defined_)) return;
         a = op_binary(*in.at, a, b);
     }
 
@@ -1106,7 +1138,7 @@ private:
                 case Op::JumpIfTrueKeep:
                     if (st.back().as<bool>()) ip = static_cast<size_t>(in.a);
                     break;
-                case Op::Binary: binary(in, st); break;
+                case Op::Binary: binary(in, st, sc.get(), globals_, defined_); break;
                 case Op::Unary: st.back() = op_unary(*in.at, st.back()); break;
                 case Op::RangeStart: op_range_start(*in.at, st.back()); break;
                 case Op::Range: {

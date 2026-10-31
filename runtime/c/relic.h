@@ -52,6 +52,7 @@ typedef struct rl_str {
     size_t len;               /* bytes, not counting the trailing 0 */
     size_t chars;             /* UTF-8 characters, (size_t)-1 until counted */
     size_t *marks;            /* byte offset of every 64th character, built on first index; or NULL */
+    size_t cap;               /* bytes data has room for (not counting the 0); rl_add_to grows it */
     char data[1];             /* len bytes plus a 0; allocated larger */
 } rl_str;
 
@@ -200,6 +201,10 @@ int rl_builtin(const char *name, rl_value *out); /* any built-in or host_* by na
 
 /* ---- operators (all set an error and return RL_ERR on bad input) ---- */
 int rl_add(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
+/* `x = x + b` with x in *slot: like rl_add(*slot, b), but when both are
+ * strings and only *slot holds x's string, b goes on the end of that string
+ * (which may move: *slot is updated) and *out is it again, retained. */
+int rl_add_to(rl_ctx *cx, rl_value *slot, rl_value b, rl_value *out);
 int rl_sub(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
 int rl_mul(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
 int rl_div(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);

@@ -347,6 +347,45 @@ void count_chars(const StrBuf& b) {
 }
 }  // namespace
 
+bool str_append_in_place(const Value& slot, const Value& a, const Value& t) {
+    if (!std::holds_alternative<Str>(a.v) || !std::holds_alternative<Str>(t.v) || !std::holds_alternative<Str>(slot.v))
+        return false;
+    const auto& p = std::get<Str>(a.v).p;
+    if (std::get<Str>(slot.v).p != p || p.use_count() != 2) return false;
+    StrBuf& b = const_cast<StrBuf&>(*p);  // made non-const in Value(std::string)
+    const std::string& add = std::get<Str>(t.v).p->s;
+    const size_t old_size = b.s.size();
+    const bool counted = b.chars != static_cast<size_t>(-1);
+    const bool was_ascii = counted && b.chars == old_size;
+    b.s += add;
+    if (!counted) return true;
+    if (was_ascii && ascii_prefix(add, add.size()) == add.size()) {
+        b.chars = b.s.size();
+        return true;
+    }
+    // The count goes on from the old end unless `add` starts with a
+    // continuation byte (it could join the old last character) or the text
+    // just became long enough to need marks: then it is counted again later.
+    bool joins = !add.empty() && (static_cast<unsigned char>(add[0]) & 0xC0) == 0x80;
+    if (joins || (b.marks.empty() && b.s.size() >= kMarkMin)) {
+        b.chars = static_cast<size_t>(-1);
+        b.marks.clear();
+        return true;
+    }
+    size_t i = old_size, n = b.chars;
+    if (!b.marks.empty()) {  // walk on from the last mark to add the new ones
+        i = b.marks.back();
+        n = (b.marks.size() - 1) * kMarkEvery;
+    }
+    while (i < b.s.size()) {
+        if (!b.marks.empty() && n % kMarkEvery == 0 && n / kMarkEvery >= b.marks.size()) b.marks.push_back(i);
+        i += utf8_char_size(b.s, i);
+        ++n;
+    }
+    b.chars = n;
+    return true;
+}
+
 size_t utf8_len(const std::string& s) {
     size_t i = ascii_prefix(s, s.size());
     return i == s.size() ? i : utf8_count_from(s, i, i);

@@ -13,6 +13,12 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
+#if defined(_MSC_VER)
+#define RELIC_TREE_NOINLINE __declspec(noinline)
+#else
+#define RELIC_TREE_NOINLINE __attribute__((noinline))
+#endif
+
 namespace relic {
 
 Env* Env::find_env(const std::string& name) {
@@ -526,9 +532,16 @@ Interpreter::Flow Interpreter::exec(const Ast& n, const std::shared_ptr<Env>& en
             env->vars[n.text] = std::move(v);
             return Flow::Normal;
         }
-        case Node::Assign:
-            assign(*n.kids[0], eval(*n.kids[1], env), env, *n.kids[1]);
+        case Node::Assign: {
+            const Ast& t = *n.kids[0];
+            const Ast& r = *n.kids[1];
+            if (t.kind == Node::Name && r.kind == Node::Binary && r.kids.size() == 2 && r.kids[0]->kind == Node::Name &&
+                r.kids[1]->kind != Node::Number && r.text == "+" && r.kids[0]->text == t.text)
+                assign(t, add_to(t, r, env), env, r);
+            else
+                assign(t, eval(r, env), env, r);
             return Flow::Normal;
+        }
         case Node::ExprStmt:
             eval(*n.kids[0], env);
             return Flow::Normal;
@@ -620,6 +633,18 @@ void Interpreter::assign(const Ast& target, Value v, const std::shared_ptr<Env>&
     if (target.kind == Node::Field) return op_set_field(target, obj, std::move(v));
     Value idx = eval(*target.kids[1], env);
     op_set_index(target, obj, idx, std::move(v));
+}
+
+// The value of x + e in `x = x + e`: strings are added in place when only x
+// holds x's buffer (str_append_in_place), as on the VM. Out of exec, so its
+// frame stays small.
+RELIC_TREE_NOINLINE Value Interpreter::add_to(const Ast& t, const Ast& r, const std::shared_ptr<Env>& env) {
+    if (stack_base_) check_stack(r);
+    Value a = eval(*r.kids[0], env);
+    Value b = eval(*r.kids[1], env);
+    Value* slot = std::holds_alternative<Str>(b.v) ? env->find(t.text) : nullptr;
+    if (slot && str_append_in_place(*slot, a, b)) return a;
+    return op_binary(r, a, b);
 }
 
 void Interpreter::check_stack(const Ast& at) {

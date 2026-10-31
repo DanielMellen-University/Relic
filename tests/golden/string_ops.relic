@@ -13,3 +13,35 @@ print(t)
 print("tab\there", "quote\"s", "back\\slash", "new\\nline")
 print("{1 + 1} and {"nested"} and {len("abc")}")
 print("{{braces}}")
+# x = x + t adds in place only when nothing else holds x's text (1.0.43)
+let s = "ab"
+s = s + "c"
+let k = s
+s = s + "d"
+let xs = [s]
+s = s + "e"
+let m = {v: s}
+s = s + "f"
+print(s, k, xs, m.v)
+fun keep()
+    let t = "q"
+    t = t + "r"
+    fun f() = t
+    t = t + "s"
+    return [t, f()]
+print(keep())
+s = s + s
+s = s + (s + "!")
+print(s)
+let u = "é"
+for i in 0..300
+    u = u + "€"
+    u = u + "a"
+    if i == 150
+        print(len(u), u[300])
+print(len(u), u[0], u[299], u[600], slice(u, 590, 601))
+let n = 1
+n = n + 2
+let l = [1]
+l = l + [2]
+print(n, l)

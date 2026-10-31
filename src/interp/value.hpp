@@ -154,7 +154,8 @@ struct Value {
     Value(double d) : v(d) {}
     Value(long long i) : v(i) {}
     Value(int i) : v(static_cast<long long>(i)) {}
-    Value(std::string s) : v(Str{std::make_shared<const StrBuf>(std::move(s))}) {}
+    // Made non-const, so str_append_in_place may change a buffer no one else holds.
+    Value(std::string s) : v(Str{std::make_shared<StrBuf>(std::move(s))}) {}
     Value(std::shared_ptr<List> l) : v(std::move(l)) {}
     Value(std::shared_ptr<Map> m) : v(std::move(m)) {}
     Value(std::shared_ptr<Function> f) : v(std::move(f)) {}
@@ -237,6 +238,11 @@ void trace_value(const Value& v, std::vector<GcObj*>& out);
 // characters (code points). A byte that is not valid UTF-8 counts as one character.
 size_t utf8_char_size(const std::string& s, size_t pos);  // bytes in the character at pos
 size_t utf8_len(const std::string& s);
+// `x = x + t` on strings: when slot (x) holds the same buffer as a, and only
+// the two of them hold it, adds t to the end of that buffer instead of
+// copying it, and gives true. Nothing else can see the change: the buffer's
+// only other holder is the value about to be stored back in x.
+bool str_append_in_place(const Value& slot, const Value& a, const Value& t);
 size_t utf8_offset(const std::string& s, size_t index);  // byte offset of character index, or s.size()
 // The same for a string Value, using the character count its buffer keeps.
 size_t str_len(const Value& v);

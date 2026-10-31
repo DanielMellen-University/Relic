@@ -81,6 +81,7 @@ private:
     Value binary(const Ast& n, const std::shared_ptr<Env>& env);
     Value call(const Ast& n, const std::shared_ptr<Env>& env);
     void assign(const Ast& target, Value v, const std::shared_ptr<Env>& env, const Ast& value_at);
+    Value add_to(const Ast& target, const Ast& rhs, const std::shared_ptr<Env>& env);
     bool condition(const Ast& n, const std::shared_ptr<Env>& env, const char* what);
     void install_builtins();
 };
