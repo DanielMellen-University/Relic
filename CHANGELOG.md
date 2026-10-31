@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.43 (2026-10-30)
+
+`strings.find`, `lists.sort` and building a string with `x = x + t` no longer take time growing with the square of the size. Daniel approved both on Oct 30. No change to the language or to any result.
+
+- `strings.find` (and `contains`, `split`, `replace`) on two strings and `lists.sort` on a list of only numbers or only strings run on the host, through two new host built-ins: `host_find` (Knuth-Morris-Pratt on bytes, keeping only matches whose ends fall between characters as `len` and `slice` count them) and `host_sort` (the same top-down merge as `lists.sort_by` with `<`, so ties, NaN and ints past 2^53 next to floats come out in the same order; `none` for any other list, which `lists.sort` then sorts in Relic as before, errors included). `std/vfs` sorts names with it. Finding a word at the end of 200,000 characters: VM 0.081 s, now 0.0004 s; compiled 0.033 s, now 0.0003 s. Sorting 100,000 ints: VM 0.94 s, now 0.012 s (`--tree` 1.76 s, now 0.012 s; compiled 0.29 s, now 0.010 s); 100,000 strings: VM 1.07 s, now 0.025 s.
+- `x = x + t`, with the same name on both sides, adds `t` to the end of the text in `x` when nothing else holds that text, instead of copying it: the VM marks the `+` of such an assignment with the place of `x`, the tree-walker sees the pattern, and relicc emits `rl_add_to`. The character count is kept when the added text cannot join the last character. 200,000 one-character appends: VM 0.69 s, now 0.013 s (in a global 2.15 s, now 0.013 s); `--tree` 0.42 s, now 0.038 s; compiled 0.78 s, now 0.007 s. 20,000 `é` with `len` each time: 0.36 s, now 0.004 s. Other benches within 1%.
+- `tools/fuzz_find_sort.py` and `tools/fuzz_concat.py` compare the VM, `--tree`, `selfhost/run.relic` and compiled programs with an older build's: find and sort seeds 1 to 8 (320 programs), concat seeds 1 to 8 (320), lists seed 12, maps seed 12, vfs seed 21, all 0 mismatches against 1.0.42; `fuzz_gen` 2601 and 2701 and `fuzz_mutate run` 2701 (100 each) found nothing. Goldens `std_lists`, `std_strings` and `string_ops` and `c_runtime` (also under ASan) cover the new paths.
+- `bootstrap/cgen.c` regenerated (cgen uses `std/strings` and now emits `rl_add_to`).
+- Speed: `selfhost_interp` 9.32 s median of 3 (9.31, 9.32, 9.35), under the 12.2 s cap.
+- `ctest`: 187 default, 395 with the host.
+
 ## 1.0.42 (2026-10-30)
 
 Removing from the front of a list, removing from a `std/vfs` folder and listing a big folder no longer take time growing with its size, and `std/vfs` gains `entries`. Daniel approved these three on Oct 30. No change to the language or to any result.
