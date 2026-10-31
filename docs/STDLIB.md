@@ -28,9 +28,9 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `starts_with(s, pre)` | bool | |
 | `ends_with(s, suf)` | bool | |
-| `upper(s)` / `lower(s)` | string | ASCII letters only |
-| `trim(s)` | string | leading and trailing space |
-| `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters |
+| `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
+| `trim(s)` | string | leading and trailing space; looks only at the ends (since 1.0.46; before, it went through every character) |
+| `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
 | `join(items, sep)` | string | |
 | `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |

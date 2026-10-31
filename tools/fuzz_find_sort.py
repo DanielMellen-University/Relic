@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Random strings.find / contains / split and lists.sort programs on every engine.
+"""Random strings.find / contains / split / replace / upper / lower / trim and
+lists.sort programs on every engine.
 
   python3 tools/fuzz_find_sort.py SEED COUNT [BUILD_DIR [OLD_BUILD_DIR]]
 
 Each program builds texts from a small alphabet with characters past ASCII
 (some over 1,024 characters, some like "aaa...ab"), looks for random parts
-with strings.find, contains, split and replace, and sorts random lists with
+with strings.find, contains, split and replace, changes case and trims them
+(upper, lower, trim), and sorts random lists with
 lists.sort: ints, floats with NaN and inf, ints past 2^53 next to floats,
 equal ints and floats (1 and 1.0), strings, and lists that cannot be sorted
 (mixed types, lists, bools, not a list) under try.
@@ -28,7 +30,7 @@ work = '/tmp/relic_fuzz/find_sort_%d' % seed
 os.makedirs(work, exist_ok=True)
 random.seed(seed)
 
-ALPHA = ['a', 'b', 'c', 'ab', 'é', '€', '\\u{1D11E}', ' ', '\\n']
+ALPHA = ['a', 'b', 'c', 'ab', 'é', '€', '\\u{1D11E}', ' ', '\\n', '\\t', 'Z', 'aZ', 'É']
 
 
 def text(short=False):
@@ -70,7 +72,9 @@ def program():
             part = random.choice([text(True), 'slice(t, %d, %d)' % (random.randrange(0, 1500), random.randrange(0, 1600))])
             out.append('print(strings.find(t, %s), strings.contains(t, %s))' % (part, part))
         elif r < 0.55:
-            out.append('try\n    print(len(strings.split(t, %s)), len(strings.replace(t, %s, "x")))\ncatch e\n    print(e.message)' % (text(True), text(True)))
+            out.append('try\n    print(strings.split(t, %s), strings.replace(t, %s, %s))\ncatch e\n    print(e.message)' % (text(True), text(True), text(True)))
+        elif r < 0.58:
+            out.append('print([strings.upper(t), strings.lower(t), strings.trim(t), strings.trim(" \\t" + t + "\\n ")])')
         elif r < 0.6:
             out.append('try\n    print(strings.find(%s, %s))\ncatch e\n    print(e.message)' % (random.choice(['[1, 2, 3, 2]', '5', 'none', 't']), random.choice(['[2]', '[]', '"a"', '2'])))
         else:
