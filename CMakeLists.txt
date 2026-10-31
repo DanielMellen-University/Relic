@@ -209,6 +209,11 @@ if(RELIC_BUILD_HOST)
     COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/run.relic ${CMAKE_CURRENT_SOURCE_DIR}/selfhost/run.relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/args.relic deep)
   set_tests_properties(selfhost_nested PROPERTIES
     PASS_REGULAR_EXPRESSION "^args \\[\"deep\"\\] \\[\"deep\"\\]")
+  # Self-host: the hooks an IDE uses (rt.out, rt.steps, rt.denied).
+  add_test(NAME selfhost_hooks
+    COMMAND relic ${CMAKE_CURRENT_SOURCE_DIR}/tests/selfhost/hooks.relic)
+  set_tests_properties(selfhost_hooks PROPERTIES
+    PASS_REGULAR_EXPRESSION "^\\[\\[\"1 a\", \"e\", \"\\[2\\]\"\\], \"ok\", false\\]\n\\[\\[\\], \"0: stopped: the program ran too long\", true\\]\n\\[\\[\"before\"\\], \"2: host_exit\\(\\): not available here\", false\\]\n\\[\\[\"host_exit\\(\\): not available here\"\\], \"ok\", false\\]\n\\[\\[\\], \"1: 'nope' is not defined\", false\\]\n$")
 
   # Self-host: exit codes and the "cannot open" message match the host.
   add_test(NAME selfhost_cli

@@ -1,0 +1,24 @@
+# selfhost/interp's hooks for running a program inside another (an IDE):
+# rt.out collects print and eprint, rt.steps stops a long run even inside
+# try, and rt.denied names host built-ins the program may not call.
+use ../../selfhost/lexer
+use ../../selfhost/parser
+use ../../selfhost/interp
+
+fun run(src, steps)
+    let rt = interp.new_runtime()
+    rt.out = []
+    rt.steps = steps
+    rt.denied = {host_exit: true}
+    interp.set_main(rt, "prog.relic")
+    interp.run(rt, parser.parse(lexer.lex(src).tokens).tree)
+    let msg = "ok"
+    if rt.err != none
+        msg = "{rt.err.line}: {rt.err.msg}"
+    return [rt.out, msg, rt.stopped]
+
+print(run("print(1, \"a\")\neprint(\"e\")\nlet x = [2]\nprint(x)\n", -1))
+print(run("try\n    while true\n        let y = 1\ncatch e\n    print(\"caught\")\n", 500))
+print(run("print(\"before\")\nhost_exit(3)\n", -1))
+print(run("try\n    host_exit(3)\ncatch e\n    print(e.message)\n", -1))
+print(run("print(nope)\n", -1))

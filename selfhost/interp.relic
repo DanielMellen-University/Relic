@@ -100,8 +100,13 @@ fun find(env, name)
         e = e.parent
     return none
 
+# For a program run inside another (an IDE): set rt.out to a list and print
+# and eprint add their lines to it instead of writing them; set rt.steps to a
+# number and the run stops, with an error no try catches, after that many
+# steps of the machine; put host_* names in rt.denied and calling one fails
+# with "<name>(): not available here". The defaults change nothing.
 fun new_runtime()
-    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: []}
+    let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: [], out: none, steps: -1, stopped: false, denied: {}}
     let builtins = new_env(none)
     for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1], ["gc", 0]]
         builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
@@ -581,6 +586,12 @@ fun machine(rt, st)
             if not unwind_error(rt, st, vals)
                 return none
             next
+        if rt.steps >= 0
+            if rt.steps == 0
+                rt.stopped = true
+                rt.err = {line: 0, col: 0, msg: "stopped: the program ran too long", file: rt.file}
+                return none
+            rt.steps = rt.steps - 1
         let fr = st[len(st) - 1]
         let step = fr[0]
         if step >= x_eval
@@ -971,6 +982,8 @@ fun flow_out(rt, st, vals, flow, v)
 # k_call and k_module on the way is left like the host leaves a call or a
 # module. Gives false when no try catches it.
 fun unwind_error(rt, st, vals)
+    if rt.stopped
+        return false
     while len(st) > 0
         let fr = pop(st)
         let k = fr[0]
@@ -1067,7 +1080,9 @@ fun builtin(rt, name, a)
             if i > 0
                 s = s + " "
             s = s + show(a[i])
-        if name == "print"
+        if rt.out != none
+            append(rt.out, s)
+        else if name == "print"
             print(s)
         else
             eprint(s)
@@ -1107,6 +1122,8 @@ fun builtin(rt, name, a)
     if name == "args" or name == "host_args"
         return ok(slice(rt.args, 0, len(rt.args)))
     if slice(name, 0, 5) == "host_"
+        if name in rt.denied
+            return bad("not available here")
         try
             return ok(host_call(name, a))
         catch e
