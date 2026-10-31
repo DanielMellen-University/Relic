@@ -16,7 +16,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Leave out `-DRELIC_BUILD_HOST=ON` to check the C-only build a fresh checkout gets (no C++ compiler needed). If you change `selfhost/` or `std/`, regenerate `bootstrap/cgen.c` with `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` and commit it; `bootstrap_fresh` fails until you do. See [bootstrap/README.md](bootstrap/README.md).
+Leave out `-DRELIC_BUILD_HOST=ON` to check the C-only build a fresh checkout gets (no C++ compiler needed). If you change a file `bootstrap/cgen.c` is made from (`selfhost/cgen.relic`, `lexer.relic`, `parser.relic`, `errfmt.relic`, `std/files.relic` or `std/strings.relic`), regenerate it with `cmake -DBUILD=build -P tools/regen_bootstrap.cmake` and commit it; `bootstrap_fresh` fails until you do. Other `selfhost/` and `std/` files do not need it. See [bootstrap/README.md](bootstrap/README.md).
 
 For graphics work, also build with `-DRELIC_SDL=ON` into `build-sdl` and run its tests. Details: [TESTING.md](docs/TESTING.md).
 
@@ -34,7 +34,12 @@ For graphics work, also build with `-DRELIC_SDL=ON` into `build-sdl` and run its
 - Commit straight to `main` with normal commits. No force-push.
 - One logical change per commit, with a message that says what changed.
 - Run the tests before pushing, and check that CI is green on all three OSes after.
-- The version lives in `project(relic VERSION ...)` in `CMakeLists.txt`. When it changes, also change the REPL banner shown in [CLI.md](docs/CLI.md#the-repl) and the README, and add a [CHANGELOG](CHANGELOG.md) entry.
+- The version lives in `project(relic VERSION ...)` in `CMakeLists.txt`. When it changes, also change it in:
+  - the README status line;
+  - [CLI.md](docs/CLI.md): the `relic --version` row and the REPL banner;
+  - the first paragraph of [GUIDE.md](docs/GUIDE.md) and of [LANGUAGE.md](docs/LANGUAGE.md);
+  - the `version_string()` row in [HOST.md](docs/HOST.md#embedding);
+  - and add a [CHANGELOG](CHANGELOG.md) entry. Leave "since 1.0.x" notes alone: they say when something came in.
 
 ## Writing docs
 
