@@ -444,9 +444,38 @@ static void test_errors_and_builtins(void) {
     SHOW(call1("type", rl_none()), "none");
     SHOW(call1("type", rl_float(1.5)), "float");
     CHECK(rl_builtin("host_names", &f));
-    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 78);
+    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 80);
     rl_release(r);
     rl_release(f);
+    {   /* host_find counts characters, and skips a match that starts inside one */
+        rl_value fa[2];
+        fa[0] = rl_str_new("a\xc3\xa9" "b\xc3\xa9", 7);
+        fa[1] = rl_str_new("\xc3\xa9", 2);
+        SHOW((call("host_find", 2, fa, &r), r), "1");
+        rl_release(fa[1]);
+        fa[1] = rl_str_new("\xa9", 1);
+        SHOW((call("host_find", 2, fa, &r), r), "-1");
+        rl_release(fa[1]);
+        fa[1] = rl_str_new("", 0);
+        SHOW((call("host_find", 2, fa, &r), r), "0");
+        rl_release(fa[0]);
+        rl_release(fa[1]);
+    }
+    {   /* host_sort: numbers keep 1 before 1.0 as given; a mixed list gives none */
+        rl_value sl = rl_list_new(0);
+        rl_list_push(L(sl), rl_int(3));
+        rl_list_push(L(sl), rl_int(1));
+        rl_list_push(L(sl), rl_float(1.0));
+        rl_list_push(L(sl), rl_float(-0.5));
+        SHOW((call("host_sort", 1, &sl, &r), r), "[-0.5, 1, 1.0, 3]");
+        {
+            rl_value sa = rl_str_new("a", 1);
+            rl_list_push(L(sl), sa);
+            rl_release(sa);
+        }
+        SHOW((call("host_sort", 1, &sl, &r), r), "none");
+        rl_release(sl);
+    }
     SHOW((call("host_gfx_available", 0, NULL, &r), r), "false");   /* relic_rt has the stub */
     ERR(call("host_gfx_open", 0, NULL, &r), "host_gfx_open() takes 3 arguments, got 0");
 }

@@ -60,4 +60,12 @@ fun sort_by(xs, less)
     return out + slice(a, i, len(a)) + slice(b, j, len(b))
 
 fun natural(a, b) = a < b
-fun sort(xs) = sort_by(xs, natural)
+
+# A list of only numbers or only strings is sorted by the host (host_sort,
+# the same merge as sort_by, so the order is the same, ties and NaN too);
+# anything else goes through sort_by, with its errors.
+fun sort(xs)
+    let r = host_sort(xs)
+    if r == none
+        return sort_by(xs, natural)
+    return r

@@ -140,12 +140,12 @@ At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: t
 `rl_builtin(name, &out)` gives the shared function object for any built-in, so `print == print` holds. Generated code looks each one up once.
 
 - Language built-ins: `print`, `eprint`, `len`, `append`, `str`, `keys`, `fail`, `gc`, `type`, `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `args`.
-- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_read_line`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_std_root`, `host_names`, `host_call`.
+- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_read_line`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_find`, `host_sort`, `host_std_root`, `host_names`, `host_call`.
 - Graphics stubs and the clipboard: see below.
 
 **Stack.** A compiled program calls itself once per Relic call, up to 800 deep (`too much recursion` after that). A deep `json.encode` of a list nested 790 levels takes about 450 KB with GCC at `-O2`; MSVC frames are larger and Windows gives 1 MB, so on MSVC `relic_rt` and `relic_rt_gfx` pass `/STACK:8388608` to every program that links them (Linux and macOS default to 8 MB). Case `cgen_only_json_deep` (tests/cgen) runs that depth.
 
-`host_names()` lists the same 78 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
+`host_names()` lists the same 80 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
 `num("...")` follows the host step by step (`rl_parse_num`): a sign, then digits that fit give an int; `nan`, `inf` and `infinity` in any case; hex like `0x1F` an int when it fits; anything else must read as a float through `strtod` (decimal, or a hex float like `0x1.8p3`). A float too small rounds to a subnormal or `0.0`, and one too large is not a number.
 

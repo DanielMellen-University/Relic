@@ -479,6 +479,117 @@ BI(h_same) {
     return RL_OK;
 }
 
+/* host_find(text, part): the first `part` in `text` in characters, or -1, as
+ * on the host: byte matches by Knuth-Morris-Pratt, kept only where both ends
+ * fall between characters as len and slice count them. */
+BI(h_find) {
+    const rl_str *s, *t;
+    size_t n, m, i, j, q, k, *f;
+    char *starts = NULL;
+    int ascii = 1;
+    long long r = -1;
+    UNUSED;
+    if (rl_arg_str(cx, a[0], "text") || rl_arg_str(cx, a[1], "part")) return RL_ERR;
+    s = S(a[0]);
+    t = S(a[1]);
+    n = s->len;
+    m = t->len;
+    if (m == 0) { *out = rl_int(0); return RL_OK; }
+    if (m > n) { *out = rl_int(-1); return RL_OK; }
+    for (i = 0; i < n; ++i)
+        if ((unsigned char)s->data[i] >= 0x80) { ascii = 0; break; }
+    if (!ascii) {
+        starts = (char *)calloc(n + 1, 1);
+        if (!starts) abort();
+        for (i = 0; i < n; i += rl_utf8_char_size(s->data, n, i)) starts[i] = 1;
+        starts[n] = 1;
+    }
+    f = (size_t *)malloc(m * sizeof *f);
+    if (!f) abort();
+    f[0] = 0;
+    for (q = 1, k = 0; q < m; ++q) {
+        while (k > 0 && t->data[q] != t->data[k]) k = f[k - 1];
+        if (t->data[q] == t->data[k]) ++k;
+        f[q] = k;
+    }
+    for (i = 0, j = 0; i < n; ++i) {
+        while (j > 0 && s->data[i] != t->data[j]) j = f[j - 1];
+        if (s->data[i] == t->data[j]) ++j;
+        if (j == m) {
+            size_t at = i + 1 - m, b;
+            if (ascii) { r = (long long)at; break; }
+            if (starts[at] && starts[i + 1]) {
+                r = 0;
+                for (b = 0; b < at; ++b) r += starts[b];
+                break;
+            }
+            j = f[j - 1];
+        }
+    }
+    free(f);
+    free(starts);
+    *out = rl_int(r);
+    return RL_OK;
+}
+
+static int sort_strs;
+static int sort_less(const rl_value *x, const rl_value *y) {
+    if (sort_strs) {
+        const rl_str *p = S(*x), *q = S(*y);
+        size_t n = p->len < q->len ? p->len : q->len;
+        int c = memcmp(p->data, q->data, n);
+        return c ? c < 0 : p->len < q->len;
+    }
+    if (x->k == RL_INT && y->k == RL_INT) return x->u.i < y->u.i;
+    return (x->k == RL_INT ? (double)x->u.i : x->u.f) < (y->k == RL_INT ? (double)y->u.i : y->u.f);
+}
+/* The same top-down merge as std/lists.sort_by: split at n / 2, take from the
+ * right half only when its item is less. */
+static void sort_range(const rl_value **v, const rl_value **tmp, size_t lo, size_t hi) {
+    size_t n = hi - lo, mid, i, j, o;
+    if (n <= 1) return;
+    mid = lo + n / 2;
+    sort_range(v, tmp, lo, mid);
+    sort_range(v, tmp, mid, hi);
+    i = lo; j = mid; o = lo;
+    while (i < mid && j < hi) tmp[o++] = sort_less(v[j], v[i]) ? v[j++] : v[i++];
+    while (i < mid) tmp[o++] = v[i++];
+    while (j < hi) tmp[o++] = v[j++];
+    memcpy(v + lo, tmp + lo, n * sizeof *v);
+}
+/* host_sort(list): a sorted copy when the list holds only numbers or only
+ * strings, else none (std/lists.sort then sorts in Relic). */
+BI(h_sort) {
+    const rl_list *l;
+    const rl_value **v, **tmp;
+    size_t i;
+    int nums = 1, strs = 1;
+    rl_value r;
+    UNUSED;
+    (void)cx;
+    *out = rl_none();
+    if (a[0].k != RL_LIST) return RL_OK;
+    l = L(a[0]);
+    for (i = 0; i < l->n; ++i) {
+        int k = l->items[i].k;
+        if (k != RL_INT && k != RL_FLOAT) nums = 0;
+        if (k != RL_STR) strs = 0;
+    }
+    if (!nums && !strs) return RL_OK;
+    v = (const rl_value **)malloc((l->n ? l->n : 1) * sizeof *v);
+    tmp = (const rl_value **)malloc((l->n ? l->n : 1) * sizeof *tmp);
+    if (!v || !tmp) abort();
+    for (i = 0; i < l->n; ++i) v[i] = &l->items[i];
+    sort_strs = strs;
+    sort_range(v, tmp, 0, l->n);
+    r = rl_list_new(l->n);
+    for (i = 0; i < l->n; ++i) rl_list_push(L(r), *v[i]);
+    free(v);
+    free(tmp);
+    *out = r;
+    return RL_OK;
+}
+
 /* Where `use std/...` looks: $RELIC_STD if set, else the std/ folder this
  * runtime was built from (RL_STD_DIR from CMake). Ends in a slash. */
 #ifndef RL_STD_DIR
@@ -514,7 +625,7 @@ static const rl_builtin_def g_host[] = {
     {"host_list_dir", 1, h_list_dir}, {"host_is_dir", 1, h_is_dir}, {"host_make_dir", 1, h_make_dir},
     {"host_remove", 1, h_remove}, {"host_rename", 2, h_rename}, {"host_file_size", 1, h_file_size},
     {"host_cwd", 0, h_cwd}, {"host_env", 1, h_env}, {"host_read_line", 1, h_read_line}, {"host_exit", 1, h_exit}, {"host_sleep", 1, h_sleep},
-    {"host_same", 2, h_same}, {"host_std_root", 0, h_std_root}, {"host_names", 0, h_names}, {"host_call", 2, h_call},
+    {"host_same", 2, h_same}, {"host_find", 2, h_find}, {"host_sort", 1, h_sort}, {"host_std_root", 0, h_std_root}, {"host_names", 0, h_names}, {"host_call", 2, h_call},
     {NULL, 0, NULL}};
 
 const rl_builtin_def *rl_host_defs(void) { return g_host; }

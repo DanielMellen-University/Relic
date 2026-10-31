@@ -4,3 +4,9 @@
 1 [5, 3, 8]
 5 [9, 3, 8] [3, 8]
 ["apple", "fig", "pear"]
+[-0.0, 0, 1.0, 1, 2, 2.0]
+[1, 2, 3, nan] ["", "B", "a", "b", "é"]
+[9007199254740993, 9.00719925474099e+15, 9007199254740992]
+cannot compare a string and an int
+[[1]]
+cannot add a list and a string

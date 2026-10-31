@@ -10,3 +10,16 @@ print(pop(xs), xs)
 insert(xs, 0, 9)
 print(remove(xs, 1), xs, slice(xs, 1, 10))
 print(lists.sort(["pear", "apple", "fig"]))
+# sort on the host keeps sort_by's order: ties as given, NaN where the merge leaves it
+print(lists.sort([2, 1.0, 1, 2.0, -0.0, 0]))
+print(lists.sort([3, float("nan"), 1, 2]), lists.sort(["b", "", "é", "a", "B"]))
+print(lists.sort([9007199254740993, 9007199254740992.0, 9007199254740992]))
+try
+    lists.sort([1, "a"])
+catch e
+    print(e.message)
+print(lists.sort([[1]]))
+try
+    lists.sort("cba")
+catch e
+    print(e.message)

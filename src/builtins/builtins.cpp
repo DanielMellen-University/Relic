@@ -14,6 +14,7 @@ namespace relic { std::string std_root(); }
 #include <fstream>
 #include <thread>
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <cstdio>
@@ -426,6 +427,88 @@ void Interpreter::install_builtins() {
         return Value(false);
     });
     add("host_std_root", 0, [](std::vector<Value>&) { return Value(std_root()); });
+    // host_find(text, part): the index of the first `part` in `text`, in
+    // characters, or -1; std/strings.find on two strings. Byte matches by
+    // Knuth-Morris-Pratt, kept only where both ends fall between characters as
+    // len and slice count them, so it gives what slice(text, i, i + len(part))
+    // == part would (also for bytes that are not UTF-8).
+    add("host_find", 2, [str_arg](std::vector<Value>& a) {
+        const std::string& s = str_arg(a[0], "text");
+        const std::string& t = str_arg(a[1], "part");
+        const size_t n = s.size(), m = t.size();
+        if (m == 0) return Value(0LL);
+        if (m > n) return Value(-1LL);
+        bool ascii = true;
+        for (unsigned char c : s)
+            if (c >= 0x80) { ascii = false; break; }
+        std::vector<char> starts;  // starts[i]: a character starts at byte i (or i == n)
+        if (!ascii) {
+            starts.assign(n + 1, 0);
+            for (size_t i = 0; i < n; i += utf8_char_size(s, i)) starts[i] = 1;
+            starts[n] = 1;
+        }
+        std::vector<size_t> f(m, 0);
+        for (size_t q = 1, k = 0; q < m; ++q) {
+            while (k > 0 && t[q] != t[k]) k = f[k - 1];
+            if (t[q] == t[k]) ++k;
+            f[q] = k;
+        }
+        for (size_t i = 0, j = 0; i < n; ++i) {
+            while (j > 0 && s[i] != t[j]) j = f[j - 1];
+            if (s[i] == t[j]) ++j;
+            if (j == m) {
+                size_t at = i + 1 - m;
+                if (ascii) return Value(static_cast<long long>(at));
+                if (starts[at] && starts[i + 1]) {
+                    long long c = 0;
+                    for (size_t b = 0; b < at; ++b) c += starts[b];
+                    return Value(c);
+                }
+                j = f[j - 1];
+            }
+        }
+        return Value(-1LL);
+    });
+    // host_sort(list): a sorted copy when the list holds only numbers or only
+    // strings, else none (std/lists.sort then sorts in Relic). The same
+    // top-down merge as std/lists.sort_by with `<`, split at len / 2 and taking
+    // from the right half only when its item is less, so ties, NaN and ints
+    // past 2^53 next to floats come out in the same order.
+    add("host_sort", 1, [](std::vector<Value>& a) -> Value {
+        if (!a[0].is<std::shared_ptr<List>>()) return Value();
+        const List& xs = *a[0].as<std::shared_ptr<List>>();
+        bool nums = true, strs = true;
+        for (const Value& x : xs) {
+            if (!is_num(x)) nums = false;
+            if (!x.is<std::string>()) strs = false;
+        }
+        if (!nums && !strs) return Value();
+        std::vector<const Value*> v, tmp(xs.size());
+        v.reserve(xs.size());
+        for (const Value& x : xs) v.push_back(&x);
+        auto less = [strs](const Value* x, const Value* y) {
+            if (strs) return x->as<std::string>().compare(y->as<std::string>()) < 0;
+            if (x->is<long long>() && y->is<long long>()) return x->as<long long>() < y->as<long long>();
+            return to_num(*x) < to_num(*y);
+        };
+        std::function<void(size_t, size_t)> sort = [&](size_t lo, size_t hi) {
+            size_t n = hi - lo;
+            if (n <= 1) return;
+            size_t mid = lo + n / 2;
+            sort(lo, mid);
+            sort(mid, hi);
+            size_t i = lo, j = mid, o = lo;
+            while (i < mid && j < hi) tmp[o++] = less(v[j], v[i]) ? v[j++] : v[i++];
+            while (i < mid) tmp[o++] = v[i++];
+            while (j < hi) tmp[o++] = v[j++];
+            std::copy(tmp.begin() + lo, tmp.begin() + hi, v.begin() + lo);
+        };
+        sort(0, v.size());
+        auto out = std::make_shared<List>();
+        out->reserve(v.size());
+        for (const Value* x : v) out->push_back(*x);
+        return Value(out);
+    });
     // host_names(): [name, arity] for every host_* built-in.
     add("host_names", 0, [this](std::vector<Value>&) {
         std::vector<std::string> names;
