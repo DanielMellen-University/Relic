@@ -33,6 +33,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
 | `trim(s)` | string | leading and trailing space; looks only at the ends (since 1.0.46; before, it went through every character) |
 | `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
+| `lines(s)` | list | split at `"\n"`, with a `"\r"` before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
 | `join(items, sep)` | string | |
 | `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
@@ -93,7 +94,7 @@ Paths are relative to where `relic` runs. Caught errors use the std name
 | `read(path)` | string | `cannot open {path}` (also for a folder) |
 | `write(path, text)` | none | `cannot write {path}` |
 | `append_text(path, text)` | none | `cannot write {path}` |
-| `lines(path)` | list of strings | same as `read`; strips a trailing empty line |
+| `lines(path)` | list of strings | same as `read`; then `strings.lines` of the text (CRLF read as LF, no empty last line) |
 | `exists(path)` | bool | never fails; true for a file **or** a folder |
 | `list(path)` | list of names | sorted; `cannot list {path}` |
 | `is_dir(path)` | bool | never fails (`false` if missing) |

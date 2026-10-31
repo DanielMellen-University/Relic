@@ -1,5 +1,6 @@
-# Since 1.0.49: strings.count and strings.find_last, with their edges and errors.
+# Since 1.0.49: strings.count, find_last and lines, with their edges and errors.
 use std/strings
+use std/files
 print(strings.count("a,b,,c", ","), strings.count("aaaa", "aa"), strings.count("", "x"), strings.count("éé", "é"))
 print(strings.find_last("abcabc", "bc"), strings.find_last("aaa", "aa"), strings.find_last("abc", "x"), strings.find_last("abc", ""), strings.find_last("", ""), strings.find_last("ééa", "é"))
 for f in [0, 1, 2]
@@ -15,3 +16,14 @@ for f in [0, 1, 2]
 # long text: both take linear time, and agree with find on one match
 let long = strings.repeat("ab", 50000) + "c" + strings.repeat("ab", 10)
 print(strings.find_last(long, "c"), strings.find(long, "c"), strings.count(long, "ab"), strings.find_last(long, "ab"))
+# strings.lines: split at newlines, a "\r" before one dropped, no empty last
+# line for text that ends with one; files.lines reads a file the same way
+print(strings.lines("a\u{d}\nb\n\nc\n"), strings.lines(""), strings.lines("\n"), strings.lines("x"))
+try
+    strings.lines(none)
+catch e
+    print(e.message)
+let p = "std_strings_more_lines.tmp"
+files.write(p, "one\u{d}\ntwo\n\nthree\n")
+print(files.lines(p), files.lines(p) == strings.lines(files.read(p)))
+files.remove(p)

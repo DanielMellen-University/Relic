@@ -6,11 +6,7 @@ fun write(path, text) = host_write_file(path, text, false)
 fun append_text(path, text) = host_write_file(path, text, true)
 fun exists(path) = host_file_exists(path)
 
-fun lines(path)
-    let parts = strings.split(strings.replace(read(path), chr(13) + "\n", "\n"), "\n")
-    if len(parts) > 0 and parts[len(parts) - 1] == ""
-        pop(parts)
-    return parts
+fun lines(path) = strings.lines(read(path))
 
 # Folders. list gives names (not full paths), sorted.
 fun list(path) = host_list_dir(path)
