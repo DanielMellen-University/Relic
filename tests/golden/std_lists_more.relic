@@ -1,4 +1,4 @@
-# Since 1.0.49: lists.contains, unique, min and max.
+# Since 1.0.49: lists.contains, unique, min, max, any and all.
 use std/lists
 print(lists.contains([1, 2], 1.0), lists.contains([], none), lists.contains([[1]], [1]), lists.contains(["a"], "A"))
 print(lists.unique(["a", "b", "a", 1, 1.0, 2, [1], [1], none, none]), lists.unique([]))
@@ -19,3 +19,13 @@ for xs in [[], [1, "a"], [[1], [2]]]
         print(lists.max(xs))
     catch e
         print("ERR", e.message)
+# any and all stop at the first item that decides
+fun big(x) = x > 2
+let seen = []
+fun noted(x)
+    append(seen, x)
+    return x > 2
+print(lists.any([1, 2, 3], big), lists.any([1, 2], big), lists.any([], big), lists.all([3, 4], big), lists.all([3, 1], big), lists.all([], big))
+print(lists.any([1, 5, 9], noted), lists.copy(seen))
+seen = []
+print(lists.all([5, 1, 9], noted), seen)

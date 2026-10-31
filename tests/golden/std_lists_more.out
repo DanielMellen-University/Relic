@@ -8,3 +8,6 @@ ERR cannot compare a string and an int
 ERR cannot compare an int and a string
 ERR cannot compare a list and a list
 ERR cannot compare a list and a list
+true false false true false true
+true [1, 5]
+false [5, 1]

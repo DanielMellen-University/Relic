@@ -65,6 +65,23 @@ fun unique(xs)
             append(out, x)
     return out
 
+# Since 1.0.49: whether test(x) is true for some item, and for every item.
+# Both stop at the first item that decides it; an empty list is false for
+# any and true for all.
+fun any(xs, test)
+    _seq("any", xs)
+    for x in xs
+        if test(x)
+            return true
+    return false
+
+fun all(xs, test)
+    _seq("all", xs)
+    for x in xs
+        if not test(x)
+            return false
+    return true
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
