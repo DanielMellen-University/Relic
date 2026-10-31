@@ -26,7 +26,7 @@ Reference: [STDLIB.md](STDLIB.md).
 | 60fps redraw on the VM | done, see below | bench/redraw.relic |
 | `use std/...` in the self-hosted interpreter | done | selfhost/ |
 | A shared in-memory filesystem for the apps, with quick listing of big folders | done (1.0.42) | std/vfs |
-| Queues and big text: removing from the front of a list, `x = x + t`, find and sort in linear time | done (1.0.42, 1.0.43) | language, std/strings, std/lists |
+| Queues and big text: removing from the front of a list, `x = x + t` and find in linear time, sort in n log n | done (1.0.42, 1.0.43) | language, std/strings, std/lists |
 | Running a program inside the desktop (IDE): captured output, a step limit, refused built-ins | done (1.0.44) | selfhost/interp.relic, [ARCHITECTURE.md](ARCHITECTURE.md) |
 | That program's `use` of the desktop's files, and input line by line | done (1.0.45) | selfhost/interp.relic |
 | Stdlib reference docs | done | docs/STDLIB.md |

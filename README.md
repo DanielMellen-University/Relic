@@ -10,7 +10,7 @@ This repo is the language only: the compiler to C and its C runtime, the C++ hos
 > - A compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) that turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). It compiles itself, and its own C is committed in `bootstrap/`, so the default build needs only a C compiler.
 > - An optional C++ host with a tree-walker, a bytecode VM (the default engine), the REPL and SDL2 graphics. Compiled programs get the same graphics with `-DRELIC_C_SDL=ON`.
 > - A lexer, parser, interpreter, `relic check` and REPL written in Relic (`selfhost/`). The interpreter can run a program inside another, with its output captured, a step limit, refused built-ins, modules read from elsewhere and input fed line by line; MONOLITH 2's IDE runs programs that way (1.0.44 and 1.0.45).
-> - Searching, sorting, building a string with `x = x + t`, and taking items off the front of a list take time in line with their size (1.0.42 and 1.0.43).
+> - Searching, building a string with `x = x + t` and taking items off the front of a list take time in line with their size, and sorting n log n, not the square of it (1.0.42 and 1.0.43).
 >
 > The [changelog](CHANGELOG.md) has every version and the [roadmap](docs/ROADMAP.md) what is next.
 
