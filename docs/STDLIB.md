@@ -62,6 +62,11 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.
 
+A list, a string (its characters) or a map (its keys) can be passed as `xs`.
+Anything else fails with the function's name: `lists.map(): xs must be a list,
+got int` (since 1.0.49; before, `cannot loop over an int` or `len(): cannot
+get the length of an int` from inside).
+
 ## std/maps
 
 | Call | Returns | Notes |

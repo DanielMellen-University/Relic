@@ -2,6 +2,7 @@
 # of value, instead of failing inside with "cannot loop over an int".
 use std/paths
 use std/maps
+use std/lists
 for f in ["join", "join2", "base", "dir", "ext", "stem", "normalize"]
     try
         if f == "join"
@@ -38,3 +39,42 @@ for f in ["values", "items", "get", "merge", "merge2", "drop"]
     catch e
         print(e.message)
 print(maps.get({a: 1}, "a", 2), maps.merge({}, {b: 2}))
+
+fun same(y) = y
+fun yes(y) = true
+fun first(a, b) = a
+let bad = [5, 2.5, none, true]
+let i = 0
+for f in ["map", "filter", "reduce", "sum", "index_of", "contains", "unique", "min", "max", "reverse", "copy", "sort_by", "sort"]
+    let x = bad[i % len(bad)]
+    i = i + 1
+    try
+        if f == "map"
+            lists.map(x, same)
+        else if f == "filter"
+            lists.filter(x, yes)
+        else if f == "reduce"
+            lists.reduce(x, first, 0)
+        else if f == "sum"
+            lists.sum(x)
+        else if f == "index_of"
+            lists.index_of(x, 1)
+        else if f == "contains"
+            lists.contains(x, 1)
+        else if f == "unique"
+            lists.unique(x)
+        else if f == "min"
+            lists.min(x)
+        else if f == "max"
+            lists.max(x)
+        else if f == "reverse"
+            lists.reverse(x)
+        else if f == "copy"
+            lists.copy(x)
+        else if f == "sort_by"
+            lists.sort_by(x, lists.natural)
+        else
+            lists.sort(x)
+    catch e
+        print(e.message)
+print(lists.map("ab", same), lists.reverse("abc"), lists.sort_by([3, 1, 2], lists.natural), lists.sum({}))

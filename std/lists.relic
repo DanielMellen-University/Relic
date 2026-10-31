@@ -1,12 +1,21 @@
-# std/lists: list helpers. pop, insert and remove are built in.
+# std/lists: list helpers. pop, insert and remove are built in. A list, a
+# string or a map (its keys) can be walked; since 1.0.49 anything else fails
+# as "lists.map(): xs must be a list, got int".
+
+fun _seq(name, xs)
+    let t = type(xs)
+    if t != "list" and t != "string" and t != "map"
+        fail("lists." + name + "(): xs must be a list, got " + t)
 
 fun map(xs, f)
+    _seq("map", xs)
     let out = []
     for x in xs
         append(out, f(x))
     return out
 
 fun filter(xs, keep)
+    _seq("filter", xs)
     let out = []
     for x in xs
         if keep(x)
@@ -14,15 +23,20 @@ fun filter(xs, keep)
     return out
 
 fun reduce(xs, f, start)
+    _seq("reduce", xs)
     let acc = start
     for x in xs
         acc = f(acc, x)
     return acc
 
-fun sum(xs) = reduce(xs, fun_add, 0)
+fun sum(xs)
+    _seq("sum", xs)
+    return reduce(xs, fun_add, 0)
+
 fun fun_add(a, b) = a + b
 
 fun index_of(xs, item)
+    _seq("index_of", xs)
     let i = 0
     for x in xs
         if x == item
@@ -34,9 +48,12 @@ fun index_of(xs, item)
 # without repeats (the first of each kept, in order), and the smallest and
 # largest item (by <, so NaN and mixed types follow its rules; an empty list
 # is an error).
-fun contains(xs, item) = index_of(xs, item) >= 0
+fun contains(xs, item)
+    _seq("contains", xs)
+    return index_of(xs, item) >= 0
 
 fun unique(xs)
+    _seq("unique", xs)
     let out = []
     let seen = {}
     for x in xs
@@ -49,6 +66,7 @@ fun unique(xs)
     return out
 
 fun _empty(name, xs)
+    _seq(name, xs)
     if len(xs) == 0
         fail("lists." + name + "(): the list is empty")
 
@@ -69,6 +87,7 @@ fun max(xs)
     return m
 
 fun reverse(xs)
+    _seq("reverse", xs)
     let out = []
     let i = len(xs) - 1
     while i >= 0
@@ -76,15 +95,21 @@ fun reverse(xs)
         i = i - 1
     return out
 
-fun copy(xs) = slice(xs, 0, len(xs))
+fun copy(xs)
+    _seq("copy", xs)
+    return slice(xs, 0, len(xs))
 
 fun sort_by(xs, less)
     # stable merge sort; returns a new list
+    _seq("sort_by", xs)
+    return _merge(xs, less)
+
+fun _merge(xs, less)
     if len(xs) <= 1
-        return copy(xs)
+        return slice(xs, 0, len(xs))
     let mid = int(len(xs) / 2)
-    let a = sort_by(slice(xs, 0, mid), less)
-    let b = sort_by(slice(xs, mid, len(xs)), less)
+    let a = _merge(slice(xs, 0, mid), less)
+    let b = _merge(slice(xs, mid, len(xs)), less)
     let out = []
     let i = 0
     let j = 0
@@ -103,6 +128,7 @@ fun natural(a, b) = a < b
 # the same merge as sort_by, so the order is the same, ties and NaN too);
 # anything else goes through sort_by, with its errors.
 fun sort(xs)
+    _seq("sort", xs)
     let r = host_sort(xs)
     if r == none
         return sort_by(xs, natural)

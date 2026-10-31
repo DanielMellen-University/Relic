@@ -12,3 +12,17 @@ maps.merge(): a must be a map, got none
 maps.merge(): b must be a map, got int
 maps.drop(): m must be a map, got int
 1 {b: 2}
+lists.map(): xs must be a list, got int
+lists.filter(): xs must be a list, got float
+lists.reduce(): xs must be a list, got none
+lists.sum(): xs must be a list, got bool
+lists.index_of(): xs must be a list, got int
+lists.contains(): xs must be a list, got float
+lists.unique(): xs must be a list, got none
+lists.min(): xs must be a list, got bool
+lists.max(): xs must be a list, got int
+lists.reverse(): xs must be a list, got float
+lists.copy(): xs must be a list, got none
+lists.sort_by(): xs must be a list, got bool
+lists.sort(): xs must be a list, got int
+["a", "b"] ["c", "b", "a"] [1, 2, 3] 0
