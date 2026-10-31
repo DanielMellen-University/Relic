@@ -8,9 +8,9 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 
 | Module | For |
 |---|---|
-| [std/strings](#stdstrings) | searching, splitting, case, padding |
-| [std/lists](#stdlists) | map, filter, reduce, sorting |
-| [std/maps](#stdmaps) | values, items, get with a fallback, merge, drop |
+| [std/strings](#stdstrings) | searching, counting, splitting, lines, case, padding |
+| [std/lists](#stdlists) | map, filter, reduce, any and all, min and max, unique, flatten, zip, sorting |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop |
 | [std/math](#stdmath) | rounding, roots, trig, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths |
