@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.45 (2026-10-30)
+
+The interpreter written in Relic, embedded, can read modules from somewhere other than the disk and can wait for input: M0N0LITH-2's IDE uses both, for `use` of the desktop's files and programs that read lines. Daniel approved these on Oct 30. No change to the language or to any result; a program run as before sees no difference.
+
+- `selfhost/interp.relic`: `rt.load`, a function from a file path to its text or `none`, reads every `use` other than `std/` instead of the disk. `rt.input`, a list of lines, feeds `host_read_line` (and so `os.read_line` and `os.prompt`), adding prompt and line to `rt.out` when that is set; when the list is empty, `interp.run` returns with the call still to do and `rt.waiting` set to its prompt, and `interp.resume(rt, line)` goes on from the saved stack. Steps keep counting across a pause. `selfhost_hooks` now checks itself and prints `hooks ok`: loading, a missing and a broken module, a pause in a function inside `try`, an error after a resume, and the step limit across pauses.
+- Speed: `selfhost_interp` 9.60 s median of 3 (9.52, 9.60, 9.76), under the 12.2 s cap (1.0.44: 9.47 s).
+- `fuzz_concat`, `fuzz_find_sort` seed 10 and `fuzz_lists` seed 13 (40 programs each, including `selfhost/run.relic`): 0 mismatches against 1.0.44; `fuzz_gen` and `fuzz_mutate run` 2801 (60 each) found nothing.
+- `ctest`: 187 default, 396 with the host.
+
 ## 1.0.44 (2026-10-30)
 
 The interpreter written in Relic can be embedded: M0N0LITH-2's new IDE app runs a program in it inside the desktop. Daniel approved the IDE on Oct 30. No change to the language or to any result; a program run as before sees no difference.
