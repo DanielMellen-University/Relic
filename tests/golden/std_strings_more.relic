@@ -1,4 +1,5 @@
-# Since 1.0.49: strings.count, find_last and lines, with their edges and errors.
+# Since 1.0.49: strings.count, find_last, lines, trim_start and trim_end, with
+# their edges and errors.
 use std/strings
 use std/files
 print(strings.count("a,b,,c", ","), strings.count("aaaa", "aa"), strings.count("", "x"), strings.count("éé", "é"))
@@ -27,3 +28,15 @@ let p = "std_strings_more_lines.tmp"
 files.write(p, "one\u{d}\ntwo\n\nthree\n")
 print(files.lines(p), files.lines(p) == strings.lines(files.read(p)))
 files.remove(p)
+# trim_start and trim_end: the same spaces trim takes, one end each
+let padded = " \t a b " + chr(13) + "\n"
+fun shown(x) = [strings.replace(x, chr(13), "<CR>")]
+print(shown(strings.trim_start(padded)), shown(strings.trim_end(padded)), [strings.trim_start("")], [strings.trim_end("   ")], strings.trim_end(strings.trim_start(padded)) == strings.trim(padded))
+for f in ["trim_start", "trim_end"]
+    try
+        if f == "trim_start"
+            strings.trim_start(5)
+        else
+            strings.trim_end(none)
+    catch e
+        print(e.message)

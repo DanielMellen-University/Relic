@@ -7,3 +7,6 @@ strings.count(): part must be a string, got int
 ["a", "b", "", "c"] [] [""] ["x"]
 strings.lines(): text must be a string, got none
 ["one", "two", "", "three"] true
+["a b <CR>\n"] [" \t a b"] [""] [""] true
+strings.trim_start(): argument must be a string, got int
+strings.trim_end(): argument must be a string, got none
