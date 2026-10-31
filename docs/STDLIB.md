@@ -149,6 +149,13 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 part is `err.message` (includes the `at N` index). `line` / `col` point at
 the `fail` inside `std/json`, not at a spot in the JSON text.
 
+Two places where std/json is looser than the JSON standard (found by
+`tools/fuzz_json.py`): `encode` and `pretty` write a float the way `str()`
+does, with 15 significant digits, so a float that needs 16 or 17 to be exact
+(`-90071992547409.92`) decodes back a little different; and `decode` takes a
+raw control character (a tab, a newline, `\u{0}`) inside a string as it is,
+where strict readers want it escaped. `encode` itself always escapes them.
+
 ## std/os
 
 | Call | Returns | Notes |
