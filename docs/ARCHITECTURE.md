@@ -153,7 +153,7 @@ What works:
 
 - `relic selfhost/run.relic FILE args...` passes the args to the program (`selfhost_args`).
 - It can run itself: `relic selfhost/run.relic selfhost/run.relic FILE` works (`selfhost_nested`, about 1 s). To make that possible, tagged maps also carry a list under `chr(2)` that is checked by identity (`host_same`), so the inner copy's functions look like plain maps to the outer copy.
-- A program can run another inside itself (M0N0LITH-2's IDE does): a runtime from `interp.new_runtime()` takes `rt.out` (a list: `print` and `eprint` add their lines to it instead of writing them), `rt.steps` (stop with an error no `try` catches, `rt.stopped` true, after that many machine steps; -1, the default, is no limit) and `rt.denied` (`host_*` names that fail with `not available here`). The defaults change nothing (1.0.44; `selfhost_hooks`). Since 1.0.45 it also takes `rt.load` (a function from a file path to its text, or `none`: a `use` other than `std/` reads the module through it, not from disk) and `rt.input` (a list of lines `host_read_line` takes in turn, adding prompt and line to `rt.out`; when the list is empty, `interp.run` returns with the call still to do and `rt.waiting` set to its prompt, and `interp.resume(rt, line)` goes on from there with the saved stack; steps keep counting).
+- A program can run another inside itself, with its output captured, a step limit, refused built-ins, its own module loader and input fed line by line. See [Running a program inside another](#running-a-program-inside-another).
 - `num()` hands the string to the host's `num()`, so the answers and errors are the same (golden `num_edges`).
 - `eval` runs on an explicit frame stack (SH3, option C, 1.0.14 onward): leaves are answered at once, any other node gets a small list frame `[step, node, env]` with a whole-number step code. Since 1.0.15 every expression kind runs on the stack except calls, and since 1.0.19 statements run on a frame stack too (blocks, `if`, `while`, `for`, `try`). Since 1.0.21 `run` drives one stack, `machine`, for statements, expressions and calls: a call pushes a `k_call` frame (arity and `as` checks first, then `rt.file` switched to the function's file) with the body on top, and a `use` of a new module pushes a `k_module` frame with the module's body on top. `return` unwinds to the nearest `k_call`, `break` and `next` to the nearest loop (not past a function or module), and an error to the nearest `try` frame, leaving each call on the way like the host does (std boundary, depth, file). So a Relic call costs no host call. The old recursive `eval`, `exec_body` and `call` were deleted in 1.0.22 (slice 6), so nothing in the file recurses on the host for a Relic call, a block or an expression.
 - `check.relic` (SH4) walks the tree the way the host's VM compiler does (`vm_check` in `src/vm/vm.cpp`), with the same scopes: a function scope holds its parameters and the names of its body, a block gets a scope only if it has its own `let` or `fun`, and a name a block declares further down is pending, so a function nested in that block may read it. A read found nowhere is "not defined" with the same "did you mean" hint (`interp.suggest`, for the first 50 in line order as in the host), unless a top-level `let`, `fun` or `use` anywhere in the file declares it; a read in the main code of a top-level name before its line is "used before it is defined". `return` outside a function, `break` and `next` outside a loop, and number literals that do not fit come out too. `selfhost_check` compares it with `relic check` on 15 hand-written cases (`tests/check_cases`) and on every `.relic` file in the tree, and the same compiled to C (`cgen_selfhost_check`) and on the Relic-written interpreter (`selfhost_check_nested`) give the same warnings. `tools/fuzz_check.py` makes random programs for a bigger comparison by hand.
@@ -170,6 +170,47 @@ Limits today:
 - It is slow: `bench/fib.relic` takes about 9 s on it against about 35 ms on the host VM (Release).
 
 What still comes from the C++ host: running all of it, reference counting and the cycle collector, number parsing, files, clocks, float math, process access and graphics (`host_*`), and the command line.
+
+### Running a program inside another
+
+M0N0LITH-2's IDE runs the program being edited in `selfhost/interp.relic`, inside the desktop. A runtime from `interp.new_runtime()` has these fields for that, all off by default, so a program run the usual way sees no difference:
+
+| Field | Default | Set it to |
+|---|---|---|
+| `rt.out` | `none` | a list: `print` and `eprint` add their lines to it instead of writing them (1.0.44) |
+| `rt.steps` | `-1` (no limit) | a number of machine steps; at 0 the run stops with `stopped: the program ran too long`, which no `try` catches, and `rt.stopped` is `true` (1.0.44) |
+| `rt.denied` | `{}` | a map of `host_*` names; calling one fails with `NAME(): not available here` (1.0.44). The `std/` wrappers report it under their own name, as `os.exit(): not available here` |
+| `rt.load` | `none` | a function from a file path to its text, or `none` for no such file; every `use` other than `std/` reads its module through it, not from disk (1.0.45) |
+| `rt.input` | `none` | a list of lines: `host_read_line` (so `os.read_line` and `os.prompt`) takes the first, and adds prompt and line to `rt.out` when that is set. When the list is empty, `interp.run` returns with the call still to do and `rt.waiting` set to its prompt; `interp.resume(rt, line)` goes on from there. Steps keep counting across a pause (1.0.45) |
+
+Run from the repo root, this prints `name? ` and then `["name? Ada", "hi Ada"] none none`:
+
+```
+use selfhost/lexer
+use selfhost/parser
+use selfhost/interp
+
+let files = {"/w/greet.relic": "fun hi(n) = \"hi \" + n\n"}
+fun load(path)
+    if path in files
+        return files[path]
+    return none
+
+let src = "use std/os\nuse greet\nlet n = os.prompt(\"name? \")\nprint(greet.hi(n))\n"
+let rt = interp.new_runtime()
+rt.out = []                    # print and eprint add lines here
+rt.steps = 100000              # then stop, even inside try
+rt.denied = {host_exit: true}  # host_exit(): not available here
+rt.load = load                 # `use greet` reads /w/greet.relic from the map
+rt.input = []                  # read_line takes lines from here, or pauses
+interp.set_main(rt, "/w/main.relic")
+interp.run(rt, parser.parse(lexer.lex(src).tokens).tree)
+print(rt.waiting)              # the prompt it waits at
+interp.resume(rt, "Ada")
+print(rt.out, rt.err, rt.waiting)
+```
+
+`selfhost_hooks` (`tests/selfhost/hooks.relic`) tests each field.
 
 ## Where this is going
 

@@ -30,7 +30,7 @@
 | [LANGUAGE.md](LANGUAGE.md) | users | syntax, types, scope, operators, modules, errors, built-ins, limits |
 | [STDLIB.md](STDLIB.md) | users | each std module, with return values and errors; graphics events and headless testing |
 | [CLI.md](CLI.md) | users | commands, exit codes, `relic check`, REPL, environment variables |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits, the compiler to C |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits, running a program inside another, the compiler to C |
 | [TESTING.md](TESTING.md) | contributors | how each kind of test works and how to run it |
 | [HOST.md](HOST.md) | contributors | the C++ built-ins under `std/`, and running Relic from C++ |
 | [C-RUNTIME.md](C-RUNTIME.md) | contributors | `runtime/c/`: values, ownership, calling convention, errors, built-ins, cycle collector, tests |

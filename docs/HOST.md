@@ -79,6 +79,8 @@ The `relic_core` static library holds everything except `main`. Link it and incl
 
 `RunResult` has `exit_code`, `out` and `err`. `path` is used for error messages and to resolve `use`.
 
+To run a program from Relic instead, inside another Relic program, use the interpreter written in Relic: see [Running a program inside another](ARCHITECTURE.md#running-a-program-inside-another).
+
 ```cpp
 #include "core.hpp"
 #include <iostream>
