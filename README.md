@@ -4,7 +4,7 @@ Relic is the programming language for MONOLITH 2.
 
 This repo is the language only: the compiler to C and its C runtime, the C++ host, the standard library, the self-hosted lexer, parser and interpreter, tests, tools, examples and docs. The MONOLITH 2 desktop and its apps are written in Relic in their own repo, [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2).
 
-> Status: **1.0.45**. Relic 1.0 was tagged `v1.0.0` (MIT). What it has now:
+> Status: **1.0.46**. Relic 1.0 was tagged `v1.0.0` (MIT). What it has now:
 >
 > - The language with modules, a standard library (strings, lists, maps, math, files, paths, json, os, time, an in-memory filesystem `std/vfs`, and graphics) and UTF-8 strings.
 > - A compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) that turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). It compiles itself, and its own C is committed in `bootstrap/`, so the default build needs only a C compiler.

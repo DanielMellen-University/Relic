@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.46 (2026-10-31)
+
+`std/strings` is quicker on long text. No change to the language or to any result.
+
+- `split` (and so `replace`) finds each piece with the host's `find` in a window of the text from where the last piece ended, which doubles until it holds a separator, instead of cutting the rest of the text off after every piece. 20,000 lines (290,000 characters): split 273 ms, now 21 ms; replace 246 ms, now 36 ms (VM).
+- `upper` and `lower` look each character up in a table and build the result with `out = out + c` (in place since 1.0.43): 290,000 characters 246 ms, now 87 ms. `trim` looks only at the spaces at its ends instead of making a list of every character: 20,000 trims 119 ms, now 60 ms.
+- `tools/fuzz_find_sort.py` prints whole `split` and `replace` results and also checks `upper`, `lower` and `trim`, on an alphabet with tabs and capitals added: seeds 11 and 12 (80 programs, VM, `--tree`, `selfhost/run.relic` and compiled) match 1.0.45 exactly.
+- `bootstrap/cgen.c` regenerated (cgen uses `std/strings`).
+- Speed: `selfhost_interp` 9.78 s median of 3 (9.76, 9.78, 9.81), under the 12.2 s cap.
+- `ctest`: 187 default, 396 with the host.
+
 ## 1.0.45 (2026-10-30)
 
 The interpreter written in Relic, embedded, can read modules from somewhere other than the disk and can wait for input: M0N0LITH-2's IDE uses both, for `use` of the desktop's files and programs that read lines. Daniel approved these on Oct 30. No change to the language or to any result; a program run as before sees no difference.
