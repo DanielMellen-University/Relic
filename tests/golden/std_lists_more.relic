@@ -1,4 +1,4 @@
-# Since 1.0.49: lists.contains, unique, min, max, any, all and flatten.
+# Since 1.0.49: lists.contains, unique, min, max, any, all, flatten and zip.
 use std/lists
 print(lists.contains([1, 2], 1.0), lists.contains([], none), lists.contains([[1]], [1]), lists.contains(["a"], "A"))
 print(lists.unique(["a", "b", "a", 1, 1.0, 2, [1], [1], none, none]), lists.unique([]))
@@ -31,3 +31,5 @@ seen = []
 print(lists.all([5, 1, 9], noted), seen)
 # flatten takes out one level only
 print(lists.flatten([[1, 2], [], 3, [[4]], "ab", {k: 1}]), lists.flatten([]), lists.flatten([[[]]]))
+# zip stops at the shorter one; strings and maps (keys) are walked too
+print(lists.zip([1, 2, 3], ["a", "b"]), lists.zip([], [1]), lists.zip("ab", {x: 1, y: 2, z: 3}))
