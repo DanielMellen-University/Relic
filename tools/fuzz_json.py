@@ -20,15 +20,19 @@ Two checks:
   Relic cannot hold the same way (lone surrogates, ints past 2^53, inf) are
   only compared across engines.
 
-Two known rules of std/json are allowed for, not reported: raw control
-characters inside strings are read as they are (Python's strict=False), and
-encode writes a float the way str() does, with 15 significant digits, so a
-float that needs 16 or 17 comes back as that 15 digit number.
+Floats come from a short list, from random bits, and as random decimals,
+so many need 16 or 17 significant digits to come back exactly.
+
+With an OLD_BUILD_DIR older than 1.0.47, its output may differ from the new
+one in two ways only, the two changes in 1.0.47: it reads a raw control
+character inside a string where the new one says "control character in
+string", and it writes a float that needs 16 or 17 digits with 15 (the same
+float to 15 digits). Any other difference is reported.
 
 Programs go in /tmp/relic_fuzz/json_SEED/. Not part of ctest (it needs Python
 and a C compiler); run it by hand after changing std/json or what it uses.
 """
-import json, math, os, random, subprocess, sys
+import json, math, os, random, struct, subprocess, sys
 
 if len(sys.argv) < 3 or not (sys.argv[1].isdigit() and sys.argv[2].isdigit()):
     sys.exit(__doc__)
@@ -41,7 +45,20 @@ os.makedirs(work, exist_ok=True)
 random.seed(seed)
 
 CHARS = ['a', 'b', 'Z', ' ', '"', '\\', '/', '\n', '\t', '\r', '\b', '\f', '\x01', '\x1f', '\x7f', 'é', '€', '\U0001D11E', '{', '}', '[', ']', ':', ',']
-FLOATS = [0.5, -0.5, 0.1, 1.5, -2.25, 1e300, -1e-300, 5e-324, 123456.789, 2.0, -0.0, 1e21, 3.14159, 1e-7]
+FLOATS = [0.5, -0.5, 0.1, 1.5, -2.25, 1e300, -1e-300, 5e-324, 123456.789, 2.0, -0.0, 1e21, 3.14159, 1e-7,
+          0.1 + 0.2, 1.7976931348623157e308, 2.2250738585072014e-308, 1e16 + 2, 1.0000000000000002, 1e23]
+
+
+def a_float():
+    k = random.random()
+    if k < 0.4:
+        return random.choice(FLOATS)
+    if k < 0.7:
+        while True:  # any finite float
+            x = struct.unpack('<d', struct.pack('<Q', random.getrandbits(64)))[0]
+            if math.isfinite(x):
+                return x
+    return random.randrange(-10 ** 12, 10 ** 12) / random.choice([3, 7, 10, 100, 1000, 10 ** 9])
 
 
 def a_string():
@@ -55,7 +72,7 @@ def a_value(depth):
         if k < 0.25:
             return random.choice([random.randrange(-1000, 1000), 0, -1, 2 ** 53, -(2 ** 53), 9007199254740991])
         if k < 0.45:
-            return random.choice(FLOATS)
+            return a_float()
         if k < 0.75:
             return a_string()
         return random.choice([True, False, None])
@@ -189,26 +206,66 @@ def against_python(texts, out):
         p = lines[k]
         k += 1
         if not ok:
-            try:
-                want = json.loads(t, strict=False)
-            except (ValueError, RecursionError):
-                return 'Relic reads what Python rejects: %r' % t
-            # Known and kept (std/json's own rule): raw control characters
-            # inside strings are read as they are, which strict JSON does not allow.
+            return 'Relic reads what Python rejects: %r' % t
         if not comparable(want):
             continue
         try:
             back = json.loads(line[2:])
         except ValueError:
             return 'json.encode wrote what Python cannot read: %r' % line
-        # Known and kept: encode writes a float the way str() does, with 15
-        # significant digits, so one that needs 16 or 17 comes back a little off.
-        short = same(r15(want), want)
-        if not same(back, want if short else r15(want)):
+        if not same(back, want):
             return 'json.encode changed the value: %r became %r' % (t, line[2:])
-        if short and p != 'P true true':
+        if p != 'P true true':
             return 'round trip lost the value: %r (%s)' % (t, p)
     return None
+
+
+def records(texts, out):
+    # the output as one entry per text: the X line, or the E and P lines
+    lines = out.decode('utf-8', 'surrogateescape').split('\n')
+    k = 0
+    recs = []
+    for t in texts:
+        if k >= len(lines):
+            return None
+        if lines[k].startswith('X '):
+            recs.append([lines[k]])
+            k += 1
+        else:
+            recs.append(lines[k:k + 2])
+            k += 2
+    return recs
+
+
+def loose_only(texts, new, old):
+    # whether an older release differs only where 1.0.47 changed std/json
+    if new[0] != old[0] or new[2] != old[2]:
+        return False
+    a, b = records(texts, new[1]), records(texts, old[1])
+    if a is None or b is None:
+        return False
+    for t, x, y in zip(texts, a, b):
+        if x == y:
+            continue
+        if x[0].startswith('X json: control character in string'):
+            continue  # the old one read it; nothing else to compare
+        if not (x[0].startswith('E ') and y[0].startswith('E ')):
+            return False
+        try:
+            vx, vy = json.loads(x[0][2:]), json.loads(y[0][2:])
+        except ValueError:
+            return False
+        if not same(r15(vx), vy):
+            return False
+    return True
+
+
+def version(b):
+    try:
+        v = subprocess.run([b + '/relic', '--version'], capture_output=True, text=True).stdout.split()[-1]
+        return tuple(int(x) for x in v.split('.'))
+    except (OSError, ValueError, IndexError):
+        return (0,)
 
 
 def run(cmd):
@@ -230,6 +287,7 @@ def compiled(b, name):
     return run([work + '/' + name])
 
 
+old_loose = old is not None and version(old) < (1, 0, 47)
 bad = 0
 for n in range(count):
     texts, src = program()
@@ -251,6 +309,8 @@ for n in range(count):
             got['old --tree'] = run([old + '/relic', '--tree', 'm.relic'])
             got['old compiled'] = compiled(old, 'old_m')
         for k, v in got.items():
+            if k.startswith('old') and v != want and old_loose and loose_only(texts, want, v):
+                continue
             if v != want:
                 problem = '%s differs from the VM' % k
                 break

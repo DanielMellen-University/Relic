@@ -141,20 +141,18 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 
 | Call | Returns | On failure |
 |---|---|---|
-| `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode inf or nan` for those floats |
+| `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode inf or nan` for those floats; a float is written as `str()` writes it when that reads back as the same float, else (since 1.0.47) with 16 or 17 significant digits, the fewest that do (`0.1 + 0.2` is `0.30000000000000004`, `str()` says `0.3`) |
 | `pretty(v)` | string | same; 2-space indent |
-| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`, no `NaN`, `Infinity` or hex); since 1.0.36 a number too small for a normal float (one `encode` wrote for a subnormal, or `1e-400`) reads as that float or `0.0`, and one too large is still `bad number`; a value that is not a string is `json.decode(): text must be a string, got int` (since 1.0.37) |
+| `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; since 1.0.47 a raw control character (U+0000 to U+001F, such as a tab or a newline) inside a string is `json: control character in string at N`, as JSON wants them escaped (`\t`, `\n`, `\u0000`; before, they were read as they were); numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`, no `NaN`, `Infinity` or hex); since 1.0.36 a number too small for a normal float (one `encode` wrote for a subnormal, or `1e-400`) reads as that float or `0.0`, and one too large is still `bad number`; a value that is not a string is `json.decode(): text must be a string, got int` (since 1.0.37) |
 
 `catch err` after a bad `decode` gives `{message, line, col}`. The useful
 part is `err.message` (includes the `at N` index). `line` / `col` point at
 the `fail` inside `std/json`, not at a spot in the JSON text.
 
-Two places where std/json is looser than the JSON standard (found by
-`tools/fuzz_json.py`): `encode` and `pretty` write a float the way `str()`
-does, with 15 significant digits, so a float that needs 16 or 17 to be exact
-(`-90071992547409.92`) decodes back a little different; and `decode` takes a
-raw control character (a tab, a newline, `\u{0}`) inside a string as it is,
-where strict readers want it escaped. `encode` itself always escapes them.
+Since 1.0.47, `decode(encode(v)) == v` for every value `encode` takes, floats
+included (before, a float that needs 16 or 17 digits, such as
+`-90071992547409.92`, came back as its 15-digit neighbor). `encode` always
+escapes control characters, so what it writes is still read back.
 
 ## std/os
 

@@ -42,13 +42,140 @@ fun _quote(s)
     append(out, "\"")
     return _glue(out, 0, len(out))
 
+# ---- floats ----
+# str() writes 15 significant digits, which is not always enough to give the
+# same float back. A float that str() does not round-trip is written with 16
+# or 17 digits instead, the fewest that read back as exactly it (since 1.0.47).
+
+# x times 10^n in steps that stay inside the float range.
+fun _scale(x, n)
+    while n > 300
+        x = x * 1e300
+        n = n - 300
+    while n < -300
+        x = x * 1e-300
+        n = n + 300
+    return x * host_pow(10.0, n)
+
+# The digits of str(a) for a > 0 as [d, e]: a is near d * 10^e, d an int of 15 digits.
+fun _digits15(t)
+    let ex = 0
+    let m = t
+    let at = host_find(t, "e")
+    if at >= 0
+        ex = int(num(slice(t, at + 1, len(t))))
+        m = slice(t, 0, at)
+    let dot = host_find(m, ".")
+    if dot >= 0
+        ex = ex - (len(m) - dot - 1)
+        m = slice(m, 0, dot) + slice(m, dot + 1, len(m))
+    let d = int(num(m))
+    let nd = len(str(d))
+    while nd > 15 and d % 10 == 0   # the ".0" str() puts on a whole number
+        d = int(d / 10)
+        ex = ex + 1
+        nd = nd - 1
+    while nd < 15
+        d = d * 10
+        ex = ex - 1
+        nd = nd + 1
+    return [d, ex]
+
+# Digits m (an int) times 10^e as a float literal: plain when its first digit
+# is at 10^-4 to 10^16, else with an exponent; ".0" or a "." always, so it
+# reads back as a float.
+fun _float_text(sign, m, e)
+    let ds = str(m)
+    while len(ds) > 1 and ds[len(ds) - 1] == "0"
+        ds = slice(ds, 0, len(ds) - 1)
+        e = e + 1
+    let lead = e + len(ds) - 1
+    if lead < -4 or lead > 16
+        let out = sign + ds[0]
+        if len(ds) > 1
+            out = out + "." + slice(ds, 1, len(ds))
+        let es = "+"
+        if lead < 0
+            es = "-"
+            lead = -lead
+        if lead < 10
+            es = es + "0"
+        return out + "e" + es + str(lead)
+    if lead < 0
+        let z = ""
+        for i in 0..-lead - 1
+            z = z + "0"
+        return sign + "0." + z + ds
+    while len(ds) < lead + 1
+        ds = ds + "0"
+    let frac = slice(ds, lead + 1, len(ds))
+    if frac == ""
+        frac = "0"
+    return sign + slice(ds, 0, lead + 1) + "." + frac
+
+fun _num_or_none(t)
+    try
+        return num(t)
+    catch err
+        return none
+
+# The 17-digit candidates that read back as the float are a run; the middle
+# of the run is the one nearest to it.
+fun _float(v)
+    let t = str(v)
+    if _num_or_none(t) == v
+        return t
+    let sign = ""
+    let a = v
+    if v < 0
+        sign = "-"
+        a = -v
+    let p = _digits15(str(a))
+    let x = _num_or_none(_float_text("", p[0], p[1]))
+    if x == none   # 15 digits rounded past the largest float
+        p[0] = p[0] - 1
+        x = num(_float_text("", p[0], p[1]))
+    # a and x are within a factor of 2, so a - x is exact; u is it in units of
+    # the 17th digit, off by a few at most since x is not exactly p[0] * 10^p[1]
+    let u = _scale(a - x, 2 - p[1])
+    # candidates are tried as digits and an exponent ("123e-5"), and only the
+    # one chosen is written out in full
+    let es = "e" + str(p[1] - 1)
+    # 16 digits: the nearest candidate or one either side
+    let k = _round(u / 10)
+    for j in [k, k - 1, k + 1]
+        if _num_or_none(sign + str(p[0] * 10 + j) + es) == v
+            return _float_text(sign, p[0] * 10 + j, p[1] - 1)
+    # 17 digits: find one candidate that reads back, then the ends of its run
+    k = _round(u)
+    let base = p[0] * 100
+    let e = p[1] - 2
+    es = "e" + str(e)
+    for j in [k, k - 1, k + 1, k - 2, k + 2, k - 3, k + 3, k - 4, k + 4]
+        if _num_or_none(sign + str(base + j) + es) == v
+            let lo = j
+            while _num_or_none(sign + str(base + lo - 1) + es) == v
+                lo = lo - 1
+            let hi = j
+            while _num_or_none(sign + str(base + hi + 1) + es) == v
+                hi = hi + 1
+            return _float_text(sign, base + lo + int((hi - lo) / 2), e)
+    return _float_text(sign, p[0] * 100 + _round(u), p[1] - 2)
+
+fun _round(x)
+    if x < 0
+        return -int(host_floor(-x + 0.5))
+    return int(host_floor(x + 0.5))
+
 fun _enc(v, indent, depth)
     let t = type(v)
     if t == "none"
         return "null"
     if t == "float" and v - v != 0
         fail("json: cannot encode inf or nan")
-    if t == "bool" or t == "int" or t == "float"
+    if t == "float"
+        return _float(v)
+    if t == "bool" or t == "int"
         return str(v)
     if t == "string"
         return _quote(v)
@@ -187,6 +314,9 @@ fun _str(p)
             else
                 _bad(p, "bad escape")
             start = p.i
+        else if ord(c) < 32
+            # JSON wants these escaped; before 1.0.47 they were taken as they were
+            _bad(p, "control character in string")
         else
             p.i = p.i + 1
 

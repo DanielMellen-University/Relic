@@ -50,3 +50,31 @@ ERR json.decode(): text must be a string, got int
 ERR json.decode(): text must be a string, got none
 ERR json.decode(): text must be a string, got list
 250 true true
+0.30000000000000004 0.3 true float
+-90071992547409.92 -90071992547409.9 true float
+2.2250738585072014e-308 2.2250738585072e-308 true float
+1.7976931348623157e+308 1.79769313486232e+308 true float
+-1.7976931348623157e+308 -1.79769313486232e+308 true float
+10000000000000002.0 1e+16 true float
+1.0000000000000002 1.0 true float
+9007199254740992.0 9.00719925474099e+15 true float
+1.2345678901234568e+17 1.23456789012346e+17 true float
+1.2345678901234567e-05 1.23456789012346e-05 true float
+0.00012345678901234567 0.000123456789012346 true float
+1234567890123456.7 1.23456789012346e+15 true float
+0.1 0.1 true float
+2.0 2.0 true float
+-0.0 -0.0 true float
+1e+300 1e+300 true float
+1e-07 1e-07 true float
+4.94065645841247e-324 4.94065645841247e-324 true float
+1e+23 1e+23 true float
+true true
+ERR json: control character in string at 2
+ERR json: control character in string at 3
+ERR json: control character in string at 1
+ERR json: control character in string at 3
+"ok"
+"a\tb\u0000"
+[1,2]
+"tab\there\u0000\u001f" true

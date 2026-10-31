@@ -1,5 +1,7 @@
 # std/json: the number grammar is JSON's (no leading zeros, no '+', a digit after '.' and 'e'), and inf / nan cannot be encoded
 use std/json
+use std/strings
+use std/lists
 for t in ["1", "-1", "0", "-0", "01", "1.5", "1.", ".5", "1.e3", "1e3", "1E+3", "1e-3", "1e", "1e+", "-", "+1", "--1", "-a", "[01]", "[1.5e2,-0.0]", "123456789012345678901234", "9223372036854775807", "9223372036854775808", "0x10", "nan", "Infinity", "-Infinity", "1_000", "[1,]", "[-]", "{{\"a\":-}}", "  7  ", "2.5e400"]
     try
         print(t, "=>", json.decode(t))
@@ -40,3 +42,21 @@ for i in 0..8
 let big = [{k: long, n: 0.5, ok: true}, long, [long, 1e-310]]
 let text = json.encode(big)
 print(len(text), json.decode(text) == big, json.decode(json.encode(text)) == text)
+
+# Since 1.0.47 a float that str()'s 15 digits do not give back is written with
+# 16 or 17, the fewest that read back as exactly it; one that 15 give back is
+# written as before.
+let floats = [0.1 + 0.2, -90071992547409.92, 2.2250738585072014e-308, 1.7976931348623157e308, -1.7976931348623157e308, 1e16 + 2.0, 1.0000000000000002, 9007199254740993.0, 123456789012345678.0, 0.000012345678901234567, 0.00012345678901234567, 1234567890123456.7, 0.1, 2.0, -0.0, 1e300, 1e-7, 5e-324, 1e23]
+for x in floats
+    let e = json.encode(x)
+    print(e, str(x), json.decode(e) == x, type(json.decode(e)))
+print(json.encode(floats) == "[" + strings.join(lists.map(floats, json.encode), ",") + "]", json.decode(json.pretty(floats)) == floats)
+# Since 1.0.47 decode refuses a raw control character (U+0000 to U+001F) inside
+# a string, as JSON says; escaped ones and the same characters between values
+# where JSON allows them are fine, and encode always writes them escaped.
+for t in ["\"a\tb\"", "[\"x\ny\"]", "\"\u{0}\"", "{{\"k\u{1f}\": 1}}", "\"ok\u{7f}\"", "\"a\\tb\\u0000\"", "[1,\n\t2]\u{d}\n"]
+    try
+        print(json.encode(json.decode(t)))
+    catch e
+        print("ERR", e.message)
+print(json.encode("tab\there\u{0}\u{1f}"), json.decode(json.encode("tab\there\u{0}\u{1f}")) == "tab\there\u{0}\u{1f}")
