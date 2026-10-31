@@ -25,7 +25,7 @@ Phases run in order, with one exception: the memory model and modules from phase
 
 The goal, approved by Daniel in October 2026: a Relic compiler written in Relic that emits C, built by a normal C compiler, so no C++ language code is left. The C++ host was stage 0 until the compiler could compile itself (C4); since C5 the committed C in `bootstrap/` is stage 0 and the host is optional. Milestone details are in [PROJECT_PLAN.md](PROJECT_PLAN.md#self-host-and-bootstrap).
 
-Relic-written front end and interpreter. These run on the host today and are kept as a testing aid; the interpreter is not the end state.
+Relic-written front end and interpreter. These run on the host today and are kept as a testing aid. The interpreter is not the end state for running Relic (the compiler to C is), but since 1.0.44 it has a second job: running a program inside another, which M0N0LITH-2's IDE uses ([ARCHITECTURE.md](ARCHITECTURE.md#running-a-program-inside-another)).
 
 - [x] Lexer rewritten in Relic (`selfhost/lexer.relic`, matches `--tokens` on every file)
 - [x] Parser rewritten in Relic (`selfhost/parser.relic`, matches `--ast` on every file)
@@ -59,7 +59,8 @@ The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic
 - [x] Windowing and drawing API for Relic programs (SDL2 `std/graphics` with drawing, keyboard/mouse input, text, BMP and PNG images, TrueType fonts; optional build, M11). Compiled programs have it too since 1.0.9 (`runtime/c/rl_gfx_sdl.c` in `relic_rt_gfx`, `-DRELIC_C_SDL=ON`, `relic_add_program(... GRAPHICS)`), tested headless in the CI job `sdl` on Linux, macOS and Windows (1.0.10). 1.0.11 added the last slice Daniel picked (option B): window title, size and fullscreen, cursor shapes and visibility, vsync and frame timing, and the pixel scale. 1.0.12 made drawing sharp on high-DPI screens with coordinates kept in window units (Daniel's pick A). Done; new needs come from the M0N0LITH-2 apps (phase 6)
 - [x] Virtual filesystem reachable from Relic (`std/vfs`, golden `std_vfs`)
 - [x] Desktop shell moved out to M0N0LITH-2 with its history (1.0.1)
+- [x] Running a Relic program inside the desktop, for the IDE: captured output, a step limit and refused built-ins (1.0.44), modules from the desktop's files and input line by line (1.0.45)
 
 ## Phase 6: Apps as proof
 
-The apps (terminal, text editor, file browser, drawing app, a game and the Relic IDE) are tracked in the [M0N0LITH-2 roadmap](https://github.com/DanielMellen-University/M0N0LITH-2/blob/main/docs/ROADMAP.md). Relic's job here is to fix whatever those apps run into.
+The apps (terminal, text editor, file browser, drawing app, a game and the Relic IDE) are tracked in the [M0N0LITH-2 roadmap](https://github.com/DanielMellen-University/M0N0LITH-2/blob/main/docs/ROADMAP.md). Relic's job here is to fix whatever those apps run into. So far: list removes and inserts at the front, `std/maps.drop` and `std/vfs.entries` and listing cache (1.0.42), `strings.find`, `lists.sort` and `x = x + t` (1.0.43), and the interpreter hooks above (1.0.44, 1.0.45).
