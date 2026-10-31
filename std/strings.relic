@@ -172,6 +172,35 @@ fun _join(parts, sep, a, b)
 
 fun replace(s, old, new) = join(split(s, old), new)
 
+# How many times sub is in s, not overlapping, left to right (since 1.0.49).
+fun count(s, sub)
+    _text("count", "text", s)
+    _text("count", "part", sub)
+    if sub == ""
+        fail("strings.count(): part must not be empty")
+    return len(split(s, sub)) - 1
+
+# Where the last sub in s starts, or -1; an empty sub is at len(s) (since
+# 1.0.49). The host's find on both reversed, so long text takes linear time.
+fun find_last(s, sub)
+    _text("find_last", "text", s)
+    _text("find_last", "part", sub)
+    let i = host_find(_reversed(s), _reversed(sub))
+    if i < 0
+        return -1
+    return len(s) - i - len(sub)
+
+fun _reversed(s)
+    let cs = []
+    for c in s
+        append(cs, c)
+    let out = ""
+    let i = len(cs) - 1
+    while i >= 0
+        out = out + cs[i]
+        i = i - 1
+    return out
+
 fun repeat(s, n)
     _text("repeat", "text", s)
     if type(n) != "int" and type(n) != "float"
