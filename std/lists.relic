@@ -148,6 +148,16 @@ fun find(xs, test)
             return x
     return none
 
+# Since 1.0.50: where the first item test(x) is true for is, or -1.
+fun find_index(xs, test)
+    _seq("find_index", xs)
+    let i = 0
+    for x in xs
+        if test(x)
+            return i
+        i = i + 1
+    return -1
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
