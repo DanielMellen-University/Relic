@@ -119,3 +119,20 @@ for f in ["find", "find_index", "take", "drop", "partition", "product", "group_b
             lists.group_by(4, key)
     catch e
         print(e.message)
+
+# The std/strings functions added in 1.0.50 say which argument is wrong.
+use std/strings
+for f in ["is_alpha", "words", "center", "center2", "remove_prefix"]
+    try
+        if f == "is_alpha"
+            strings.is_alpha(7)
+        else if f == "words"
+            strings.words(["a b"])
+        else if f == "center"
+            strings.center(none, 3, " ")
+        else if f == "center2"
+            strings.center("a", "3", " ")
+        else
+            strings.remove_prefix(1, "a")
+    catch e
+        print(e.message)
