@@ -1,0 +1,32 @@
+# Counts the words in a file, or in a short built-in text, and prints the most
+# common ones. Runs in any build (no graphics):
+#   build/relic examples/word_count.relic [file]
+use std/os
+use std/files
+use std/strings
+use std/lists
+use std/maps
+
+let text = "the cat sat on the mat\nthe dog sat on the log\n"
+let args = os.args()
+if len(args) > 0
+    text = files.read(args[0])
+
+# words in lower case, with the punctuation at their ends taken off
+fun clean(w)
+    let out = strings.lower(w)
+    for mark in [".", ",", "!", "?", ";", ":", "\"", "(", ")"]
+        out = strings.remove_suffix(strings.remove_prefix(out, mark), mark)
+    return out
+
+fun not_empty(w) = w != ""
+fun same(w) = w
+let words = lists.filter(lists.map(strings.words(text), clean), not_empty)
+let counts = maps.map_values(lists.group_by(words, same), len)
+
+# most common first; sort_by is stable, so ties keep the order first seen
+fun more(a, b) = a[1] > b[1]
+let top = lists.take(lists.sort_by(maps.items(counts), more), 5)
+print("{len(words)} words, {len(counts)} different")
+for pair in top
+    print(strings.pad_left(str(pair[1]), 4, " ") + "  " + pair[0])
