@@ -41,3 +41,9 @@ for f in ["trim_start", "trim_end"]
             strings.trim_end(none)
     catch e
         print(e.message)
+# reverse (since 1.0.50): whole characters, so text past ASCII stays readable
+print(strings.reverse("abc"), strings.reverse(""), strings.reverse("héllo€"), strings.reverse(strings.reverse("a b\tc")) == "a b\tc")
+try
+    strings.reverse([1, 2])
+catch e
+    print(e.message)

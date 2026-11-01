@@ -205,6 +205,12 @@ fun find_last(s, sub)
         return -1
     return len(s) - i - len(sub)
 
+# Since 1.0.50: the characters in the other order (whole UTF-8 characters,
+# so "é" stays one).
+fun reverse(s)
+    _text("reverse", "argument", s)
+    return _reversed(s)
+
 fun _reversed(s)
     let cs = []
     for c in s
