@@ -117,6 +117,17 @@ fun is_digits(s)
             return false
     return true
 
+# Since 1.0.50: whether s has at least one character and all are ASCII
+# letters, a to z in either case.
+fun is_alpha(s)
+    _text("is_alpha", "argument", s)
+    if s == ""
+        return false
+    for c in s
+        if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
+            return false
+    return true
+
 fun trim(s)
     _text("trim", "argument", s)
     # s[i] is quick since 1.0.41, so only the spaces at the ends are looked at

@@ -13,3 +13,4 @@ strings.trim_end(): argument must be a string, got none
 cba  €olléh true
 strings.reverse(): argument must be a string, got list
 true false false false false false
+true false false false false true
