@@ -278,6 +278,20 @@ fun last(xs)
     _empty("last", xs)
     return xs[len(xs) - 1]
 
+# Since 1.0.50: every run of n items in a row, in order: windows([1, 2, 3], 2)
+# is [[1, 2], [2, 3]]. Fewer than n items give [].
+fun windows(xs, n)
+    _seq("windows", xs)
+    if type(n) != "int" or n < 1
+        fail("lists.windows(): size must be a whole number above 0")
+    let items = []
+    for x in xs
+        append(items, x)
+    let out = []
+    for i in 0..len(items) - n + 1
+        append(out, slice(items, i, i + n))
+    return out
+
 fun reverse(xs)
     _seq("reverse", xs)
     let out = []

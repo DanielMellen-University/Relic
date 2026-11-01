@@ -80,3 +80,9 @@ try
     lists.last([])
 catch e
     print(e.message)
+# windows (since 1.0.50): runs of n in a row
+print(lists.windows([1, 2, 3, 4], 2), lists.windows([1, 2], 3), lists.windows("abc", 3), lists.windows([], 1))
+try
+    lists.windows([1], 0)
+catch e
+    print(e.message)

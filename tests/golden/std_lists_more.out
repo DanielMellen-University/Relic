@@ -34,3 +34,5 @@ a ccc 5
 lists.max_by(): the list is empty
 3 c [1]
 lists.last(): the list is empty
+[[1, 2], [2, 3], [3, 4]] [] [["a", "b", "c"]] []
+lists.windows(): size must be a whole number above 0
