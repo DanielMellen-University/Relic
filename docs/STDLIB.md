@@ -79,6 +79,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `lists.min_by(): the list is empty` (since 1.0.50) |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is an error (since 1.0.50) |
+| `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |

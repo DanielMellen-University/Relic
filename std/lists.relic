@@ -306,6 +306,20 @@ fun mean(xs)
     _empty("mean", xs)
     return float(sum(xs)) / len(xs)
 
+# Since 1.0.50: the items with the first n moved to the end, in order;
+# a negative n moves the last ones to the front, and n wraps round.
+fun rotate(xs, n)
+    _seq("rotate", xs)
+    if type(n) != "int"
+        fail("lists.rotate(): count must be an int, got " + type(n))
+    let items = []
+    for x in xs
+        append(items, x)
+    if len(items) == 0
+        return items
+    let k = n % len(items)
+    return slice(items, k, len(items)) + slice(items, 0, k)
+
 fun reverse(xs)
     _seq("reverse", xs)
     let out = []

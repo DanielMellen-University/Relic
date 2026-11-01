@@ -40,3 +40,5 @@ lists.windows(): size must be a whole number above 0
 lists.mean(): the list is empty
 ["a", "b"] ["c"] [["a", "b"], ["b", "c"]] z a
 {b: ["b"], a: ["a", "a", "a"], n: ["n", "n"]} [["a", "a"], ["b", "c", "b"]] a o
+[2, 3, 1] [3, 1, 2] [2, 3, 1] [] ["c", "a", "b"]
+lists.rotate(): count must be an int, got float
