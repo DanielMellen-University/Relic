@@ -14,3 +14,6 @@ cba  €olléh true
 strings.reverse(): argument must be a string, got list
 true false false false false false
 true false false false false true
+1.0.50 abc ab ab ab
+main abc ab 
+strings.remove_suffix(): suffix must be a string, got int

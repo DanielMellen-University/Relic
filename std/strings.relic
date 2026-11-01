@@ -128,6 +128,22 @@ fun is_alpha(s)
             return false
     return true
 
+# Since 1.0.50: s without pre at its start, or s as it is when it does not
+# start with pre; and the same for suf at the end.
+fun remove_prefix(s, pre)
+    _text("remove_prefix", "text", s)
+    _text("remove_prefix", "prefix", pre)
+    if starts_with(s, pre)
+        return slice(s, len(pre), len(s))
+    return s
+
+fun remove_suffix(s, suf)
+    _text("remove_suffix", "text", s)
+    _text("remove_suffix", "suffix", suf)
+    if ends_with(s, suf)
+        return slice(s, 0, len(s) - len(suf))
+    return s
+
 fun trim(s)
     _text("trim", "argument", s)
     # s[i] is quick since 1.0.41, so only the spaces at the ends are looked at

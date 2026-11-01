@@ -51,3 +51,10 @@ catch e
 print(strings.is_digits("0123456789"), strings.is_digits(""), strings.is_digits("-1"), strings.is_digits("1.5"), strings.is_digits("١٢"), strings.is_digits("12 "))
 # is_alpha (since 1.0.50): ASCII letters only, at least one
 print(strings.is_alpha("abcXYZ"), strings.is_alpha(""), strings.is_alpha("ab1"), strings.is_alpha("é"), strings.is_alpha("a b"), strings.is_alpha("Z"))
+# remove_prefix and remove_suffix (since 1.0.50): once, and only when there
+print(strings.remove_prefix("v1.0.50", "v"), strings.remove_prefix("abc", "x"), strings.remove_prefix("aab", "a"), strings.remove_prefix("ab", ""), strings.remove_prefix("ab", "abc"))
+print(strings.remove_suffix("main.relic", ".relic"), strings.remove_suffix("abc", "x"), strings.remove_suffix("abb", "b"), strings.remove_suffix("", ""))
+try
+    strings.remove_suffix("a", 1)
+catch e
+    print(e.message)
