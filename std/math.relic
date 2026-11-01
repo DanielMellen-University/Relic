@@ -132,3 +132,12 @@ fun hypot(x, y)
     _number("hypot", x)
     _number("hypot", y)
     return sqrt(x * x + y * y)
+
+# Since 1.0.50: degrees to radians and back.
+fun radians(deg)
+    _number("radians", deg)
+    return deg * pi / 180
+
+fun degrees(rad)
+    _number("degrees", rad)
+    return rad * 180 / pi
