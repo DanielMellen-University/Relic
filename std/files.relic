@@ -1,6 +1,10 @@
 # std/files: read and write text files. Paths are relative to where relic runs.
 use std/strings
 
+# read gives the whole file as text, or fails as "files.read(): cannot open
+# {path}";
+# write replaces the file (making it when missing), append_text adds to its
+# end. None of them adds a newline.
 fun read(path) = host_read_file(path)
 fun write(path, text) = host_write_file(path, text, false)
 fun append_text(path, text) = host_write_file(path, text, true)
