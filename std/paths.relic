@@ -142,3 +142,34 @@ fun with_ext(p, e)
     if type(e) != "string"
         fail("paths.with_ext(): ext must be a string, got " + type(e))
     return slice(x, 0, len(x) - len(ext(x))) + e
+
+# Since 1.0.50: the path that leads from the folder base to target, with ".."
+# for each folder to go up: relative("/a/b", "/a/c/d") is "../c/d". Both must
+# be absolute or both relative, and base must not climb past its start.
+fun relative(base, target)
+    let b = parts(_fix(base, "relative"))
+    let t = parts(_fix(target, "relative"))
+    let b_abs = len(b) > 0 and b[0] == "/"
+    let t_abs = len(t) > 0 and t[0] == "/"
+    if b_abs != t_abs
+        fail("paths.relative(): both paths must be absolute, or both relative")
+    for name in b
+        if name == ".."
+            fail("paths.relative(): base must not go up past its start")
+    let i = 0
+    while i < len(b) and i < len(t) and b[i] == t[i]
+        i = i + 1
+    let out = []
+    for j in i..len(b)
+        append(out, "..")
+    for j in i..len(t)
+        append(out, t[j])
+    if len(out) == 0
+        return "."
+    return _join_names(out)
+
+fun _join_names(names)
+    let s = names[0]
+    for k in 1..len(names)
+        s = s + "/" + names[k]
+    return s

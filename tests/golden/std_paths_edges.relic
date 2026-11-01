@@ -23,3 +23,11 @@ try
     paths.with_ext("a.txt", none)
 catch e
     print(e.message)
+# relative (since 1.0.50)
+for pr in [["/a/b", "/a/c/d"], ["/a", "/a"], ["/", "/x/y"], ["/x/y", "/"], ["a/b", "a/b/c"], ["a", "b"], ["a/./b/", "a//b/../c"], [".", "a"]]
+    print(pr, paths.relative(pr[0], pr[1]))
+for pr in [["/a", "b"], ["a", "/b"], ["../a", "b"]]
+    try
+        paths.relative(pr[0], pr[1])
+    catch e
+        print(e.message)
