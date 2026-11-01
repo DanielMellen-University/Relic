@@ -10,7 +10,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting, lines, case, padding, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, any and all, min and max, count, unique, flatten, zip, chunk, sorting |
-| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert |
 | [std/math](#stdmath) | rounding, roots, trig, sign, gcd and lcm, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths |
@@ -83,6 +83,7 @@ get the length of an int` from inside).
 | `items(m)` | list | `[key, value]` pairs |
 | `get(m, k, fallback)` | any | fallback when `k` missing |
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
+| `invert(m)` | map | each value to its key; every value must be a string (`maps.invert(): the value of k is not a string`), and of two keys with one value the later wins (since 1.0.50) |
 | `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 is not a [string key, value] pair`, counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
 

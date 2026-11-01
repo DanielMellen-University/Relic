@@ -17,3 +17,10 @@ for bad in [[["a", 1], ["b"]], [[1, 2]], ["ab"], 5]
         maps.from_items(bad)
     catch e
         print(e.message)
+# invert (since 1.0.50): values to keys, the later key winning
+print(maps.invert({a: "x", b: "y"}), maps.invert({}), maps.invert({a: "same", b: "same"}))
+for bad in [{a: 1}, [1]]
+    try
+        maps.invert(bad)
+    catch e
+        print(e.message)

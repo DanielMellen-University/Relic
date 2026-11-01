@@ -9,3 +9,6 @@ maps.from_items(): item 1 is not a [string key, value] pair
 maps.from_items(): item 0 is not a [string key, value] pair
 maps.from_items(): item 0 is not a [string key, value] pair
 maps.from_items(): pairs must be a list, got int
+{x: "a", y: "b"} {} {same: "b"}
+maps.invert(): the value of a is not a string
+maps.invert(): m must be a map, got list
