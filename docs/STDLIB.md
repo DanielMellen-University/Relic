@@ -58,6 +58,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
 | `sum(xs)` | number | |
+| `mean(xs)` | float | the sum over the count; `lists.mean(): the list is empty` (since 1.0.50) |
 | `product(xs)` | number | the items multiplied, `1` for an empty list (since 1.0.50) |
 | `index_of(xs, item)` | int | or `-1` |
 | `contains(xs, item)` | bool | `index_of(xs, item) >= 0`, so `1` and `1.0` match (since 1.0.49) |

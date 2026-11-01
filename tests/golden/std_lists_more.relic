@@ -86,3 +86,9 @@ try
     lists.windows([1], 0)
 catch e
     print(e.message)
+# mean (since 1.0.50): always a float
+print(lists.mean([1, 2, 3, 4]), lists.mean([5]), lists.mean([0.5, -0.5]))
+try
+    lists.mean([])
+catch e
+    print(e.message)

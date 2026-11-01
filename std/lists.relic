@@ -292,6 +292,12 @@ fun windows(xs, n)
         append(out, slice(items, i, i + n))
     return out
 
+# Since 1.0.50: the average of the items, as a float; an empty list is an
+# error, as for min and max.
+fun mean(xs)
+    _empty("mean", xs)
+    return float(sum(xs)) / len(xs)
+
 fun reverse(xs)
     _seq("reverse", xs)
     let out = []
