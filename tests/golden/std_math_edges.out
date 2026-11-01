@@ -89,3 +89,5 @@ math.gcd(): arguments must be ints
 math.lcm(): arguments must be ints
 true true false true false true
 math.is_even(): argument must be an int, got float
+5.0 10 20 20 2.5
+math.lerp(): argument must be a number, got string

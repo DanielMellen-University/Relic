@@ -118,3 +118,11 @@ fun is_even(x)
 fun is_odd(x)
     _whole("is_odd", x)
     return x % 2 != 0
+
+# Since 1.0.50: the number t of the way from a to b, a + (b - a) * t; t of 0
+# is a, 1 is b, and t outside 0 to 1 goes past them.
+fun lerp(a, b, t)
+    _number("lerp", a)
+    _number("lerp", b)
+    _number("lerp", t)
+    return a + (b - a) * t

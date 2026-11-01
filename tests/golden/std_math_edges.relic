@@ -89,3 +89,9 @@ try
     math.is_even(2.0)
 catch err
     print(err.message)
+# lerp (since 1.0.50): not clamped
+print(math.lerp(0, 10, 0.5), math.lerp(10, 20, 0), math.lerp(10, 20, 1), math.lerp(0, 10, 2), math.lerp(5, -5, 0.25))
+try
+    math.lerp(0, "1", 0.5)
+catch err
+    print(err.message)
