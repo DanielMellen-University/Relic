@@ -343,3 +343,11 @@ fun center(s, width, fill)
     let k = _fills(s, width, fill)
     let left = int(k / 2)
     return repeat(fill, left) + s + repeat(fill, k - left)
+
+# Since 1.0.50: s with its first character in upper case (ASCII letters only,
+# as upper does) and the rest as they are.
+fun capitalize(s)
+    _text("capitalize", "argument", s)
+    if s == ""
+        return s
+    return upper(s[0]) + slice(s, 1, len(s))

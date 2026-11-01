@@ -31,6 +31,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `starts_with(s, pre)` | bool | |
 | `ends_with(s, suf)` | bool | |
 | `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
+| `capitalize(s)` | string | the first character in upper case (ASCII letters only, as `upper`), the rest as they are (since 1.0.50) |
 | `trim(s)` | string | leading and trailing space; looks only at the ends (since 1.0.46; before, it went through every character) |
 | `trim_start(s)` / `trim_end(s)` | string | the space at the start only, or at the end only (since 1.0.49) |
 | `is_digits(s)` | bool | at least one character, and every one `0` to `9`; no sign or point, ASCII only (since 1.0.50) |
