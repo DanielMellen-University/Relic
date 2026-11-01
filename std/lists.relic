@@ -206,6 +206,20 @@ fun product(xs)
         acc = acc * x
     return acc
 
+# Since 1.0.50: a map from key(x) to the list of items with that key, in the
+# order they came. key(x) must give a string.
+fun group_by(xs, key)
+    _seq("group_by", xs)
+    let out = {}
+    for x in xs
+        let k = key(x)
+        if type(k) != "string"
+            fail("lists.group_by(): key must give a string, got " + type(k))
+        if not k in out
+            out[k] = []
+        append(out[k], x)
+    return out
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0

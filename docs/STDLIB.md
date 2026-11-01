@@ -67,6 +67,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more` otherwise (since 1.0.50) |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
+| `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |
