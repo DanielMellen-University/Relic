@@ -94,6 +94,7 @@ get the length of an int` from inside).
 | `get(m, k, fallback)` | any | fallback when `k` missing |
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
 | `map_values(m, f)` | map | new map, the same keys in order, each value `f(value)` (since 1.0.50) |
+| `filter(m, keep)` | map | new map of the entries `keep(key, value)` is true for, in order (since 1.0.50) |
 | `invert(m)` | map | each value to its key; every value must be a string (`maps.invert(): the value of k is not a string`), and of two keys with one value the later wins (since 1.0.50) |
 | `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 is not a [string key, value] pair`, counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |

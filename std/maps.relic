@@ -81,3 +81,12 @@ fun map_values(m, f)
     for k in m
         out[k] = f(m[k])
     return out
+
+# Since 1.0.50: a new map of the keys keep(k, v) is true for, in order.
+fun filter(m, keep)
+    _map("filter", "m", m)
+    let out = {}
+    for k in m
+        if keep(k, m[k])
+            out[k] = m[k]
+    return out

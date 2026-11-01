@@ -29,3 +29,7 @@ fun twice(v) = v * 2
 let src = {b: 1, a: 2}
 let doubled = maps.map_values(src, twice)
 print(doubled, src, maps.map_values({}, twice), keys(doubled))
+# filter (since 1.0.50): keep gets the key and the value
+fun small(k, v) = v < 3
+fun not_a(k, v) = k != "a"
+print(maps.filter({x: 1, y: 5, z: 2}, small), maps.filter({a: 1, b: 9}, not_a), maps.filter({}, small))
