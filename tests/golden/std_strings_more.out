@@ -18,3 +18,5 @@ true false false false false true
 main abc ab 
 strings.remove_suffix(): suffix must be a string, got int
 ["a", "b"] [] [] ["one"] ["x", "y", "z"]
+["**ab**", "-ab--", "abc", "abab"]
+strings.center(): fill must not be empty

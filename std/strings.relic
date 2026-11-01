@@ -335,3 +335,11 @@ fun pad_left(s, width, fill)
 fun pad_right(s, width, fill)
     _pad("pad_right", s, width, fill)
     return s + repeat(fill, _fills(s, width, fill))
+
+# Since 1.0.50: s with fill on both sides, the same number of copies on each
+# or one more on the right, until it is at least width long.
+fun center(s, width, fill)
+    _pad("center", s, width, fill)
+    let k = _fills(s, width, fill)
+    let left = int(k / 2)
+    return repeat(fill, left) + s + repeat(fill, k - left)

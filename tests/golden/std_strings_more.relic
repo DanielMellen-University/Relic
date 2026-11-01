@@ -60,3 +60,9 @@ catch e
     print(e.message)
 # words (since 1.0.50): split at runs of space, no empty pieces
 print(strings.words("  a  b "), strings.words(""), strings.words(" \t\n "), strings.words("one"), strings.words("x" + chr(13) + "\ny\tz"))
+# center (since 1.0.50): one more on the right when it does not split evenly
+print([strings.center("ab", 6, "*"), strings.center("ab", 5, "-"), strings.center("abc", 2, "x"), strings.center("", 3, "ab")])
+try
+    strings.center("a", 3, "")
+catch e
+    print(e.message)
