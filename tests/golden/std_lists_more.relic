@@ -68,3 +68,9 @@ try
     lists.group_by([1], same)
 catch e
     print(e.message)
+# min_by and max_by (since 1.0.50): the first of equal keys
+print(lists.min_by(["ccc", "a", "bb", "d"], len), lists.max_by(["ccc", "a", "bbb"], len), lists.max_by([3, -7, 5], same))
+try
+    lists.max_by([], len)
+catch e
+    print(e.message)
