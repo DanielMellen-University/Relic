@@ -33,3 +33,4 @@ true 7 abcx xyxyxyxyxy   ababab AéÉb
 ["ab"] ["", "a", ""] ["a", "b"] ["a", "", "b"]
 ... .. abc 
 abcdef -ab-- ..
+["a", "b", "c", "d"] [] ["one"]

@@ -74,3 +74,6 @@ print(strings.split("ab", "abc"), strings.split(",a,", ","), strings.split("a--b
 # fits exactly; center when the text is already wider than the width
 print(strings.truncate("abcdef", 3, "..."), strings.truncate("abcdef", 2, "..."), strings.truncate("abc", 3, "..."), strings.truncate("", 0, "..."))
 print(strings.center("abcdef", 3, "*"), strings.center("ab", 5, "-"), strings.center("", 2, "."))
+# words splits at tabs, newlines and carriage returns as well as spaces
+# (is_space), and text of only those gives no words
+print(strings.words("a\tb\nc" + chr(13) + "d"), strings.words("\t\n "), strings.words("one"))
