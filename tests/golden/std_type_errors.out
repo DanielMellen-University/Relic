@@ -33,3 +33,10 @@ lists.zip(): a must be a list, got bool
 lists.zip(): b must be a list, got int
 lists.count(): xs must be a list, got none
 lists.chunk(): xs must be a list, got int
+lists.find(): xs must be a list, got int
+lists.find_index(): xs must be a list, got none
+lists.take(): xs must be a list, got float
+lists.drop(): xs must be a list, got bool
+lists.partition(): xs must be a list, got int
+lists.product(): xs must be a list, got none
+lists.group_by(): xs must be a list, got int

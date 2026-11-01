@@ -97,3 +97,25 @@ for f in ["any", "all", "flatten", "zip", "zip2", "count", "chunk"]
             lists.chunk(3, 1)
     catch e
         print(e.message)
+
+# The lists functions added in 1.0.50 check xs the same way.
+fun yes(x) = true
+fun key(x) = "k"
+for f in ["find", "find_index", "take", "drop", "partition", "product", "group_by"]
+    try
+        if f == "find"
+            lists.find(1, yes)
+        else if f == "find_index"
+            lists.find_index(none, yes)
+        else if f == "take"
+            lists.take(2.5, 1)
+        else if f == "drop"
+            lists.drop(true, 1)
+        else if f == "partition"
+            lists.partition(9, yes)
+        else if f == "product"
+            lists.product(none)
+        else
+            lists.group_by(4, key)
+    catch e
+        print(e.message)
