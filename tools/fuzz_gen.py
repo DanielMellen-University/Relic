@@ -12,8 +12,8 @@ contains, unique, min, max, any, all, flatten, zip, from_items and sign, and
 since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert, parts,
 find_index, product, take, drop, partition, words, center, remove_prefix,
 remove_suffix, is_alpha, pick, is_even, is_odd, lerp, is_abs, with_ext,
-windows, last, mean, min_by, max_by, capitalize, hypot, radians, degrees and
-relative),
+windows, last, mean, min_by, max_by, capitalize, hypot, radians, degrees,
+relative, truncate, is_upper, is_lower, rotate, sum_by, find_key and trunc),
 text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
 near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
@@ -75,7 +75,9 @@ def new_std(t, d):
                          'math.%s(%s, %s)' % (R.choice(['gcd', 'lcm']), gen('int', d + 1), gen('int', d + 1)),
                          'lists.find_index(%s, is_big)' % gen('list', d + 1),
                          'lists.product(%s)' % gen('list', d + 1),
-                         'lists.%s(%s)' % (R.choice(['last', 'min', 'max']), gen('list', d + 1))])
+                         'lists.%s(%s)' % (R.choice(['last', 'min', 'max']), gen('list', d + 1)),
+                         'lists.sum_by(%s, len)' % gen('list', d + 1),
+                         'math.trunc(%s)' % gen(R.choice(['int', 'float']), d + 1)])
     if t == 'float':
         return R.choice(['math.lerp(%s, %s, %s)' % (gen('int', d + 1), gen('float', d + 1), R.choice(['0.5', '0', '1', gen('float', d + 1)])),
                          'math.hypot(%s, %s)' % (gen('int', d + 1), gen(R.choice(['int', 'float']), d + 1)),
@@ -87,7 +89,8 @@ def new_std(t, d):
                          'strings.center(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '5', gen('int', d + 1)]), R.choice(['"*"', '"ab"', gen('str', d + 1)])),
                          'paths.with_ext(%s, %s)' % (gen('path', d + 1), R.choice(['".md"', '""', gen('str', d + 1)])),
                          'paths.relative(%s, %s)' % (gen('path', d + 1), gen('path', d + 1)),
-                         'strings.capitalize(%s)' % gen('str', d + 1)])
+                         'strings.capitalize(%s)' % gen('str', d + 1),
+                         'strings.truncate(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '3', gen('int', d + 1)]), R.choice(['"..."', '""', gen('str', d + 1)]))])
     if t == 'list':
         return R.choice(['strings.lines(%s)' % gen('str', d + 1),
                          'lists.%s(%s)' % (R.choice(['unique', 'flatten']), gen('list', d + 1)),
@@ -97,7 +100,8 @@ def new_std(t, d):
                          'strings.words(%s)' % gen('str', d + 1),
                          'lists.%s(%s, %s)' % (R.choice(['take', 'drop']), gen('list', d + 1), R.choice(['0', '2', gen('int', d + 1)])),
                          'lists.partition(%s, is_big)' % gen('list', d + 1),
-                         'lists.windows(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', gen('int', d + 1)]))])
+                         'lists.windows(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', gen('int', d + 1)])),
+                         'lists.rotate(%s, %s)' % (gen('list', d + 1), R.choice(['1', '-1', gen('int', d + 1)]))])
     if t == 'map':
         return R.choice(['maps.from_items(maps.items(%s))' % gen('map', d + 1),
                          'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1)),
@@ -108,7 +112,8 @@ def new_std(t, d):
                          'lists.%s(%s, is_big)' % (R.choice(['any', 'all']), gen('list', d + 1)),
                          'strings.%s(%s)' % (R.choice(['is_digits', 'is_alpha']), gen('str', d + 1)),
                          'paths.is_abs(%s)' % gen('path', d + 1),
-                         'math.%s(%s)' % (R.choice(['is_even', 'is_odd']), gen('int', d + 1))])
+                         'math.%s(%s)' % (R.choice(['is_even', 'is_odd']), gen('int', d + 1)),
+                         'strings.%s(%s)' % (R.choice(['is_upper', 'is_lower']), gen('str', d + 1))])
     return None
 
 def gen(t, d=0):
