@@ -9,6 +9,8 @@ fun _seq_named(name, what, xs)
     if t != "list" and t != "string" and t != "map"
         fail("lists." + name + "(): " + what + " must be a list, got " + t)
 
+# map, filter and reduce make a new list (or value) and leave xs as it is.
+# map: f(x) for each item, in order.
 fun map(xs, f)
     _seq("map", xs)
     let out = []
@@ -16,6 +18,7 @@ fun map(xs, f)
         append(out, f(x))
     return out
 
+# filter: the items keep(x) is true for, in order.
 fun filter(xs, keep)
     _seq("filter", xs)
     let out = []
@@ -24,6 +27,8 @@ fun filter(xs, keep)
             append(out, x)
     return out
 
+# reduce: start, then f(acc, x) with each item in turn; reduce([1, 2], f, 0)
+# is f(f(0, 1), 2). An empty list gives start.
 fun reduce(xs, f, start)
     _seq("reduce", xs)
     let acc = start
@@ -31,12 +36,15 @@ fun reduce(xs, f, start)
         acc = f(acc, x)
     return acc
 
+# sum: the items added with +, from 0, so a list of strings is an error
+# ("cannot add an int and a string") and not a join.
 fun sum(xs)
     _seq("sum", xs)
     return reduce(xs, fun_add, 0)
 
 fun fun_add(a, b) = a + b
 
+# index_of: where the first item == item is, or -1.
 fun index_of(xs, item)
     _seq("index_of", xs)
     let i = 0
