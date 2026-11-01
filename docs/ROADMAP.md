@@ -63,4 +63,4 @@ The desktop itself (window manager, taskbar, Start menu, apps) is built in Relic
 
 ## Phase 6: Apps as proof
 
-The apps (terminal, text editor, file browser, drawing app, a game and the Relic IDE) are tracked in the [M0N0LITH-2 roadmap](https://github.com/DanielMellen-University/M0N0LITH-2/blob/main/docs/ROADMAP.md). Relic's job here is to fix whatever those apps run into. So far: list removes and inserts at the front, `std/maps.drop` and `std/vfs.entries` and listing cache (1.0.42), `strings.find`, `lists.sort` and `x = x + t` (1.0.43), and the interpreter hooks above (1.0.44, 1.0.45).
+The apps (terminal, text editor, file browser, drawing app, a game and the Relic IDE) are tracked in the [M0N0LITH-2 roadmap](https://github.com/DanielMellen-University/M0N0LITH-2/blob/main/docs/ROADMAP.md). Relic's job here is to fix whatever those apps run into. So far: list removes and inserts at the front, `std/maps.drop` and `std/vfs.entries` and listing cache (1.0.42), `strings.find`, `lists.sort` and `x = x + t` (1.0.43), the interpreter hooks above (1.0.44, 1.0.45), and the std helpers added in 1.0.49 and 1.0.50 (see the [changelog](../CHANGELOG.md)).
