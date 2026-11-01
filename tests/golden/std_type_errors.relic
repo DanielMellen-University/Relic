@@ -136,3 +136,20 @@ for f in ["is_alpha", "words", "center", "center2", "remove_prefix"]
             strings.remove_prefix(1, "a")
     catch e
         print(e.message)
+
+# The std/maps and std/paths functions added in 1.0.50 check theirs too.
+fun keep_all(k, v) = true
+for f in ["map_values", "filter", "pick", "is_abs", "with_ext"]
+    try
+        if f == "map_values"
+            maps.map_values([1], keep_all)
+        else if f == "filter"
+            maps.filter("ab", keep_all)
+        else if f == "pick"
+            maps.pick(none, ["a"])
+        else if f == "is_abs"
+            paths.is_abs(5)
+        else
+            paths.with_ext([], ".md")
+    catch e
+        print(e.message)

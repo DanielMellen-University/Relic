@@ -45,3 +45,8 @@ strings.words(): argument must be a string, got list
 strings.center(): text must be a string, got none
 strings.center(): width must be a number, got string
 strings.remove_prefix(): text must be a string, got int
+maps.map_values(): m must be a map, got list
+maps.filter(): m must be a map, got string
+maps.pick(): m must be a map, got none
+paths.is_abs(): path must be a string, got int
+paths.with_ext(): path must be a string, got list
