@@ -162,10 +162,10 @@ Always `/`. A `\` in input is read as `/`.
 | Call | Returns | Example |
 |---|---|---|
 | `join(a, b)` | string | `join("a", "b")` → `"a/b"`; absolute `b` wins |
-| `base(p)` | string | `"a/b.txt"` → `"b.txt"` |
+| `base(p)` | string | `"a/b.txt"` → `"b.txt"`; a path ending in `/` gives `""` |
 | `dir(p)` | string | `"a/b.txt"` → `"a"`; no slash → `""` |
 | `ext(p)` | string | with the dot: `".txt"`, or `""`; leading dots belong to the name, so `".hidden"` and `".."` have none (`".."` gave `"."` before 1.0.35) |
-| `stem(p)` | string | `"b.txt"` → `"b"` |
+| `stem(p)` | string | `"b.txt"` → `"b"`, `"a.tar.gz"` → `"a.tar"`; a dotfile such as `".bashrc"` keeps its whole name |
 | `normalize(p)` | string | collapses `.` and `..` |
 | `parts(p)` | list | the names in `normalize(p)` in order, with `"/"` first for an absolute path; `.` gives `[]` (since 1.0.50) |
 | `is_abs(p)` | bool | whether `p` starts with `/` (or `\`); `""` is not (since 1.0.50) |
