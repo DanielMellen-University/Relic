@@ -104,3 +104,9 @@ catch e
     print(e.message)
 # sum_by (since 1.0.50)
 print(lists.sum_by(["ab", "c", ""], len), lists.sum_by([], len), lists.sum_by([[1, 2], [3]], len))
+# count_by (since 1.0.50): counts per key, keys in first-seen order
+print(lists.count_by(["pear", "apple", "plum", "fig"], first_letter), lists.count_by([], first_letter))
+try
+    lists.count_by([1, 2], same)
+catch err
+    print(err.message)

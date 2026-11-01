@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -77,6 +77,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more` otherwise (since 1.0.50) |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
+| `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `lists.min_by(): the list is empty` (since 1.0.50) |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is an error (since 1.0.50) |

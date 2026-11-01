@@ -228,6 +228,21 @@ fun group_by(xs, key)
         append(out[k], x)
     return out
 
+# Since 1.0.50: a map from key(x) to how many items have that key, keys in the
+# order they first came; group_by with the counts. key(x) must give a string.
+fun count_by(xs, key)
+    _seq("count_by", xs)
+    let out = {}
+    for x in xs
+        let k = key(x)
+        if type(k) != "string"
+            fail("lists.count_by(): key must give a string, got " + type(k))
+        if k in out
+            out[k] = out[k] + 1
+        else
+            out[k] = 1
+    return out
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
