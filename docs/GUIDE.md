@@ -298,6 +298,22 @@ false [["a", 1], ["b", 2]]
 {a: 1, b: 2}
 ```
 
+Runs and totals: `windows` gives each run of a length, `rotate` moves the front to the back, `mean` and `sum_by` add up, and `strings.truncate` cuts a title to fit:
+
+```
+use std/lists
+use std/strings
+fun len_of(w) = len(w)
+let temps = [3, 5, 4, 8]
+print(lists.windows(temps, 2), lists.mean(temps), lists.rotate(temps, 1))
+print(lists.sum_by(["ab", "cde"], len_of), strings.truncate("a long title", 8, "..."))
+```
+
+```
+[[3, 5], [5, 4], [4, 8]] 5.0 [5, 4, 8, 3]
+5 a lon...
+```
+
 Paths and numbers: `std/paths` swaps an extension and tells an absolute path from a relative one, and `std/math` has the small integer and easing helpers:
 
 ```
