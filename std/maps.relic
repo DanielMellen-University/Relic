@@ -5,6 +5,7 @@ fun _map(name, what, m)
     if type(m) != "map"
         fail("maps." + name + "(): " + what + " must be a map, got " + type(m))
 
+# The values of m as a new list, in the order their keys were added.
 fun values(m)
     _map("values", "m", m)
     let out = []
@@ -20,6 +21,8 @@ fun items(m)
         append(out, [k, m[k]])
     return out
 
+# m[k] when m has the key k, even when its value is none; else fallback.
+# Reading a missing key with m[k] is an error, so this is the quiet way.
 fun get(m, k, fallback)
     _map("get", "m", m)
     if k in m
