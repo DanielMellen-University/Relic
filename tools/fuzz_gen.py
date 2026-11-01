@@ -9,7 +9,7 @@ lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
 std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths
 (with the calls 1.0.49 added: count, find_last, lines, trim_start and trim_end,
 contains, unique, min, max, any, all, flatten, zip, from_items and sign, and
-since 1.0.50 reverse, is_digits, count, chunk and gcd),
+since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert and parts),
 text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
 near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
@@ -68,17 +68,19 @@ def new_std(t, d):
                          'math.sign(%s)' % gen(R.choice(['int', 'float']), d + 1),
                          'lists.%s(%s)' % (R.choice(['min', 'max']), gen('list', d + 1)),
                          'lists.count(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
-                         'math.gcd(%s, %s)' % (gen('int', d + 1), gen('int', d + 1))])
+                         'math.%s(%s, %s)' % (R.choice(['gcd', 'lcm']), gen('int', d + 1), gen('int', d + 1))])
     if t == 'str':
         return 'strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1))
     if t == 'list':
         return R.choice(['strings.lines(%s)' % gen('str', d + 1),
                          'lists.%s(%s)' % (R.choice(['unique', 'flatten']), gen('list', d + 1)),
                          'lists.zip(%s, %s)' % (gen('list', d + 1), gen(R.choice(['list', 'str']), d + 1)),
-                         'lists.chunk(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', '3', gen('int', d + 1)]))])
+                         'lists.chunk(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', '3', gen('int', d + 1)])),
+                         'paths.parts(%s)' % gen('path', d + 1)])
     if t == 'map':
         return R.choice(['maps.from_items(maps.items(%s))' % gen('map', d + 1),
-                         'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1))])
+                         'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1)),
+                         'maps.invert(%s)' % gen('map', d + 1)])
     if t == 'bool':
         return R.choice(['lists.contains(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
                          'lists.%s(%s, is_big)' % (R.choice(['any', 'all']), gen('list', d + 1)),
