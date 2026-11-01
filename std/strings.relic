@@ -106,6 +106,17 @@ fun lower(s)
 
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
+# Since 1.0.50: whether s has at least one character and all are 0 to 9
+# (ASCII only, so no sign, point or other digits).
+fun is_digits(s)
+    _text("is_digits", "argument", s)
+    if s == ""
+        return false
+    for c in s
+        if c < "0" or c > "9"
+            return false
+    return true
+
 fun trim(s)
     _text("trim", "argument", s)
     # s[i] is quick since 1.0.41, so only the spaces at the ends are looked at
