@@ -120,7 +120,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 |---|---|
 | `abs(x)`, `min(a, b)`, `max(a, b)`, `clamp(x, lo, hi)` | number |
 | `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2`; an int comes back as it is; nan, an infinity or a float past the int range is `math.floor(): number is out of the int range` |
-| `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
+| `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float; outside their domain nan or an infinity, not an error (`sqrt(-1)` is `nan`, `log(0)` is `-inf`); anything but a number is `math.sqrt(): argument must be a number, got string` (`pow` says `base` for `x` and `power` for `y`) |
 | `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
 | `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`, and anything but ints is an error naming the argument, `math.gcd(): b must be an int, got float` (since 1.0.50) |
 | `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50) |
