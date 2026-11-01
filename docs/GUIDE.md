@@ -112,6 +112,23 @@ print(lists.take(xs, 2), lists.drop(xs, 3), lists.product(lists.take(xs, 2)))
 [3, 8] [6, 1] 24
 ```
 
+`lists.group_by` sorts items into a map by a key, and `std/maps` reshapes maps: `map_values` changes every value, `filter` keeps some entries and `pick` takes the keys asked for:
+
+```
+use std/maps
+use std/lists
+fun first(w) = w[0]
+let groups = lists.group_by(["ant", "bee", "asp", "cow"], first)
+print(groups, maps.map_values(groups, len))
+fun big(k, v) = len(v) > 1
+print(maps.filter(groups, big), maps.pick(groups, ["c", "z"]))
+```
+
+```
+{a: ["ant", "asp"], b: ["bee"], c: ["cow"]} {a: 2, b: 1, c: 1}
+{a: ["ant", "asp"]} {c: ["cow"]}
+```
+
 ## 4. Functions
 
 ```
