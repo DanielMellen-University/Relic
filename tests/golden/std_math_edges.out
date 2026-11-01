@@ -92,3 +92,4 @@ math.is_even(): argument must be an int, got float
 5.0 10 20 20 2.5
 math.lerp(): argument must be a number, got string
 10 0.5 2.5 0
+5.0 0.0 13.0 2.5

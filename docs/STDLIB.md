@@ -119,6 +119,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; `math.lcm(): arguments must be ints` otherwise (since 1.0.50) |
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
+| `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50) |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 

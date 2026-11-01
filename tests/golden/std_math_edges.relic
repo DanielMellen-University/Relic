@@ -97,3 +97,5 @@ catch err
     print(err.message)
 # clamp with ints and floats mixed, at the bounds, and with lo above hi
 print(math.clamp(10, 0, 10), math.clamp(0, 0.5, 1), math.clamp(3, 1.5, 2.5), math.clamp(5, 10, 0))
+# hypot (since 1.0.50)
+print(math.hypot(3, 4), math.hypot(0, 0), math.hypot(-5, 12), math.hypot(1.5, 2))

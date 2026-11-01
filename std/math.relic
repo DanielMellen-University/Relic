@@ -126,3 +126,9 @@ fun lerp(a, b, t)
     _number("lerp", b)
     _number("lerp", t)
     return a + (b - a) * t
+
+# Since 1.0.50: the length of the line from (0, 0) to (x, y), a float.
+fun hypot(x, y)
+    _number("hypot", x)
+    _number("hypot", y)
+    return sqrt(x * x + y * y)
