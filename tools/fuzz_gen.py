@@ -11,7 +11,9 @@ std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths
 contains, unique, min, max, any, all, flatten, zip, from_items and sign, and
 since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert, parts,
 find_index, product, take, drop, partition, words, center, remove_prefix,
-remove_suffix, is_alpha, pick, is_even, is_odd, lerp, is_abs and with_ext),
+remove_suffix, is_alpha, pick, is_even, is_odd, lerp, is_abs, with_ext,
+windows, last, mean, min_by, max_by, capitalize, hypot, radians, degrees and
+relative),
 text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
 near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
@@ -72,14 +74,20 @@ def new_std(t, d):
                          'lists.count(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
                          'math.%s(%s, %s)' % (R.choice(['gcd', 'lcm']), gen('int', d + 1), gen('int', d + 1)),
                          'lists.find_index(%s, is_big)' % gen('list', d + 1),
-                         'lists.product(%s)' % gen('list', d + 1)])
+                         'lists.product(%s)' % gen('list', d + 1),
+                         'lists.%s(%s)' % (R.choice(['last', 'min', 'max']), gen('list', d + 1))])
     if t == 'float':
-        return 'math.lerp(%s, %s, %s)' % (gen('int', d + 1), gen('float', d + 1), R.choice(['0.5', '0', '1', gen('float', d + 1)]))
+        return R.choice(['math.lerp(%s, %s, %s)' % (gen('int', d + 1), gen('float', d + 1), R.choice(['0.5', '0', '1', gen('float', d + 1)])),
+                         'math.hypot(%s, %s)' % (gen('int', d + 1), gen(R.choice(['int', 'float']), d + 1)),
+                         'math.%s(%s)' % (R.choice(['radians', 'degrees']), gen(R.choice(['int', 'float']), d + 1)),
+                         'lists.mean(%s)' % gen('list', d + 1)])
     if t == 'str':
         return R.choice(['strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1)),
                          'strings.%s(%s, %s)' % (R.choice(['remove_prefix', 'remove_suffix']), gen('str', d + 1), gen('str', d + 1)),
                          'strings.center(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '5', gen('int', d + 1)]), R.choice(['"*"', '"ab"', gen('str', d + 1)])),
-                         'paths.with_ext(%s, %s)' % (gen('path', d + 1), R.choice(['".md"', '""', gen('str', d + 1)]))])
+                         'paths.with_ext(%s, %s)' % (gen('path', d + 1), R.choice(['".md"', '""', gen('str', d + 1)])),
+                         'paths.relative(%s, %s)' % (gen('path', d + 1), gen('path', d + 1)),
+                         'strings.capitalize(%s)' % gen('str', d + 1)])
     if t == 'list':
         return R.choice(['strings.lines(%s)' % gen('str', d + 1),
                          'lists.%s(%s)' % (R.choice(['unique', 'flatten']), gen('list', d + 1)),
@@ -88,7 +96,8 @@ def new_std(t, d):
                          'paths.parts(%s)' % gen('path', d + 1),
                          'strings.words(%s)' % gen('str', d + 1),
                          'lists.%s(%s, %s)' % (R.choice(['take', 'drop']), gen('list', d + 1), R.choice(['0', '2', gen('int', d + 1)])),
-                         'lists.partition(%s, is_big)' % gen('list', d + 1)])
+                         'lists.partition(%s, is_big)' % gen('list', d + 1),
+                         'lists.windows(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', gen('int', d + 1)]))])
     if t == 'map':
         return R.choice(['maps.from_items(maps.items(%s))' % gen('map', d + 1),
                          'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1)),
