@@ -28,11 +28,17 @@ fun max(a, b)
 
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
 
+# gcd and lcm take two ints; the error names the one that is not.
+fun _ints(name, a, b)
+    if type(a) != "int"
+        fail("math." + name + "(): a must be an int, got " + type(a))
+    if type(b) != "int"
+        fail("math." + name + "(): b must be an int, got " + type(b))
+
 # Since 1.0.50: the greatest common divisor of two ints, never negative;
 # gcd(0, 0) is 0.
 fun gcd(a, b)
-    if type(a) != "int" or type(b) != "int"
-        fail("math.gcd(): arguments must be ints")
+    _ints("gcd", a, b)
     a = abs(a)
     b = abs(b)
     while b != 0
@@ -44,8 +50,7 @@ fun gcd(a, b)
 # Since 1.0.50: the least common multiple of two ints, never negative;
 # 0 when either is 0. Past the int range it is the usual overflow error.
 fun lcm(a, b)
-    if type(a) != "int" or type(b) != "int"
-        fail("math.lcm(): arguments must be ints")
+    _ints("lcm", a, b)
     if a == 0 or b == 0
         return 0
     a = abs(a)

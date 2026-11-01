@@ -122,8 +122,8 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `floor(x)`, `ceil(x)`, `round(x)` | int; `round` takes halves up, so `round(-2.5)` is `-2`; an int comes back as it is; nan, an infinity or a float past the int range is `math.floor(): number is out of the int range` |
 | `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
 | `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
-| `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`, and anything but ints is `math.gcd(): arguments must be ints` (since 1.0.50) |
-| `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; `math.lcm(): arguments must be ints` otherwise (since 1.0.50) |
+| `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`, and anything but ints is an error naming the argument, `math.gcd(): b must be an int, got float` (since 1.0.50) |
+| `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50) |
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
 | `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50) |
