@@ -129,3 +129,8 @@ fun parts(p)
     if name != "" and name != "."
         append(out, name)
     return out
+
+# Since 1.0.50: whether p starts at the root, "/" (or "\").
+fun is_abs(p)
+    let x = _fix(p, "is_abs")
+    return len(x) > 0 and x[0] == "/"

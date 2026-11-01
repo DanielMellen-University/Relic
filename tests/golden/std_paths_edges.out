@@ -46,3 +46,4 @@
 ../b/c /y .d  
 ["/", "a", "c"] ["a", "b"] [] ["/"] ["..", "x"] ["a", "b"]
 paths.parts(): path must be a string, got int
+true false false true false true

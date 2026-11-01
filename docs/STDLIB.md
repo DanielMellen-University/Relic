@@ -152,6 +152,7 @@ Always `/`. A `\` in input is read as `/`.
 | `stem(p)` | string | `"b.txt"` → `"b"` |
 | `normalize(p)` | string | collapses `.` and `..` |
 | `parts(p)` | list | the names in `normalize(p)` in order, with `"/"` first for an absolute path; `.` gives `[]` (since 1.0.50) |
+| `is_abs(p)` | bool | whether `p` starts with `/` (or `\`); `""` is not (since 1.0.50) |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 
