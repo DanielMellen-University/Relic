@@ -141,3 +141,13 @@ fun radians(deg)
 fun degrees(rad)
     _number("degrees", rad)
     return rad * 180 / pi
+
+# Since 1.0.50: x with its fraction dropped, toward 0, as an int: trunc(-2.7)
+# is -2 where floor gives -3.
+fun trunc(x)
+    _number("trunc", x)
+    if type(x) == "int"
+        return x
+    if x < 0
+        return _int("trunc", 0.0 - host_floor(0.0 - x))
+    return _int("trunc", host_floor(x))

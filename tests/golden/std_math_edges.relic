@@ -101,3 +101,9 @@ print(math.clamp(10, 0, 10), math.clamp(0, 0.5, 1), math.clamp(3, 1.5, 2.5), mat
 print(math.hypot(3, 4), math.hypot(0, 0), math.hypot(-5, 12), math.hypot(1.5, 2))
 # radians and degrees (since 1.0.50)
 print(math.radians(180), math.degrees(math.pi), math.radians(0), math.degrees(math.radians(90)), math.round(math.sin(math.radians(30)) * 1000))
+# trunc (since 1.0.50): toward 0
+print(math.trunc(2.7), math.trunc(-2.7), math.trunc(-0.5), math.trunc(5), math.trunc(-3.0))
+try
+    math.trunc(float("nan"))
+catch err
+    print(err.message)

@@ -126,6 +126,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
 | `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50) |
 | `radians(deg)` / `degrees(rad)` | float: an angle in degrees as radians, for `sin` and `cos`, and back (since 1.0.50) |
+| `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
