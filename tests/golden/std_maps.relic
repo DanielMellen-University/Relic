@@ -24,3 +24,8 @@ for bad in [{a: 1}, [1]]
         maps.invert(bad)
     catch e
         print(e.message)
+# map_values (since 1.0.50): same keys, same order, a new map
+fun twice(v) = v * 2
+let src = {b: 1, a: 2}
+let doubled = maps.map_values(src, twice)
+print(doubled, src, maps.map_values({}, twice), keys(doubled))

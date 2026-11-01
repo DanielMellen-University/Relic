@@ -72,3 +72,12 @@ fun invert(m)
             fail("maps.invert(): the value of " + k + " is not a string")
         out[m[k]] = k
     return out
+
+# Since 1.0.50: a new map with the same keys in the same order, each value
+# put through f.
+fun map_values(m, f)
+    _map("map_values", "m", m)
+    let out = {}
+    for k in m
+        out[k] = f(m[k])
+    return out

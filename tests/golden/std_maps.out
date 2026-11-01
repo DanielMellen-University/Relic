@@ -12,3 +12,4 @@ maps.from_items(): pairs must be a list, got int
 {x: "a", y: "b"} {} {same: "b"}
 maps.invert(): the value of a is not a string
 maps.invert(): m must be a map, got list
+{b: 2, a: 4} {b: 1, a: 2} {} ["b", "a"]
