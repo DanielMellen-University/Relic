@@ -120,7 +120,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 
-`abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`).
+`abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
 
 ## std/files
 
