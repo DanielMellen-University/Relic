@@ -144,6 +144,20 @@ true 1000.0 12 1.5 42!
 - `int` is 64-bit and errors on overflow instead of wrapping. `float` is 64-bit floating point.
 - `+` never mixes types: `"a" + 1` is an error. Use `str(x)` or `{x}` in a string.
 
+`std/strings` has the usual helpers for text (section 7 explains `use`):
+
+```
+use std/strings
+let text = "  one\ntwo  \nthree"
+print(strings.lines(text), strings.count(text, "o"))
+print([strings.trim_start(text)], strings.reverse("abc"), strings.is_digits("2026"))
+```
+
+```
+["  one", "two  ", "three"] 2
+["one\ntwo  \nthree"] cba true
+```
+
 ## 6. Errors
 
 ```
