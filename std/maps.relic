@@ -69,7 +69,7 @@ fun invert(m)
     let out = {}
     for k in m
         if type(m[k]) != "string"
-            fail("maps.invert(): the value of " + k + " is not a string")
+            fail("maps.invert(): the value of " + k + " must be a string, got " + type(m[k]))
         out[m[k]] = k
     return out
 
