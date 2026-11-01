@@ -2,8 +2,8 @@
 
 fun now() = host_now()       # seconds since 1970-01-01 UTC
 fun clock() = host_clock()   # steady clock for measuring; only differences mean anything
-fun since(start) = host_clock() - start
-fun sleep(ms) = host_sleep(ms)
+fun since(start) = host_clock() - start   # seconds since a clock() reading
+fun sleep(ms) = host_sleep(ms)           # in milliseconds, unlike the clocks
 
 # Frame timer: tick(t) once per frame gives seconds since the last tick and
 # keeps t.fps up to date (averaged over about one second).
