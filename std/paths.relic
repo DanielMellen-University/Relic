@@ -152,10 +152,10 @@ fun relative(base, target)
     let b_abs = len(b) > 0 and b[0] == "/"
     let t_abs = len(t) > 0 and t[0] == "/"
     if b_abs != t_abs
-        fail("paths.relative(): both paths must be absolute, or both relative")
+        fail("paths.relative(): both paths must be absolute, or both relative, got " + base + " and " + target)
     for name in b
         if name == ".."
-            fail("paths.relative(): base must not go up past its start")
+            fail("paths.relative(): base must not go up past its start, got " + base)
     let i = 0
     while i < len(b) and i < len(t) and b[i] == t[i]
         i = i + 1

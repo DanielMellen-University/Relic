@@ -62,8 +62,8 @@ paths.with_ext(): ext must be a string, got none
 ["a", "b"] ../b
 ["a/./b/", "a//b/../c"] ../c
 [".", "a"] a
-paths.relative(): both paths must be absolute, or both relative
-paths.relative(): both paths must be absolute, or both relative
-paths.relative(): base must not go up past its start
+paths.relative(): both paths must be absolute, or both relative, got /a and b
+paths.relative(): both paths must be absolute, or both relative, got a and /b
+paths.relative(): base must not go up past its start, got ../a
 . b/c ..
 .bashrc.txt x.tar.zip dir.d/file.md
