@@ -13,7 +13,8 @@ since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert, parts,
 find_index, product, take, drop, partition, words, center, remove_prefix,
 remove_suffix, is_alpha, pick, is_even, is_odd, lerp, is_abs, with_ext,
 windows, last, mean, min_by, max_by, capitalize, hypot, radians, degrees,
-relative, truncate, is_upper, is_lower, rotate, sum_by, find_key and trunc),
+relative, truncate, is_upper, is_lower, rotate, sum_by, find_key, trunc,
+count_by, has_value and dist),
 text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
 near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
@@ -82,7 +83,8 @@ def new_std(t, d):
         return R.choice(['math.lerp(%s, %s, %s)' % (gen('int', d + 1), gen('float', d + 1), R.choice(['0.5', '0', '1', gen('float', d + 1)])),
                          'math.hypot(%s, %s)' % (gen('int', d + 1), gen(R.choice(['int', 'float']), d + 1)),
                          'math.%s(%s)' % (R.choice(['radians', 'degrees']), gen(R.choice(['int', 'float']), d + 1)),
-                         'lists.mean(%s)' % gen('list', d + 1)])
+                         'lists.mean(%s)' % gen('list', d + 1),
+                         'math.dist(%s, %s, %s, %s)' % (gen('int', d + 1), gen(R.choice(['int', 'float']), d + 1), gen('int', d + 1), gen('int', d + 1))])
     if t == 'str':
         return R.choice(['strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1)),
                          'strings.%s(%s, %s)' % (R.choice(['remove_prefix', 'remove_suffix']), gen('str', d + 1), gen('str', d + 1)),
@@ -106,14 +108,16 @@ def new_std(t, d):
         return R.choice(['maps.from_items(maps.items(%s))' % gen('map', d + 1),
                          'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1)),
                          'maps.invert(%s)' % gen('map', d + 1),
-                         'maps.pick(%s, %s)' % (gen('map', d + 1), gen('list', d + 1))])
+                         'maps.pick(%s, %s)' % (gen('map', d + 1), gen('list', d + 1)),
+                         'lists.count_by(%s, str)' % gen('list', d + 1)])
     if t == 'bool':
         return R.choice(['lists.contains(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
                          'lists.%s(%s, is_big)' % (R.choice(['any', 'all']), gen('list', d + 1)),
                          'strings.%s(%s)' % (R.choice(['is_digits', 'is_alpha']), gen('str', d + 1)),
                          'paths.is_abs(%s)' % gen('path', d + 1),
                          'math.%s(%s)' % (R.choice(['is_even', 'is_odd']), gen('int', d + 1)),
-                         'strings.%s(%s)' % (R.choice(['is_upper', 'is_lower']), gen('str', d + 1))])
+                         'strings.%s(%s)' % (R.choice(['is_upper', 'is_lower']), gen('str', d + 1)),
+                         'maps.has_value(%s, %s)' % (gen('map', d + 1), gen('any', d + 1))])
     return None
 
 def gen(t, d=0):
