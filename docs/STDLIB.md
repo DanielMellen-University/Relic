@@ -11,7 +11,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/strings](#stdstrings) | searching, counting, splitting, lines, case, padding, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, any and all, min and max, count, unique, flatten, zip, chunk, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop |
-| [std/math](#stdmath) | rounding, roots, trig, sign, gcd, constants |
+| [std/math](#stdmath) | rounding, roots, trig, sign, gcd and lcm, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
@@ -97,6 +97,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float |
 | `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
 | `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`, and anything but ints is `math.gcd(): arguments must be ints` (since 1.0.50) |
+| `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; `math.lcm(): arguments must be ints` otherwise (since 1.0.50) |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 

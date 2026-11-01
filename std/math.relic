@@ -41,6 +41,24 @@ fun gcd(a, b)
         b = r
     return a
 
+# Since 1.0.50: the least common multiple of two ints, never negative;
+# 0 when either is 0. Past the int range it is the usual overflow error.
+fun lcm(a, b)
+    if type(a) != "int" or type(b) != "int"
+        fail("math.lcm(): arguments must be ints")
+    if a == 0 or b == 0
+        return 0
+    a = abs(a)
+    let g = gcd(a, b)
+    # a / g exactly: / gives a float, which is off past 2^53, so fix it up
+    let q = int(a / g)
+    q = q + int((a - q * g) / g)
+    while q * g > a
+        q = q - 1
+    while a - q * g >= g
+        q = q + 1
+    return q * abs(b)
+
 # Since 1.0.49: -1, 0 or 1 as an int, for an int or a float; nan stays nan.
 fun sign(x)
     _number("sign", x)

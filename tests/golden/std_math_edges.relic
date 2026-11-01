@@ -75,3 +75,11 @@ for pair in [[1.0, 2], [2, "4"]]
         math.gcd(pair[0], pair[1])
     catch e
         print(e.message)
+# lcm (since 1.0.50)
+print(math.lcm(4, 6), math.lcm(-4, 6), math.lcm(0, 5), math.lcm(7, 7), math.lcm(1000000007, 998244353))
+# exact past 2^53, where a float division would be off
+print(math.lcm(1152921504606846975, 3), math.lcm(4611686018427387903, 4611686018427387903), math.lcm(-1152921504606846976, 2))
+try
+    math.lcm(2, 0.5)
+catch e
+    print(e.message)
