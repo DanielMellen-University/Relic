@@ -47,3 +47,4 @@ lists.rotate(): count must be an int, got float
 lists.count_by(): key must give a string, got int
 [] [[1, 2]] [] [1, 2, 3] [3, 1, 2]
 1.0 7.0 0.0
+{b: 1, a: 3, n: 2} {a: 2, f: 1}

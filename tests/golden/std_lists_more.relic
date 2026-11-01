@@ -114,3 +114,6 @@ catch err
 # a multiple of the length; mean of floats and of one item
 print(lists.windows([1, 2], 3), lists.windows([1, 2], 2), lists.rotate([], 3), lists.rotate([1, 2, 3], 3), lists.rotate([1, 2, 3], -4))
 print(lists.mean([0.5, 1.5]), lists.mean([7]), lists.mean([-2, 2]))
+# count_by walks a string's characters and a map's keys like the other list
+# functions
+print(lists.count_by("banana", same), lists.count_by({apple: 1, avocado: 2, fig: 3}, first_letter))
