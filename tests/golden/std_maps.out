@@ -14,3 +14,5 @@ maps.invert(): the value of a is not a string
 maps.invert(): m must be a map, got list
 {b: 2, a: 4} {b: 1, a: 2} {} ["b", "a"]
 {x: 1, z: 2} {b: 9} {}
+{c: 3, a: 1} {} {}
+maps.pick(): keys must be a list, got string

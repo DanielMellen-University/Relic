@@ -90,3 +90,15 @@ fun filter(m, keep)
         if keep(k, m[k])
             out[k] = m[k]
     return out
+
+# Since 1.0.50: a new map of only the given keys that m has, in the order the
+# keys are given.
+fun pick(m, ks)
+    _map("pick", "m", m)
+    if type(ks) != "list"
+        fail("maps.pick(): keys must be a list, got " + type(ks))
+    let out = {}
+    for k in ks
+        if k in m
+            out[k] = m[k]
+    return out

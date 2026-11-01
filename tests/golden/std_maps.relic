@@ -33,3 +33,9 @@ print(doubled, src, maps.map_values({}, twice), keys(doubled))
 fun small(k, v) = v < 3
 fun not_a(k, v) = k != "a"
 print(maps.filter({x: 1, y: 5, z: 2}, small), maps.filter({a: 1, b: 9}, not_a), maps.filter({}, small))
+# pick (since 1.0.50): in the order asked for; missing keys left out
+print(maps.pick({a: 1, b: 2, c: 3}, ["c", "a", "q"]), maps.pick({a: 1}, []), maps.pick({}, ["a"]))
+try
+    maps.pick({a: 1}, "a")
+catch e
+    print(e.message)
