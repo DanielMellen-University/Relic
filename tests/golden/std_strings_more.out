@@ -3,7 +3,7 @@
 strings.count(): part must not be empty
 strings.find_last(): text must be a string, got int
 strings.count(): part must be a string, got int
-100000 100000 50010 100019
+800 800 410 819
 ["a", "b", "", "c"] [] [""] ["x"]
 strings.lines(): text must be a string, got none
 ["one", "two", "", "three"] true
