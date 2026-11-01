@@ -50,3 +50,7 @@ maps.filter(): m must be a map, got string
 maps.pick(): m must be a map, got none
 paths.is_abs(): path must be a string, got int
 paths.with_ext(): path must be a string, got list
+lists.min_by(): xs must be a list, got int
+lists.max_by(): xs must be a list, got none
+lists.last(): xs must be a list, got float
+strings.capitalize(): argument must be a string, got list

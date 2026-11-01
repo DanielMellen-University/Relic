@@ -153,3 +153,17 @@ for f in ["map_values", "filter", "pick", "is_abs", "with_ext"]
             paths.with_ext([], ".md")
     catch e
         print(e.message)
+
+# min_by, max_by and last check xs, and capitalize its text, like the rest.
+for f in ["min_by", "max_by", "last", "capitalize"]
+    try
+        if f == "min_by"
+            lists.min_by(3, same)
+        else if f == "max_by"
+            lists.max_by(none, same)
+        else if f == "last"
+            lists.last(1.5)
+        else
+            strings.capitalize(["a"])
+    catch e
+        print(e.message)
