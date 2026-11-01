@@ -167,3 +167,23 @@ for f in ["min_by", "max_by", "last", "capitalize"]
             strings.capitalize(["a"])
     catch e
         print(e.message)
+
+# The rest of 1.0.50's additions: windows and mean check xs, hypot, radians
+# and degrees their numbers, relative its paths.
+use std/math
+for f in ["windows", "mean", "hypot", "radians", "degrees", "relative"]
+    try
+        if f == "windows"
+            lists.windows(5, 2)
+        else if f == "mean"
+            lists.mean("")
+        else if f == "hypot"
+            math.hypot(3, "4")
+        else if f == "radians"
+            math.radians(none)
+        else if f == "degrees"
+            math.degrees([1])
+        else
+            paths.relative("/a", 7)
+    catch e
+        print(e.message)
