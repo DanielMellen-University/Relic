@@ -97,6 +97,21 @@ owner Daniel
 - Maps keep the order keys were added. Reading a missing key is an error, so check with `"k" in m` first.
 - `==` compares lists and maps by their contents.
 
+`std/lists` works on any list (section 7 explains `use`). `find` gives the first item a test is true for (or `none`), `partition` splits a list in two by a test, and `take` and `drop` cut it:
+
+```
+use std/lists
+fun even(n) = n % 2 == 0
+let xs = [3, 8, 5, 6, 1]
+print(lists.find(xs, even), lists.find_index(xs, even), lists.partition(xs, even))
+print(lists.take(xs, 2), lists.drop(xs, 3), lists.product(lists.take(xs, 2)))
+```
+
+```
+8 1 [[8, 6], [3, 5, 1]]
+[3, 8] [6, 1] 24
+```
+
 ## 4. Functions
 
 ```
