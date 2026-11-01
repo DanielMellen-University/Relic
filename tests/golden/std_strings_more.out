@@ -22,5 +22,5 @@ strings.remove_suffix(): suffix must be a string, got int
 strings.center(): fill must not be empty
 ["Relic", "HELLO", "", "élan", "1st"]
 ["a...", "abc", "..", "héllo…", ""]
-strings.truncate(): width must be a whole number, 0 or more
+strings.truncate(): width must be a whole number, 0 or more, got -1
 true true false false true true false false

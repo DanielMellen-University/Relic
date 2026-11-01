@@ -292,7 +292,7 @@ fun repeat(s, n)
     if type(n) != "int" and type(n) != "float"
         fail("strings.repeat(): count must be a number, got " + type(n))
     if n % 1 != 0
-        fail("strings.repeat(): count must be a whole number")
+        fail("strings.repeat(): count must be a whole number, got " + str(n))
     # doubling, so the text is copied about twice in all, not once per copy added
     let out = ""
     let piece = s
@@ -359,7 +359,10 @@ fun truncate(s, width, tail)
     _text("truncate", "text", s)
     _text("truncate", "tail", tail)
     if type(width) != "int" or width < 0
-        fail("strings.truncate(): width must be a whole number, 0 or more")
+        let got = type(width)
+        if got == "float" or got == "int"
+            got = str(width)
+        fail("strings.truncate(): width must be a whole number, 0 or more, got " + got)
     if len(s) <= width
         return s
     if len(tail) >= width

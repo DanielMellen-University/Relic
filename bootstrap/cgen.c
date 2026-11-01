@@ -10526,7 +10526,11 @@ static int fn99_repeat(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv,
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 294, 14, 294, 14, 294, 14, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    T[1] = rl_retain(K[283]);
+    T[3] = rl_retain(L[1]);
+    if (rl_call(cx, B[10], 1, &T[3], &T[2])) RLC_ERR(5, 295, 74, 295, 74, 295, 74, fail);
+    RLC_DROP(T[3]);
+    if (rl_add(cx, K[283], T[2], &T[1])) RLC_ERR(5, 295, 69, 295, 69, 295, 69, fail);
+    RLC_DROP(T[2]);
     if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 295, 13, 295, 13, 295, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
@@ -11008,14 +11012,14 @@ done:
 
 static int fn106_truncate(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
     rl_value T[7];
-    rl_value L[3];
+    rl_value L[4];
     rl_scope *E = self->env;
     rl_value R = rl_none();
     int r = RL_OK, c_ = 0, i_;
     (void)argc; (void)argv; (void)E;
     (void)c_; (void)cx;
     for (i_ = 0; i_ < 7; ++i_) T[i_] = rl_none();
-    for (i_ = 0; i_ < 3; ++i_) L[i_] = rl_unset();
+    for (i_ = 0; i_ < 4; ++i_) L[i_] = rl_unset();
     RLC_SET(L[0], rl_unset());
     RLC_SET(L[1], rl_unset());
     RLC_SET(L[2], rl_unset());
@@ -11055,17 +11059,42 @@ static int fn106_truncate(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 361, 29, 361, 29, 361, 29, fail);
     RLC_DROP(T[0]);
     if (c_) {
-    T[1] = rl_retain(K[294]);
-    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 362, 13, 362, 13, 362, 13, fail);
+    RLC_SET(L[3], rl_unset());
+    T[1] = rl_retain(L[1]);
+    if (rl_call(cx, B[7], 1, &T[1], &T[0])) RLC_ERR(5, 362, 23, 362, 23, 362, 23, fail);
+    RLC_DROP(T[1]);
+    RLC_SET(L[3], T[0]); T[0] = rl_none();
+    T[1] = rl_bool(rl_equal(L[3], K[206]));
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(5, 363, 16, 363, 16, 363, 16, fail);
+    RLC_DROP(T[1]);
+    if (c_) T[0] = rl_bool(1);
+    else {
+    T[1] = rl_bool(rl_equal(L[3], K[205]));
+    if (rl_cond(cx, T[1], "'or' operand", &c_)) RLC_ERR(5, 363, 34, 363, 34, 363, 34, fail);
+    T[0] = rl_bool(c_);
+    RLC_DROP(T[1]);
+    }
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 363, 27, 363, 27, 363, 27, fail);
+    RLC_DROP(T[0]);
+    if (c_) {
+    T[1] = rl_retain(L[1]);
+    if (rl_call(cx, B[10], 1, &T[1], &T[0])) RLC_ERR(5, 364, 22, 364, 22, 364, 22, fail);
+    RLC_DROP(T[1]);
+    {
+    RLC_SET(L[3], T[0]); T[0] = rl_none(); }
+    RLC_DROP(T[0]);
+    }
+    if (rl_add(cx, K[294], L[3], &T[1])) RLC_ERR(5, 365, 82, 365, 82, 365, 82, fail);
+    if (rl_call(cx, B[2], 1, &T[1], &T[0])) RLC_ERR(5, 365, 13, 365, 13, 365, 13, fail);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     }
     T[2] = rl_retain(L[0]);
-    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 363, 11, 363, 11, 363, 11, fail);
+    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 366, 11, 366, 11, 366, 11, fail);
     RLC_DROP(T[2]);
-    if (rl_compare(cx, "<=", T[1], L[1], &T[0])) RLC_ERR(5, 363, 15, 363, 15, 363, 15, fail);
+    if (rl_compare(cx, "<=", T[1], L[1], &T[0])) RLC_ERR(5, 366, 15, 366, 15, 366, 15, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 363, 15, 363, 15, 363, 15, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 366, 15, 366, 15, 366, 15, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_retain(L[0]);
@@ -11073,17 +11102,17 @@ static int fn106_truncate(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     goto done;
     }
     T[2] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 365, 11, 365, 11, 365, 11, fail);
+    if (rl_call(cx, B[4], 1, &T[2], &T[1])) RLC_ERR(5, 368, 11, 368, 11, 368, 11, fail);
     RLC_DROP(T[2]);
-    if (rl_compare(cx, ">=", T[1], L[1], &T[0])) RLC_ERR(5, 365, 18, 365, 18, 365, 18, fail);
+    if (rl_compare(cx, ">=", T[1], L[1], &T[0])) RLC_ERR(5, 368, 18, 368, 18, 368, 18, fail);
     RLC_DROP(T[1]);
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 365, 18, 365, 18, 365, 18, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 368, 18, 368, 18, 368, 18, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[1] = rl_retain(L[2]);
     T[2] = rl_int(0LL);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, B[9], 3, &T[1], &T[0])) RLC_ERR(5, 366, 21, 366, 21, 366, 21, fail);
+    if (rl_call(cx, B[9], 3, &T[1], &T[0])) RLC_ERR(5, 369, 21, 369, 21, 369, 21, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
@@ -11093,15 +11122,15 @@ static int fn106_truncate(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     T[2] = rl_retain(L[0]);
     T[3] = rl_int(0LL);
     T[6] = rl_retain(L[2]);
-    if (rl_call(cx, B[4], 1, &T[6], &T[5])) RLC_ERR(5, 367, 35, 367, 35, 367, 35, fail);
+    if (rl_call(cx, B[4], 1, &T[6], &T[5])) RLC_ERR(5, 370, 35, 370, 35, 370, 35, fail);
     RLC_DROP(T[6]);
-    if (rl_sub(cx, L[1], T[5], &T[4])) RLC_ERR(5, 367, 30, 367, 30, 367, 30, fail);
+    if (rl_sub(cx, L[1], T[5], &T[4])) RLC_ERR(5, 370, 30, 370, 30, 370, 30, fail);
     RLC_DROP(T[5]);
-    if (rl_call(cx, B[9], 3, &T[2], &T[1])) RLC_ERR(5, 367, 17, 367, 17, 367, 17, fail);
+    if (rl_call(cx, B[9], 3, &T[2], &T[1])) RLC_ERR(5, 370, 17, 370, 17, 370, 17, fail);
     RLC_DROP(T[4]);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
-    if (rl_add(cx, T[1], L[2], &T[0])) RLC_ERR(5, 367, 43, 367, 43, 367, 43, fail);
+    if (rl_add(cx, T[1], L[2], &T[0])) RLC_ERR(5, 370, 43, 370, 43, 370, 43, fail);
     RLC_DROP(T[1]);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
@@ -11110,7 +11139,7 @@ fail:
     r = RL_ERR;
 done:
     for (i_ = 0; i_ < 7; ++i_) rl_release(T[i_]);
-    for (i_ = 0; i_ < 3; ++i_) rl_release(L[i_]);
+    for (i_ = 0; i_ < 4; ++i_) rl_release(L[i_]);
     if (r == RL_OK) *out = R;
     else { rl_release(R); *out = rl_none(); }
     return r;
@@ -11145,48 +11174,48 @@ static int fn107__cased(rl_ctx *cx, rl_fun *self, int argc, const rl_value *argv
     T[1] = rl_retain(L[0]);
     T[2] = rl_retain(K[261]);
     T[3] = rl_retain(L[1]);
-    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 372, 10, 372, 10, 372, 10, fail);
+    if (rl_call(cx, E->slots[0], 3, &T[1], &T[0])) RLC_ERR(5, 375, 10, 375, 10, 375, 10, fail);
     RLC_DROP(T[3]);
     RLC_DROP(T[2]);
     RLC_DROP(T[1]);
     RLC_DROP(T[0]);
     T[0] = rl_bool(0);
     RLC_SET(L[6], T[0]); T[0] = rl_none();
-    if (rl_loop_items(cx, L[1], &V[0])) RLC_ERR(5, 374, 14, 374, 14, 374, 14, fail);
+    if (rl_loop_items(cx, L[1], &V[0])) RLC_ERR(5, 377, 14, 377, 14, 377, 14, fail);
     I[0] = 0;
     top_171:
     if (I[0] >= ((rl_list *)V[0].u.o)->n) goto brk_172;
     rl_gc_maybe();
     RLC_SET(L[7], rl_unset());
     RLC_SET(L[7], rl_retain(((rl_list *)V[0].u.o)->items[I[0]]));
-    if (rl_compare(cx, ">=", L[7], L[4], &T[1])) RLC_ERR(5, 375, 14, 375, 14, 375, 14, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 375, 14, 375, 14, 375, 14, fail);
+    if (rl_compare(cx, ">=", L[7], L[4], &T[1])) RLC_ERR(5, 378, 14, 378, 14, 378, 14, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 378, 14, 378, 14, 378, 14, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    if (rl_compare(cx, "<=", L[7], L[5], &T[1])) RLC_ERR(5, 375, 32, 375, 32, 375, 32, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 375, 32, 375, 32, 375, 32, fail);
+    if (rl_compare(cx, "<=", L[7], L[5], &T[1])) RLC_ERR(5, 378, 32, 378, 32, 378, 32, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 378, 32, 378, 32, 378, 32, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 375, 26, 375, 26, 375, 26, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 378, 26, 378, 26, 378, 26, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_bool(0);
     RLC_SET(R, T[0]); T[0] = rl_none();
     goto done;
     }
-    if (rl_compare(cx, ">=", L[7], L[2], &T[1])) RLC_ERR(5, 377, 14, 377, 14, 377, 14, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 377, 14, 377, 14, 377, 14, fail);
+    if (rl_compare(cx, ">=", L[7], L[2], &T[1])) RLC_ERR(5, 380, 14, 380, 14, 380, 14, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 380, 14, 380, 14, 380, 14, fail);
     RLC_DROP(T[1]);
     if (!c_) T[0] = rl_bool(0);
     else {
-    if (rl_compare(cx, "<=", L[7], L[3], &T[1])) RLC_ERR(5, 377, 26, 377, 26, 377, 26, fail);
-    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 377, 26, 377, 26, 377, 26, fail);
+    if (rl_compare(cx, "<=", L[7], L[3], &T[1])) RLC_ERR(5, 380, 26, 380, 26, 380, 26, fail);
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(5, 380, 26, 380, 26, 380, 26, fail);
     T[0] = rl_bool(c_);
     RLC_DROP(T[1]);
     }
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 377, 20, 377, 20, 377, 20, fail);
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(5, 380, 20, 380, 20, 380, 20, fail);
     RLC_DROP(T[0]);
     if (c_) {
     T[0] = rl_bool(1);
@@ -11231,7 +11260,7 @@ static int fn108_is_upper(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     T[4] = rl_retain(K[60]);
     T[5] = rl_retain(K[57]);
     T[6] = rl_retain(K[58]);
-    if (rl_call(cx, E->slots[40], 6, &T[1], &T[0])) RLC_ERR(5, 381, 25, 381, 25, 381, 25, fail);
+    if (rl_call(cx, E->slots[40], 6, &T[1], &T[0])) RLC_ERR(5, 384, 25, 384, 25, 384, 25, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
@@ -11268,7 +11297,7 @@ static int fn109_is_lower(rl_ctx *cx, rl_fun *self, int argc, const rl_value *ar
     T[4] = rl_retain(K[58]);
     T[5] = rl_retain(K[59]);
     T[6] = rl_retain(K[60]);
-    if (rl_call(cx, E->slots[40], 6, &T[1], &T[0])) RLC_ERR(5, 382, 25, 382, 25, 382, 25, fail);
+    if (rl_call(cx, E->slots[40], 6, &T[1], &T[0])) RLC_ERR(5, 385, 25, 385, 25, 385, 25, fail);
     RLC_DROP(T[6]);
     RLC_DROP(T[5]);
     RLC_DROP(T[4]);
@@ -25250,7 +25279,7 @@ int main(int argc, char **argv) {
     K[280] = rl_str_new("lines", 5);
     K[281] = rl_str_new("repeat", 6);
     K[282] = rl_str_new("strings.repeat(): count must be a number, got ", 46);
-    K[283] = rl_str_new("strings.repeat(): count must be a whole number", 46);
+    K[283] = rl_str_new("strings.repeat(): count must be a whole number, got ", 52);
     K[284] = rl_str_new("fill", 4);
     K[285] = rl_str_new("(): width must be a number, got ", 32);
     K[286] = rl_str_new("(): width must not be infinite", 30);
@@ -25261,7 +25290,7 @@ int main(int argc, char **argv) {
     K[291] = rl_str_new("capitalize", 10);
     K[292] = rl_str_new("truncate", 8);
     K[293] = rl_str_new("tail", 4);
-    K[294] = rl_str_new("strings.truncate(): width must be a whole number, 0 or more", 59);
+    K[294] = rl_str_new("strings.truncate(): width must be a whole number, 0 or more, got ", 65);
     K[295] = rl_str_new("is_upper", 8);
     K[296] = rl_str_new("is_lower", 8);
     K[297] = rl_str_new("    ", 4);

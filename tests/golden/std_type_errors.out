@@ -60,7 +60,7 @@ math.hypot(): argument must be a number, got string
 math.radians(): argument must be a number, got none
 math.degrees(): argument must be a number, got list
 paths.relative(): path must be a string, got int
-strings.truncate(): width must be a whole number, 0 or more
+strings.truncate(): width must be a whole number, 0 or more, got 2.5
 strings.is_upper(): argument must be a string, got int
 strings.is_lower(): argument must be a string, got none
 lists.rotate(): xs must be a list, got int
