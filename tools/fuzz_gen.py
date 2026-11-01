@@ -9,7 +9,9 @@ lists and maps, indexing, slicing, the built-ins and std/strings, std/lists,
 std/maps, std/math, std/json (encode, pretty, decode of odd JSON), std/paths
 (with the calls 1.0.49 added: count, find_last, lines, trim_start and trim_end,
 contains, unique, min, max, any, all, flatten, zip, from_items and sign, and
-since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert and parts),
+since 1.0.50 reverse, is_digits, count, chunk, gcd, lcm, invert, parts,
+find_index, product, take, drop, partition, words, center, remove_prefix,
+remove_suffix, is_alpha, pick, is_even, is_odd, lerp, is_abs and with_ext),
 text for num(), float() and int() (signs, nan / inf, hex, tiny and huge floats,
 near misses), string interpolation, functions, closures, `else if` chains, loops, `try` / `catch`
 and reading a random standard input (`os.read_line`, `os.prompt`; the input is
@@ -68,23 +70,36 @@ def new_std(t, d):
                          'math.sign(%s)' % gen(R.choice(['int', 'float']), d + 1),
                          'lists.%s(%s)' % (R.choice(['min', 'max']), gen('list', d + 1)),
                          'lists.count(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
-                         'math.%s(%s, %s)' % (R.choice(['gcd', 'lcm']), gen('int', d + 1), gen('int', d + 1))])
+                         'math.%s(%s, %s)' % (R.choice(['gcd', 'lcm']), gen('int', d + 1), gen('int', d + 1)),
+                         'lists.find_index(%s, is_big)' % gen('list', d + 1),
+                         'lists.product(%s)' % gen('list', d + 1)])
+    if t == 'float':
+        return 'math.lerp(%s, %s, %s)' % (gen('int', d + 1), gen('float', d + 1), R.choice(['0.5', '0', '1', gen('float', d + 1)]))
     if t == 'str':
-        return 'strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1))
+        return R.choice(['strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1)),
+                         'strings.%s(%s, %s)' % (R.choice(['remove_prefix', 'remove_suffix']), gen('str', d + 1), gen('str', d + 1)),
+                         'strings.center(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '5', gen('int', d + 1)]), R.choice(['"*"', '"ab"', gen('str', d + 1)])),
+                         'paths.with_ext(%s, %s)' % (gen('path', d + 1), R.choice(['".md"', '""', gen('str', d + 1)]))])
     if t == 'list':
         return R.choice(['strings.lines(%s)' % gen('str', d + 1),
                          'lists.%s(%s)' % (R.choice(['unique', 'flatten']), gen('list', d + 1)),
                          'lists.zip(%s, %s)' % (gen('list', d + 1), gen(R.choice(['list', 'str']), d + 1)),
                          'lists.chunk(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', '3', gen('int', d + 1)])),
-                         'paths.parts(%s)' % gen('path', d + 1)])
+                         'paths.parts(%s)' % gen('path', d + 1),
+                         'strings.words(%s)' % gen('str', d + 1),
+                         'lists.%s(%s, %s)' % (R.choice(['take', 'drop']), gen('list', d + 1), R.choice(['0', '2', gen('int', d + 1)])),
+                         'lists.partition(%s, is_big)' % gen('list', d + 1)])
     if t == 'map':
         return R.choice(['maps.from_items(maps.items(%s))' % gen('map', d + 1),
                          'maps.from_items(lists.zip(%s, %s))' % (gen('list', d + 1), gen('list', d + 1)),
-                         'maps.invert(%s)' % gen('map', d + 1)])
+                         'maps.invert(%s)' % gen('map', d + 1),
+                         'maps.pick(%s, %s)' % (gen('map', d + 1), gen('list', d + 1))])
     if t == 'bool':
         return R.choice(['lists.contains(%s, %s)' % (gen('list', d + 1), gen('any', d + 1)),
                          'lists.%s(%s, is_big)' % (R.choice(['any', 'all']), gen('list', d + 1)),
-                         'strings.is_digits(%s)' % gen('str', d + 1)])
+                         'strings.%s(%s)' % (R.choice(['is_digits', 'is_alpha']), gen('str', d + 1)),
+                         'paths.is_abs(%s)' % gen('path', d + 1),
+                         'math.%s(%s)' % (R.choice(['is_even', 'is_odd']), gen('int', d + 1))])
     return None
 
 def gen(t, d=0):
