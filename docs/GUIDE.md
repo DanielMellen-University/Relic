@@ -129,6 +129,20 @@ print(maps.filter(groups, big), maps.pick(groups, ["c", "z"]))
 {a: ["ant", "asp"]} {c: ["cow"]}
 ```
 
+When only the sizes matter, `count_by` gives them straight away, and `find_key` and `has_value` look a map up by value:
+
+```
+use std/maps
+use std/lists
+fun first(w) = w[0]
+let counts = lists.count_by(["ant", "bee", "asp", "cow"], first)
+print(counts, maps.find_key(counts, 2), maps.has_value(counts, 3))
+```
+
+```
+{a: 2, b: 1, c: 1} a false
+```
+
 ## 4. Functions
 
 ```
