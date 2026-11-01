@@ -298,6 +298,21 @@ false [["a", 1], ["b", 2]]
 {a: 1, b: 2}
 ```
 
+Paths and numbers: `std/paths` swaps an extension and tells an absolute path from a relative one, and `std/math` has the small integer and easing helpers:
+
+```
+use std/paths
+use std/math
+let p = "docs/guide.txt"
+print(paths.with_ext(p, ".md"), paths.is_abs(p), paths.is_abs("/home"), paths.parts("/a/b/../c"))
+print(math.lerp(0, 100, 0.25), math.is_even(10), math.is_odd(10), math.gcd(12, 18), math.lcm(4, 6))
+```
+
+```
+docs/guide.md false true ["/", "a", "c"]
+25.0 true false 6 12
+```
+
 ## 8. Scripts and graphics
 
 - `relic tool.relic a b` passes `a` and `b` to the program. `os.args()` (or the built-in `args()`) gives `["a", "b"]`.
