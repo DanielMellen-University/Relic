@@ -29,7 +29,7 @@ lists.sort(): xs must be a list, got int
 lists.any(): xs must be a list, got int
 lists.all(): xs must be a list, got none
 lists.flatten(): xs must be a list, got float
-lists.zip(): xs must be a list, got bool
-lists.zip(): xs must be a list, got int
+lists.zip(): a must be a list, got bool
+lists.zip(): b must be a list, got int
 lists.count(): xs must be a list, got none
 lists.chunk(): xs must be a list, got int

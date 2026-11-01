@@ -2,10 +2,12 @@
 # string or a map (its keys) can be walked; since 1.0.49 anything else fails
 # as "lists.map(): xs must be a list, got int".
 
-fun _seq(name, xs)
+fun _seq(name, xs) = _seq_named(name, "xs", xs)
+
+fun _seq_named(name, what, xs)
     let t = type(xs)
     if t != "list" and t != "string" and t != "map"
-        fail("lists." + name + "(): xs must be a list, got " + t)
+        fail("lists." + name + "(): " + what + " must be a list, got " + t)
 
 fun map(xs, f)
     _seq("map", xs)
@@ -97,8 +99,8 @@ fun flatten(xs)
 
 # Since 1.0.49: [a item, b item] pairs in order, as many as the shorter has.
 fun zip(a, b)
-    _seq("zip", a)
-    _seq("zip", b)
+    _seq_named("zip", "a", a)
+    _seq_named("zip", "b", b)
     let ys = []
     for y in b
         append(ys, y)
