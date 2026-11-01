@@ -105,3 +105,16 @@ fun cos(x) = host_cos(x)
 fun exp(x) = host_exp(x)
 fun log(x) = host_log(x)
 fun is_whole(x) = type(x) == "int" or x == host_floor(x)
+
+# Since 1.0.50: whether an int is even, or odd; negative ones too.
+fun _whole(name, x)
+    if type(x) != "int"
+        fail("math." + name + "(): argument must be an int, got " + type(x))
+
+fun is_even(x)
+    _whole("is_even", x)
+    return x % 2 == 0
+
+fun is_odd(x)
+    _whole("is_odd", x)
+    return x % 2 != 0

@@ -83,3 +83,9 @@ try
     math.lcm(2, 0.5)
 catch e
     print(e.message)
+# is_even and is_odd (since 1.0.50): ints only, negative ones too
+print(math.is_even(0), math.is_even(-4), math.is_even(7), math.is_odd(-3), math.is_odd(10), math.is_odd(9007199254740993))
+try
+    math.is_even(2.0)
+catch err
+    print(err.message)

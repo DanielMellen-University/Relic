@@ -112,6 +112,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
 | `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`, and anything but ints is `math.gcd(): arguments must be ints` (since 1.0.50) |
 | `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; `math.lcm(): arguments must be ints` otherwise (since 1.0.50) |
+| `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `is_whole(x)` | bool |
 | `pi` `e` | float constants |
 

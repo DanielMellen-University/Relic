@@ -87,3 +87,5 @@ math.gcd(): arguments must be ints
 12 12 0 7 998244359987710471
 1152921504606846975 4611686018427387903 1152921504606846976
 math.lcm(): arguments must be ints
+true true false true false true
+math.is_even(): argument must be an int, got float
