@@ -8,3 +8,9 @@ for pr in [["", ""], ["a", ""], ["", "b"], ["/", "b"], ["a", "/b"], ["a/", "/b"]
     print(pr, paths.join(pr[0], pr[1]))
 # "\" is "/" everywhere; ".." past the start stays in a relative path and goes in an absolute one
 print(paths.normalize("a\\..\\..\\b/./c//"), paths.normalize("\\x\\..\\..\\y"), paths.ext("a.b\\c.d"), paths.ext("a.b\\c"), paths.base("x\\"))
+# parts (since 1.0.50): the names after normalize, "/" first when absolute
+print(paths.parts("/a/./b/../c/"), paths.parts("a//b"), paths.parts(""), paths.parts("/"), paths.parts("../x"), paths.parts("a\\b"))
+try
+    paths.parts(5)
+catch e
+    print(e.message)

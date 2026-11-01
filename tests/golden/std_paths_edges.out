@@ -44,3 +44,5 @@
 ["a\\", "b"] a/b
 ["a", "b\\c"] a/b/c
 ../b/c /y .d  
+["/", "a", "c"] ["a", "b"] [] ["/"] ["..", "x"] ["a", "b"]
+paths.parts(): path must be a string, got int

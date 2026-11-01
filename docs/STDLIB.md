@@ -13,7 +13,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert |
 | [std/math](#stdmath) | rounding, roots, trig, sign, gcd and lcm, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
-| [std/paths](#stdpaths) | joining and splitting `/` paths |
+| [std/paths](#stdpaths) | joining and splitting `/` paths, and their parts |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/os](#stdos) | args, environment, current folder, exit |
@@ -136,6 +136,7 @@ Always `/`. A `\` in input is read as `/`.
 | `ext(p)` | string | with the dot: `".txt"`, or `""`; leading dots belong to the name, so `".hidden"` and `".."` have none (`".."` gave `"."` before 1.0.35) |
 | `stem(p)` | string | `"b.txt"` → `"b"` |
 | `normalize(p)` | string | collapses `.` and `..` |
+| `parts(p)` | list | the names in `normalize(p)` in order, with `"/"` first for an absolute path; `.` gives `[]` (since 1.0.50) |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 

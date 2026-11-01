@@ -109,3 +109,23 @@ fun normalize(p)
     if text == ""
         return "."
     return text
+
+# Since 1.0.50: the names in a path after normalize, in order; an absolute
+# path starts with "/" as its first part, and "." (the empty path) has none.
+fun parts(p)
+    _chars(p, "parts")
+    let n = normalize(p)
+    let out = []
+    if slice(n, 0, 1) == "/"
+        append(out, "/")
+    let name = ""
+    for c in n
+        if c == "/"
+            if name != ""
+                append(out, name)
+            name = ""
+        else
+            name = name + c
+    if name != "" and name != "."
+        append(out, name)
+    return out
