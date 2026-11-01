@@ -74,3 +74,5 @@ try
     strings.truncate("abc", -1, "")
 catch e
     print(e.message)
+# is_upper and is_lower (since 1.0.50): letters decide, others do not count
+print(strings.is_upper("ABC"), strings.is_upper("A1 B"), strings.is_upper("1"), strings.is_upper("Ab"), strings.is_lower("abc"), strings.is_lower("a-b"), strings.is_lower(""), strings.is_lower("aB"))

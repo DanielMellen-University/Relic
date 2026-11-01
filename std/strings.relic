@@ -365,3 +365,18 @@ fun truncate(s, width, tail)
     if len(tail) >= width
         return slice(tail, 0, width)
     return slice(s, 0, width - len(tail)) + tail
+
+# Since 1.0.50: whether s has at least one letter and no small (or no capital)
+# ones, ASCII only: is_upper("A1") is true, is_upper("1") false.
+fun _cased(name, s, lo, hi, other_lo, other_hi)
+    _text(name, "argument", s)
+    let seen = false
+    for c in s
+        if c >= other_lo and c <= other_hi
+            return false
+        if c >= lo and c <= hi
+            seen = true
+    return seen
+
+fun is_upper(s) = _cased("is_upper", s, "A", "Z", "a", "z")
+fun is_lower(s) = _cased("is_lower", s, "a", "z", "A", "Z")

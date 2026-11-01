@@ -47,6 +47,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity |
 | `center(s, width, fill)` | string | `fill` on both sides, as many copies on each or one more on the right, with the checks `pad_left` makes (since 1.0.50) |
 | `truncate(s, width, tail)` | string | `s` cut to at most `width` characters, ending in `tail` when cut: `truncate("abcdef", 4, "...")` is `"a..."`; a `width` that is not a whole number 0 or more is an error (since 1.0.50) |
+| `is_upper(s)` / `is_lower(s)` | bool | at least one ASCII letter, and none of the other case; other characters do not count (`is_upper("A1")` is `true`, `is_upper("1")` is `false`) (since 1.0.50) |
 | `is_space(c)` | bool | space, tab, newline, CR |
 
 `upper`, `lower`, `trim`, `split` and `repeat` fail with `strings.upper(): argument must be a string, got int` (since 1.0.28) when given something else (`split` says `text` or `separator`, `repeat` says `text`). Since 1.0.35 `repeat` also wants a whole-number count (`strings.repeat(): count must be a whole number`), and `pad_left` and `pad_right` check `text`, `fill` and `width` (`strings.pad_left(): width must not be infinite`; an infinite width used to pad forever). Their messages start with `strings.` like the rest.

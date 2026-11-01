@@ -23,3 +23,4 @@ strings.center(): fill must not be empty
 ["Relic", "HELLO", "", "élan", "1st"]
 ["a...", "abc", "..", "héllo…", ""]
 strings.truncate(): width must be a whole number, 0 or more
+true true false false true true false false
