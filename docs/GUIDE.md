@@ -190,6 +190,20 @@ print([strings.trim_start(text)], strings.reverse("abc"), strings.is_digits("202
 ["one\ntwo  \nthree"] cba true
 ```
 
+More of them: `center` pads on both sides, `words` splits at any run of spaces, and `remove_prefix` and `remove_suffix` take off a known start or end:
+
+```
+use std/strings
+let title = strings.center(" Report ", 20, "=")
+print(title, strings.words("  two   words "), strings.is_alpha("Relic"))
+print(strings.remove_prefix("v1.0.50", "v"), strings.remove_suffix("notes.txt", ".txt"))
+```
+
+```
+====== Report ====== ["two", "words"] true
+1.0.50 notes
+```
+
 ## 6. Errors
 
 ```
