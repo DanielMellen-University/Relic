@@ -139,6 +139,15 @@ fun chunk(xs, n)
         append(out, part)
     return out
 
+# Since 1.0.50: the first item test(x) is true for, or none when there is no
+# such item.
+fun find(xs, test)
+    _seq("find", xs)
+    for x in xs
+        if test(x)
+            return x
+    return none
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
