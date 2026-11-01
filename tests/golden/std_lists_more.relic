@@ -33,3 +33,5 @@ print(lists.all([5, 1, 9], noted), seen)
 print(lists.flatten([[1, 2], [], 3, [[4]], "ab", {k: 1}]), lists.flatten([]), lists.flatten([[[]]]))
 # zip stops at the shorter one; strings and maps (keys) are walked too
 print(lists.zip([1, 2, 3], ["a", "b"]), lists.zip([], [1]), lists.zip("ab", {x: 1, y: 2, z: 3}))
+# count (since 1.0.50)
+print(lists.count([1, 1.0, "1", [1], 1], 1), lists.count([], 1), lists.count("banana", "a"), lists.count([[1], [1]], [1]))

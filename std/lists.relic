@@ -111,6 +111,15 @@ fun zip(a, b)
         i = i + 1
     return out
 
+# Since 1.0.50: how many items are == item (so 1 and 1.0 both count).
+fun count(xs, item)
+    _seq("count", xs)
+    let n = 0
+    for x in xs
+        if x == item
+            n = n + 1
+    return n
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
