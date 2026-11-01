@@ -70,3 +70,7 @@ print(strings.find(many_a + "b", near))
 print([strings.replace("ab", "a", "aa"), strings.replace("ab", "abc", "x"), strings.replace("xax", "x", ""), strings.replace("aaaa", "aa", "a")])
 # split with a separator longer than the text, at both ends, and doubled
 print(strings.split("ab", "abc"), strings.split(",a,", ","), strings.split("a--b", "--"), strings.split("a----b", "--"))
+# truncate when the tail is as wide as the width or wider, and when the text
+# fits exactly; center when the text is already wider than the width
+print(strings.truncate("abcdef", 3, "..."), strings.truncate("abcdef", 2, "..."), strings.truncate("abc", 3, "..."), strings.truncate("", 0, "..."))
+print(strings.center("abcdef", 3, "*"), strings.center("ab", 5, "-"), strings.center("", 2, "."))
