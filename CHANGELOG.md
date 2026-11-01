@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.50 (2026-10-31)
+
+New functions in the standard library, a fix for `min` and `max` on a map, and more examples. No change to the language. A program that worked on 1.0.49 gives the same results.
+
+- `std/lists`: `count`, `chunk`, `find`, `find_index`, `take` and `drop`, `partition`, `product`, `group_by` and `count_by`, `min_by` and `max_by`, `last`, `windows`, `mean`, `rotate` and `sum_by`. Comments on `map`, `filter`, `reduce`, `sum` and `index_of`.
+- Fix: `lists.min` and `max` (and the new `min_by`, `max_by` and `last`) on a map work on its keys, as the other list functions do. In 1.0.49 `min` and `max` failed with `map keys must be strings`.
+- `std/strings`: `reverse`, `is_digits`, `is_alpha`, `remove_prefix` and `remove_suffix`, `words`, `center`, `capitalize`, `truncate`, `is_upper` and `is_lower`.
+- `std/maps`: `invert`, `map_values`, `filter`, `pick`, `find_key` and `has_value`.
+- `std/math`: `gcd` and `lcm` (exact past 2^53), `is_even` and `is_odd`, `lerp`, `hypot` and `dist`, `radians` and `degrees`, `trunc`.
+- `std/paths`: `parts`, `is_abs`, `with_ext` and `relative`.
+- Errors: every new function names itself when given the wrong kind of value (golden `std_type_errors`, and the function's own golden for the newest), and `lists.zip` names `a` or `b` rather than `xs`.
+- Docs: STDLIB rows and module table for all of them, GUIDE examples in sections 3, 5 and 7, comments in `std/files` and `std/time`, and `examples/word_count.relic`.
+- Goldens `std_lists_more`, `std_strings_more`, `std_strings_edges`, `std_maps`, `std_math_edges`, `std_paths_edges` and `std_type_errors` extended. `tools/fuzz_gen.py` also calls the new functions: seeds 111 to 154 (1,000 programs) agree on the VM, `--tree`, `selfhost/run.relic` and compiled. Against 1.0.49, `fuzz_maps` and `fuzz_vfs` seed 51 and `fuzz_lists` and `fuzz_find_sort` seeds 51 and 52 (180 programs) match exactly.
+- `bootstrap/cgen.c` regenerated (cgen uses `std/strings`).
+- Speed: `selfhost_interp` 11.56 s median of 3 (11.55, 11.56, 11.65), under the 12.2 s cap; 1.0.49 measured 11.11 s. The difference is the longer goldens it runs.
+- `ctest`: 402 with the host.
+
 ## 1.0.49 (2026-10-31)
 
 New functions in the standard library, and clearer errors when a std function gets the wrong kind of value. No change to the language. A program that passed the right kinds of values sees no difference.
