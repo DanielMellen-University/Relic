@@ -39,3 +39,7 @@ try
     maps.pick({a: 1}, "a")
 catch e
     print(e.message)
+# merge keeps a's order and adds b's new keys after; a value of none is kept,
+# and get gives it back rather than the fallback
+let mixed = maps.merge({z: 1, a: none}, {a: 2, q: none})
+print(mixed, keys(mixed), maps.get({k: none}, "k", 5), maps.get({}, "k", 5))

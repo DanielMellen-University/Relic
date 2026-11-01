@@ -16,3 +16,4 @@ maps.invert(): m must be a map, got list
 {x: 1, z: 2} {b: 9} {}
 {c: 3, a: 1} {} {}
 maps.pick(): keys must be a list, got string
+{z: 1, a: 2, q: none} ["z", "a", "q"] none 5
