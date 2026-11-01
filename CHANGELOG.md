@@ -1,5 +1,11 @@
 # Changelog
 
+## Not released yet
+
+Changes on main since 1.0.50. No change to the language or to any result; only the text of some std errors.
+
+- Std errors say what they got: `math.gcd(): b must be an int, got string` (was `arguments must be ints`), `lists.chunk(): size must be a whole number above 0, got -1` (and `windows`, `take`, `drop`), `strings.repeat(): count must be a whole number, got 2.5` (and `truncate`), `maps.invert(): the value of a must be a string, got int`, `maps.from_items(): item 0 must be a [string key, value] pair, got a key of type int`, and `paths.relative()` shows the paths. A script that matched the old text exactly needs the new one.
+
 ## 1.0.50 (2026-10-31)
 
 New functions in the standard library, a fix for `min` and `max` on a map, and more examples. No change to the language. A program that worked on 1.0.49 gives the same results.
