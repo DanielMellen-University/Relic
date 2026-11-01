@@ -46,7 +46,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity |
 | `center(s, width, fill)` | string | `fill` on both sides, as many copies on each or one more on the right, with the checks `pad_left` makes (since 1.0.50) |
-| `truncate(s, width, tail)` | string | `s` cut to at most `width` characters, ending in `tail` when cut: `truncate("abcdef", 4, "...")` is `"a..."`, and a tail as wide as `width` or wider is cut to it (`truncate("abcdef", 2, "...")` is `".."`); a `width` that is not a whole number 0 or more is an error (since 1.0.50) |
+| `truncate(s, width, tail)` | string | `s` cut to at most `width` characters, ending in `tail` when cut: `truncate("abcdef", 4, "...")` is `"a..."`, and a tail as wide as `width` or wider is cut to it (`truncate("abcdef", 2, "...")` is `".."`); a `width` that is not a whole number 0 or more is `strings.truncate(): width must be a whole number, 0 or more, got -1` (since 1.0.50) |
 | `is_upper(s)` / `is_lower(s)` | bool | at least one ASCII letter, and none of the other case; other characters do not count (`is_upper("A1")` is `true`, `is_upper("1")` is `false`) (since 1.0.50) |
 | `is_space(c)` | bool | space, tab, newline, CR |
 
@@ -74,13 +74,13 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `chunk(xs, n)` | list | the items in lists of `n`, the last one shorter when they do not divide; `lists.chunk(): size must be a whole number above 0, got 0` otherwise (the number, or the type of a non-number) (since 1.0.50) |
 | `find(xs, test)` | any | the first item `test(x)` is true for, or `none`; it stops there (since 1.0.50) |
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
-| `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more, got -1` otherwise (since 1.0.50) |
+| `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more, got -1` otherwise (`lists.drop()` the same) (since 1.0.50) |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `lists.min_by(): the list is empty` (since 1.0.50) |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
-| `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is an error (since 1.0.50) |
+| `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is `lists.windows(): size must be a whole number above 0, got 0` (since 1.0.50) |
 | `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
@@ -170,7 +170,7 @@ Always `/`. A `\` in input is read as `/`.
 | `parts(p)` | list | the names in `normalize(p)` in order, with `"/"` first for an absolute path; `.` gives `[]` (since 1.0.50) |
 | `is_abs(p)` | bool | whether `p` starts with `/` (or `\`); `""` is not (since 1.0.50) |
 | `with_ext(p, e)` | string | `p` with its `ext` swapped for `e`: `with_ext("a/b.txt", ".md")` → `"a/b.md"`; `".hidden"` gets one added, and `""` takes it off (since 1.0.50) |
-| `relative(base, target)` | string | the path from the folder `base` to `target`, with `..` to go up: `relative("/a/b", "/a/c/d")` → `"../c/d"`, the same folder → `"."`; both absolute or both relative, else an error (since 1.0.50) |
+| `relative(base, target)` | string | the path from the folder `base` to `target`, with `..` to go up: `relative("/a/b", "/a/c/d")` → `"../c/d"`, the same folder → `"."`; both absolute or both relative, else `paths.relative(): both paths must be absolute, or both relative, got /a and b`, and a `base` with `..` that climbs past its start is `paths.relative(): base must not go up past its start, got ../a` (since 1.0.50) |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 
