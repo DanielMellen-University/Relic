@@ -67,3 +67,4 @@ paths.relative(): both paths must be absolute, or both relative, got a and /b
 paths.relative(): base must not go up past its start, got ../a
 . b/c ..
 .bashrc.txt x.tar.zip dir.d/file.md
+[""] [""] .bashrc a.tar c.txt

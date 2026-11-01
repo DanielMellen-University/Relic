@@ -48,6 +48,8 @@ fun join(a, b)
         return x + y
     return x + "/" + y
 
+# base("a/b/c.txt") is "c.txt": what is after the last slash, so a path
+# ending in / gives "".
 fun base(p)
     let x = _fix(p, "base")
     return slice(x, _last_slash(x) + 1, len(x))
@@ -77,6 +79,8 @@ fun ext(p)
         i = i - 1
     return ""
 
+# stem("a.tar.gz") is "a.tar": the base without its ext, and a dotfile such
+# as ".bashrc" keeps its whole name (it has no ext).
 fun stem(p)
     _chars(p, "stem")
     return slice(base(p), 0, len(base(p)) - len(ext(p)))
