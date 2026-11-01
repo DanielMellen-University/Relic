@@ -18,3 +18,5 @@ maps.invert(): m must be a map, got list
 maps.pick(): keys must be a list, got string
 {z: 1, a: 2, q: none} ["z", "a", "q"] none 5
 b none x none n
+true false true false true
+maps.has_value(): m must be a map, got list

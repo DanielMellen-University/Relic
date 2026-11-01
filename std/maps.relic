@@ -110,3 +110,11 @@ fun find_key(m, v)
         if m[k] == v
             return k
     return none
+
+# Since 1.0.50: whether any value in m == v (find_key without the key).
+fun has_value(m, v)
+    _map("has_value", "m", m)
+    for k in m
+        if m[k] == v
+            return true
+    return false

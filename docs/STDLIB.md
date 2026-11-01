@@ -10,7 +10,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
-| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
@@ -107,6 +107,7 @@ get the length of an int` from inside).
 | `filter(m, keep)` | map | new map of the entries `keep(key, value)` is true for, in order (since 1.0.50) |
 | `pick(m, ks)` | map | new map of the keys in the list `ks` that `m` has, in the order of `ks`; a missing key is left out (since 1.0.50) |
 | `find_key(m, v)` | string or none | the first key, in order, whose value `==` `v`, or `none` (since 1.0.50) |
+| `has_value(m, v)` | bool | whether some value `==` `v`; `1` and `1.0` match, as for `find_key` (since 1.0.50) |
 | `invert(m)` | map | each value to its key; every value must be a string (`maps.invert(): the value of k is not a string`), and of two keys with one value the later wins (since 1.0.50) |
 | `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 is not a [string key, value] pair`, counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |

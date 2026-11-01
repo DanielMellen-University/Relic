@@ -45,3 +45,9 @@ let mixed = maps.merge({z: 1, a: none}, {a: 2, q: none})
 print(mixed, keys(mixed), maps.get({k: none}, "k", 5), maps.get({}, "k", 5))
 # find_key (since 1.0.50): the first in order; 1 and 1.0 match
 print(maps.find_key({a: 1, b: 2, c: 2}, 2), maps.find_key({a: 1}, 5), maps.find_key({x: 1.0}, 1), maps.find_key({}, none), maps.find_key({n: none}, none))
+# has_value (since 1.0.50): any value ==, so 1 and 1.0 match
+print(maps.has_value({a: 1, b: 2}, 2), maps.has_value({a: 1}, 5), maps.has_value({x: 1.0}, 1), maps.has_value({}, none), maps.has_value({n: none}, none))
+try
+    maps.has_value([1], 1)
+catch err
+    print(err.message)
