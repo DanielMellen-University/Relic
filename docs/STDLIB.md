@@ -53,6 +53,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
 | `sum(xs)` | number | |
+| `product(xs)` | number | the items multiplied, `1` for an empty list (since 1.0.50) |
 | `index_of(xs, item)` | int | or `-1` |
 | `contains(xs, item)` | bool | `index_of(xs, item) >= 0`, so `1` and `1.0` match (since 1.0.49) |
 | `unique(xs)` | list | new list without repeats, the first of each kept, in order; strings are checked through a map, so a long list of them stays quick (since 1.0.49) |

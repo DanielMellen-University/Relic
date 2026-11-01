@@ -198,6 +198,14 @@ fun partition(xs, test)
             append(no, x)
     return [yes, no]
 
+# Since 1.0.50: the items multiplied together, 1 for an empty list.
+fun product(xs)
+    _seq("product", xs)
+    let acc = 1
+    for x in xs
+        acc = acc * x
+    return acc
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
