@@ -71,7 +71,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `flatten(xs)` | list | one level: the items of each inner list in place of it, other items as they are, so `[[1, [2]], 3]` gives `[1, [2], 3]` (since 1.0.49) |
 | `zip(a, b)` | list | `[x, y]` pairs of the items in order, as many as the shorter one has (since 1.0.49); its errors name `a` or `b` |
 | `count(xs, item)` | int | how many items are `==` item (since 1.0.50) |
-| `chunk(xs, n)` | list | the items in lists of `n`, the last one shorter when they do not divide; `lists.chunk(): size must be a whole number above 0` otherwise (since 1.0.50) |
+| `chunk(xs, n)` | list | the items in lists of `n`, the last one shorter when they do not divide; `lists.chunk(): size must be a whole number above 0, got 0` otherwise (the number, or the type of a non-number) (since 1.0.50) |
 | `find(xs, test)` | any | the first item `test(x)` is true for, or `none`; it stops there (since 1.0.50) |
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more` otherwise (since 1.0.50) |

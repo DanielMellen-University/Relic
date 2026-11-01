@@ -9,6 +9,13 @@ fun _seq_named(name, what, xs)
     if t != "list" and t != "string" and t != "map"
         fail("lists." + name + "(): " + what + " must be a list, got " + t)
 
+# What a bad size or count was, for the error: the number itself, or the type
+# of anything that is not one.
+fun _got(n)
+    if type(n) == "int" or type(n) == "float"
+        return str(n)
+    return type(n)
+
 # map, filter and reduce make a new list (or value) and leave xs as it is.
 # map: f(x) for each item, in order.
 fun map(xs, f)
@@ -135,7 +142,7 @@ fun count(xs, item)
 fun chunk(xs, n)
     _seq("chunk", xs)
     if type(n) != "int" or n < 1
-        fail("lists.chunk(): size must be a whole number above 0")
+        fail("lists.chunk(): size must be a whole number above 0, got " + _got(n))
     let out = []
     let part = []
     for x in xs
@@ -306,7 +313,7 @@ fun last(xs)
 fun windows(xs, n)
     _seq("windows", xs)
     if type(n) != "int" or n < 1
-        fail("lists.windows(): size must be a whole number above 0")
+        fail("lists.windows(): size must be a whole number above 0, got " + _got(n))
     let items = []
     for x in xs
         append(items, x)
