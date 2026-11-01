@@ -64,6 +64,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `chunk(xs, n)` | list | the items in lists of `n`, the last one shorter when they do not divide; `lists.chunk(): size must be a whole number above 0` otherwise (since 1.0.50) |
 | `find(xs, test)` | any | the first item `test(x)` is true for, or `none`; it stops there (since 1.0.50) |
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
+| `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more` otherwise (since 1.0.50) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |

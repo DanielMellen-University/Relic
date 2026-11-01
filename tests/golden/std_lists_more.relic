@@ -47,3 +47,14 @@ fun big(x) = x > 2
 fun is_a(c) = c == "a"
 print(lists.find([1, 3, 5], big), lists.find([1, 2], big), lists.find([], big), lists.find("xay", is_a))
 print(lists.find_index([1, 3, 5], big), lists.find_index([1, 2], big), lists.find_index("bca", is_a))
+# take and drop (since 1.0.50)
+print(lists.take([1, 2, 3], 2), lists.take([1], 5), lists.take("abc", 0), lists.drop([1, 2, 3], 2), lists.drop([1], 5), lists.drop("abc", 1))
+for n in [-1, 1.5, "1"]
+    try
+        lists.take([1], n)
+    catch e
+        print(e.message)
+try
+    lists.drop([1], -2)
+catch e
+    print(e.message)
