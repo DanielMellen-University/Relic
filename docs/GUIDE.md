@@ -204,6 +204,20 @@ print(strings.remove_prefix("v1.0.50", "v"), strings.remove_suffix("notes.txt", 
 1.0.50 notes
 ```
 
+Rounding goes four ways in `std/math`: `floor` down, `ceil` up, `trunc` toward 0 and `round` to the nearest (a half goes up, so `round(-2.5)` is `-2`). For case, `capitalize` raises the first letter, and `is_upper` and `is_lower` ask whether every letter is one case (other characters do not count):
+
+```
+use std/math
+use std/strings
+print(math.floor(-2.5), math.trunc(-2.5), math.round(2.5), math.ceil(-2.5))
+print(strings.capitalize("relic"), strings.is_upper("OK!"), strings.is_lower("ok 2"))
+```
+
+```
+-3 -2 3 -2
+Relic true true
+```
+
 ## 6. Errors
 
 ```
