@@ -126,3 +126,11 @@ for bad in ["4", none, [1], true]
         math.log(bad)
     catch e
         print(e.message)
+# is_whole: an int, or a float with nothing after the point; an infinity counts
+# (it equals its own floor) and nan does not
+print(math.is_whole(2.0), math.is_whole(2.5), math.is_whole(-0.0), math.is_whole(1e300), math.is_whole(7))
+print(math.is_whole(float("inf")), math.is_whole(float("nan")))
+try
+    math.is_whole("2")
+catch e
+    print(e.message)

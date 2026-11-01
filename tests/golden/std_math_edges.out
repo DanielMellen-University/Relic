@@ -106,3 +106,6 @@ math.log(): argument must be a number, got string
 math.log(): argument must be a number, got none
 math.log(): argument must be a number, got list
 math.log(): argument must be a number, got bool
+true false true true true
+true false
+math.is_whole(): argument must be a number, got string

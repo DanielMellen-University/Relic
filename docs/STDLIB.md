@@ -130,7 +130,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `dist(x1, y1, x2, y2)` | float: the distance from `(x1, y1)` to `(x2, y2)`, `hypot` of the differences (since 1.0.50) |
 | `radians(deg)` / `degrees(rad)` | float: an angle in degrees as radians, for `sin` and `cos`, and back (since 1.0.50) |
 | `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |
-| `is_whole(x)` | bool |
+| `is_whole(x)` | bool: an int, or a float with nothing after the point (`2.0`, `1e300`); an infinity counts, since it equals its own floor, and nan does not; not a number is an error |
 | `pi` `e` | float constants |
 
 `abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number. `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
