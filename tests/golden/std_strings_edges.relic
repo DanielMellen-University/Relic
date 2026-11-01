@@ -66,3 +66,7 @@ print(strings.pad_left("7", 41, "ab") == strings.repeat("ab", 20) + "7", len(str
 let many_a = strings.repeat("a", 1030)
 let near = strings.repeat("a", 20) + "b"
 print(strings.find(many_a + "b", near))
+# replace when new holds old (no loop), old longer than the text, and old at both ends
+print([strings.replace("ab", "a", "aa"), strings.replace("ab", "abc", "x"), strings.replace("xax", "x", ""), strings.replace("aaaa", "aa", "a")])
+# split with a separator longer than the text, at both ends, and doubled
+print(strings.split("ab", "abc"), strings.split(",a,", ","), strings.split("a--b", "--"), strings.split("a----b", "--"))

@@ -29,3 +29,5 @@ a a
 1041 0 -1
 true 7 abcx xyxyxyxyxy   ababab AéÉb
 1010
+["aab", "ab", "a", "aa"]
+["ab"] ["", "a", ""] ["a", "b"] ["a", "", "b"]
