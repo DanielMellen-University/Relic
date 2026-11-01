@@ -109,7 +109,7 @@ get the length of an int` from inside).
 | `find_key(m, v)` | string or none | the first key, in order, whose value `==` `v`, or `none` (since 1.0.50) |
 | `has_value(m, v)` | bool | whether some value `==` `v`; `1` and `1.0` match, as for `find_key` (since 1.0.50) |
 | `invert(m)` | map | each value to its key; every value must be a string (`maps.invert(): the value of k must be a string, got int`), and of two keys with one value the later wins (since 1.0.50) |
-| `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 is not a [string key, value] pair`, counting from 0 (since 1.0.49) |
+| `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 must be a [string key, value] pair, got a list of length 3` (or `got a key of type int`, `got string`), counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
 
 Each one fails with its own name when given something that is not a map: `maps.values(): m must be a map, got int` (since 1.0.49). Before, most failed inside with `cannot loop over an int`, and `get` on a list quietly gave back the fallback.

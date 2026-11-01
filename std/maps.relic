@@ -57,7 +57,12 @@ fun from_items(pairs)
     let i = 0
     for p in pairs
         if type(p) != "list" or len(p) != 2 or type(p[0]) != "string"
-            fail("maps.from_items(): item " + str(i) + " is not a [string key, value] pair")
+            let got = type(p)
+            if got == "list" and len(p) != 2
+                got = "a list of length " + str(len(p))
+            else if got == "list"
+                got = "a key of type " + type(p[0])
+            fail("maps.from_items(): item " + str(i) + " must be a [string key, value] pair, got " + got)
         out[p[0]] = p[1]
         i = i + 1
     return out
