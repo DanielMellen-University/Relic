@@ -78,3 +78,22 @@ for f in ["map", "filter", "reduce", "sum", "index_of", "contains", "unique", "m
     catch e
         print(e.message)
 print(lists.map("ab", same), lists.reverse("abc"), lists.sort_by([3, 1, 2], lists.natural), lists.sum({}))
+# the functions added since keep the same messages
+for f in ["any", "all", "flatten", "zip", "zip2", "count", "chunk"]
+    try
+        if f == "any"
+            lists.any(5, yes)
+        else if f == "all"
+            lists.all(none, yes)
+        else if f == "flatten"
+            lists.flatten(1.5)
+        else if f == "zip"
+            lists.zip(true, [1])
+        else if f == "zip2"
+            lists.zip([1], 7)
+        else if f == "count"
+            lists.count(none, 1)
+        else
+            lists.chunk(3, 1)
+    catch e
+        print(e.message)
