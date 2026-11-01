@@ -37,6 +37,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `reverse(s)` | string | the characters in the other order, whole characters past ASCII too (since 1.0.50) |
 | `is_alpha(s)` | bool | at least one character, and every one an ASCII letter (`a` to `z`, either case) (since 1.0.50) |
 | `remove_prefix(s, pre)` / `remove_suffix(s, suf)` | string | `s` without `pre` at its start (or `suf` at its end) once, or `s` unchanged when it is not there (since 1.0.50) |
+| `words(s)` | list | the pieces between runs of space, tab, newline or CR, never an empty one: `words("  a  b ")` is `["a", "b"]` (since 1.0.50) |
 | `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
 | `lines(s)` | list | split at `"\n"`, with a `"\r"` before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
 | `join(items, sep)` | string | |

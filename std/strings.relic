@@ -144,6 +144,23 @@ fun remove_suffix(s, suf)
         return slice(s, 0, len(s) - len(suf))
     return s
 
+# Since 1.0.50: the pieces of s between runs of space (is_space), with no
+# empty ones, so "  a  b " gives ["a", "b"].
+fun words(s)
+    _text("words", "argument", s)
+    let out = []
+    let i = 0
+    let n = len(s)
+    while i < n
+        while i < n and is_space(s[i])
+            i = i + 1
+        let start = i
+        while i < n and not is_space(s[i])
+            i = i + 1
+        if i > start
+            append(out, slice(s, start, i))
+    return out
+
 fun trim(s)
     _text("trim", "argument", s)
     # s[i] is quick since 1.0.41, so only the spaces at the ends are looked at

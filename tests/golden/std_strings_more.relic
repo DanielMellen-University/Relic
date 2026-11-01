@@ -58,3 +58,5 @@ try
     strings.remove_suffix("a", 1)
 catch e
     print(e.message)
+# words (since 1.0.50): split at runs of space, no empty pieces
+print(strings.words("  a  b "), strings.words(""), strings.words(" \t\n "), strings.words("one"), strings.words("x" + chr(13) + "\ny\tz"))
