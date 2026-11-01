@@ -28,6 +28,19 @@ fun max(a, b)
 
 fun clamp(x, lo, hi) = min(max(x, lo), hi)
 
+# Since 1.0.50: the greatest common divisor of two ints, never negative;
+# gcd(0, 0) is 0.
+fun gcd(a, b)
+    if type(a) != "int" or type(b) != "int"
+        fail("math.gcd(): arguments must be ints")
+    a = abs(a)
+    b = abs(b)
+    while b != 0
+        let r = a % b
+        a = b
+        b = r
+    return a
+
 # Since 1.0.49: -1, 0 or 1 as an int, for an int or a float; nan stays nan.
 fun sign(x)
     _number("sign", x)

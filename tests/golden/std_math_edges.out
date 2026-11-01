@@ -81,3 +81,6 @@ none math.round(): argument must be a number, got none
 9007199254740993 0 4503599627370497
 1 -1 0 0 1 true
 math.sign(): argument must be a number, got string
+6 6 7 0 1 1
+math.gcd(): arguments must be ints
+math.gcd(): arguments must be ints

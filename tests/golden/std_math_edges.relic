@@ -68,3 +68,10 @@ try
     math.sign("1")
 catch e
     print(e.message)
+# gcd (since 1.0.50): ints only, never negative
+print(math.gcd(12, 18), math.gcd(-12, 18), math.gcd(7, 0), math.gcd(0, 0), math.gcd(1000000007, 998244353), math.gcd(-9223372036854775807, 3))
+for pair in [[1.0, 2], [2, "4"]]
+    try
+        math.gcd(pair[0], pair[1])
+    catch e
+        print(e.message)
