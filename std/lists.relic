@@ -273,6 +273,11 @@ fun max_by(xs, key)
             k = kx
     return best
 
+# Since 1.0.50: the last item; an empty list is an error.
+fun last(xs)
+    _empty("last", xs)
+    return xs[len(xs) - 1]
+
 fun reverse(xs)
     _seq("reverse", xs)
     let out = []

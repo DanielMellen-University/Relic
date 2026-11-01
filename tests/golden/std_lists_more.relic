@@ -74,3 +74,9 @@ try
     lists.max_by([], len)
 catch e
     print(e.message)
+# last (since 1.0.50)
+print(lists.last([1, 2, 3]), lists.last("abc"), lists.last([[1]]))
+try
+    lists.last([])
+catch e
+    print(e.message)

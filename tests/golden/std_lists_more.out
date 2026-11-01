@@ -32,3 +32,5 @@ lists.drop(): count must be a whole number, 0 or more
 lists.group_by(): key must give a string, got int
 a ccc 5
 lists.max_by(): the list is empty
+3 c [1]
+lists.last(): the list is empty
