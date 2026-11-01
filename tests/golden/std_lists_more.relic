@@ -102,3 +102,5 @@ try
     lists.rotate([1], 1.5)
 catch e
     print(e.message)
+# sum_by (since 1.0.50)
+print(lists.sum_by(["ab", "c", ""], len), lists.sum_by([], len), lists.sum_by([[1, 2], [3]], len))

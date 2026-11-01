@@ -320,6 +320,14 @@ fun rotate(xs, n)
     let k = n % len(items)
     return slice(items, k, len(items)) + slice(items, 0, k)
 
+# Since 1.0.50: f(x) for each item, added up from 0, as sum(map(xs, f)).
+fun sum_by(xs, f)
+    _seq("sum_by", xs)
+    let acc = 0
+    for x in xs
+        acc = acc + f(x)
+    return acc
+
 fun reverse(xs)
     _seq("reverse", xs)
     let out = []
