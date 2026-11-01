@@ -107,3 +107,9 @@ try
     math.trunc(float("nan"))
 catch err
     print(err.message)
+# dist (since 1.0.50)
+print(math.dist(0, 0, 3, 4), math.dist(1, 1, 1, 1), math.dist(-1, 2, 2, -2), math.dist(0.5, 0, 0, 0))
+try
+    math.dist(0, 0, "3", 4)
+catch err
+    print(err.message)
