@@ -10,10 +10,10 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, letters and digits, prefixes and suffixes, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by, flatten, zip, chunk, sorting |
-| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert |
-| [std/math](#stdmath) | rounding, roots, trig, sign, gcd and lcm, constants |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick |
+| [std/math](#stdmath) | rounding, roots, trig, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
-| [std/paths](#stdpaths) | joining and splitting `/` paths, and their parts |
+| [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/os](#stdos) | args, environment, current folder, exit |
