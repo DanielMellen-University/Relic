@@ -110,3 +110,7 @@ try
     lists.count_by([1, 2], same)
 catch err
     print(err.message)
+# windows longer than the list gives no runs; rotate on an empty list and by
+# a multiple of the length; mean of floats and of one item
+print(lists.windows([1, 2], 3), lists.windows([1, 2], 2), lists.rotate([], 3), lists.rotate([1, 2, 3], 3), lists.rotate([1, 2, 3], -4))
+print(lists.mean([0.5, 1.5]), lists.mean([7]), lists.mean([-2, 2]))
