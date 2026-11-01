@@ -351,3 +351,17 @@ fun capitalize(s)
     if s == ""
         return s
     return upper(s[0]) + slice(s, 1, len(s))
+
+# Since 1.0.50: s cut to at most width characters, the last ones being tail
+# when it is cut: truncate("abcdef", 4, "...") is "a...". A width too small
+# for the tail gives as much of the tail as fits.
+fun truncate(s, width, tail)
+    _text("truncate", "text", s)
+    _text("truncate", "tail", tail)
+    if type(width) != "int" or width < 0
+        fail("strings.truncate(): width must be a whole number, 0 or more")
+    if len(s) <= width
+        return s
+    if len(tail) >= width
+        return slice(tail, 0, width)
+    return slice(s, 0, width - len(tail)) + tail

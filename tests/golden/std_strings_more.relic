@@ -68,3 +68,9 @@ catch e
     print(e.message)
 # capitalize (since 1.0.50): the first character only
 print([strings.capitalize("relic"), strings.capitalize("hELLO"), strings.capitalize(""), strings.capitalize("élan"), strings.capitalize("1st")])
+# truncate (since 1.0.50): the tail counts toward the width
+print([strings.truncate("abcdef", 4, "..."), strings.truncate("abc", 3, "..."), strings.truncate("abcdef", 2, "..."), strings.truncate("héllo wörld", 6, "…"), strings.truncate("ab", 0, "")])
+try
+    strings.truncate("abc", -1, "")
+catch e
+    print(e.message)
