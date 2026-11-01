@@ -20,3 +20,4 @@ maps.pick(): keys must be a list, got string
 b none x none n
 true false true false true
 maps.has_value(): m must be a map, got list
+{b: 2, a: 1} {} {} {}

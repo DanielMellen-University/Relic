@@ -51,3 +51,7 @@ try
     maps.has_value([1], 1)
 catch err
     print(err.message)
+# pick skips keys m does not have and keeps the order asked for, a key asked
+# twice comes once; filter and map_values on an empty map give a new empty map
+fun keep_all(k, v) = true
+print(maps.pick({a: 1, b: 2}, ["b", "zz", "a", "b"]), maps.pick({a: 1}, []), maps.filter({}, keep_all), maps.map_values({}, twice))
