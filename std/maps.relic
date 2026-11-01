@@ -102,3 +102,11 @@ fun pick(m, ks)
         if k in m
             out[k] = m[k]
     return out
+
+# Since 1.0.50: the first key (in order) whose value == v, or none.
+fun find_key(m, v)
+    _map("find_key", "m", m)
+    for k in m
+        if m[k] == v
+            return k
+    return none
