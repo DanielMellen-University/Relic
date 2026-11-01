@@ -207,3 +207,14 @@ for f in ["truncate", "is_upper", "is_lower", "rotate", "sum_by", "find_key", "t
             math.trunc("2")
     catch e
         print(e.message)
+# the last three of 1.0.50: count_by, has_value and dist
+for f in ["count_by", "has_value", "dist"]
+    try
+        if f == "count_by"
+            lists.count_by(5, same)
+        else if f == "has_value"
+            maps.has_value(none, 1)
+        else
+            math.dist(0, 0, 1, none)
+    catch e
+        print(e.message)

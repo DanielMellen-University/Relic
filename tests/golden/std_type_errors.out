@@ -67,3 +67,6 @@ lists.rotate(): xs must be a list, got int
 lists.sum_by(): xs must be a list, got bool
 maps.find_key(): m must be a map, got list
 math.trunc(): argument must be a number, got string
+lists.count_by(): xs must be a list, got int
+maps.has_value(): m must be a map, got none
+math.dist(): argument must be a number, got none
