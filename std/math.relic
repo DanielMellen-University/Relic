@@ -103,6 +103,10 @@ fun round(x)
     if x - f >= 0.5
         f = f + 1
     return _int("round", f)
+# sqrt, pow, sin, cos, exp and log are the host's, which checks the
+# arguments itself (math.sqrt(): argument must be a number, got string). They
+# give a float, and nan or an infinity rather than an error at the edges:
+# sqrt(-1) is nan and log(0) is -inf.
 fun sqrt(x) = host_sqrt(x)
 fun pow(x, y) = host_pow(x, y)
 fun sin(x) = host_sin(x)

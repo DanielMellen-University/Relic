@@ -101,3 +101,8 @@ math.dist(): argument must be a number, got string
 -2 -3 2 0 5
 15.0 -5.0 4.0
 true 5.0
+nan -inf nan inf inf
+math.log(): argument must be a number, got string
+math.log(): argument must be a number, got none
+math.log(): argument must be a number, got list
+math.log(): argument must be a number, got bool
