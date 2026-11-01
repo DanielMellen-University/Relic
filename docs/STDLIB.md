@@ -60,6 +60,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `flatten(xs)` | list | one level: the items of each inner list in place of it, other items as they are, so `[[1, [2]], 3]` gives `[1, [2], 3]` (since 1.0.49) |
 | `zip(a, b)` | list | `[x, y]` pairs of the items in order, as many as the shorter one has (since 1.0.49) |
 | `count(xs, item)` | int | how many items are `==` item (since 1.0.50) |
+| `chunk(xs, n)` | list | the items in lists of `n`, the last one shorter when they do not divide; `lists.chunk(): size must be a whole number above 0` otherwise (since 1.0.50) |
 | `reverse(xs)` | list | new list |
 | `copy(xs)` | list | shallow |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |

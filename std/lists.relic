@@ -120,6 +120,23 @@ fun count(xs, item)
             n = n + 1
     return n
 
+# Since 1.0.50: the items in lists of n (the last one may be shorter); n must
+# be a whole number above 0.
+fun chunk(xs, n)
+    _seq("chunk", xs)
+    if type(n) != "int" or n < 1
+        fail("lists.chunk(): size must be a whole number above 0")
+    let out = []
+    let part = []
+    for x in xs
+        append(part, x)
+        if len(part) == n
+            append(out, part)
+            part = []
+    if len(part) > 0
+        append(out, part)
+    return out
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0
