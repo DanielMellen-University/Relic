@@ -218,6 +218,9 @@ fun _enc(v, indent, depth)
     append(out, end_pad + close)
     return _glue(out, 0, len(out))
 
+# encode: v as JSON text on one line with no spaces ({"a":[1,null]}), map
+# keys in their order and none as null. pretty: the same with each item on
+# its own line, two spaces of indent a level; an empty list or map stays [] or {}.
 fun encode(v) = _enc(v, "", 0)
 fun pretty(v) = _enc(v, "  ", 0)
 
@@ -413,6 +416,8 @@ fun _val(p)
         return _lit(p, "null", none)
     return _num(p)
 
+# decode: the value the JSON text holds, null as none and a number with a
+# point or exponent as a float (2.0 stays 2.0); an error says what and where.
 fun decode(text)
     if type(text) != "string"
         fail("json.decode(): text must be a string, got " + type(text))
