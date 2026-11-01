@@ -65,3 +65,5 @@ paths.with_ext(): ext must be a string, got none
 paths.relative(): both paths must be absolute, or both relative
 paths.relative(): both paths must be absolute, or both relative
 paths.relative(): base must not go up past its start
+. b/c ..
+.bashrc.txt x.tar.zip dir.d/file.md

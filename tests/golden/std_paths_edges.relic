@@ -31,3 +31,7 @@ for pr in [["/a", "b"], ["a", "/b"], ["../a", "b"]]
         paths.relative(pr[0], pr[1])
     catch e
         print(e.message)
+# relative from a folder to itself and to a folder inside it; with_ext on a
+# dotfile and on a name with two dots
+print(paths.relative("/a/b", "/a/b"), paths.relative("/a", "/a/b/c"), paths.relative("a/b", "a"))
+print(paths.with_ext(".bashrc", ".txt"), paths.with_ext("x.tar.gz", ".zip"), paths.with_ext("dir.d/file", ".md"))
