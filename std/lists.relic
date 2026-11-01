@@ -185,6 +185,19 @@ fun drop(xs, n)
         i = i + 1
     return out
 
+# Since 1.0.50: two lists, the items test(x) is true for and the rest, each in
+# the order they came.
+fun partition(xs, test)
+    _seq("partition", xs)
+    let yes = []
+    let no = []
+    for x in xs
+        if test(x)
+            append(yes, x)
+        else
+            append(no, x)
+    return [yes, no]
+
 fun _empty(name, xs)
     _seq(name, xs)
     if len(xs) == 0

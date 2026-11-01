@@ -58,3 +58,4 @@ try
     lists.drop([1], -2)
 catch e
     print(e.message)
+print(lists.partition([1, 3, 2, 5], big), lists.partition([], big), lists.partition("banana", is_a))
