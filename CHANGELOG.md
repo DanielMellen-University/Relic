@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.49 (2026-10-31)
+
+New functions in the standard library, and clearer errors when a std function gets the wrong kind of value. No change to the language. A program that passed the right kinds of values sees no difference.
+
+- `std/strings`: `count(s, sub)` (pieces that do not overlap; an empty `sub` is an error), `find_last(s, sub)` (linear time, through the host's `find` on the reversed text), `lines(s)` (split at newlines, a `\r` before one dropped, no empty last line), `trim_start(s)` and `trim_end(s)`. `files.lines(path)` now uses `strings.lines`.
+- `std/lists`: `contains`, `unique` (the first of each kept, in order; strings go through a map, so a long list stays quick), `min` and `max` (by `<`; `lists.min(): the list is empty`), `any` and `all` (they stop at the first item that decides), `flatten` (one level) and `zip` (as many pairs as the shorter has).
+- `std/maps`: `from_items(pairs)`, the reverse of `items`, with an error naming the first bad item. `std/math`: `sign(x)`, `-1`, `0` or `1` as an int (nan stays nan).
+- Errors: `std/lists` functions given something that is not a list, a string or a map fail as `lists.map(): xs must be a list, got int`; `std/maps` functions given a non-map fail as `maps.values(): m must be a map, got int`; `std/paths` functions given a non-string fail as `paths.base(): path must be a string, got int`. Before, they failed inside with `cannot loop over an int` or `len(): cannot get the length of an int`, and `maps.get` on a list quietly returned the fallback. Golden `std_type_errors` covers all of them.
+- Goldens `std_lists_more` and `std_strings_more`; `std_maps` and `std_math_edges` extended. `tools/fuzz_gen.py` also calls the new functions: seeds 101 to 108 (400 programs) agree on the VM, `--tree`, `selfhost/run.relic` and compiled. Against 1.0.48, `fuzz_lists`, `fuzz_maps` and `fuzz_vfs` seed 41 (120 programs) match exactly, and `fuzz_find_sort` seed 41 (40 programs) differs only in the new `lists.sort()` message for a value that is not a list (21 lines, nothing else).
+- `bootstrap/cgen.c` regenerated (cgen uses `std/strings`).
+- Speed: `selfhost_interp` 11.11 s median of 3 (11.05, 11.11, 11.28), under the 12.2 s cap; 1.0.48 measured 10.07 s on the same machine today. The difference is the new goldens it runs (their long inputs were cut down first: at full size `std_strings_more` alone took it 20 s).
+- `ctest`: 190 default, 402 with the host.
+
 ## 1.0.48 (2026-10-31)
 
 A fix for the Windows build of 1.0.47's tests. No change to the language or to any result.
