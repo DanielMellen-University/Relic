@@ -16,3 +16,10 @@ catch e
     print(e.message)
 # is_abs (since 1.0.50)
 print(paths.is_abs("/a"), paths.is_abs("a/b"), paths.is_abs(""), paths.is_abs("\\x"), paths.is_abs("./a"), paths.is_abs("/"))
+# with_ext (since 1.0.50): only the last ext is swapped
+for p in ["a/b.txt", "b", ".hidden", "/x/y.tar.gz", "a.b/c", "a\\b.c"]
+    print("[{p}] -> [{paths.with_ext(p, ".md")}] [{paths.with_ext(p, "")}]")
+try
+    paths.with_ext("a.txt", none)
+catch e
+    print(e.message)

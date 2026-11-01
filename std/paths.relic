@@ -134,3 +134,11 @@ fun parts(p)
 fun is_abs(p)
     let x = _fix(p, "is_abs")
     return len(x) > 0 and x[0] == "/"
+
+# Since 1.0.50: p with its ext (as ext() finds it) swapped for e, which
+# should start with a dot; an e of "" takes the ext off.
+fun with_ext(p, e)
+    let x = _fix(p, "with_ext")
+    if type(e) != "string"
+        fail("paths.with_ext(): ext must be a string, got " + type(e))
+    return slice(x, 0, len(x) - len(ext(x))) + e

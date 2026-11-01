@@ -47,3 +47,10 @@
 ["/", "a", "c"] ["a", "b"] [] ["/"] ["..", "x"] ["a", "b"]
 paths.parts(): path must be a string, got int
 true false false true false true
+[a/b.txt] -> [a/b.md] [a/b]
+[b] -> [b.md] [b]
+[.hidden] -> [.hidden.md] [.hidden]
+[/x/y.tar.gz] -> [/x/y.tar.md] [/x/y.tar]
+[a.b/c] -> [a.b/c.md] [a.b/c]
+[a\b.c] -> [a/b.md] [a/b]
+paths.with_ext(): ext must be a string, got none
