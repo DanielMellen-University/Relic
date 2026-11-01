@@ -233,9 +233,15 @@ fun _empty(name, xs)
     if len(xs) == 0
         fail("lists." + name + "(): the list is empty")
 
+# The first item as a loop sees it: xs[0] would fail on a map, whose items
+# here are its keys.
+fun _first(xs)
+    for x in xs
+        return x
+
 fun min(xs)
     _empty("min", xs)
-    let m = xs[0]
+    let m = _first(xs)
     for x in xs
         if x < m
             m = x
@@ -243,7 +249,7 @@ fun min(xs)
 
 fun max(xs)
     _empty("max", xs)
-    let m = xs[0]
+    let m = _first(xs)
     for x in xs
         if m < x
             m = x
@@ -253,7 +259,7 @@ fun max(xs)
 # first of equal ones. An empty list is an error, as for min and max.
 fun min_by(xs, key)
     _empty("min_by", xs)
-    let best = xs[0]
+    let best = _first(xs)
     let k = key(best)
     for x in xs
         let kx = key(x)
@@ -264,7 +270,7 @@ fun min_by(xs, key)
 
 fun max_by(xs, key)
     _empty("max_by", xs)
-    let best = xs[0]
+    let best = _first(xs)
     let k = key(best)
     for x in xs
         let kx = key(x)
@@ -276,6 +282,8 @@ fun max_by(xs, key)
 # Since 1.0.50: the last item; an empty list is an error.
 fun last(xs)
     _empty("last", xs)
+    if type(xs) == "map"
+        return keys(xs)[len(xs) - 1]
     return xs[len(xs) - 1]
 
 # Since 1.0.50: every run of n items in a row, in order: windows([1, 2, 3], 2)

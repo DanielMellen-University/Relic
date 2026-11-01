@@ -38,3 +38,5 @@ lists.last(): the list is empty
 lists.windows(): size must be a whole number above 0
 2.5 5.0 0.0
 lists.mean(): the list is empty
+["a", "b"] ["c"] [["a", "b"], ["b", "c"]] z a
+{b: ["b"], a: ["a", "a", "a"], n: ["n", "n"]} [["a", "a"], ["b", "c", "b"]] a o

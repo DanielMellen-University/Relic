@@ -92,3 +92,7 @@ try
     lists.mean([])
 catch e
     print(e.message)
+# The 1.0.50 list functions walk a string's characters and a map's keys too
+let km = {a: 1, b: 2, c: 3}
+print(lists.take(km, 2), lists.drop(km, 2), lists.windows(km, 2), lists.last("xyz"), lists.find(km, is_a))
+print(lists.group_by("banana", same), lists.partition("abcab", is_a), lists.min_by(km, same), lists.max_by("hello", same))
