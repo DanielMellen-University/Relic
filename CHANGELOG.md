@@ -1,10 +1,12 @@
 # Changelog
 
-## Not released yet
+## 1.0.51 (2026-11-02)
 
-Changes on main since 1.0.50. No change to the language or to any result; only the text of some std errors.
+Clearer std errors. No change to the language or to any result; only the text of some std errors.
 
 - Std errors say what they got: `math.gcd(): b must be an int, got string` (was `arguments must be ints`), `lists.chunk(): size must be a whole number above 0, got -1` (and `windows`, `take`, `drop`), `strings.repeat(): count must be a whole number, got 2.5` (and `truncate`), `maps.invert(): the value of a must be a string, got int`, `maps.from_items(): item 0 must be a [string key, value] pair, got a key of type int`, and `paths.relative()` shows the paths. A script that matched the old text exactly needs the new one.
+- Speed: `selfhost_interp` 12.10 s median of 3 (12.13, 12.10, 12.05), under the 12.2 s cap; 1.0.50 measured 11.78 s on the same machine today. The difference is the longer goldens it runs.
+- `ctest`: 402 with the host, 190 without.
 
 ## 1.0.50 (2026-10-31)
 
