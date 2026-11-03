@@ -139,3 +139,9 @@ try
     math.is_whole("2")
 catch e
     print(e.message)
+# abs of -2^63 names abs (since 1.0.52); the float is fine
+try
+    print(math.abs(-9223372036854775807 - 1))
+catch e
+    print(e.message)
+print(math.abs(-9223372036854775807), math.abs(-9223372036854775808.0))

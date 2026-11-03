@@ -8,8 +8,12 @@ fun _number(name, x)
     if type(x) != "int" and type(x) != "float"
         fail("math." + name + "(): argument must be a number, got " + type(x))
 
+# -2^63 has no int on the plus side; since 1.0.52 that names abs, as gcd does
+# (it was "int overflow").
 fun abs(x)
     _number("abs", x)
+    if x == -9223372036854775807 - 1 and type(x) == "int"
+        fail("math.abs(): the result, 2^63, is out of the int range")
     if x < 0
         return -x
     if x == 0 and type(x) == "float"

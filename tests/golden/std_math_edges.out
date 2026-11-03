@@ -113,3 +113,5 @@ math.log(): argument must be a number, got bool
 true false true true true
 true false
 math.is_whole(): argument must be a number, got string
+math.abs(): the result, 2^63, is out of the int range
+9223372036854775807 9.22337203685478e+18
