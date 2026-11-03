@@ -123,3 +123,10 @@ let km = {b: 1, a: 2, c: 3}
 fun later(a, b) = b < a
 print(lists.reverse(km), lists.copy(km), lists.sort(km), lists.sort_by(km, later))
 print(lists.reverse("héllo"), lists.copy("ab"), lists.sort("cab"), lists.sort_by("cab", lists.natural))
+# min_by and max_by call key once for each item (the first was keyed twice
+# before 1.0.52)
+let key_calls = {n: 0}
+fun counted_len(s)
+    key_calls.n = key_calls.n + 1
+    return len(s)
+print(lists.min_by(["ccc", "a", "bb", "z"], counted_len), key_calls.n, lists.max_by({ab: 1, c: 2}, counted_len), key_calls.n)

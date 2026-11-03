@@ -278,27 +278,32 @@ fun max(xs)
     return m
 
 # Since 1.0.50: the item with the smallest, or largest, key(x) by <; the
-# first of equal ones. An empty list is an error, as for min and max.
+# first of equal ones. An empty list is an error, as for min and max. key is
+# called once for each item (since 1.0.52; the first was keyed twice).
 fun min_by(xs, key)
     _empty("min_by", xs)
-    let best = _first(xs)
-    let k = key(best)
+    let best = none
+    let k = none
+    let first = true
     for x in xs
         let kx = key(x)
-        if kx < k
+        if first or kx < k
             best = x
             k = kx
+            first = false
     return best
 
 fun max_by(xs, key)
     _empty("max_by", xs)
-    let best = _first(xs)
-    let k = key(best)
+    let best = none
+    let k = none
+    let first = true
     for x in xs
         let kx = key(x)
-        if k < kx
+        if first or k < kx
             best = x
             k = kx
+            first = false
     return best
 
 # Since 1.0.50: the last item; an empty list is an error.

@@ -78,7 +78,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
-| `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `lists.min_by(): the list is empty` (since 1.0.50) |
+| `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `key` is called once per item (since 1.0.52; the first was called twice); `lists.min_by(): the list is empty` (since 1.0.50) |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is `lists.windows(): size must be a whole number above 0, got 0` (since 1.0.50) |
 | `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |
