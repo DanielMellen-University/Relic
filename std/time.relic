@@ -2,7 +2,11 @@
 
 fun now() = host_now()       # seconds since 1970-01-01 UTC
 fun clock() = host_clock()   # steady clock for measuring; only differences mean anything
-fun since(start) = host_clock() - start   # seconds since a clock() reading
+# seconds since a clock() reading
+fun since(start)
+    if type(start) != "int" and type(start) != "float"
+        fail("time.since(): start must be a number, got " + type(start))
+    return host_clock() - start
 fun sleep(ms) = host_sleep(ms)           # in milliseconds, unlike the clocks
 
 # Frame timer: tick(t) once per frame gives seconds since the last tick and
@@ -21,8 +25,15 @@ fun tick(t)
         t.window = 0
     return dt
 
-# limit(t, fps): sleeps so frames run no faster than fps.
+# limit(t, fps): sleeps so frames run no faster than fps, a number above 0
+# (since 1.0.52 anything else is "time.limit(): fps must be a number above 0,
+# got 0"; 0 was a division by zero and a negative fps never slept).
 fun limit(t, fps)
+    if (type(fps) != "int" and type(fps) != "float") or not (fps > 0)
+        let got = type(fps)
+        if got == "int" or got == "float"
+            got = str(fps)
+        fail("time.limit(): fps must be a number above 0, got " + got)
     let left = 1 / fps - (host_clock() - t.last)
     if left > 0
         host_sleep(left * 1000)

@@ -275,11 +275,11 @@ Times are in seconds (floating point).
 |---|---|---|
 | `now()` | float | UTC seconds since 1970 |
 | `clock()` | float | steady clock; only differences mean anything |
-| `since(start)` | float | `clock() - start` |
+| `since(start)` | float | `clock() - start`; `start` must be a number (`time.since(): start must be a number, got string`, since 1.0.52) |
 | `sleep(ms)` | none | milliseconds |
 | `timer()` | map | `{last, fps, frames, window}` |
 | `tick(t)` | float | seconds since last tick; updates `t.fps` |
-| `limit(t, fps)` | none | sleeps so frames run no faster than `fps` |
+| `limit(t, fps)` | none | sleeps so frames run no faster than `fps`, a number above 0; anything else is `time.limit(): fps must be a number above 0, got 0` (since 1.0.52; `0` was a division by zero) |
 
 Frame timer: `let t = time.timer()`, then each frame `let dt = time.tick(t)`.
 `t.fps` is averaged over about one second of frames (it stays `0` until that
