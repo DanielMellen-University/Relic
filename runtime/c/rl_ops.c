@@ -218,7 +218,7 @@ int rl_in(rl_ctx *cx, rl_value a, rl_value b, rl_value *out) {
         return RL_OK;
     }
     if (b.k == RL_MAP) {
-        if (a.k != RL_STR) return rl_fail(cx, "map keys must be strings");
+        if (a.k != RL_STR) return rl_fail(cx, "map keys must be strings, got %s", rl_type_name(a));
         *out = rl_bool(rl_map_get(M(b), S(a)->data, S(a)->len) != NULL);
         return RL_OK;
     }
@@ -350,7 +350,7 @@ int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
     }
     if (obj.k == RL_MAP) {
         rl_value *v;
-        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings"); return at_index(cx); }
+        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings, got %s", rl_type_name(idx)); return at_index(cx); }
         v = rl_map_get(M(obj), S(idx)->data, S(idx)->len);
         if (!v) { no_key(cx, M(obj), S(idx)->data, S(idx)->len); return at_index(cx); }
         *out = rl_retain(*v);
@@ -370,7 +370,7 @@ int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v) {
         return RL_OK;
     }
     if (obj.k == RL_MAP) {
-        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings"); return at_index(cx); }
+        if (idx.k != RL_STR) { rl_fail(cx, "map keys must be strings, got %s", rl_type_name(idx)); return at_index(cx); }
         rl_map_set(M(obj), S(idx), v);
         return RL_OK;
     }

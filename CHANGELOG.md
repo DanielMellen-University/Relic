@@ -15,6 +15,7 @@
 - `maps.map_values` and `maps.filter` check their function the same way: `maps.filter(): keep must be a function, got int`.
 - `math.abs(-2^63)` names itself, as `gcd` does: `math.abs(): the result, 2^63, is out of the int range` (was `int overflow`).
 - `time.tick` and `time.limit` check their timer: `time.tick(): t must be a timer from time.timer(), got int` (was `cannot read a field of an int`).
+- A map key that is not a string says what it got, in every engine: `map keys must be strings, got int` (for `m[k]`, `m[k] = v`, `k in m` and `remove(m, k)`).
 - `std/vfs` calls name themselves for a first argument that is not a vfs: `vfs.read(): fs must be a vfs from vfs.new(), got int`.
 - `files.remove_tree` removes a link as the link. Before, a link to a folder was followed and everything in that folder was removed, even outside the tree, and a link whose target was gone made it fail. The C runtime's `host_remove` takes a link itself on Linux and macOS, as the C++ host's did. New tests `remove_tree_link` and `cgen_remove_tree_link`.
 - `time.limit` wants an fps above 0: `time.limit(): fps must be a number above 0, got 0` (it was `division by zero`, and a negative fps never slept). `time.since` names itself for a start that is not a number.

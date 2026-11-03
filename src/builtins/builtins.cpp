@@ -259,7 +259,7 @@ void Interpreter::install_builtins() {
             return v;
         }
         if (a[0].is<std::shared_ptr<Map>>()) {
-            if (!a[1].is<std::string>()) throw std::string("map keys must be strings");
+            if (!a[1].is<std::string>()) throw std::string("map keys must be strings, got ") + type_name(a[1]);
             Map& m = *a[0].as<std::shared_ptr<Map>>();
             const std::string& k = a[1].as<std::string>();
             if (!m.has(k)) throw std::string("map has no key '") + k + "'";

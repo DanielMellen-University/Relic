@@ -87,3 +87,7 @@ strings.ends_with(): suffix must be a string, got int
 strings.find(): text must be a string, got int
 strings.find(): part must be a string, got int
 strings.find(): text must be a string, got none
+remove(): map keys must be strings, got int
+remove(): map keys must be strings, got none
+remove(): map keys must be strings, got list
+map keys must be strings, got float

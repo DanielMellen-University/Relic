@@ -82,7 +82,7 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
             return Value(false);
         }
         if (b.is<std::shared_ptr<Map>>()) {
-            if (!a.is<std::string>()) fail(n, "map keys must be strings");
+            if (!a.is<std::string>()) fail(n, std::string("map keys must be strings, got ") + type_name(a));
             return Value(b.as<std::shared_ptr<Map>>()->has(a.as<std::string>()));
         }
         if (b.is<std::string>()) {
@@ -225,7 +225,7 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
                 return Value(s.substr(at, utf8_char_size(s, at)));
             }
             if (obj.is<std::shared_ptr<Map>>()) {
-                if (!idx.is<std::string>()) fail(*n.kids[1], "map keys must be strings");
+                if (!idx.is<std::string>()) fail(*n.kids[1], std::string("map keys must be strings, got ") + type_name(idx));
                 const Map& m = *obj.as<std::shared_ptr<Map>>();
                 const std::string& k = idx.as<std::string>();
                 if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'" + op_suggest(k, map_keys(m)));
@@ -247,7 +247,7 @@ void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v
         List& l = *obj.as<std::shared_ptr<List>>();
         l[list_slot(*target.kids[1], idx, l.size())] = std::move(v);
     } else if (obj.is<std::shared_ptr<Map>>()) {
-        if (!idx.is<std::string>()) fail(*target.kids[1], "map keys must be strings");
+        if (!idx.is<std::string>()) fail(*target.kids[1], std::string("map keys must be strings, got ") + type_name(idx));
         obj.as<std::shared_ptr<Map>>()->set(idx.as<std::string>(), std::move(v));
     } else {
         fail(target, std::string("cannot set an index on ") + a_type(obj));

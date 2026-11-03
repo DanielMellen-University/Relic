@@ -269,3 +269,14 @@ for pair in [[5, "a"], ["abc", 5], [none, "x"]]
         strings.contains(pair[0], pair[1])
     catch e
         print(e.message)
+# a map key that is not a string says what it got (since 1.0.52)
+let km = {a: 1}
+for bad in [5, none, [1]]
+    try
+        remove(km, bad)
+    catch e
+        print(e.message)
+try
+    print(1.5 in km)
+catch e
+    print(e.message)

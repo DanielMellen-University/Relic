@@ -454,7 +454,7 @@ fun index_of(rt, n, obj, idx)
         return obj[i]
     if t == "map"
         if type(idx) != "string"
-            return fail(rt, n.kids[1], "map keys must be strings")
+            return fail(rt, n.kids[1], "map keys must be strings, got " + type_of(idx))
         if not (idx in obj)
             return fail(rt, n.kids[1], "map has no key '{idx}'" + suggest(idx, keys(obj)))
         return obj[idx]
@@ -479,7 +479,7 @@ fun binop(rt, n, a, b)
             return false
         if tb == "map"
             if ta != "string"
-                return fail(rt, n, "map keys must be strings")
+                return fail(rt, n, "map keys must be strings, got " + type_of(a))
             return a in b
         if tb == "string"
             if ta != "string"
@@ -1059,7 +1059,7 @@ fun assign_set(rt, target, v, obj, idx, env, value_at)
             obj[i] = v
     else if t == "map"
         if type(idx) != "string"
-            return fail(rt, target.kids[1], "map keys must be strings")
+            return fail(rt, target.kids[1], "map keys must be strings, got " + type_of(idx))
         obj[idx] = v
     else
         fail(rt, target, "cannot set an index on " + a_type(obj))
@@ -1231,7 +1231,7 @@ fun builtin(rt, name, a)
         return ok(remove(a[0], a[1]))
     if t == "map"
         if type(a[1]) != "string"
-            return bad("map keys must be strings")
+            return bad("map keys must be strings, got " + type_of(a[1]))
         if not (a[1] in a[0])
             return bad("map has no key '{a[1]}'")
         return ok(remove(a[0], a[1]))

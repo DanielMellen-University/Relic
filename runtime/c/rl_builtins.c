@@ -239,7 +239,7 @@ BI(b_remove) {
         return RL_OK;
     }
     if (a[0].k == RL_MAP) {
-        if (a[1].k != RL_STR) return rl_fail(cx, "map keys must be strings");
+        if (a[1].k != RL_STR) return rl_fail(cx, "map keys must be strings, got %s", rl_type_name(a[1]));
         if (!rl_map_remove(M(a[0]), S(a[1])->data, S(a[1])->len, out))
             return rl_fail_wrap(cx, "map has no key '", S(a[1])->data, S(a[1])->len, "'");
         return RL_OK;
