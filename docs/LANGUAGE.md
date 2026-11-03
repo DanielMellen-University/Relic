@@ -237,7 +237,7 @@ Always available, no `use` needed.
 | `len(x)` | length of a string, list or map |
 | `str(x)` | the value as text, the way `print` shows it |
 | `type(x)` | `"none"`, `"bool"`, `"int"`, `"float"`, `"string"`, `"list"`, `"map"`, `"function"` or `"module"` |
-| `int(x)` / `float(x)` | a number or numeric string as an int (cut toward zero) or a float |
+| `int(x)` / `float(x)` | a number or numeric string as an int (cut toward zero) or a float; `int` of digits or hex past the int range is `int(): number is out of the int range`, on the negative side too since 1.0.52 (`int("-9223372036854775809")` gave -2^63) |
 | `num(s)` | a number from a string: digits give an int (a float when they do not fit), a point or exponent gives a float; also `nan`, `inf` and `infinity` in any case, and hex like `0x1F` (an int when it fits). A sign may come first. A float too small rounds to a subnormal or `0.0` like a literal; one too large, spaces or anything else is `not a number` (since 1.0.36; before, hex always gave a float and a tiny float was an error) |
 | `ord(c)` / `chr(n)` | code point of a one-character string, and back (0 to 1114111, no surrogates) |
 | `slice(x, a, b)` | part of a string or list from `a` up to `b - 1`; the ends are clamped |

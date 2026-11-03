@@ -51,6 +51,16 @@ static bool same_word(const std::string& s, size_t i, const char* w) {
     return true;
 }
 
+// A sign and then only digits, or hex: text num() gives an int for when it fits.
+static bool whole_text(const std::string& s) {
+    size_t i = (!s.empty() && (s[0] == '-' || s[0] == '+')) ? 1 : 0;
+    if (s.size() > i + 1 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X')) return true;
+    if (i >= s.size()) return false;
+    for (; i < s.size(); ++i)
+        if (s[i] < '0' || s[i] > '9') return false;
+    return true;
+}
+
 static Value parse_num(const std::string& s) {
     auto bad = [&]() { return std::string("not a number: \"") + s + "\""; };
     if (s.empty() || std::isspace(static_cast<unsigned char>(s[0])) || s.find('\0') != std::string::npos) throw bad();
@@ -202,9 +212,15 @@ void Interpreter::install_builtins() {
         return parse_num(str_arg(a[0], "argument"));
     });
     // int(x): a number cut toward zero, or a string of digits. float(x): a float.
+    // Digits (or hex) that num() reads as a float did not fit an int: an error,
+    // not the float cut down ("-9223372036854775809" rounded to -2^63 and was kept).
     add("int", 1, [](std::vector<Value>& a) -> Value {
         Value v = a[0];
-        if (v.is<std::string>()) v = parse_num(v.as<std::string>());
+        if (v.is<std::string>()) {
+            const std::string& s = a[0].as<std::string>();
+            v = parse_num(s);
+            if (v.is<double>() && whole_text(s)) throw std::string("number is out of the int range");
+        }
         if (v.is<long long>()) return v;
         if (!v.is<double>()) throw std::string("cannot turn ") + a_type(v) + " into an int";
         double d = std::trunc(v.as<double>());

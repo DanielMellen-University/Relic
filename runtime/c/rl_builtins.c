@@ -166,11 +166,27 @@ BI(b_num) {
     return rl_parse_num(cx, S(a[0])->data, S(a[0])->len, out);
 }
 
+/* A sign and then only digits, or hex: text num() gives an int for when it fits. */
+static int whole_text(const char *s, size_t n) {
+    size_t i = (n > 0 && (s[0] == '-' || s[0] == '+')) ? 1 : 0;
+    if (n > i + 1 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X')) return 1;
+    if (i >= n) return 0;
+    for (; i < n; ++i)
+        if (s[i] < '0' || s[i] > '9') return 0;
+    return 1;
+}
+
+/* Digits (or hex) that num() reads as a float did not fit an int: an error, not
+ * the float cut down ("-9223372036854775809" rounded to -2^63 and was kept). */
 BI(b_int) {
     rl_value v = a[0];
     double d;
     UNUSED;
-    if (v.k == RL_STR && rl_parse_num(cx, S(v)->data, S(v)->len, &v)) return RL_ERR;
+    if (v.k == RL_STR) {
+        if (rl_parse_num(cx, S(v)->data, S(v)->len, &v)) return RL_ERR;
+        if (v.k == RL_FLOAT && whole_text(S(a[0])->data, S(a[0])->len))
+            return rl_fail(cx, "number is out of the int range");
+    }
     if (v.k == RL_INT) { *out = v; return RL_OK; }
     if (v.k != RL_FLOAT) return rl_fail(cx, "cannot turn %s into an int", rl_a_type(v));
     d = v.u.f < 0 ? ceil(v.u.f) : floor(v.u.f);

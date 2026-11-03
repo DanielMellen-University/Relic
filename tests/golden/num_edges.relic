@@ -14,8 +14,11 @@ for s in ["nan", "-NaN", "inf", "-inf", "+Inf", "infinity", "-INFINITY", "infin"
     catch e
         print("'{s}'", "error:", e.message)
 print(int("0x1F"), float("0x10"), float("INF"), int("1e-400"), float("4.9e-324") > 0)
-for s in ["nan", "0x8000000000000000"]
+# digits past the int range are an error both ways (since 1.0.52 the negative
+# side too: "-9223372036854775809" read as the float -2^63 and was kept)
+for s in ["nan", "0x8000000000000000", "-9223372036854775809", "-0x8000000000000001", "-99999999999999999999", "+9223372036854775808"]
     try
         print(int(s))
     catch e
         print("int('{s}')", "error:", e.message)
+print(int("-9223372036854775808"), int("9223372036854775807"), int("-9.2233720368547758e18"), int("-0x8000000000000000"))
