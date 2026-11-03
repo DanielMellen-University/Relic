@@ -1,5 +1,9 @@
 # Changelog
 
+## Not released yet
+
+- `math.gcd` takes -2^63: `gcd(-2^63, 6)` is `2` (it was an int overflow). Only a result of 2^63 is an error, and it says so.
+
 ## 1.0.51 (2026-11-02)
 
 Clearer std errors. No change to the language or to any result; only the text of some std errors.

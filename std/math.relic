@@ -37,15 +37,21 @@ fun _ints(name, a, b)
 
 # Since 1.0.50: the greatest common divisor of two ints, never negative;
 # gcd(0, 0) is 0.
+# Worked on the negatives, since -2^63 has no int on the plus side: gcd of it
+# and 6 is 2. Only gcd(-2^63, 0) and gcd(-2^63, -2^63), which are 2^63, fail.
 fun gcd(a, b)
     _ints("gcd", a, b)
-    a = abs(a)
-    b = abs(b)
+    if a > 0
+        a = -a
+    if b > 0
+        b = -b
     while b != 0
         let r = a % b
         a = b
         b = r
-    return a
+    if a == -9223372036854775807 - 1
+        fail("math.gcd(): the result, 2^63, is out of the int range")
+    return -a
 
 # Since 1.0.50: the least common multiple of two ints, never negative;
 # 0 when either is 0. Past the int range it is the usual overflow error.
