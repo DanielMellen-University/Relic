@@ -83,3 +83,7 @@ strings.starts_with(): text must be a string, got int
 strings.starts_with(): prefix must be a string, got none
 strings.ends_with(): text must be a string, got map
 strings.ends_with(): suffix must be a string, got int
+1 true
+strings.find(): text must be a string, got int
+strings.find(): part must be a string, got int
+strings.find(): text must be a string, got none

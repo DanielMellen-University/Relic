@@ -7,6 +7,7 @@
 - `lists.reverse`, `copy`, `sort` and `sort_by` take a string's characters or a map's keys, as the other list helpers do, and give a list. They failed on a map, `sort_by` failed on a string, and `copy` of a string gave the string back.
 - `maps.get`, `drop` and `pick` name themselves for a key that is not a string: `maps.get(): key must be a string, got int` (was `map keys must be strings`).
 - `strings.starts_with` and `ends_with` name themselves for an argument that is not a string or a list: `strings.starts_with(): text must be a string, got int` (was `slice(): cannot slice an int`).
+- `strings.find` and `contains` name `find` for an argument that is not a string or a list: `strings.find(): text must be a string, got int` (was `len(): cannot get the length of an int`).
 - `strings.join` and `replace` name themselves for a bad argument: `strings.join(): separator must be a string, got int` (was `cannot add a string and an int`).
 - `vfs.write` and `vfs.append` take only a string: `vfs.write(): text must be a string, got int`. Before, any value was kept, and `read` gave it back while `size` and a later `append` failed on it.
 - `std/vfs` calls name themselves for a path that is not a string: `vfs.read(): path must be a string, got int` (was `cannot loop over an int`).

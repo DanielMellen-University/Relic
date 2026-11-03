@@ -11,6 +11,10 @@ fun find(s, sub)
     # (host_find, linear time); lists and anything else take the loop below.
     if type(s) == "string" and type(sub) == "string"
         return host_find(s, sub)
+    # since 1.0.52 anything but a string or a list names find (contains says
+    # find too), not "len(): cannot get the length of an int"
+    _text_or_list("find", "text", s)
+    _text_or_list("find", "part", sub)
     let n = len(sub)
     let ls = len(s)
     if ls > 1024

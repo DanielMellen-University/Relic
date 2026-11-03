@@ -24,7 +24,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 
 | Call | Returns | Notes |
 |---|---|---|
-| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43). An empty `sub` gives `0`. Two lists work too, finding a run of items: `find([1, 2, 3], [2])` is `1` |
+| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43). An empty `sub` gives `0`. Two lists work too, finding a run of items: `find([1, 2, 3], [2])` is `1`; anything else is `strings.find(): text must be a string, got int` (`part` for `sub`; `contains` says `find` too; since 1.0.52) |
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `count(s, sub)` | int | how many times `sub` is in `s`, not overlapping, left to right; an empty `sub` is `strings.count(): part must not be empty` (since 1.0.49) |
 | `find_last(s, sub)` | int | where the last `sub` starts, or `-1`; overlaps count (`find_last("aaa", "aa")` is `1`), an empty `sub` is at `len(s)`; linear time (since 1.0.49) |

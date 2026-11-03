@@ -262,3 +262,10 @@ for f in ["starts_with", "starts_with_pre", "ends_with", "ends_with_suf"]
             strings.ends_with("abc", 3)
     catch e
         print(e.message)
+# find and contains too (since 1.0.52); lists still work
+print(strings.find([1, 2, 3], [2, 3]), strings.contains("abc", "bc"))
+for pair in [[5, "a"], ["abc", 5], [none, "x"]]
+    try
+        strings.contains(pair[0], pair[1])
+    catch e
+        print(e.message)
