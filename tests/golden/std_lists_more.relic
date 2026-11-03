@@ -142,3 +142,18 @@ print(len(lists.unique(nums)), lists.unique(nums)[299])
 # mean of ints whose sum passes the int range adds them as floats (it was an
 # int overflow before 1.0.52); a sum that fits stays exact
 print(lists.mean([4611686018427387904, 4611686018427387904]), lists.mean([9223372036854775807, -9223372036854775807 - 1]), lists.mean([1, 2]))
+# a function argument that is not one names it (since 1.0.52), even for an empty list
+try
+    lists.map([], 5)
+catch e
+    print(e.message)
+try
+    lists.sort_by([1], "less")
+catch e
+    print(e.message)
+try
+    lists.min_by([1, 2], none)
+catch e
+    print(e.message)
+fun _is_odd(x) = x % 2 == 1
+print(lists.filter([1, 2, 3], _is_odd), lists.any([], _is_odd), lists.sum_by(["ab", "c"], len))

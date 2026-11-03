@@ -93,7 +93,10 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 A list, a string (its characters) or a map (its keys) can be passed as `xs`. `min`, `max` and `last` on a map failed with `map keys must be strings` before 1.0.50; now they look at its keys too.
 Anything else fails with the function's name: `lists.map(): xs must be a list,
 got int` (since 1.0.49; before, `cannot loop over an int` or `len(): cannot
-get the length of an int` from inside).
+get the length of an int` from inside). A function argument that is not one
+fails the same way, even on an empty list: `lists.map(): f must be a function,
+got int` (since 1.0.52; it was `cannot call an int`), and `filter`, `any`,
+`find`, `sort_by` and the `_by` helpers name `keep`, `test`, `less` or `key`.
 
 ## std/maps
 

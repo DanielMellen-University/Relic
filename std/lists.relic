@@ -9,6 +9,13 @@ fun _seq_named(name, what, xs)
     if t != "list" and t != "string" and t != "map"
         fail("lists." + name + "(): " + what + " must be a list, got " + t)
 
+# Since 1.0.52 a function argument that is not one names the function and the
+# argument: "lists.map(): f must be a function, got int" (it was "cannot call
+# an int", and an empty list let it pass).
+fun _fn(name, what, f)
+    if type(f) != "function"
+        fail("lists." + name + "(): " + what + " must be a function, got " + type(f))
+
 # What a bad size or count was, for the error: the number itself, or the type
 # of anything that is not one.
 fun _got(n)
@@ -20,6 +27,7 @@ fun _got(n)
 # map: f(x) for each item, in order.
 fun map(xs, f)
     _seq("map", xs)
+    _fn("map", "f", f)
     let out = []
     for x in xs
         append(out, f(x))
@@ -28,6 +36,7 @@ fun map(xs, f)
 # filter: the items keep(x) is true for, in order.
 fun filter(xs, keep)
     _seq("filter", xs)
+    _fn("filter", "keep", keep)
     let out = []
     for x in xs
         if keep(x)
@@ -38,6 +47,7 @@ fun filter(xs, keep)
 # is f(f(0, 1), 2). An empty list gives start.
 fun reduce(xs, f, start)
     _seq("reduce", xs)
+    _fn("reduce", "f", f)
     let acc = start
     for x in xs
         acc = f(acc, x)
@@ -99,6 +109,7 @@ fun unique(xs)
 # any and true for all.
 fun any(xs, test)
     _seq("any", xs)
+    _fn("any", "test", test)
     for x in xs
         if test(x)
             return true
@@ -106,6 +117,7 @@ fun any(xs, test)
 
 fun all(xs, test)
     _seq("all", xs)
+    _fn("all", "test", test)
     for x in xs
         if not test(x)
             return false
@@ -170,6 +182,7 @@ fun chunk(xs, n)
 # such item.
 fun find(xs, test)
     _seq("find", xs)
+    _fn("find", "test", test)
     for x in xs
         if test(x)
             return x
@@ -178,6 +191,7 @@ fun find(xs, test)
 # Since 1.0.50: where the first item test(x) is true for is, or -1.
 fun find_index(xs, test)
     _seq("find_index", xs)
+    _fn("find_index", "test", test)
     let i = 0
     for x in xs
         if test(x)
@@ -216,6 +230,7 @@ fun drop(xs, n)
 # the order they came.
 fun partition(xs, test)
     _seq("partition", xs)
+    _fn("partition", "test", test)
     let yes = []
     let no = []
     for x in xs
@@ -237,6 +252,7 @@ fun product(xs)
 # order they came. key(x) must give a string.
 fun group_by(xs, key)
     _seq("group_by", xs)
+    _fn("group_by", "key", key)
     let out = {}
     for x in xs
         let k = key(x)
@@ -251,6 +267,7 @@ fun group_by(xs, key)
 # order they first came; group_by with the counts. key(x) must give a string.
 fun count_by(xs, key)
     _seq("count_by", xs)
+    _fn("count_by", "key", key)
     let out = {}
     for x in xs
         let k = key(x)
@@ -294,6 +311,7 @@ fun max(xs)
 # called once for each item (since 1.0.52; the first was keyed twice).
 fun min_by(xs, key)
     _empty("min_by", xs)
+    _fn("min_by", "key", key)
     let best = none
     let k = none
     let first = true
@@ -307,6 +325,7 @@ fun min_by(xs, key)
 
 fun max_by(xs, key)
     _empty("max_by", xs)
+    _fn("max_by", "key", key)
     let best = none
     let k = none
     let first = true
@@ -373,6 +392,7 @@ fun rotate(xs, n)
 # Since 1.0.50: f(x) for each item, added up from 0, as sum(map(xs, f)).
 fun sum_by(xs, f)
     _seq("sum_by", xs)
+    _fn("sum_by", "f", f)
     let acc = 0
     for x in xs
         acc = acc + f(x)
@@ -408,6 +428,7 @@ fun copy(xs)
 fun sort_by(xs, less)
     # stable merge sort; returns a new list
     _seq("sort_by", xs)
+    _fn("sort_by", "less", less)
     return _merge(_items(xs), less)
 
 fun _merge(xs, less)

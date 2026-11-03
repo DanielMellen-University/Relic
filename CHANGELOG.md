@@ -11,6 +11,7 @@
 - `strings.join` and `replace` name themselves for a bad argument: `strings.join(): separator must be a string, got int` (was `cannot add a string and an int`).
 - `vfs.write` and `vfs.append` take only a string: `vfs.write(): text must be a string, got int`. Before, any value was kept, and `read` gave it back while `size` and a later `append` failed on it.
 - `std/vfs` calls name themselves for a path that is not a string: `vfs.read(): path must be a string, got int` (was `cannot loop over an int`).
+- `std/lists` helpers that take a function check it: `lists.map(): f must be a function, got int` (was `cannot call an int`, and an empty list let it through).
 - `std/vfs` calls name themselves for a first argument that is not a vfs: `vfs.read(): fs must be a vfs from vfs.new(), got int`.
 - `files.remove_tree` removes a link as the link. Before, a link to a folder was followed and everything in that folder was removed, even outside the tree, and a link whose target was gone made it fail. The C runtime's `host_remove` takes a link itself on Linux and macOS, as the C++ host's did. New tests `remove_tree_link` and `cgen_remove_tree_link`.
 - `time.limit` wants an fps above 0: `time.limit(): fps must be a number above 0, got 0` (it was `division by zero`, and a negative fps never slept). `time.since` names itself for a start that is not a number.
