@@ -73,3 +73,8 @@ math.dist(): argument must be a number, got none
 maps.get(): key must be a string, got int
 maps.drop(): key must be a string, got none
 maps.pick(): key 1 must be a string, got float
+strings.join(): items must be a list, got int
+strings.join(): separator must be a string, got int
+strings.replace(): text must be a string, got int
+strings.replace(): old text must be a string, got none
+strings.replace(): new text must be a string, got int

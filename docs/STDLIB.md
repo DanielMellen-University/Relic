@@ -41,8 +41,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `words(s)` | list | the pieces between runs of space, tab, newline or CR, never an empty one: `words("  a  b ")` is `["a", "b"]` (since 1.0.50) |
 | `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
 | `lines(s)` | list | split at `"\n"`, with a `"\r"` before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
-| `join(items, sep)` | string | |
-| `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters |
+| `join(items, sep)` | string | each item through `str()`; `items` not a list, or `sep` not a string, is `strings.join(): separator must be a string, got int` (since 1.0.52) |
+| `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters; an argument that is not a string is `strings.replace(): new text must be a string, got int` (`text`, `old text`; since 1.0.52) |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity |
 | `center(s, width, fill)` | string | `fill` on both sides, as many copies on each or one more on the right, with the checks `pad_left` makes (since 1.0.50) |

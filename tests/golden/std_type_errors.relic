@@ -231,3 +231,19 @@ for f in ["get", "drop", "pick"]
             maps.pick({a: 1}, ["a", 2.5])
     catch e
         print(e.message)
+
+# Since 1.0.52 strings.join and replace name themselves too.
+for f in ["join", "join_sep", "replace", "replace_old", "replace_new"]
+    try
+        if f == "join"
+            strings.join(5, ",")
+        else if f == "join_sep"
+            strings.join(["a", "b"], 5)
+        else if f == "replace"
+            strings.replace(5, "a", "b")
+        else if f == "replace_old"
+            strings.replace("a", none, "b")
+        else
+            strings.replace("a,b", ",", 5)
+    catch e
+        print(e.message)
