@@ -14,6 +14,23 @@ fun is_digit(c) = c != "" and c >= "0" and c <= "9"
 fun is_alpha(c) = c != "" and ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
 fun is_word(c) = is_alpha(c) or is_digit(c) or c == "_"
 
+# The same sets as maps, for the loops that run over a whole name, number,
+# comment or run of string text at once: one lookup a character instead of a
+# peek, an advance and two or three calls (the lexer was most of what loading a
+# module costs the Relic-written interpreter).
+fun _set(text)
+    let m = {}
+    for ch in text
+        m[ch] = true
+    return m
+
+let _digit_set = _set("0123456789")
+let _word_set = _set("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")
+# what ends a run of plain string text
+let _string_stop = _set("\"\\{{}}\n")
+let _cr = chr(13)
+let _space_set = _set(" " + _cr)
+
 let hex_digits = "0123456789abcdef"
 
 fun hex_value(c)
@@ -99,9 +116,25 @@ fun _cat(xs, a, b)
 # The characters from start up to the current position, as a string.
 fun text_of(st, start) = _cat(st.chars, start, st.pos)
 
+# Moves past the characters from st.pos on that are in set (none of them a
+# newline, so only the column changes).
+fun _skip_set(st, set)
+    let cs = st.chars
+    let n = st.n
+    let i = st.pos
+    while i < n and cs[i] in set
+        i = i + 1
+    st.col = st.col + i - st.pos
+    st.pos = i
+
 fun skip_comment(st)
-    while not eof(st) and peek(st, 0) != "\n"
-        advance(st)
+    let cs = st.chars
+    let n = st.n
+    let i = st.pos
+    while i < n and cs[i] != "\n"
+        i = i + 1
+    st.col = st.col + i - st.pos
+    st.pos = i
 
 # Leading whitespace. Gives false at end of file.
 fun layout(st)
@@ -116,7 +149,7 @@ fun layout(st)
         if eof(st)
             return false
         let c = peek(st, 0)
-        if c == chr(13) or c == "\n"
+        if c == _cr or c == "\n"
             advance(st)
             next
         if c == "#"
@@ -160,12 +193,10 @@ fun close(st, want, got, l, c)
 
 fun number(st, l, c)
     let start = st.pos
-    while is_digit(peek(st, 0))
-        advance(st)
+    _skip_set(st, _digit_set)
     if peek(st, 0) == "." and is_digit(peek(st, 1))
         advance(st)
-        while is_digit(peek(st, 0))
-            advance(st)
+        _skip_set(st, _digit_set)
     # Exponent: 1e3, 2.5e-4, 6E+2. Only taken when digits follow.
     if peek(st, 0) == "e" or peek(st, 0) == "E"
         let k = 1
@@ -174,8 +205,7 @@ fun number(st, l, c)
         if is_digit(peek(st, k))
             for j in 0..k
                 advance(st)
-            while is_digit(peek(st, 0))
-                advance(st)
+            _skip_set(st, _digit_set)
     if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
         fail(st, st.line, st.col, "letter right after a number")
         return
@@ -183,8 +213,7 @@ fun number(st, l, c)
 
 fun name(st, l, c)
     let start = st.pos
-    while is_word(peek(st, 0))
-        advance(st)
+    _skip_set(st, _word_set)
     let word = text_of(st, start)
     if word in keywords
         emit(st, keywords[word], word, l, c)
@@ -249,6 +278,16 @@ fun string_body(st, l, c, first)
             append(parts, "}}")
             next
         append(parts, ch)
+        # the plain text after it in one piece
+        let cs = st.chars
+        let n = st.n
+        let i = st.pos
+        while i < n and not cs[i] in _string_stop
+            i = i + 1
+        if i > st.pos
+            append(parts, _cat(cs, st.pos, i))
+            st.col = st.col + i - st.pos
+            st.pos = i
 
 fun two(st, nxt, yes, no, ty, tn, l, c)
     if peek(st, 0) == nxt
@@ -261,9 +300,9 @@ fun token(st)
     let l = st.line
     let c = st.col
     let ch = peek(st, 0)
-    if is_digit(ch)
+    if ch in _digit_set
         return number(st, l, c)
-    if is_alpha(ch) or ch == "_"
+    if ch in _word_set
         return name(st, l, c)
     if ch == "\""
         advance(st)
@@ -355,8 +394,8 @@ fun lex(src)
         if eof(st)
             break
         let c = peek(st, 0)
-        if c == " " or c == chr(13)
-            advance(st)
+        if c == " " or c == _cr
+            _skip_set(st, _space_set)
         else if c == "\t"
             fail(st, st.line, st.col, "tabs are not allowed; use 4 spaces")
         else if c == "#"
