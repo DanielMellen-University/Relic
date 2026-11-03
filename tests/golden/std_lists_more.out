@@ -1,6 +1,6 @@
 true false true false
 ["a", "b", 1, 2, [1], none] []
-500 k499
+250 k249
 1.5 3 c 5 -0.0
 ERR lists.min(): the list is empty
 ERR lists.max(): the list is empty

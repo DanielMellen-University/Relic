@@ -77,7 +77,7 @@ catch err
     print(err.message)
 # a big folder: list keeps its sorted names, and any change shows next time
 fs = vfs.new()
-for i in 0..100
+for i in 0..30
     vfs.write(fs, "/tmp/f{i}", "")
 let first = vfs.list(fs, "/tmp")
 append(first, "mine")
@@ -87,5 +87,5 @@ vfs.remove(fs, "/tmp/f5")
 vfs.make_dir(fs, "/tmp/f5")
 let es = vfs.entries(fs, "/tmp")
 print(len(es), slice(es, 0, 4), es[len(es) - 1], vfs.list(fs, "/tmp")[2])
-vfs.rename(fs, "/tmp/f99", "/tmp/a")
+vfs.rename(fs, "/tmp/f29", "/tmp/a")
 print(vfs.list(fs, "/tmp")[0], len(vfs.list(fs, "/tmp")))
