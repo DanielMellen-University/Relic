@@ -40,3 +40,11 @@ try
     print(i2)
 catch e
     print(e.message)
+# a map is walked by a copy of its keys: one added inside is not visited, one removed still comes up
+let km = {a: 1, b: 2, c: 3}
+for k in km
+    if k == "a"
+        remove(km, "b")
+        km.d = 4
+    print(k, k in km)
+print(km)

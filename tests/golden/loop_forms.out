@@ -15,3 +15,7 @@ n 3
 n 4
 n 5
 'i2' is not defined
+a true
+b false
+c true
+{a: 1, c: 3, d: 4}

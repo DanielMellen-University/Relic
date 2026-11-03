@@ -102,7 +102,7 @@ for item in xs        # a list, a string (by character), a map (by key) or a ran
 
 - Conditions must be real bools: `if 1` is an error.
 - There is no one-line `if` and no `x if c else y`.
-- `for` loops over a copy of the list, so changing the list inside the loop is safe.
+- `for` loops over a copy of the list, so changing the list inside the loop is safe. A map is walked by a copy of its keys as they were when the loop started: a key added inside is not visited, and a key removed inside still comes up (read it with `k in m` first if it may be gone).
 - `break` leaves the loop, `next` goes to the next turn. `break`, `next` or `return` in the wrong place is an error.
 
 ## Functions
