@@ -2,6 +2,7 @@
 
 ## Not released yet
 
+- Speed: `strings.words` tests for a space inline instead of calling `is_space` per character: 300,000 characters 213 ms, now 119 ms. Same results.
 - `paths.with_ext` wants an ext of `""` or one that starts with a dot and holds no `/` or `\`: `with_ext("a.md", "txt")` gave `"atxt"`, and an ext with a slash in it moved the file to a new folder.
 - `lists.sum`, `product` and `mean` name themselves and the item for one that is not a number: `lists.sum(): item 1 must be a number, got string` (was `cannot add an int and a string`). `sum_by` says what `f` gave.
 - `json.decode` says `expected a value` where no value can start, as after a trailing comma (`[1,]` is `json: expected a value at 3`), a `+`, `NaN` or `Infinity`. It said `bad number`, which still covers a number that goes wrong partway (`1.`, `-a`, `2.5e400`).
