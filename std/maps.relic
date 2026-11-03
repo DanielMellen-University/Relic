@@ -11,6 +11,12 @@ fun _key(name, what, k)
     if type(k) != "string"
         fail("maps." + name + "(): " + what + " must be a string, got " + type(k))
 
+# Since 1.0.52 so does a function argument that is not one:
+# "maps.filter(): keep must be a function, got int" (it was "cannot call an int").
+fun _fn(name, what, f)
+    if type(f) != "function"
+        fail("maps." + name + "(): " + what + " must be a function, got " + type(f))
+
 # The values of m as a new list, in the order their keys were added.
 fun values(m)
     _map("values", "m", m)
@@ -93,6 +99,7 @@ fun invert(m)
 # put through f.
 fun map_values(m, f)
     _map("map_values", "m", m)
+    _fn("map_values", "f", f)
     let out = {}
     for k in m
         out[k] = f(m[k])
@@ -101,6 +108,7 @@ fun map_values(m, f)
 # Since 1.0.50: a new map of the keys keep(k, v) is true for, in order.
 fun filter(m, keep)
     _map("filter", "m", m)
+    _fn("filter", "keep", keep)
     let out = {}
     for k in m
         if keep(k, m[k])

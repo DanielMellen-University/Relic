@@ -55,3 +55,12 @@ catch err
 # twice comes once; filter and map_values on an empty map give a new empty map
 fun keep_all(k, v) = true
 print(maps.pick({a: 1, b: 2}, ["b", "zz", "a", "b"]), maps.pick({a: 1}, []), maps.filter({}, keep_all), maps.map_values({}, twice))
+# a function argument that is not one names it (since 1.0.52)
+try
+    maps.filter({a: 1}, 5)
+catch e
+    print(e.message)
+try
+    maps.map_values({}, "f")
+catch e
+    print(e.message)
