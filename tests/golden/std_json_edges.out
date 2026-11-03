@@ -78,3 +78,7 @@ ERR json: control character in string at 3
 "a\tb\u0000"
 [1,2]
 "tab\there\u0000\u001f" true
+[65533, 65]
+[65533, 128512]
+[65533, 120]
+[65533]

@@ -340,7 +340,11 @@ fun _str(p)
                 if k >= 55296 and k <= 56319 and _cat(p, p.i, p.i + 2) == "\\u"
                     p.i = p.i + 2
                     let lo = _hexval(p)
-                    k = 65536 + (k - 55296) * 1024 + (lo - 56320)
+                    if lo >= 56320 and lo <= 57343
+                        k = 65536 + (k - 55296) * 1024 + (lo - 56320)
+                    else
+                        # not a low half: k is alone, and the next escape is read on its own
+                        p.i = p.i - 6
                 if k >= 55296 and k <= 57343
                     k = 65533
                 append(out, chr(k))

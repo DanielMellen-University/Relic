@@ -60,3 +60,7 @@ for t in ["\"a\tb\"", "[\"x\ny\"]", "\"\u{0}\"", "{{\"k\u{1f}\": 1}}", "\"ok\u{7
     catch e
         print("ERR", e.message)
 print(json.encode("tab\there\u{0}\u{1f}"), json.decode(json.encode("tab\there\u{0}\u{1f}")) == "tab\there\u{0}\u{1f}")
+# A high surrogate escape not followed by a low one is U+FFFD on its own, and
+# the next escape is read as itself (since 1.0.52; "\ud83d\u0041" gave U+11841).
+for t in ["\"\\ud83d\\u0041\"", "\"\\ud83d\\ud83d\\ude00\"", "\"\\ude00x\"", "\"\\ud83d\""]
+    print(lists.map(json.decode(t), ord))
