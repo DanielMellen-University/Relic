@@ -247,3 +247,18 @@ for f in ["join", "join_sep", "replace", "replace_old", "replace_new"]
             strings.replace("a,b", ",", 5)
     catch e
         print(e.message)
+
+# starts_with and ends_with too (since 1.0.52); lists still work
+print(strings.starts_with([1, 2, 3], [1, 2]), strings.ends_with([1, 2, 3], [3]), strings.starts_with("abc", "ab"), strings.ends_with("abc", ""))
+for f in ["starts_with", "starts_with_pre", "ends_with", "ends_with_suf"]
+    try
+        if f == "starts_with"
+            strings.starts_with(5, "a")
+        else if f == "starts_with_pre"
+            strings.starts_with("abc", none)
+        else if f == "ends_with"
+            strings.ends_with({a: 1}, "a")
+        else
+            strings.ends_with("abc", 3)
+    catch e
+        print(e.message)

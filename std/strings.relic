@@ -71,9 +71,22 @@ fun _match(cs, n, ss, m, f, from)
 
 fun contains(s, sub) = find(s, sub) >= 0
 
-fun starts_with(s, pre) = slice(s, 0, len(pre)) == pre
+# starts_with and ends_with take strings, or lists (a run of items); since
+# 1.0.52 anything else names the function, "strings.starts_with(): text must
+# be a string, got int" (it was "slice(): cannot slice an int").
+fun _text_or_list(name, what, s)
+    if type(s) != "string" and type(s) != "list"
+        fail("strings." + name + "(): " + what + " must be a string, got " + type(s))
 
-fun ends_with(s, suf) = len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s)) == suf
+fun starts_with(s, pre)
+    _text_or_list("starts_with", "text", s)
+    _text_or_list("starts_with", "prefix", pre)
+    return slice(s, 0, len(pre)) == pre
+
+fun ends_with(s, suf)
+    _text_or_list("ends_with", "text", s)
+    _text_or_list("ends_with", "suffix", suf)
+    return len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s)) == suf
 
 # ASCII letters to the other case, looked up a character at a time, with the
 # result built by `out = out + ...` (in place since 1.0.43): about 3x quicker

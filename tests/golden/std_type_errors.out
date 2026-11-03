@@ -78,3 +78,8 @@ strings.join(): separator must be a string, got int
 strings.replace(): text must be a string, got int
 strings.replace(): old text must be a string, got none
 strings.replace(): new text must be a string, got int
+true true true true
+strings.starts_with(): text must be a string, got int
+strings.starts_with(): prefix must be a string, got none
+strings.ends_with(): text must be a string, got map
+strings.ends_with(): suffix must be a string, got int

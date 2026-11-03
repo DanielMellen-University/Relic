@@ -28,8 +28,8 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `count(s, sub)` | int | how many times `sub` is in `s`, not overlapping, left to right; an empty `sub` is `strings.count(): part must not be empty` (since 1.0.49) |
 | `find_last(s, sub)` | int | where the last `sub` starts, or `-1`; overlaps count (`find_last("aaa", "aa")` is `1`), an empty `sub` is at `len(s)`; linear time (since 1.0.49) |
-| `starts_with(s, pre)` | bool | |
-| `ends_with(s, suf)` | bool | |
+| `starts_with(s, pre)` | bool | strings, or two lists (a run of items); anything else is `strings.starts_with(): text must be a string, got int` (`prefix` for `pre`; since 1.0.52) |
+| `ends_with(s, suf)` | bool | the same, `suffix` for `suf` |
 | `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
 | `capitalize(s)` | string | the first character in upper case (ASCII letters only, as `upper`), the rest as they are (since 1.0.50) |
 | `trim(s)` | string | leading and trailing space; looks only at the ends (since 1.0.46; before, it went through every character) |
