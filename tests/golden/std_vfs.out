@@ -38,3 +38,6 @@ vfs.exists(): path must be a string, got int
 vfs.read(): path must be a string, got none
 vfs.make_dir(): path must be a string, got list
 vfs.rename(): to must be a string, got float
+vfs.read(): fs must be a vfs from vfs.new(), got int
+vfs.read(): fs must be a vfs from vfs.new(), got a map without root
+vfs.read(): fs must be a vfs from vfs.new(), got none

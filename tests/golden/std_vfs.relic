@@ -114,3 +114,9 @@ for f in ["exists", "read", "make_dir", "rename"]
             vfs.rename(fs, "/tmp/t", 2.5)
     catch err
         print(err.message)
+# and so does a first argument that is not a vfs (since 1.0.52)
+for bad in [5, {}, none]
+    try
+        vfs.read(bad, "/home/welcome.txt")
+    catch err
+        print(err.message)

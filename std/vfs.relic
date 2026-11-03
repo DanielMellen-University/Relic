@@ -45,6 +45,16 @@ fun _path(name, what, p)
     if type(p) != "string"
         fail("vfs." + name + "(): " + what + " must be a string, got " + type(p))
 
+# Since 1.0.52 a first argument that is not a vfs names the function too:
+# "vfs.read(): fs must be a vfs from vfs.new(), got int" (it was "cannot read a
+# field of an int").
+fun _fs(name, fs)
+    if type(fs) != "map" or not "root" in fs
+        let got = type(fs)
+        if got == "map"
+            got = "a map without root"
+        fail("vfs." + name + "(): fs must be a vfs from vfs.new(), got " + got)
+
 fun _norm(p) = "/" + strings.join(_parts(p), "/")
 
 fun _node(fs, path)
@@ -63,10 +73,12 @@ fun new()
     return fs
 
 fun exists(fs, path)
+    _fs("exists", fs)
     _path("exists", "path", path)
     return _node(fs, path) != none
 
 fun is_dir(fs, path)
+    _fs("is_dir", fs)
     _path("is_dir", "path", path)
     let n = _node(fs, path)
     return n != none and n.dir
@@ -76,6 +88,7 @@ fun is_dir(fs, path)
 # replaced took 9 ms.
 fun _sorted(xs) = host_sort(xs)
 fun list(fs, path)
+    _fs("list", fs)
     _path("list", "path", path)
     let n = _node(fs, path)
     if n == none or not n.dir
@@ -108,6 +121,7 @@ fun _names(n)
 # browser gets the "/" marks in the same call instead of an is_dir per name,
 # each of which walks the whole path again.
 fun entries(fs, path)
+    _fs("entries", fs)
     _path("entries", "path", path)
     let n = _node(fs, path)
     if n == none or not n.dir
@@ -118,6 +132,7 @@ fun entries(fs, path)
     return out
 
 fun read(fs, path)
+    _fs("read", fs)
     _path("read", "path", path)
     let n = _node(fs, path)
     if n == none or n.dir
@@ -132,6 +147,7 @@ fun _text(name, text)
         fail("vfs." + name + "(): text must be a string, got " + type(text))
 
 fun write(fs, path, text)
+    _fs("write", fs)
     _path("write", "path", path)
     _text("write", text)
     let p = _norm(path)
@@ -147,6 +163,7 @@ fun write(fs, path, text)
     d.kids[name] = {dir: false, text: text}
 
 fun append(fs, path, text)
+    _fs("append", fs)
     _path("append", "path", path)
     _text("append", text)
     let p = _norm(path)
@@ -159,6 +176,7 @@ fun append(fs, path, text)
     n.text = n.text + text
 
 fun make_dir(fs, path)
+    _fs("make_dir", fs)
     _path("make_dir", "path", path)
     let p = _norm(path)
     if p == "/"
@@ -176,6 +194,7 @@ fun make_dir(fs, path)
             cur = n
 
 fun remove(fs, path)
+    _fs("remove", fs)
     _path("remove", "path", path)
     let p = _norm(path)
     if p == "/"
@@ -195,6 +214,7 @@ fun remove(fs, path)
 # folder of 4,000 files took 3 s. Since 1.0.42 a name is removed from the map in
 # place (maps.drop), not by copying the rest of the folder.
 fun remove_tree(fs, path)
+    _fs("remove_tree", fs)
     _path("remove_tree", "path", path)
     let p = _norm(path)
     if p == "/"
@@ -205,6 +225,7 @@ fun remove_tree(fs, path)
     maps.drop(d.kids, paths.base(p))
 
 fun rename(fs, from, to)
+    _fs("rename", fs)
     _path("rename", "from", from)
     _path("rename", "to", to)
     let src = _norm(from)
@@ -228,6 +249,7 @@ fun rename(fs, from, to)
     maps.drop(sd.kids, sn)
 
 fun size(fs, path)
+    _fs("size", fs)
     _path("size", "path", path)
     let n = _node(fs, path)
     if n == none or n.dir

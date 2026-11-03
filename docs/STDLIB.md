@@ -182,6 +182,7 @@ In-memory virtual filesystem (M11). The M0N0LITH-2 apps share one. Not the host 
 argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 `/home/welcome.txt` and an empty `/tmp`.
 A path that is not a string fails with the function's name: `vfs.read(): path must be a string, got int` (`rename` says `from` or `to`; since 1.0.52; before, `cannot loop over an int` from inside).
+A first argument that is not a vfs is `vfs.read(): fs must be a vfs from vfs.new(), got int` (since 1.0.52; before, `cannot read a field of an int`).
 
 | Call | Returns | On failure |
 |---|---|---|
