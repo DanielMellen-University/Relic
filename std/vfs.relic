@@ -39,6 +39,12 @@ fun _put(parts, name)
     else if name != "." and name != ""
         insert(parts, len(parts), name)
 
+# Since 1.0.52 a path that is not a string names the function, as
+# "vfs.read(): path must be a string, got int" (it was "cannot loop over an int").
+fun _path(name, what, p)
+    if type(p) != "string"
+        fail("vfs." + name + "(): " + what + " must be a string, got " + type(p))
+
 fun _norm(p) = "/" + strings.join(_parts(p), "/")
 
 fun _node(fs, path)
@@ -56,9 +62,12 @@ fun new()
     write(fs, "/home/welcome.txt", "Welcome to Relic.\n")
     return fs
 
-fun exists(fs, path) = _node(fs, path) != none
+fun exists(fs, path)
+    _path("exists", "path", path)
+    return _node(fs, path) != none
 
 fun is_dir(fs, path)
+    _path("is_dir", "path", path)
     let n = _node(fs, path)
     return n != none and n.dir
 
@@ -67,6 +76,7 @@ fun is_dir(fs, path)
 # replaced took 9 ms.
 fun _sorted(xs) = host_sort(xs)
 fun list(fs, path)
+    _path("list", "path", path)
     let n = _node(fs, path)
     if n == none or not n.dir
         fail("cannot list " + _norm(path))
@@ -98,6 +108,7 @@ fun _names(n)
 # browser gets the "/" marks in the same call instead of an is_dir per name,
 # each of which walks the whole path again.
 fun entries(fs, path)
+    _path("entries", "path", path)
     let n = _node(fs, path)
     if n == none or not n.dir
         fail("cannot list " + _norm(path))
@@ -107,6 +118,7 @@ fun entries(fs, path)
     return out
 
 fun read(fs, path)
+    _path("read", "path", path)
     let n = _node(fs, path)
     if n == none or n.dir
         fail("cannot read " + _norm(path))
@@ -120,6 +132,7 @@ fun _text(name, text)
         fail("vfs." + name + "(): text must be a string, got " + type(text))
 
 fun write(fs, path, text)
+    _path("write", "path", path)
     _text("write", text)
     let p = _norm(path)
     if p == "/"
@@ -134,6 +147,7 @@ fun write(fs, path, text)
     d.kids[name] = {dir: false, text: text}
 
 fun append(fs, path, text)
+    _path("append", "path", path)
     _text("append", text)
     let p = _norm(path)
     let n = _node(fs, p)
@@ -145,6 +159,7 @@ fun append(fs, path, text)
     n.text = n.text + text
 
 fun make_dir(fs, path)
+    _path("make_dir", "path", path)
     let p = _norm(path)
     if p == "/"
         return
@@ -161,6 +176,7 @@ fun make_dir(fs, path)
             cur = n
 
 fun remove(fs, path)
+    _path("remove", "path", path)
     let p = _norm(path)
     if p == "/"
         fail("cannot remove /")
@@ -179,6 +195,7 @@ fun remove(fs, path)
 # folder of 4,000 files took 3 s. Since 1.0.42 a name is removed from the map in
 # place (maps.drop), not by copying the rest of the folder.
 fun remove_tree(fs, path)
+    _path("remove_tree", "path", path)
     let p = _norm(path)
     if p == "/"
         fail("cannot remove /")
@@ -188,6 +205,8 @@ fun remove_tree(fs, path)
     maps.drop(d.kids, paths.base(p))
 
 fun rename(fs, from, to)
+    _path("rename", "from", from)
+    _path("rename", "to", to)
     let src = _norm(from)
     let dst = _norm(to)
     if src == "/" or dst == "/"
@@ -209,6 +228,7 @@ fun rename(fs, from, to)
     maps.drop(sd.kids, sn)
 
 fun size(fs, path)
+    _path("size", "path", path)
     let n = _node(fs, path)
     if n == none or n.dir
         fail("cannot get the size of " + _norm(path))

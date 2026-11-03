@@ -181,11 +181,12 @@ In-memory virtual filesystem (M11). The M0N0LITH-2 apps share one. Not the host 
 `std/files` for that. Create one with `vfs.new()`, then pass it as the first
 argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 `/home/welcome.txt` and an empty `/tmp`.
+A path that is not a string fails with the function's name: `vfs.read(): path must be a string, got int` (`rename` says `from` or `to`; since 1.0.52; before, `cannot loop over an int` from inside).
 
 | Call | Returns | On failure |
 |---|---|---|
 | `new()` | vfs | |
-| `exists(fs, path)` | bool | never fails; a path that goes through a file (`/home/welcome.txt/x`) is not there |
+| `exists(fs, path)` | bool | never fails for a string path; a path that goes through a file (`/home/welcome.txt/x`) is not there |
 | `is_dir(fs, path)` | bool | never fails (`false` if missing) |
 | `list(fs, path)` | list of names | sorted; a new list each call. The last 8 folders of 64 names or more keep their sorted names until they change, so listing the same big folder again skips the sort (3,000 names: 0.14 ms; sorting them on the host takes about 0.5 ms since 1.0.43, 9.4 ms before); `cannot list {path}` |
 | `entries(fs, path)` | list of `[name, is_folder]` | in `list`'s order, so a file browser needs no `is_dir` per name; `cannot list {path}` (since 1.0.42) |

@@ -101,3 +101,16 @@ try
 catch err
     print(err.message)
 print(vfs.read(fs, "/tmp/t"), vfs.size(fs, "/tmp/t"))
+# and a path that is not a string names the function (since 1.0.52)
+for f in ["exists", "read", "make_dir", "rename"]
+    try
+        if f == "exists"
+            vfs.exists(fs, 5)
+        else if f == "read"
+            vfs.read(fs, none)
+        else if f == "make_dir"
+            vfs.make_dir(fs, ["/a"])
+        else
+            vfs.rename(fs, "/tmp/t", 2.5)
+    catch err
+        print(err.message)

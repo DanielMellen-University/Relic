@@ -8,6 +8,7 @@
 - `maps.get`, `drop` and `pick` name themselves for a key that is not a string: `maps.get(): key must be a string, got int` (was `map keys must be strings`).
 - `strings.join` and `replace` name themselves for a bad argument: `strings.join(): separator must be a string, got int` (was `cannot add a string and an int`).
 - `vfs.write` and `vfs.append` take only a string: `vfs.write(): text must be a string, got int`. Before, any value was kept, and `read` gave it back while `size` and a later `append` failed on it.
+- `std/vfs` calls name themselves for a path that is not a string: `vfs.read(): path must be a string, got int` (was `cannot loop over an int`).
 
 ## 1.0.51 (2026-11-02)
 

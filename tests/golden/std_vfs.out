@@ -34,3 +34,7 @@ vfs.write(): text must be a string, got none
 vfs.write(): text must be a string, got list
 vfs.append(): text must be a string, got float
 ok 2
+vfs.exists(): path must be a string, got int
+vfs.read(): path must be a string, got none
+vfs.make_dir(): path must be a string, got list
+vfs.rename(): to must be a string, got float
