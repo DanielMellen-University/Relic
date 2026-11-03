@@ -375,9 +375,14 @@ fun range(p)
         return n
     return left
 
+# Operator kinds as maps: one peek and one lookup per check, not one at() for
+# each kind (every expression passes through all these levels).
+let add_ops = {PLUS: true, MINUS: true}
+let mul_ops = {STAR: true, SLASH: true, PERCENT: true}
+
 fun additive(p)
     let left = multiplicative(p)
-    while at(p, "PLUS") or at(p, "MINUS")
+    while peek(p).kind in add_ops
         let op = advance(p)
         let h = p.h
         left = binary(left, op, multiplicative(p))
@@ -386,7 +391,7 @@ fun additive(p)
 
 fun multiplicative(p)
     let left = unary(p)
-    while at(p, "STAR") or at(p, "SLASH") or at(p, "PERCENT")
+    while peek(p).kind in mul_ops
         let op = advance(p)
         let h = p.h
         left = binary(left, op, unary(p))
@@ -419,21 +424,22 @@ fun items(p, n, close)
 fun postfix(p)
     let e = primary(p)
     while p.err == none
-        if at(p, "LPAREN")
+        let k = peek(p).kind
+        if k == "LPAREN"
             let call = add(node("Call", advance(p), ""), e)
             let h = p.h
             items(p, call, "RPAREN")
             expect(p, "RPAREN", "')' after the arguments")
             grow(p, call, h)
             e = call
-        else if at(p, "LBRACKET")
+        else if k == "LBRACKET"
             let idx = add(node("Index", advance(p), ""), e)
             let h = p.h
             add(idx, expression(p))
             expect(p, "RBRACKET", "']' after the index")
             grow(p, idx, h)
             e = idx
-        else if at(p, "DOT")
+        else if k == "DOT"
             let dot = advance(p)
             let name = expect(p, "NAME", "a field name after '.'")
             e = add(node("Field", dot, name.text), e)
