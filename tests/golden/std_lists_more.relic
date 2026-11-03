@@ -117,3 +117,9 @@ print(lists.mean([0.5, 1.5]), lists.mean([7]), lists.mean([-2, 2]))
 # count_by walks a string's characters and a map's keys like the other list
 # functions
 print(lists.count_by("banana", same), lists.count_by({apple: 1, avocado: 2, fig: 3}, first_letter))
+# Since 1.0.52 reverse, copy, sort and sort_by take a string's characters or a
+# map's keys too, like the other helpers, and give a list
+let km = {b: 1, a: 2, c: 3}
+fun later(a, b) = b < a
+print(lists.reverse(km), lists.copy(km), lists.sort(km), lists.sort_by(km, later))
+print(lists.reverse("héllo"), lists.copy("ab"), lists.sort("cab"), lists.sort_by("cab", lists.natural))

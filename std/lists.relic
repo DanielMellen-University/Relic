@@ -350,23 +350,37 @@ fun sum_by(xs, f)
         acc = acc + f(x)
     return acc
 
+# The items as a list: xs itself when it is one, else a new list of a
+# string's characters or a map's keys, so the helpers below that index or
+# slice work on those too (since 1.0.52; before, reverse, copy, sort and
+# sort_by failed on a map, and sort_by on a string).
+fun _items(xs)
+    if type(xs) == "list"
+        return xs
+    let out = []
+    for x in xs
+        append(out, x)
+    return out
+
 fun reverse(xs)
     _seq("reverse", xs)
+    let ys = _items(xs)
     let out = []
-    let i = len(xs) - 1
+    let i = len(ys) - 1
     while i >= 0
-        append(out, xs[i])
+        append(out, ys[i])
         i = i - 1
     return out
 
 fun copy(xs)
     _seq("copy", xs)
-    return slice(xs, 0, len(xs))
+    let ys = _items(xs)
+    return slice(ys, 0, len(ys))
 
 fun sort_by(xs, less)
     # stable merge sort; returns a new list
     _seq("sort_by", xs)
-    return _merge(xs, less)
+    return _merge(_items(xs), less)
 
 fun _merge(xs, less)
     if len(xs) <= 1
@@ -393,7 +407,8 @@ fun natural(a, b) = a < b
 # anything else goes through sort_by, with its errors.
 fun sort(xs)
     _seq("sort", xs)
-    let r = host_sort(xs)
+    let ys = _items(xs)
+    let r = host_sort(ys)
     if r == none
-        return sort_by(xs, natural)
+        return sort_by(ys, natural)
     return r

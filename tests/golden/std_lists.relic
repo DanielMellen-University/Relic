@@ -19,7 +19,5 @@ try
 catch e
     print(e.message)
 print(lists.sort([[1]]))
-try
-    lists.sort("cba")
-catch e
-    print(e.message)
+# a string's characters (an error before 1.0.52)
+print(lists.sort("cba"))
