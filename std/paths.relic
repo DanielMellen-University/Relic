@@ -149,6 +149,9 @@ fun with_ext(p, e)
     let x = _fix(p, "with_ext")
     if type(e) != "string"
         fail("paths.with_ext(): ext must be a string, got " + type(e))
+    # since 1.0.52: "txt" made "atxt" of "a.md", and a "/" made a new folder
+    if e != "" and (slice(e, 0, 1) != "." or host_find(e, "/") >= 0 or host_find(e, "\\") >= 0)
+        fail("paths.with_ext(): ext must be \"\" or start with a dot and hold no /, got \"" + e + "\"")
     return slice(x, 0, len(x) - len(ext(x))) + e
 
 # Since 1.0.50: the path that leads from the folder base to target, with ".."

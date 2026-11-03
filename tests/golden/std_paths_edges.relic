@@ -23,6 +23,13 @@ try
     paths.with_ext("a.txt", none)
 catch e
     print(e.message)
+# since 1.0.52 an ext is "" or starts with a dot, with no folder in it
+for e in ["txt", "./b", ".a\\b"]
+    try
+        print(paths.with_ext("a.md", e))
+    catch err
+        print(err.message)
+print(paths.with_ext("a.md", "."), paths.with_ext("a.md", ".tar.gz"))
 # relative (since 1.0.50)
 for pr in [["/a/b", "/a/c/d"], ["/a", "/a"], ["/", "/x/y"], ["/x/y", "/"], ["a/b", "a/b/c"], ["a", "b"], ["a/./b/", "a//b/../c"], [".", "a"]]
     print(pr, paths.relative(pr[0], pr[1]))

@@ -54,6 +54,10 @@ true false false true false true
 [a.b/c] -> [a.b/c.md] [a.b/c]
 [a\b.c] -> [a/b.md] [a/b]
 paths.with_ext(): ext must be a string, got none
+paths.with_ext(): ext must be "" or start with a dot and hold no /, got "txt"
+paths.with_ext(): ext must be "" or start with a dot and hold no /, got "./b"
+paths.with_ext(): ext must be "" or start with a dot and hold no /, got ".a\b"
+a. a.tar.gz
 ["/a/b", "/a/c/d"] ../c/d
 ["/a", "/a"] .
 ["/", "/x/y"] x/y
