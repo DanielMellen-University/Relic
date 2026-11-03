@@ -14,7 +14,7 @@ Pieces Relic cannot do itself yet come from C++ and are named `host_*`, so the b
 | `host_list_dir(path)` | `files.list` | sorted names in a folder |
 | `host_is_dir(path)` | `files.is_dir` | |
 | `host_make_dir(path)` | `files.make_dir` | parent folders too |
-| `host_remove(path)` | `files.remove`, `files.remove_tree` | a file or an empty folder |
+| `host_remove(path)` | `files.remove`, `files.remove_tree` | a file, an empty folder, or a link (the link itself, not what it points at; the C runtime too since 1.0.52) |
 | `host_rename(from, to)` | `files.rename` | |
 | `host_file_size(path)` | `files.size` | bytes |
 | `host_clock()` | `time.clock`, `time.since`, the frame timer | steady clock, seconds |

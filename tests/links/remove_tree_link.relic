@@ -1,0 +1,7 @@
+# Run by tools/check_remove_tree_link.cmake in a folder it set up: t holds a
+# file, a folder, a link to the folder "outside" and a link to nothing.
+use std/files
+files.remove_tree("t")
+print(files.exists("outside/keep.txt"), files.exists("t"))
+files.remove_tree("t")
+print("done")

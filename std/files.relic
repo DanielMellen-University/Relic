@@ -21,11 +21,19 @@ fun rename(from, to) = host_rename(from, to)
 fun size(path) = host_file_size(path)          # in bytes
 
 # remove_tree(path): a folder and everything in it, or one file.
-# Missing path is a no-op (like `rm -rf`).
+# Missing path is a no-op (like `rm -rf`). A link goes as the link: since
+# 1.0.52 the path is removed first, which takes a file, an empty folder or a
+# link, and only a folder that is not empty is gone into. Before, a link to a
+# folder was followed and what it pointed at was removed too.
 fun remove_tree(path)
-    if host_is_dir(path)
-        for name in host_list_dir(path)
-            remove_tree(path + "/" + name)
+    try
         host_remove(path)
-    else if host_file_exists(path)
-        host_remove(path)
+        return
+    catch e
+        if not host_is_dir(path)
+            if host_file_exists(path)
+                fail(e.message)
+            return
+    for name in host_list_dir(path)
+        remove_tree(path + "/" + name)
+    host_remove(path)

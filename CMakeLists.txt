@@ -166,6 +166,11 @@ if(RELIC_BUILD_HOST)
     endif()
   endif()
 
+  # files.remove_tree on a folder with links in it: the links go, not what they point at
+  add_test(NAME remove_tree_link
+    COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:relic> -DPROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/tests/links/remove_tree_link.relic
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/remove_tree_link -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_remove_tree_link.cmake)
+
   add_test(NAME selfhost_lexer
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_lexers.cmake)
@@ -355,6 +360,11 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
     get_filename_component(name ${t} NAME_WE)
     relic_cgen_test(only_${name} ${t})
   endforeach()
+  # files.remove_tree on a folder with links in it, compiled to C (the C runtime's host_remove)
+  relic_cgen_exe(remove_tree_link ${CMAKE_CURRENT_SOURCE_DIR}/tests/links/remove_tree_link.relic)
+  add_test(NAME cgen_remove_tree_link
+    COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:cgen_remove_tree_link>
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/remove_tree_link_c -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_remove_tree_link.cmake)
   add_test(NAME relicc_cli
     COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)

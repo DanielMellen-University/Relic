@@ -253,14 +253,21 @@ BI(h_remove) {
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
     p = S(a[0])->data;
-    if (!stat_path(p, &d, NULL)) return rl_fail(cx, "cannot remove %s", p);
 #ifdef _WIN32
+    if (!stat_path(p, &d, NULL)) return rl_fail(cx, "cannot remove %s", p);
     {
         wchar_t *w = wide(p);
         ok = d ? _wrmdir(w) == 0 : _wremove(w) == 0;
         free(w);
     }
 #else
+    /* lstat, so a link goes as the link (a link to a folder too, and one whose
+     * target is gone), as std::filesystem::remove does on the C++ host. */
+    {
+        struct stat st;
+        if (lstat(p, &st) != 0) return rl_fail(cx, "cannot remove %s", p);
+        d = S_ISDIR(st.st_mode) ? 1 : 0;
+    }
     ok = d ? rmdir(p) == 0 : remove(p) == 0;
 #endif
     if (!ok) return rl_fail(cx, "cannot remove %s", p);

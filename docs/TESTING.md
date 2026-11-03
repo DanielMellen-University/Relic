@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 190 ctest cases: 180 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 402: the host's golden, unit, self-host and VM cases come back, plus the cross-checks. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 191 ctest cases: 180 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 404: the host's golden, unit, self-host and VM cases come back, plus the cross-checks and `remove_tree_link` on the host. An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -166,7 +166,7 @@ Getting SDL2:
 - macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 - Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
 
-The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 418 cases each (the host build's 402 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing.
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 420 cases each (the host build's 404 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing.
 
 ## relic_add_program
 
