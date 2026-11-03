@@ -2,6 +2,7 @@
 
 ## Not released yet
 
+- Speed: `strings.reverse` and `find_last` index the text instead of copying its characters to a list first: reversing 300,000 characters took 112 ms, now 40 ms (compiled 51 ms, now 28 ms). Same results.
 - Speed: `strings.words` tests for a space inline instead of calling `is_space` per character: 300,000 characters 213 ms, now 119 ms. Same results.
 - `paths.with_ext` wants an ext of `""` or one that starts with a dot and holds no `/` or `\`: `with_ext("a.md", "txt")` gave `"atxt"`, and an ext with a slash in it moved the file to a new folder.
 - `lists.sum`, `product` and `mean` name themselves and the item for one that is not a number: `lists.sum(): item 1 must be a number, got string` (was `cannot add an int and a string`). `sum_by` says what `f` gave.
