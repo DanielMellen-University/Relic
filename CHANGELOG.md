@@ -25,7 +25,8 @@
 - `lists.mean` of ints whose sum passes the int range adds them as floats: `mean([2^62, 2^62])` was `int overflow`. A sum that fits stays exact.
 - Speed: `json.decode` reads plain string characters in a tight loop: a 500,000-character string value 0.39 s, now 0.33 s.
 - Speed: `json.encode` checks for a character that needs nothing first: a 500,000-character string 0.31 s, now 0.26 s.
-- `ctest`: 404 with the host, 191 without.
+- New test `guide_examples`: every example in docs/GUIDE.md is run, and its output must match the block the guide shows after it.
+- `ctest`: 405 with the host, 191 without.
 
 ## 1.0.51 (2026-11-02)
 

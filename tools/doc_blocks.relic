@@ -1,0 +1,25 @@
+# Writes each ``` block of a Markdown file to OUT/block_N.txt (N from 0, the
+# text between the fences with a final newline), for tools/check_guide.cmake.
+#   relic tools/doc_blocks.relic DOC.md OUT
+use std/os
+use std/files
+use std/strings
+
+let a = os.args()
+if len(a) != 2
+    print("usage: relic tools/doc_blocks.relic DOC.md OUT")
+    os.exit(2)
+files.make_dir(a[1])
+let n = 0
+let inside = false
+let text = ""
+for line in files.lines(a[0])
+    if strings.starts_with(line, "```")
+        if inside
+            files.write(a[1] + "/block_" + str(n) + ".txt", text)
+            n = n + 1
+        inside = not inside
+        text = ""
+    else if inside
+        text = text + line + "\n"
+print(n)

@@ -170,6 +170,10 @@ if(RELIC_BUILD_HOST)
   add_test(NAME remove_tree_link
     COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:relic> -DPROGRAM=${CMAKE_CURRENT_SOURCE_DIR}/tests/links/remove_tree_link.relic
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/remove_tree_link -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_remove_tree_link.cmake)
+  # The examples in docs/GUIDE.md print what the guide shows (since 1.0.52).
+  add_test(NAME guide_examples
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/guide_examples -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_guide.cmake)
 
   add_test(NAME selfhost_lexer
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
