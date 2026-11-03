@@ -8,3 +8,6 @@ time.limit(): fps must be a number above 0, got string
 time.limit(): fps must be a number above 0, got none
 time.since(): start must be a number, got string
 late frame ok
+time.tick(): t must be a timer from time.timer(), got int
+time.tick(): t must be a timer from time.timer(), got a map without last
+time.limit(): t must be a timer from time.timer(), got none

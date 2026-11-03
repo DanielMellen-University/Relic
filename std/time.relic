@@ -13,7 +13,17 @@ fun sleep(ms) = host_sleep(ms)           # in milliseconds, unlike the clocks
 # keeps t.fps up to date (averaged over about one second).
 fun timer() = {last: host_clock(), fps: 0, frames: 0, window: 0}
 
+# Since 1.0.52 a t that is not a timer names the function: "time.tick(): t
+# must be a timer from time.timer(), got int" (it was "cannot read a field of an int").
+fun _timer(name, t)
+    if type(t) != "map" or not "last" in t
+        let got = type(t)
+        if got == "map"
+            got = "a map without last"
+        fail("time." + name + "(): t must be a timer from time.timer(), got " + got)
+
 fun tick(t)
+    _timer("tick", t)
     let now = host_clock()
     let dt = now - t.last
     t.last = now
@@ -29,6 +39,7 @@ fun tick(t)
 # (since 1.0.52 anything else is "time.limit(): fps must be a number above 0,
 # got 0"; 0 was a division by zero and a negative fps never slept).
 fun limit(t, fps)
+    _timer("limit", t)
     if (type(fps) != "int" and type(fps) != "float") or not (fps > 0)
         let got = type(fps)
         if got == "int" or got == "float"

@@ -20,3 +20,13 @@ catch e
 tm.last = time.clock() - 1
 time.limit(tm, 60)
 print("late frame ok")
+# a t that is not a timer names the function (since 1.0.52)
+for bad in [5, {fps: 0}]
+    try
+        time.tick(bad)
+    catch e
+        print(e.message)
+try
+    time.limit(none, 60)
+catch e
+    print(e.message)
