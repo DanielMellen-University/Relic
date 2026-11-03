@@ -65,7 +65,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `product(xs)` | number | the items multiplied, `1` for an empty list (since 1.0.50) |
 | `index_of(xs, item)` | int | or `-1` |
 | `contains(xs, item)` | bool | `index_of(xs, item) >= 0`, so `1` and `1.0` match (since 1.0.49) |
-| `unique(xs)` | list | new list without repeats, the first of each kept, in order; strings are checked through a map, so a long list of them stays quick (since 1.0.49) |
+| `unique(xs)` | list | new list without repeats, the first of each kept, in order; strings are checked through a map, so a long list of them stays quick (since 1.0.49), and so are whole numbers under 2^53 (since 1.0.52: 20,000 ints took 4.9 s, now 0.015 s); `==` decides, so `1` and `1.0` are the same item |
 | `min(xs)` / `max(xs)` | any | the smallest or largest item by `<` (ints and floats mix, strings compare); `lists.min(): the list is empty`, and a mix `<` refuses fails as `<` does (since 1.0.49) |
 | `any(xs, test)` / `all(xs, test)` | bool | whether `test(x)` is true for some item, or for every one; they stop at the first item that decides, and an empty list is `false` for `any` and `true` for `all` (since 1.0.49) |
 | `flatten(xs)` | list | one level: the items of each inner list in place of it, other items as they are, so `[[1, [2]], 3]` gives `[1, [2], 3]` (since 1.0.49) |

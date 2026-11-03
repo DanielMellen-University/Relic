@@ -130,3 +130,12 @@ fun counted_len(s)
     key_calls.n = key_calls.n + 1
     return len(s)
 print(lists.min_by(["ccc", "a", "bb", "z"], counted_len), key_calls.n, lists.max_by({ab: 1, c: 2}, counted_len), key_calls.n)
+# unique on numbers looks them up (since 1.0.52) and keeps the same rules: ==,
+# so 1 and 1.0 and -0.0 and 0 match, the first is kept, nan never matches,
+# and big ints and fractions still compare with ==
+let nan2 = 1e308 * 10 - 1e308 * 10
+print(lists.unique([1, 1.0, 2.5, 2.5, -0.0, 0, nan2, nan2, 9007199254740993, 9007199254740992.0, 9007199254740992, "1", 1, [1], [1.0], 3.0, 3]))
+let nums = []
+for i in 0..1000
+    append(nums, i % 300)
+print(len(lists.unique(nums)), lists.unique(nums)[299])

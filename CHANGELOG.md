@@ -14,6 +14,7 @@
 - `json.encode` and `pretty` stop on a list or map that holds itself: `json: cannot encode a list that holds itself`. They went on until the recursion limit. The check starts 64 levels down, so ordinary data costs nothing more.
 - `lists.min_by` and `max_by` call `key` once per item; the first item was keyed twice.
 - `int()` of digits past the int range on the negative side is an error, as on the positive side: `int("-9223372036854775809")` read as the float -2^63 and gave that. Same in the C runtime.
+- Speed: `lists.unique` looks up whole numbers in a map, as it did strings: 20,000 ints took 4.9 s, now 0.015 s. Same results.
 - `ctest`: 404 with the host, 191 without.
 
 ## 1.0.51 (2026-11-02)
