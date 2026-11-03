@@ -2,6 +2,7 @@
 
 ## Not released yet
 
+- `json.decode` says `expected a value` where no value can start, as after a trailing comma (`[1,]` is `json: expected a value at 3`), a `+`, `NaN` or `Infinity`. It said `bad number`, which still covers a number that goes wrong partway (`1.`, `-a`, `2.5e400`).
 - `json.decode` of a high surrogate escape followed by an escape that is not a low one gives U+FFFD and then that character: `"\ud83d\u0041"` is `"\u{fffd}A"` (it was one wrong character, U+11841).
 - New test `stdlib_examples`: the `call(args)` → `value` examples in STDLIB.md are run and must give the value shown.
 - `math.gcd` takes -2^63: `gcd(-2^63, 6)` is `2` (it was an int overflow). Only a result of 2^63 is an error, and it says so.

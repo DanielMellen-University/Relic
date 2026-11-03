@@ -446,6 +446,9 @@ fun _val(p)
         return _lit(p, "false", false)
     if c == "n"
         return _lit(p, "null", none)
+    if c != "-" and (c < "0" or c > "9")
+        # not the start of any value: a trailing comma, a + or NaN (since 1.0.52; was bad number)
+        _bad(p, "expected a value")
     return _num(p)
 
 # decode: the value the JSON text holds, null as none and a number with a
