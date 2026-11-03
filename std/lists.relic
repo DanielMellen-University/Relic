@@ -343,7 +343,18 @@ fun windows(xs, n)
 # error, as for min and max.
 fun mean(xs)
     _empty("mean", xs)
-    return float(sum(xs)) / len(xs)
+    try
+        return float(sum(xs)) / len(xs)
+    catch e
+        if e.message != "int overflow"
+            fail(e.message)
+    # ints near the edge of the range overflowed the exact sum, so add them as
+    # floats (mean of [2^62, 2^62] was an int overflow; since 1.0.52 it is
+    # 4.61168601842739e+18)
+    let acc = 0.0
+    for x in xs
+        acc = acc + x
+    return acc / len(xs)
 
 # Since 1.0.50: the items with the first n moved to the end, in order;
 # a negative n moves the last ones to the front, and n wraps round.

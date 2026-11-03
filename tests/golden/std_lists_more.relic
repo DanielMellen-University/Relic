@@ -139,3 +139,6 @@ let nums = []
 for i in 0..1000
     append(nums, i % 300)
 print(len(lists.unique(nums)), lists.unique(nums)[299])
+# mean of ints whose sum passes the int range adds them as floats (it was an
+# int overflow before 1.0.52); a sum that fits stays exact
+print(lists.mean([4611686018427387904, 4611686018427387904]), lists.mean([9223372036854775807, -9223372036854775807 - 1]), lists.mean([1, 2]))

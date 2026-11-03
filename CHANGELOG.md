@@ -17,6 +17,7 @@
 - `int()` of digits past the int range on the negative side is an error, as on the positive side: `int("-9223372036854775809")` read as the float -2^63 and gave that. Same in the C runtime.
 - Speed: `lists.unique` looks up whole numbers in a map, as it did strings: 20,000 ints took 4.9 s, now 0.015 s. Same results.
 - `paths.dir` drops doubled slashes before the name: `dir("a//b")` is `"a"` (was `"a/"`), and `dir("//a")` is `"/"`.
+- `lists.mean` of ints whose sum passes the int range adds them as floats: `mean([2^62, 2^62])` was `int overflow`. A sum that fits stays exact.
 - `ctest`: 404 with the host, 191 without.
 
 ## 1.0.51 (2026-11-02)
