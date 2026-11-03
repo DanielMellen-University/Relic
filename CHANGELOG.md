@@ -2,6 +2,7 @@
 
 ## Not released yet
 
+- `lists.sum`, `product` and `mean` name themselves and the item for one that is not a number: `lists.sum(): item 1 must be a number, got string` (was `cannot add an int and a string`). `sum_by` says what `f` gave.
 - `json.decode` says `expected a value` where no value can start, as after a trailing comma (`[1,]` is `json: expected a value at 3`), a `+`, `NaN` or `Infinity`. It said `bad number`, which still covers a number that goes wrong partway (`1.`, `-a`, `2.5e400`).
 - `json.decode` of a high surrogate escape followed by an escape that is not a low one gives U+FFFD and then that character: `"\ud83d\u0041"` is `"\u{fffd}A"` (it was one wrong character, U+11841).
 - New test `stdlib_examples`: the `call(args)` → `value` examples in STDLIB.md are run and must give the value shown.

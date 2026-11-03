@@ -91,3 +91,9 @@ remove(): map keys must be strings, got int
 remove(): map keys must be strings, got none
 remove(): map keys must be strings, got list
 map keys must be strings, got float
+lists.sum(): item 1 must be a number, got string
+lists.product(): item 1 must be a number, got none
+lists.mean(): item 1 must be a number, got list
+lists.sum_by(): f gave string for item 0, not a number
+lists.sum(): item 0 must be a number, got string
+3.5 6 2.5

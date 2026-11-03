@@ -57,7 +57,21 @@ fun reduce(xs, f, start)
 # ("cannot add an int and a string") and not a join.
 fun sum(xs)
     _seq("sum", xs)
-    return reduce(xs, fun_add, 0)
+    return _total("sum", xs)
+
+# The items added up; one that is not a number names the helper and where it
+# is: "lists.sum(): item 1 must be a number, got string" (since 1.0.52; it was
+# "cannot add an int and a string").
+fun _total(name, xs)
+    let acc = 0
+    let i = 0
+    for x in xs
+        let t = type(x)
+        if t != "int" and t != "float"
+            fail("lists." + name + "(): item " + str(i) + " must be a number, got " + t)
+        acc = acc + x
+        i = i + 1
+    return acc
 
 fun fun_add(a, b) = a + b
 
@@ -244,8 +258,13 @@ fun partition(xs, test)
 fun product(xs)
     _seq("product", xs)
     let acc = 1
+    let i = 0
     for x in xs
+        let t = type(x)
+        if t != "int" and t != "float"
+            fail("lists.product(): item " + str(i) + " must be a number, got " + t)
         acc = acc * x
+        i = i + 1
     return acc
 
 # Since 1.0.50: a map from key(x) to the list of items with that key, in the
@@ -363,7 +382,7 @@ fun windows(xs, n)
 fun mean(xs)
     _empty("mean", xs)
     try
-        return float(sum(xs)) / len(xs)
+        return float(_total("mean", xs)) / len(xs)
     catch e
         if e.message != "int overflow"
             fail(e.message)
@@ -394,8 +413,14 @@ fun sum_by(xs, f)
     _seq("sum_by", xs)
     _fn("sum_by", "f", f)
     let acc = 0
+    let i = 0
     for x in xs
-        acc = acc + f(x)
+        let v = f(x)
+        let t = type(v)
+        if t != "int" and t != "float"
+            fail("lists.sum_by(): f gave " + t + " for item " + str(i) + ", not a number")
+        acc = acc + v
+        i = i + 1
     return acc
 
 # The items as a list: xs itself when it is one, else a new list of a

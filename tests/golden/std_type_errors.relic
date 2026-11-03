@@ -280,3 +280,20 @@ try
     print(1.5 in km)
 catch e
     print(e.message)
+# Since 1.0.52 sum, product, mean and sum_by name themselves and the item for
+# one that is not a number (it was "cannot add an int and a string").
+for f in ["sum", "product", "mean", "sum_by", "sum_str"]
+    try
+        if f == "sum"
+            lists.sum([1, "a"])
+        else if f == "product"
+            lists.product([2, none])
+        else if f == "mean"
+            lists.mean([1.5, [1]])
+        else if f == "sum_by"
+            lists.sum_by([1, 2], str)
+        else
+            lists.sum("ab")
+    catch e
+        print(e.message)
+print(lists.sum([1, 2.5]), lists.product([2, 3]), lists.mean([2, 3]))

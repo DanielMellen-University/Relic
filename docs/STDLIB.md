@@ -59,7 +59,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `map(xs, f)` | list | |
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
-| `sum(xs)` | number | |
+| `sum(xs)` | number | an item that is not a number is `lists.sum(): item 1 must be a number, got string` (since 1.0.52; `product`, `mean` and `sum_by` say the same with their own name) |
 | `mean(xs)` | float | the sum over the count; `lists.mean(): the list is empty` (since 1.0.50); ints whose sum would pass the int range are added as floats (since 1.0.52; it was `int overflow`) |
 | `sum_by(xs, f)` | number | `f(x)` for each item added up from `0`, as `sum(map(xs, f))` without the list in between (since 1.0.50) |
 | `product(xs)` | number | the items multiplied, `1` for an empty list (since 1.0.50) |
