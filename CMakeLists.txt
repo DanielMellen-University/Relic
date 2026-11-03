@@ -174,6 +174,10 @@ if(RELIC_BUILD_HOST)
   add_test(NAME guide_examples
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/guide_examples -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_guide.cmake)
+  # The `call(args)` → `value` examples in docs/STDLIB.md give that value (since 1.0.52).
+  add_test(NAME stdlib_examples
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/stdlib_examples -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_stdlib_examples.cmake)
 
   add_test(NAME selfhost_lexer
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
