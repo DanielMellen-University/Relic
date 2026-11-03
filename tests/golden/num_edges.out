@@ -44,3 +44,4 @@ int('-0x8000000000000001') error: int(): number is out of the int range
 int('-99999999999999999999') error: int(): number is out of the int range
 int('+9223372036854775808') error: int(): number is out of the int range
 -9223372036854775808 9223372036854775807 -9223372036854775808 -9223372036854775808
+true false true

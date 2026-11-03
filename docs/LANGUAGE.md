@@ -78,6 +78,7 @@ Lowest precedence first:
 - `+` adds numbers, joins two strings, or joins two lists. Mixing types is an error (`cannot add a string and an int`).
 - `/` always gives a float. `%` takes the sign of the right side: `-7 % 3` is `2`.
 - `==` and `!=` compare lists and maps by contents, strings by contents, and functions by identity. `none` equals only `none`. `1 == 1.0` is `true`.
+- An int and a float compare as floats, in every engine: past 2^53 the int is rounded first, so `9007199254740993 == 9007199254740992.0` is `true` and `9007199254740993 > 9007199254740992.0` is `false`. Two ints compare exactly.
 - `<` and friends compare numbers with numbers and strings with strings (by code point).
 - `x in list` checks for an item, `"k" in map` for a key, `"ell" in "hello"` for a substring.
 - Range ends must be whole numbers.
