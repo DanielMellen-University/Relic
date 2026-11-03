@@ -38,3 +38,5 @@ print(paths.with_ext(".bashrc", ".txt"), paths.with_ext("x.tar.gz", ".zip"), pat
 # base after a trailing slash is empty; stem keeps a dotfile's whole name and
 # takes only the last ext off
 print([paths.base("a/b/")], [paths.base("/")], paths.stem(".bashrc"), paths.stem("a.tar.gz"), paths.base("c.txt"))
+# dir drops doubled slashes before the name (since 1.0.52)
+print(paths.dir("a//b"), paths.dir("a///b/c"), paths.dir("//a"), paths.dir("/a"), paths.dir("a/b//"), paths.dir("x\\\\y"))

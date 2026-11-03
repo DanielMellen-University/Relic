@@ -163,7 +163,7 @@ Always `/`. A `\` in input is read as `/`.
 |---|---|---|
 | `join(a, b)` | string | `join("a", "b")` → `"a/b"`; absolute `b` wins |
 | `base(p)` | string | `"a/b.txt"` → `"b.txt"`; a path ending in `/` gives `""` |
-| `dir(p)` | string | `"a/b.txt"` → `"a"`; no slash → `""` |
+| `dir(p)` | string | `"a/b.txt"` → `"a"`; no slash → `""`; doubled slashes before the name go too, `"a//b"` → `"a"` (since 1.0.52; it was `"a/"`), and only slashes → `"/"` |
 | `ext(p)` | string | with the dot: `".txt"`, or `""`; leading dots belong to the name, so `".hidden"` and `".."` have none (`".."` gave `"."` before 1.0.35) |
 | `stem(p)` | string | `"b.txt"` → `"b"`, `"a.tar.gz"` → `"a.tar"`; a dotfile such as `".bashrc"` keeps its whole name |
 | `normalize(p)` | string | collapses `.` and `..` |

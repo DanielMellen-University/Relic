@@ -68,3 +68,4 @@ paths.relative(): base must not go up past its start, got ../a
 . b/c ..
 .bashrc.txt x.tar.zip dir.d/file.md
 [""] [""] .bashrc a.tar c.txt
+a a///b / / a/b x

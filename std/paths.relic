@@ -54,14 +54,18 @@ fun base(p)
     let x = _fix(p, "base")
     return slice(x, _last_slash(x) + 1, len(x))
 
-# dir("a/b/c.txt") is "a/b"; dir("c.txt") is "".
+# dir("a/b/c.txt") is "a/b"; dir("c.txt") is "". Doubled slashes before the
+# name go too, so dir("a//b") is "a" (since 1.0.52; it was "a/"), and a path
+# with only slashes before the name gives "/".
 fun dir(p)
     let x = _fix(p, "dir")
     let cut = _last_slash(x)
-    if cut == 0
-        return "/"
     if cut < 0
         return ""
+    while cut > 0 and x[cut - 1] == "/"
+        cut = cut - 1
+    if cut == 0
+        return "/"
     return slice(x, 0, cut)
 
 # ext("notes.txt") is ".txt"; "" when there is none. Leading dots are part of the
