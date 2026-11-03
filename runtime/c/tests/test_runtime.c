@@ -213,7 +213,17 @@ static void test_num_parse(void) {
         rl_release(a);
         a = rl_float(1e300);
         ERR(call("int", 1, &a, &r), "int(): number is out of the int range");
+        /* digits past the range on either side (the negative side read as -2^63 before 1.0.52) */
+        a = S("-9223372036854775809");
+        ERR(call("int", 1, &a, &r), "int(): number is out of the int range");
+        rl_release(a);
+        a = S("-0x8000000000000001");
+        ERR(call("int", 1, &a, &r), "int(): number is out of the int range");
+        rl_release(a);
     }
+    SHOW(calls("int", "-9223372036854775808"), "-9223372036854775808");
+    SHOW(calls("int", "-0x8000000000000000"), "-9223372036854775808");
+    SHOW(calls("int", "-9.2233720368547758e18"), "-9223372036854775808");
 }
 
 static void test_containers(void) {
