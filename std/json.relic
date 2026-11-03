@@ -167,7 +167,11 @@ fun _round(x)
         return -int(host_floor(-x + 0.5))
     return int(host_floor(x + 0.5))
 
-fun _enc(v, indent, depth)
+# path: the lists and maps being written from 32 levels down, outermost first.
+# One that holds itself would go on until the recursion limit, so past 64
+# levels each new one is looked for in path (by identity, host_same): a loop is
+# found there, and data that is not that deep costs nothing more (since 1.0.52).
+fun _enc(v, indent, depth, path)
     let t = type(v)
     if t == "none"
         return "null"
@@ -190,6 +194,12 @@ fun _enc(v, indent, depth)
         items = keys(v)
     if len(items) == 0
         return open + close
+    if depth >= 64
+        for p in path
+            if host_same(p, v)
+                fail("json: cannot encode a " + t + " that holds itself")
+    if depth >= 32
+        append(path, v)
     let pad = ""
     let end_pad = ""
     let sep = ","
@@ -212,17 +222,19 @@ fun _enc(v, indent, depth)
             append(out, _quote(item) + ":")
             if indent != ""
                 append(out, " ")
-            append(out, _enc(v[item], indent, depth + 1))
+            append(out, _enc(v[item], indent, depth + 1, path))
         else
-            append(out, _enc(item, indent, depth + 1))
+            append(out, _enc(item, indent, depth + 1, path))
+    if depth >= 32
+        pop(path)
     append(out, end_pad + close)
     return _glue(out, 0, len(out))
 
 # encode: v as JSON text on one line with no spaces ({"a":[1,null]}), map
 # keys in their order and none as null. pretty: the same with each item on
 # its own line, two spaces of indent a level; an empty list or map stays [] or {}.
-fun encode(v) = _enc(v, "", 0)
-fun pretty(v) = _enc(v, "  ", 0)
+fun encode(v) = _enc(v, "", 0, [])
+fun pretty(v) = _enc(v, "  ", 0, [])
 
 # ---- decoding ----
 

@@ -13,3 +13,16 @@ for bad in ["[1,", "{{\"a\" 1}}", "tru", "\"abc", "[1] x"]
         json.decode(bad)
     catch err
         print(err.message)
+# Since 1.0.52 a list or map that holds itself is an error that says so (it
+# went on to the recursion limit); the same list twice side by side is fine
+let loop = [1]
+append(loop, loop)
+let back = {name: "a", kids: []}
+append(back.kids, back)
+for v in [loop, back]
+    try
+        json.encode(v)
+    catch e
+        print(e.message)
+let twice = [1, 2]
+print(json.encode([twice, twice, {t: twice}]))

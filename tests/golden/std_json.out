@@ -17,3 +17,6 @@ json: expected ':' at 5
 json: unexpected text at 0
 json: unterminated string at 4
 json: extra text at 4
+json: cannot encode a list that holds itself
+json: cannot encode a map that holds itself
+[[1,2],[1,2],{"t":[1,2]}]

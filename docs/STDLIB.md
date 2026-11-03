@@ -205,7 +205,7 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 
 | Call | Returns | On failure |
 |---|---|---|
-| `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode inf or nan` for those floats; a float is written as `str()` writes it when that reads back as the same float, else (since 1.0.47) with 16 or 17 significant digits, the fewest that do (`0.1 + 0.2` is `0.30000000000000004`, `str()` says `0.3`) |
+| `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode a list that holds itself` (or `map`) for a value inside itself (since 1.0.52; it went on to the recursion limit), `json: cannot encode inf or nan` for those floats; a float is written as `str()` writes it when that reads back as the same float, else (since 1.0.47) with 16 or 17 significant digits, the fewest that do (`0.1 + 0.2` is `0.30000000000000004`, `str()` says `0.3`) |
 | `pretty(v)` | string | same; 2-space indent |
 | `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; since 1.0.47 a raw control character (U+0000 to U+001F, such as a tab or a newline) inside a string is `json: control character in string at N`, as JSON wants them escaped (`\t`, `\n`, `\u0000`; before, they were read as they were); numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`, no `NaN`, `Infinity` or hex); since 1.0.36 a number too small for a normal float (one `encode` wrote for a subnormal, or `1e-400`) reads as that float or `0.0`, and one too large is still `bad number`; a value that is not a string is `json.decode(): text must be a string, got int` (since 1.0.37) |
 
