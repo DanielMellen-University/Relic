@@ -23,9 +23,9 @@ static bool is_folder(const std::string& path) {
 }
 
 static void usage() {
-    std::cerr << "usage: relic [--version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
-                 "       relic check file.relic...   (find mistakes without running (incl. use before definition))\n"
-                 "       relic            (no file: start the REPL)\n";
+    std::cerr << "usage: relic [--help | --version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
+                 "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
+                 "       relic                       (no file: starts the REPL)\n";
 }
 
 int main(int argc, char** argv) {
