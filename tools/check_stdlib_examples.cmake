@@ -2,7 +2,8 @@
 # (or "is" / "gives" in place of →) in a std/NAME section is run as NAME.call(args)
 # and must print value. A value that is not a literal (a number, a string, a
 # list, a map, true, false, none, nan, inf) or a call with ^ in it (2^63 is
-# notation) is left out.
+# notation) is left out. std/graphics is skipped: what it returns depends on
+# whether the build has SDL (available() is false without it, true with it).
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -DTMP=dir -P tools/check_stdlib_examples.cmake
 file(REMOVE_RECURSE ${TMP})
 file(MAKE_DIRECTORY ${TMP})
@@ -15,6 +16,9 @@ set(n 0)
 foreach(item IN LISTS found)
   if(item MATCHES "^\n## std/([a-z]+)$")
     set(mod ${CMAKE_MATCH_1})
+    if(mod STREQUAL "graphics")
+      set(mod "")
+    endif()
     continue()
   endif()
   if(mod STREQUAL "" OR NOT item MATCHES "^`([a-z_]+\\([^`]*\\))` [^`]+ `([^`]+)`$")
