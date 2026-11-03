@@ -387,12 +387,6 @@ fun _num(p)
     catch err
         _bad(p, "bad number")
 
-fun _has(set, c)
-    for x in set
-        if x == c
-            return true
-    return false
-
 fun _val(p)
     _ws(p)
     if p.i >= p.n
