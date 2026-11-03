@@ -19,6 +19,7 @@
 - Speed: `lists.unique` looks up whole numbers in a map, as it did strings: 20,000 ints took 4.9 s, now 0.015 s. Same results.
 - `paths.dir` drops doubled slashes before the name: `dir("a//b")` is `"a"` (was `"a/"`), and `dir("//a")` is `"/"`.
 - `lists.mean` of ints whose sum passes the int range adds them as floats: `mean([2^62, 2^62])` was `int overflow`. A sum that fits stays exact.
+- Speed: `json.decode` reads plain string characters in a tight loop: a 500,000-character string value 0.39 s, now 0.33 s.
 - `ctest`: 404 with the host, 191 without.
 
 ## 1.0.51 (2026-11-02)
