@@ -40,7 +40,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `remove_prefix(s, pre)` / `remove_suffix(s, suf)` | string | `s` without `pre` at its start (or `suf` at its end) once, or `s` unchanged when it is not there (since 1.0.50) |
 | `words(s)` | list | the pieces between runs of space, tab, newline or CR, never an empty one: `words("  a  b ")` is `["a", "b"]` (since 1.0.50) |
 | `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
-| `lines(s)` | list | split at `"\n"`, with a `"\r"` before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
+| `lines(s)` | list | split at `"\n"`, with a carriage return (`"\u{d}"`, as Relic has no `\r` escape) before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
 | `join(items, sep)` | string | each item through `str()`; `items` not a list, or `sep` not a string, is `strings.join(): separator must be a string, got int` (since 1.0.52) |
 | `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters; an argument that is not a string is `strings.replace(): new text must be a string, got int` (`text`, `old text`; since 1.0.52) |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
@@ -238,7 +238,7 @@ escapes control characters, so what it writes is still read back.
 modules; `args()` is also fine at the top level of a script.
 
 **Standard input** (1.0.31). `read_line()` gives the next line without its line
-end, which is `"\n"` or `"\r\n"`, and `none` once the input has run out (and
+end, which is `"\n"` or `"\u{d}\n"` (CR LF), and `none` once the input has run out (and
 on every call after that). So a line of text comes back as a string, even an
 empty one (`""`), and `none` can only mean the end:
 
@@ -253,8 +253,8 @@ while true
 print(total)
 ```
 
-- Only the line end is cut: spaces and tabs stay, and a lone `"\r"` that is not
-  followed by `"\n"` stays. A last line with no newline at the end of the input
+- Only the line end is cut: spaces and tabs stay, and a lone carriage return
+  (`"\u{d}"`) that is not followed by `"\n"` stays. A last line with no newline at the end of the input
   comes back as it is; an input that ends with a newline has no extra empty line.
 - Lines can be any length and hold any bytes, as in `files.read`: bytes that are
   not valid UTF-8 and NUL bytes come through unchanged, and so does a Ctrl-Z byte.
