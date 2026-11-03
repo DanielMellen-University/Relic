@@ -29,3 +29,8 @@ cannot list /tmp/z
 30 ["f0", "f1", "f10", "f11"]
 29 [["f0", false], ["f1", false], ["f11", false], ["f12", false]] ["f9", false] f11
 a 29
+vfs.write(): text must be a string, got int
+vfs.write(): text must be a string, got none
+vfs.write(): text must be a string, got list
+vfs.append(): text must be a string, got float
+ok 2

@@ -89,3 +89,15 @@ let es = vfs.entries(fs, "/tmp")
 print(len(es), slice(es, 0, 4), es[len(es) - 1], vfs.list(fs, "/tmp")[2])
 vfs.rename(fs, "/tmp/f29", "/tmp/a")
 print(vfs.list(fs, "/tmp")[0], len(vfs.list(fs, "/tmp")))
+# Since 1.0.52 write and append take only text; the file is left as it was
+vfs.write(fs, "/tmp/t", "ok")
+for bad in [5, none, ["x"]]
+    try
+        vfs.write(fs, "/tmp/t", bad)
+    catch err
+        print(err.message)
+try
+    vfs.append(fs, "/tmp/t", 1.5)
+catch err
+    print(err.message)
+print(vfs.read(fs, "/tmp/t"), vfs.size(fs, "/tmp/t"))

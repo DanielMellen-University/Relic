@@ -112,7 +112,15 @@ fun read(fs, path)
         fail("cannot read " + _norm(path))
     return n.text
 
+# Since 1.0.52 the text must be a string, as "vfs.write(): text must be a
+# string, got int"; before, any value was kept, and read gave it back while
+# size and a later append failed on it.
+fun _text(name, text)
+    if type(text) != "string"
+        fail("vfs." + name + "(): text must be a string, got " + type(text))
+
 fun write(fs, path, text)
+    _text("write", text)
     let p = _norm(path)
     if p == "/"
         fail("cannot write /")
@@ -126,6 +134,7 @@ fun write(fs, path, text)
     d.kids[name] = {dir: false, text: text}
 
 fun append(fs, path, text)
+    _text("append", text)
     let p = _norm(path)
     let n = _node(fs, p)
     if n == none

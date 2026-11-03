@@ -190,8 +190,8 @@ argument. Paths use `/` and are normalized (`std/paths`). `new()` seeds
 | `list(fs, path)` | list of names | sorted; a new list each call. The last 8 folders of 64 names or more keep their sorted names until they change, so listing the same big folder again skips the sort (3,000 names: 0.14 ms; sorting them on the host takes about 0.5 ms since 1.0.43, 9.4 ms before); `cannot list {path}` |
 | `entries(fs, path)` | list of `[name, is_folder]` | in `list`'s order, so a file browser needs no `is_dir` per name; `cannot list {path}` (since 1.0.42) |
 | `read(fs, path)` | string | `cannot read {path}` |
-| `write(fs, path, text)` | none | `cannot write {path}` |
-| `append(fs, path, text)` | none | creates the file if missing; `cannot append {path}` |
+| `write(fs, path, text)` | none | `cannot write {path}`; `text` must be a string, `vfs.write(): text must be a string, got int` (since 1.0.52; before, any value was kept) |
+| `append(fs, path, text)` | none | creates the file if missing; `cannot append {path}`; `text` must be a string, as for `write` (since 1.0.52) |
 | `make_dir(fs, path)` | none | parents too; ok if it already exists; `cannot make folder {path}` |
 | `remove(fs, path)` | none | file or **empty** folder; `cannot remove {path}` |
 | `remove_tree(fs, path)` | none | folder and contents, or one file; **missing path is a no-op** (except `/`) |
