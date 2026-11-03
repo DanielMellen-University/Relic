@@ -5,6 +5,12 @@ fun _map(name, what, m)
     if type(m) != "map"
         fail("maps." + name + "(): " + what + " must be a map, got " + type(m))
 
+# Since 1.0.52 a key that is not a string names the function, as
+# "maps.get(): key must be a string, got int" (it was "map keys must be strings").
+fun _key(name, what, k)
+    if type(k) != "string"
+        fail("maps." + name + "(): " + what + " must be a string, got " + type(k))
+
 # The values of m as a new list, in the order their keys were added.
 fun values(m)
     _map("values", "m", m)
@@ -25,6 +31,7 @@ fun items(m)
 # Reading a missing key with m[k] is an error, so this is the quiet way.
 fun get(m, k, fallback)
     _map("get", "m", m)
+    _key("get", "key", k)
     if k in m
         return m[k]
     return fallback
@@ -42,6 +49,7 @@ fun merge(a, b)
 
 fun drop(m, k)
     _map("drop", "m", m)
+    _key("drop", "key", k)
     # removes k from m in place if it is there; true if it was. The built-in
     # remove fails on a missing key, and a module that defines its own remove
     # (std/vfs) hides the built-in: this reaches it from here.
@@ -106,7 +114,10 @@ fun pick(m, ks)
     if type(ks) != "list"
         fail("maps.pick(): keys must be a list, got " + type(ks))
     let out = {}
+    let i = 0
     for k in ks
+        _key("pick", "key " + str(i), k)
+        i = i + 1
         if k in m
             out[k] = m[k]
     return out

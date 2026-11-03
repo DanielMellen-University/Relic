@@ -101,7 +101,7 @@ get the length of an int` from inside).
 |---|---|---|
 | `values(m)` | list | insertion order |
 | `items(m)` | list | `[key, value]` pairs |
-| `get(m, k, fallback)` | any | fallback when `k` missing |
+| `get(m, k, fallback)` | any | fallback when `k` missing; a key that is not a string is `maps.get(): key must be a string, got int` (since 1.0.52, and the same for `drop` and `pick`, which says `key 1` for the second key) |
 | `merge(a, b)` | map | new map; **`b` wins** on shared keys |
 | `map_values(m, f)` | map | new map, the same keys in order, each value `f(value)` (since 1.0.50) |
 | `filter(m, keep)` | map | new map of the entries `keep(key, value)` is true for, in order (since 1.0.50) |

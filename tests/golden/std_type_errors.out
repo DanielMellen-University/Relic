@@ -70,3 +70,6 @@ math.trunc(): argument must be a number, got string
 lists.count_by(): xs must be a list, got int
 maps.has_value(): m must be a map, got none
 math.dist(): argument must be a number, got none
+maps.get(): key must be a string, got int
+maps.drop(): key must be a string, got none
+maps.pick(): key 1 must be a string, got float

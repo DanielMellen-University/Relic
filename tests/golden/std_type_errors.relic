@@ -218,3 +218,16 @@ for f in ["count_by", "has_value", "dist"]
             math.dist(0, 0, 1, none)
     catch e
         print(e.message)
+
+# Since 1.0.52 maps.get, drop and pick name themselves for a key that is not a
+# string (it was "map keys must be strings").
+for f in ["get", "drop", "pick"]
+    try
+        if f == "get"
+            maps.get({a: 1}, 1, "x")
+        else if f == "drop"
+            maps.drop({a: 1}, none)
+        else
+            maps.pick({a: 1}, ["a", 2.5])
+    catch e
+        print(e.message)
