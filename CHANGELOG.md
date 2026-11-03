@@ -3,6 +3,7 @@
 ## Not released yet
 
 - `math.gcd` takes -2^63: `gcd(-2^63, 6)` is `2` (it was an int overflow). Only a result of 2^63 is an error, and it says so.
+- `math.hypot` and `math.dist` no longer overflow or underflow on the way: `hypot(1e200, 1e200)` was `inf` and `hypot(1e-200, 1e-200)` was `0.0`. Results that did not overflow are unchanged.
 
 ## 1.0.51 (2026-11-02)
 

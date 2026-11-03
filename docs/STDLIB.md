@@ -126,7 +126,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50) |
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
-| `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50) |
+| `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50); since 1.0.52 without overflow or underflow on the way, so `hypot(1e200, 1e200)` is `1.4142135623731e+200`, not `inf` |
 | `dist(x1, y1, x2, y2)` | float: the distance from `(x1, y1)` to `(x2, y2)`, `hypot` of the differences (since 1.0.50) |
 | `radians(deg)` / `degrees(rad)` | float: an angle in degrees as radians, for `sin` and `cos`, and back (since 1.0.50) |
 | `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |

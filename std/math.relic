@@ -143,10 +143,22 @@ fun lerp(a, b, t)
     return a + (b - a) * t
 
 # Since 1.0.50: the length of the line from (0, 0) to (x, y), a float.
+# x * x can pass the float range (hypot(1e200, 1e200) was inf) or fall
+# under it (1e-200 gave 0.0), so then both are scaled by the bigger one first.
 fun hypot(x, y)
     _number("hypot", x)
     _number("hypot", y)
-    return sqrt(x * x + y * y)
+    let r = sqrt(x * x + y * y)
+    if r < 1e300 and r > 1e-300
+        return r
+    let ax = abs(float(x))
+    let ay = abs(float(y))
+    let m = max(ax, ay)
+    if m == 0 or m > 1.7976931348623157e308 or m != m or ay != ay or ax != ax
+        return r
+    let s = ax / m
+    let t = ay / m
+    return m * sqrt(s * s + t * t)
 
 # Since 1.0.50: the distance from (x1, y1) to (x2, y2), a float.
 fun dist(x1, y1, x2, y2)

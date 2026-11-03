@@ -96,6 +96,7 @@ math.is_even(): argument must be an int, got float
 math.lerp(): argument must be a number, got string
 10 0.5 2.5 0
 5.0 0.0 13.0 2.5
+1.4142135623731e+200 1.41421356237309e-200 1.4142135623731e+308 4.94065645841247e-324 5e+300
 3.14159265358979 180.0 0.0 90.0 500
 2 -2 0 5 -3
 math.trunc(): number is out of the int range
