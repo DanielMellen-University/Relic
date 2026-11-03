@@ -1,6 +1,8 @@
 # Changelog
 
-## Not released yet
+## 1.0.52 (2026-11-03)
+
+Std checks, json and speed fixes. Some std errors have new text, and a few calls that gave a wrong result or crashed now give the right one or a clear error; a script that matched an old error text exactly needs the new one.
 
 - Speed: `strings.reverse` and `find_last` index the text instead of copying its characters to a list first: reversing 300,000 characters took 112 ms, now 40 ms (compiled 51 ms, now 28 ms). Same results.
 - Speed: `strings.words` tests for a space inline instead of calling `is_space` per character: 300,000 characters 213 ms, now 119 ms. Same results.
@@ -36,7 +38,7 @@
 - Speed: `json.decode` reads plain string characters in a tight loop: a 500,000-character string value 0.39 s, now 0.33 s.
 - Speed: `json.encode` checks for a character that needs nothing first: a 500,000-character string 0.31 s, now 0.26 s.
 - New test `guide_examples`: every example in docs/GUIDE.md is run, and its output must match the block the guide shows after it.
-- `ctest`: 405 with the host, 191 without.
+- `ctest`: 406 with the host, 191 without.
 
 ## 1.0.51 (2026-11-02)
 
