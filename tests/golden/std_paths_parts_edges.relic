@@ -1,0 +1,6 @@
+# paths.parts and is_abs at their edges: the root, the empty path, ".", "..",
+# doubled and trailing slashes, and "\" read as "/".
+use std/paths
+print(paths.parts("/"), paths.parts(""), paths.parts("."))
+print(paths.parts("a//b/"), paths.parts("a/./b/../c"), paths.parts("\\x\\y"))
+print(paths.parts("../a"), paths.is_abs(""), paths.is_abs("\\a"), paths.is_abs("a/b"))
