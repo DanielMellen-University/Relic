@@ -1,0 +1,7 @@
+# strings.find_last, reverse and count at their edges: empty text, empty part,
+# a part longer than the text, overlaps, and multi-byte characters.
+use std/strings
+print(strings.find_last("abcabc", "bc"), strings.find_last("abc", ""), strings.find_last("", "a"))
+print(strings.find_last("ab", "abc"), strings.find_last("aaaa", "aa"), strings.find_last("é-é", "é"))
+print(strings.reverse("") + "|", strings.reverse("a"), strings.reverse("héllo"))
+print(strings.count("aaaa", "aa"), strings.count("", "x"), strings.count("a,b,,c", ","))
