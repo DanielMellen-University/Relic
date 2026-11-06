@@ -1,0 +1,8 @@
+cannot write /home
+cannot write /no/x.txt
+cannot append /home
+cannot make folder /home/welcome.txt
+cannot make folder /home/welcome.txt/sub
+new
+over
+mkdir_existing_ok

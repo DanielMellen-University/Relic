@@ -1,0 +1,29 @@
+use std/vfs
+let fs = vfs.new()
+try
+    vfs.write(fs, "/home", "x")
+catch err
+    print(err.message)
+try
+    vfs.write(fs, "/no/x.txt", "x")
+catch err
+    print(err.message)
+try
+    vfs.append(fs, "/home", "x")
+catch err
+    print(err.message)
+try
+    vfs.make_dir(fs, "/home/welcome.txt")
+catch err
+    print(err.message)
+try
+    vfs.make_dir(fs, "/home/welcome.txt/sub")
+catch err
+    print(err.message)
+vfs.append(fs, "/home/created.txt", "new")
+print(vfs.read(fs, "/home/created.txt"))
+vfs.write(fs, "/home/created.txt", "over")
+print(vfs.read(fs, "/home/created.txt"))
+vfs.make_dir(fs, "/home")
+vfs.make_dir(fs, "/")
+print("mkdir_existing_ok")
