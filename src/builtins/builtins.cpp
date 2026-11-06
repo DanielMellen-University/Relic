@@ -377,10 +377,19 @@ void Interpreter::install_builtins() {
         if (ec) throw std::string("cannot rename ") + from;
         return Value();
     });
+    // A folder has no file size. std::filesystem::file_size leaves that case
+    // implementation-defined: libstdc++ and libc++ report an error, and MSVC
+    // returns the Win32 size (0 for an empty folder) with a clear error_code,
+    // because GetFileAttributesExW succeeds for a directory. The C runtime
+    // rejects a folder on every OS (rl_host.c); do the same here so files.size
+    // does not depend on which C++ library answered.
     add("host_file_size", 1, [str_arg](std::vector<Value>& a) {
         const std::string& p = str_arg(a[0], "path");
         std::error_code ec;
-        auto n = fs::file_size(fs::u8path(p), ec);
+        const fs::path path = fs::u8path(p);
+        if (fs::is_directory(path, ec)) throw std::string("cannot get the size of ") + p;
+        ec.clear();
+        const auto n = fs::file_size(path, ec);
         if (ec) throw std::string("cannot get the size of ") + p;
         return Value(static_cast<long long>(n));
     });

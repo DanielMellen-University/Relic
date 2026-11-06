@@ -514,6 +514,7 @@ static void test_host(void) {
     a[0] = S(dir);
     CHECK(call("host_make_dir", 1, a, &r) == RL_OK);
     SHOW(call1("host_is_dir", a[0]), "true");
+    ERR(call("host_file_size", 1, a, &r), "host_file_size(): cannot get the size of rl_test_tmp");
     rl_release(a[0]);
     a[0] = S("rl_test_tmp/b.txt"); a[1] = S("hi"); a[2] = rl_bool(0);
     CHECK(call("host_write_file", 3, a, &r) == RL_OK);

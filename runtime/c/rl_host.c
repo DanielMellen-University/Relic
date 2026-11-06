@@ -153,6 +153,9 @@ BI(h_file_size) {
     long long size = 0;
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
+    /* A folder is an error on every OS. Windows still reports a size for one
+     * (often 0) and MSVC's std::filesystem::file_size returns it with no error;
+     * the C++ host checks is_directory for the same reason. */
     if (!stat_path(S(a[0])->data, &d, &size) || d) return rl_fail(cx, "cannot get the size of %s", S(a[0])->data);
     *out = rl_int(size);
     return RL_OK;
