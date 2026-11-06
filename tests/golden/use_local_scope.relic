@@ -1,0 +1,8 @@
+fun go()
+    use modules/counter
+    return counter.bump()
+print(go())
+try
+    print(counter)
+catch e
+    print(e.message)
