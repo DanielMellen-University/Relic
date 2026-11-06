@@ -1,0 +1,10 @@
+# map_values returns a new map; filter keeping everything or nothing.
+use std/maps
+fun twice(v) = v * 2
+fun no(k, v) = false
+fun yes(k, v) = true
+let src = {b: 1, a: 2}
+let d = maps.map_values(src, twice)
+d.b = 99
+print(src, d)
+print(maps.filter({a: 1, b: 2}, no), maps.filter({a: 1}, yes))
