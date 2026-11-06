@@ -1,0 +1,7 @@
+# encode of a function value is refused.
+use std/json
+use std/math
+try
+    json.encode(math.floor)
+catch e
+    print(e.message)
