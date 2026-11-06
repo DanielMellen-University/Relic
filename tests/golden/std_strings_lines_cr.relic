@@ -1,0 +1,3 @@
+use std/strings
+let cr = chr(13)
+print(strings.lines("a" + cr + "b"), strings.lines("a" + cr), strings.lines("a\n\n"), strings.lines(cr + "\n"), strings.lines("a" + cr + "\n" + cr + "\nb\n"))
