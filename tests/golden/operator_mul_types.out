@@ -1,0 +1,6 @@
+true true -6 2 2
+true false
+[1, 2, 3] ab 3.0
+cannot multiply a string and an int
+cannot multiply a list and an int
+cannot add an int and a string
