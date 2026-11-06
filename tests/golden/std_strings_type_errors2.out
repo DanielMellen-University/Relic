@@ -1,0 +1,6 @@
+strings.is_digits(): argument must be a string, got int
+strings.is_alpha(): argument must be a string, got none
+strings.count(): part must be a string, got none
+strings.find_last(): part must be a string, got int
+strings.words(): argument must be a string, got int
+strings.join(): separator must be a string, got int

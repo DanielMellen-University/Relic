@@ -1,0 +1,25 @@
+use std/strings
+try
+    print(strings.is_digits(5))
+catch e
+    print(e.message)
+try
+    print(strings.is_alpha(none))
+catch e
+    print(e.message)
+try
+    print(strings.count("abc", none))
+catch e
+    print(e.message)
+try
+    print(strings.find_last("abc", 1))
+catch e
+    print(e.message)
+try
+    print(strings.words(5))
+catch e
+    print(e.message)
+try
+    print(strings.join("ab", 5))
+catch e
+    print(e.message)
