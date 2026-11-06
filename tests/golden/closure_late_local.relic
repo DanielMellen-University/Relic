@@ -1,0 +1,15 @@
+let later = 1
+fun outer()
+    fun inner()
+        return later
+    print(inner())
+    let later = 99
+    print(inner())
+    return later
+print(outer(), later)
+fun outer2()
+    fun inner()
+        return v
+    let v = 5
+    return inner()
+print(outer2())
