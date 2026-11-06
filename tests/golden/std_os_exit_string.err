@@ -1,0 +1,3 @@
+std_os_exit_string.relic:2:8: error: os.exit(): code must be a number, got string
+    os.exit("0")
+           ^
