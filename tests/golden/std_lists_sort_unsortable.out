@@ -1,0 +1,3 @@
+cannot compare a list and a list
+cannot compare a bool and a bool
+[[1]] [true]
