@@ -1,0 +1,13 @@
+vfs.exists(): fs must be a vfs from vfs.new(), got int
+vfs.list(): fs must be a vfs from vfs.new(), got none
+vfs.write(): fs must be a vfs from vfs.new(), got a map without root
+vfs.size(): fs must be a vfs from vfs.new(), got int
+vfs.list(): path must be a string, got int
+vfs.is_dir(): path must be a string, got none
+vfs.write(): path must be a string, got list
+vfs.append(): path must be a string, got float
+vfs.remove(): path must be a string, got bool
+vfs.remove_tree(): path must be a string, got none
+vfs.size(): path must be a string, got int
+vfs.entries(): path must be a string, got int
+vfs.append(): text must be a string, got none

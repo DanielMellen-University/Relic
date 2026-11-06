@@ -1,0 +1,54 @@
+use std/vfs
+let fs = vfs.new()
+try
+    print(vfs.exists(5, "/"))
+catch err
+    print(err.message)
+try
+    print(vfs.list(none, "/"))
+catch err
+    print(err.message)
+try
+    vfs.write({}, "/x", "t")
+catch err
+    print(err.message)
+try
+    print(vfs.size(5, "/x"))
+catch err
+    print(err.message)
+try
+    print(vfs.list(fs, 5))
+catch err
+    print(err.message)
+try
+    print(vfs.is_dir(fs, none))
+catch err
+    print(err.message)
+try
+    vfs.write(fs, ["/x"], "t")
+catch err
+    print(err.message)
+try
+    vfs.append(fs, 2.5, "t")
+catch err
+    print(err.message)
+try
+    vfs.remove(fs, true)
+catch err
+    print(err.message)
+try
+    vfs.remove_tree(fs, none)
+catch err
+    print(err.message)
+try
+    print(vfs.size(fs, 5))
+catch err
+    print(err.message)
+try
+    print(vfs.entries(fs, 5))
+catch err
+    print(err.message)
+try
+    vfs.append(fs, "/tmp/t", none)
+catch err
+    print(err.message)
