@@ -363,6 +363,28 @@ docs/guide.md false true ["/", "a", "c"]
 - `std/files` reads and writes text files, `std/json` reads and writes JSON, `std/os` has `env`, `cwd` and `exit`.
 - Windows, drawing and input come from `std/graphics` in a build made with `-DRELIC_SDL=ON` (the host) or `-DRELIC_C_SDL=ON` (compiled programs). Start with `examples/hello_window.relic`. See [examples/](../examples/README.md).
 
+`std/json` turns a value into JSON text and back:
+
+```
+use std/json
+let data = {name: "Relic", version: 52}
+let text = json.encode(data)
+print(text)
+print(json.decode(text))
+print(json.decode(text) == data)
+print(json.pretty(data))
+```
+
+```
+{"name":"Relic","version":52}
+{name: "Relic", version: 52}
+true
+{
+  "name": "Relic",
+  "version": 52
+}
+```
+
 ## Where next
 
 - [LANGUAGE.md](LANGUAGE.md): every rule in one place
