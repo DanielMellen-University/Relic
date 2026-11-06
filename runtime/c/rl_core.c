@@ -866,9 +866,9 @@ static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
         size_t cut = 0;
         while (from < n && cut < skip) {   /* columns count characters */
             unsigned char c = (unsigned char)p[from];
-            size_t len = (c & 0x80) == 0 ? 1 : (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : 4;
-            if (from + len > n) len = n - from;
-            from += len;
+            size_t clen = (c & 0x80) == 0 ? 1 : (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : 4;
+            if (from + clen > n) clen = n - from;
+            from += clen;
             ++cut;
         }
         to_ = from + 160;
