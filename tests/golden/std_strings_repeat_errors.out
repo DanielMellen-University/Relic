@@ -1,0 +1,4 @@
+strings.repeat(): count must be a whole number, got -1.5
+strings.repeat(): count must be a whole number, got inf
+strings.repeat(): count must be a whole number, got -inf
+strings.repeat(): count must be a whole number, got nan
