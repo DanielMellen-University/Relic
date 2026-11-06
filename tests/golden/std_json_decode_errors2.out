@@ -1,0 +1,15 @@
+"\u00zz" => ERR json: bad \u escape at 3
+"\u12" => ERR json: bad \u escape at 3
+"\u123" => ERR json: bad \u escape at 3
+{"a":1,} => ERR json: expected a key at 7
+[1 2] => ERR json: expected ',' or ']' at 3
+{a:1} => ERR json: expected a key at 1
+'x' => ERR json: expected a value at 0
+[1,2 => ERR json: expected ',' or ']' at 4
+{"a"} => ERR json: expected ':' at 4
+[} => ERR json: expected a value at 1
+{"a":1 "b":2} => ERR json: expected ',' or '}' at 7
+truX => ERR json: unexpected text at 0
+nul => ERR json: unexpected text at 0
+[truee] => ERR json: expected ',' or ']' at 5
+01.5 => ERR json: extra text at 1

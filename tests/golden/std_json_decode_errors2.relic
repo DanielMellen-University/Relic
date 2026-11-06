@@ -1,0 +1,7 @@
+# Decode errors not pinned by the other json goldens.
+use std/json
+for t in ["\"\\u00zz\"", "\"\\u12\"", "\"\\u123\"", "{{\"a\":1,}}", "[1 2]", "{{a:1}}", "'x'", "[1,2", "{{\"a\"}}", "[}}", "{{\"a\":1 \"b\":2}}", "truX", "nul", "[truee]", "01.5"]
+    try
+        print(t, "=>", json.decode(t))
+    catch e
+        print(t, "=> ERR", e.message)
