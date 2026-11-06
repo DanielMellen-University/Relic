@@ -15,27 +15,27 @@ fun _byte_len(c)
 
 # Very long lines are cut to a window of 160 bytes around the column, on character edges,
 # the way the host does. Gives [text, col] with the column moved to match.
+# Columns count characters, so the window start is found by walking that many
+# characters in, and the column is moved by the characters cut off, not the bytes.
 fun _window(text, col)
     let total = 0
     for c in text
         total = total + _byte_len(c)
     if total <= 160
         return [text, col]
-    let want = 0
+    let skip = 0
     if col > 80
-        want = col - 80
-    # first character that starts at or before byte `want` (the host steps back to a character start)
+        skip = col - 80
+    # the character `skip` characters in: its byte offset and its index
     let from = 0
-    let at = 0
     let first = 0
     let n = 0
     for c in text
-        if at > want
+        if n >= skip
             break
-        from = at
-        first = n
-        at = at + _byte_len(c)
+        from = from + _byte_len(c)
         n = n + 1
+    first = n
     # past from + 160 bytes, up to the next character start
     let stop = from + 160
     let pos = from
@@ -46,7 +46,7 @@ fun _window(text, col)
             break
         pos = pos + _byte_len(c)
         i = i + 1
-    return [slice(text, first, i), col - from]
+    return [slice(text, first, i), col - first]
 
 fun snippet(path, line, col)
     if line < 1 or col < 1 or not files.exists(path)
@@ -67,15 +67,15 @@ fun snippet_in(lines, line, col)
     text = w[0]
     col = w[1]
     let pad = ""
-    let bytes = 0
+    let n = 0
     for c in text
-        if bytes >= col - 1
+        if n >= col - 1
             break
         if c == chr(9)
             pad = pad + c
         else
             pad = pad + " "
-        bytes = bytes + _byte_len(c)
+        n = n + 1
     return "    {text}\n    {pad}^\n"
 
 fun show(path, err)
