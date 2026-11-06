@@ -428,7 +428,7 @@ endif()
 # (in parallel, one could remove the folder while another was using it).
 # The files goldens below each use their own .tmpdir, but a golden and its
 # cgen twin share it, so they take turns too.
-foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_write_edges cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_write_edges selfhost_interp vm_matches_tree_walker)
+foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_write_edges golden_std_files_type_errors cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_write_edges cgen_std_files_type_errors selfhost_interp vm_matches_tree_walker)
   if(TEST ${t})
     set_tests_properties(${t} PROPERTIES RESOURCE_LOCK golden_disk_files)
   endif()
