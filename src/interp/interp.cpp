@@ -108,8 +108,15 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
             long long x = a.as<long long>(), y = b.as<long long>();
             c = x < y ? -1 : (x > y ? 1 : 0);
         } else if (is_num(a) && is_num(b)) {
+            // IEEE ordered compares. NaN is unordered, so < <= > >= are all
+            // false, including an int next to a float (the VM's float-float
+            // path already does this). A three-way result would treat NaN as
+            // equal and make <= and >= true.
             double x = to_num(a), y = to_num(b);
-            c = x < y ? -1 : (x > y ? 1 : 0);
+            if (op == "<") return Value(x < y);
+            if (op == "<=") return Value(x <= y);
+            if (op == ">") return Value(x > y);
+            return Value(x >= y);
         } else if (a.is<std::string>() && b.is<std::string>()) {
             c = a.as<std::string>().compare(b.as<std::string>());
         } else {
