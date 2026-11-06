@@ -1,0 +1,3 @@
+maps.pick(): key 0 must be a string, got int
+maps.drop(): key must be a string, got int
+maps.get(): m must be a map, got int
