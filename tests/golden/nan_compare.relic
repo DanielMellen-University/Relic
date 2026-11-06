@@ -1,0 +1,5 @@
+let nan = num("nan")
+print(nan, nan == nan, nan != nan, nan < 1, nan > 1)
+print(nan + 1, nan * 0, num("inf") - num("inf"))
+print(num("inf") == num("inf"), num("inf") > 1e308, num("-inf") < 0)
+print(0.0 == -0.0, 0.0 < -0.0, int(0.0) == int(-0.0))
