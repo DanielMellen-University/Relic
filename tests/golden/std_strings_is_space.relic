@@ -1,0 +1,2 @@
+use std/strings
+print(strings.is_space(" "), strings.is_space("\t"), strings.is_space("\n"), strings.is_space(chr(13)), strings.is_space("x"), strings.is_space(""), strings.is_space("  "), strings.is_space(chr(11)))
