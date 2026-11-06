@@ -300,9 +300,13 @@ void Interpreter::install_builtins() {
     });
     add("host_write_file", 3, [str_arg](std::vector<Value>& a) {
         bool app = a[2].is<bool>() && a[2].as<bool>();
-        std::ofstream f(str_arg(a[0], "path"), std::ios::binary | (app ? std::ios::app : std::ios::trunc));
-        if (!f) throw std::string("cannot write ") + a[0].as<std::string>();
-        f << str_arg(a[1], "text");
+        // Both arguments are checked before the file is opened: a bad text
+        // used to leave an empty file behind (the open truncated it first).
+        const std::string& path = str_arg(a[0], "path");
+        const std::string& text = str_arg(a[1], "text");
+        std::ofstream f(path, std::ios::binary | (app ? std::ios::app : std::ios::trunc));
+        if (!f) throw std::string("cannot write ") + path;
+        f << text;
         return Value();
     });
     add("host_file_exists", 1, [str_arg](std::vector<Value>& a) {

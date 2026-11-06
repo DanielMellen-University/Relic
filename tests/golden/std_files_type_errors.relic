@@ -1,0 +1,25 @@
+use std/files
+try
+    files.write("bad.txt", 5)
+catch e
+    print(e.message)
+try
+    files.append_text("bad2.txt", 7)
+catch e
+    print(e.message)
+try
+    print(files.read(5))
+catch e
+    print(e.message)
+try
+    print(files.list(5))
+catch e
+    print(e.message)
+try
+    print(files.exists(5))
+catch e
+    print(e.message)
+try
+    files.write(5, "x")
+catch e
+    print(e.message)
