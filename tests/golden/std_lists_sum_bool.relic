@@ -1,0 +1,22 @@
+# sum, product and mean name a bool item; sum on a string names its first character.
+use std/lists
+try
+    lists.sum([true])
+catch e
+    print(e.message)
+try
+    lists.sum([1, true])
+catch e
+    print(e.message)
+try
+    lists.product([true])
+catch e
+    print(e.message)
+try
+    lists.mean([1, true])
+catch e
+    print(e.message)
+try
+    lists.sum("ab")
+catch e
+    print(e.message)

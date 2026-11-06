@@ -1,0 +1,5 @@
+lists.sum(): item 0 must be a number, got bool
+lists.sum(): item 1 must be a number, got bool
+lists.product(): item 0 must be a number, got bool
+lists.mean(): item 1 must be a number, got bool
+lists.sum(): item 0 must be a number, got string
