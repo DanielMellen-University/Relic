@@ -1,6 +1,9 @@
 files.write(): text must be a string, got int
+false
 files.append_text(): text must be a string, got int
 files.read(): path must be a string, got int
 files.list(): path must be a string, got int
 files.exists(): path must be a string, got int
 files.write(): path must be a string, got int
+files.write(): text must be a string, got int
+keep
