@@ -1,0 +1,46 @@
+# Wrong-type errors for the host functions and for is_whole, is_odd, lerp, hypot.
+use std/math
+try
+    math.sin(none)
+catch e
+    print(e.message)
+try
+    math.cos([1])
+catch e
+    print(e.message)
+try
+    math.exp(true)
+catch e
+    print(e.message)
+try
+    math.sqrt(none)
+catch e
+    print(e.message)
+try
+    math.is_whole([1])
+catch e
+    print(e.message)
+try
+    math.is_whole(true)
+catch e
+    print(e.message)
+try
+    math.is_whole(none)
+catch e
+    print(e.message)
+try
+    math.is_odd(2.0)
+catch e
+    print(e.message)
+try
+    math.lerp("a", 10, 0.5)
+catch e
+    print(e.message)
+try
+    math.lerp(0, 10, "x")
+catch e
+    print(e.message)
+try
+    math.hypot(1, "x")
+catch e
+    print(e.message)
