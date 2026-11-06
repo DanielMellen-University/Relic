@@ -68,7 +68,7 @@ Lowest precedence first:
 | 2 | `and` | stops early; both sides must be bools |
 | 3 | `not` | needs a bool |
 | 4 | `== != < <= > >= in` | no chaining: `a < b < c` is an error |
-| 5 | `..` | `a..b` is the ints from `a` up to `b - 1` |
+| 5 | `..` | `a..b` is the ints from `a` up to `b - 1`. The result is a list, so `0..3 == [0, 1, 2]`. |
 | 6 | `+ -` | |
 | 7 | `* / %` | |
 | 8 | unary `-` | |
