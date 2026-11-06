@@ -1,0 +1,14 @@
+use std/strings
+try
+    print(strings.truncate("abcdef", "4", "..."))
+catch e
+    print(e.message)
+try
+    print(strings.truncate("abcdef", 4.0, "..."))
+catch e
+    print(e.message)
+try
+    print(strings.truncate("abcdef", 4, 5))
+catch e
+    print(e.message)
+print(strings.truncate("héllo", 3, "…"), strings.truncate("abcdef", 0, "..."), strings.truncate("abcdef", 0, ""), strings.truncate("abc", 5, "..."))
