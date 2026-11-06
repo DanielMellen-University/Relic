@@ -1,0 +1,7 @@
+# copy is shallow: a nested list is shared with the original.
+use std/lists
+let orig = [1, [2]]
+let cp = lists.copy(orig)
+append(cp[1], 9)
+print(orig, cp)
+print(lists.reverse([1, [2, 3]]))
