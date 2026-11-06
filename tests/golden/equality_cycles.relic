@@ -1,0 +1,10 @@
+let a = []
+append(a, a)
+let b = []
+append(b, b)
+print(a == b, a == a, [a] == [b])
+let m1 = {}
+m1.self = m1
+let m2 = {}
+m2.self = m2
+print(m1 == m2)
