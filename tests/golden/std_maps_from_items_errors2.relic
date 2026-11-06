@@ -1,0 +1,23 @@
+# from_items names a bad item at index 1 of each kind, and pairs that are not a list.
+use std/maps
+try
+    maps.from_items([["a", 1], "ab"])
+catch e
+    print(e.message)
+try
+    maps.from_items([["a", 1], ["b", 2, 3]])
+catch e
+    print(e.message)
+try
+    maps.from_items([["a", 1], [1]])
+catch e
+    print(e.message)
+try
+    maps.from_items([["a", 1], {k: 1}])
+catch e
+    print(e.message)
+try
+    maps.from_items("ab")
+catch e
+    print(e.message)
+print(maps.from_items([["a", none], ["a", 1]]), maps.from_items([["", 1]]))
