@@ -1,0 +1,8 @@
+# merge keeps an overwritten key in its original position; drop then re-adding moves it to the end.
+use std/maps
+print(maps.merge({a: 1, b: 2}, {b: 3}), keys(maps.merge({a: 1, b: 2}, {b: 3})))
+print(maps.merge({b: 2, a: 1}, {a: 9, c: 3}), keys(maps.merge({b: 2, a: 1}, {a: 9, c: 3})))
+let m = {a: 1, b: 2, c: 3}
+print(maps.drop(m, "b"), m)
+m.b = 9
+print(m, keys(m))
