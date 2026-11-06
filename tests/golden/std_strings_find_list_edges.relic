@@ -1,0 +1,3 @@
+use std/strings
+print(strings.find([1, 2, 3], []), strings.find([], []), strings.find([], [1]), strings.find([1, 2, 1, 2], [1, 2]))
+print(strings.contains([1, 2], [2]), strings.contains([1, 2], []), strings.starts_with([1, 2], []), strings.ends_with([1, 2], []))
