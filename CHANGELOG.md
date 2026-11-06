@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.53 (2026-11-05)
+
+Coverage release: 66 new golden tests (core language, std strings, lists, maps, math, json, paths, files, os, time, vfs) and 5 doc additions (GUIDE.md JSON round-trip and is_space/is_whole examples, STDLIB.md arrow examples, LANGUAGE.md range-is-a-list and cyclic equality notes). Program counts are now 253 programs, 247 compiled.
+
+- `strings.find` and `contains` fail naming the mismatched part for a string paired with a list: `strings.find(): part must be a string, got list` (was a silent -1, and false for contains). `starts_with` and `ends_with` still return false for the same mix; that is next.
+- `files.write` and `append_text` check the text type before opening the file: a failed write no longer leaves an empty file behind, and no longer truncates an existing file to empty.
+
 ## 1.0.52 (2026-11-03)
 
 Std checks, json and speed fixes. Some std errors have new text, and a few calls that gave a wrong result or crashed now give the right one or a clear error; a script that matched an old error text exactly needs the new one.
