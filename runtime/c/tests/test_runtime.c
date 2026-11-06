@@ -413,7 +413,7 @@ static void test_errors_and_builtins(void) {
         got[n] = 0;
         fclose(tf);
         CHECK(strcmp(got, "e.relic:2:13: error: cannot add an int and a string\n"
-                          "    \tprint(\"\xc3\xa9\", x + \"a\")\n    \t          ^\n") == 0);
+                          "    \tprint(\"\xc3\xa9\", x + \"a\")\n    \t           ^\n") == 0);
         CHECK(rl_catch(&cx, &r));
         rl_release(r);
     }
