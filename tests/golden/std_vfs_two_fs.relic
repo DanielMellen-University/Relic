@@ -1,0 +1,9 @@
+use std/vfs
+let a = vfs.new()
+let b = vfs.new()
+vfs.write(a, "/home/only.txt", "mine")
+print(vfs.exists(a, "/home/only.txt"), vfs.exists(b, "/home/only.txt"))
+vfs.write(a, "/home/welcome.txt", "changed")
+print(vfs.read(a, "/home/welcome.txt"), vfs.read(b, "/home/welcome.txt"))
+vfs.make_dir(a, "/home/empty")
+print(vfs.entries(a, "/home/empty"), vfs.entries(a, "/"))
