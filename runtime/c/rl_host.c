@@ -122,9 +122,11 @@ BI(h_write_file) {
     int app = a[2].k == RL_BOOL && a[2].u.b;
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
+    /* The text is checked before the file is opened: a bad text used to
+       leave an empty file behind (the open truncated it first). */
+    if (rl_arg_str(cx, a[1], "text")) return RL_ERR;
     f = open_file(S(a[0])->data, app ? "ab" : "wb");
     if (!f) return rl_fail(cx, "cannot write %s", S(a[0])->data);
-    if (rl_arg_str(cx, a[1], "text")) { fclose(f); return RL_ERR; }
     fwrite(S(a[1])->data, 1, S(a[1])->len, f);
     fclose(f);
     *out = rl_none();

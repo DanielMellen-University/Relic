@@ -1,0 +1,12 @@
+# sort_by with a less function that returns a non-bool fails in the if.
+use std/lists
+fun one(a, b) = 1
+fun non(a, b) = none
+try
+    lists.sort_by([3, 1, 2], one)
+catch e
+    print(e.message)
+try
+    lists.sort_by([3, 1, 2], non)
+catch e
+    print(e.message)

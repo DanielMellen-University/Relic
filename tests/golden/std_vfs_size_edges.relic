@@ -1,0 +1,14 @@
+use std/vfs
+let fs = vfs.new()
+try
+    print(vfs.size(fs, "/nope"))
+catch err
+    print(err.message)
+try
+    print(vfs.size(fs, "/home"))
+catch err
+    print(err.message)
+vfs.write(fs, "/home/empty.txt", "")
+print(vfs.size(fs, "/home/empty.txt"))
+vfs.write(fs, "/home/uni.txt", "é😀")
+print(vfs.size(fs, "/home/uni.txt"), vfs.read(fs, "/home/uni.txt"))

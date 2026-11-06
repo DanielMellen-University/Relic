@@ -1,0 +1,47 @@
+# Check order on empty input: min_by and max_by check empty first, the rest check the function first.
+use std/lists
+use std/maps
+try
+    lists.min_by([], 5)
+catch e
+    print(e.message)
+try
+    lists.max_by([], 5)
+catch e
+    print(e.message)
+try
+    lists.group_by([], 5)
+catch e
+    print(e.message)
+try
+    lists.count_by([], 5)
+catch e
+    print(e.message)
+try
+    lists.reduce([], 5, 0)
+catch e
+    print(e.message)
+try
+    lists.any([], 5)
+catch e
+    print(e.message)
+try
+    lists.find([], 5)
+catch e
+    print(e.message)
+try
+    lists.sum_by([], 5)
+catch e
+    print(e.message)
+try
+    lists.partition([], 5)
+catch e
+    print(e.message)
+try
+    maps.filter({}, 5)
+catch e
+    print(e.message)
+try
+    maps.map_values({}, 5)
+catch e
+    print(e.message)

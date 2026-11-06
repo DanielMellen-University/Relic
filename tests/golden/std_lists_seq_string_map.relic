@@ -1,0 +1,7 @@
+# map, filter and reduce walk a string's characters and a map's keys too.
+use std/lists
+fun cat(a, b) = a + b
+fun is_a(c) = c == "a"
+print(lists.map("abc", len), lists.map({b: 1, a: 2}, len))
+print(lists.filter("banana", is_a), lists.filter({a: 1, b: 2}, is_a))
+print(lists.reduce("abc", cat, ""), lists.reduce({a: 1}, cat, ""), lists.reduce([], cat, 7), lists.reduce([5], cat, 10), lists.reduce(["a"], cat, "x"))

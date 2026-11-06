@@ -1,0 +1,23 @@
+# write truncates, append creates, remove and remove_tree of a file, make_dir twice, list of an empty folder.
+use std/files
+let d = "std_files_write_edges.tmpdir"
+if files.exists(d) or files.is_dir(d)
+    files.remove_tree(d)
+files.make_dir(d)
+files.write(d + "/f.txt", "0123456789")
+files.write(d + "/f.txt", "x")
+print(files.read(d + "/f.txt"))
+files.append_text(d + "/new.txt", "new")
+print(files.read(d + "/new.txt"))
+files.write(d + "/gone.txt", "x")
+files.remove(d + "/gone.txt")
+print("remove_file_ok", files.exists(d + "/gone.txt"))
+files.write(d + "/tree.txt", "x")
+files.remove_tree(d + "/tree.txt")
+print("rmtree_file_ok", files.exists(d + "/tree.txt"))
+files.make_dir(d + "/sub")
+files.make_dir(d + "/sub")
+print("mkdir_twice_ok")
+files.make_dir(d + "/empty")
+print(files.list(d + "/empty"))
+files.remove_tree(d)

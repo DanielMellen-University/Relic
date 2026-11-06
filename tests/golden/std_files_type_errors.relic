@@ -1,0 +1,39 @@
+use std/files
+# A failed write must not leave a file behind, and must not clobber the
+# file that was already there: the text is checked before the file opens.
+if files.exists("bad.txt")
+    files.remove("bad.txt")
+if files.exists("keep.txt")
+    files.remove("keep.txt")
+try
+    files.write("bad.txt", 5)
+catch e
+    print(e.message)
+print(files.exists("bad.txt"))
+try
+    files.append_text("bad2.txt", 7)
+catch e
+    print(e.message)
+try
+    print(files.read(5))
+catch e
+    print(e.message)
+try
+    print(files.list(5))
+catch e
+    print(e.message)
+try
+    print(files.exists(5))
+catch e
+    print(e.message)
+try
+    files.write(5, "x")
+catch e
+    print(e.message)
+files.write("keep.txt", "keep")
+try
+    files.write("keep.txt", 5)
+catch e
+    print(e.message)
+print(files.read("keep.txt"))
+files.remove("keep.txt")

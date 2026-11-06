@@ -1,0 +1,18 @@
+use std/strings
+let inf = 1e308 * 10
+try
+    print(strings.repeat("ab", -1.5))
+catch e
+    print(e.message)
+try
+    print(strings.repeat("ab", inf))
+catch e
+    print(e.message)
+try
+    print(strings.repeat("ab", 0 - inf))
+catch e
+    print(e.message)
+try
+    print(strings.repeat("a", inf - inf))
+catch e
+    print(e.message)

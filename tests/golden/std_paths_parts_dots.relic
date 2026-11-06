@@ -1,0 +1,5 @@
+# parts and normalize of dot-only paths, and is_abs of a backslash-only path.
+use std/paths
+print(paths.parts(".."), paths.parts("a/.."), paths.parts("../.."), paths.parts("/.."), paths.parts("a/b/../../c"))
+print(paths.normalize("../.."), paths.normalize("a/b/../../../c"), paths.normalize("///"), paths.normalize("a/"))
+print(paths.is_abs("\\\\"))

@@ -1,0 +1,2 @@
+use std/strings
+print(strings.join([[1, 2], {a: 1}], "|"), strings.join([none, true, 1.5], ","), strings.join(0..3, "-"), strings.join("a", "-"))

@@ -1,0 +1,12 @@
+let i = 99
+for i in 0..3
+    print(i)
+print(i)
+let m = {a: 1}
+for k in m
+    print(k)
+print("after map loop")
+try
+    print(k)
+catch e
+    print(e.message)

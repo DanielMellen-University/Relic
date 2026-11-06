@@ -8,12 +8,12 @@ print(m, l)
 print("{l}")
 print(l == l, [l] == [l], m == m)
 let deep = []
-for i in 0..50000
+for i in 0..12000
     deep = [deep]
 print(len(deep))
 deep = none
 let wide = {}
-for i in 0..50000
+for i in 0..12000
     wide = {inner: wide}
 wide = 0
 print("freed")

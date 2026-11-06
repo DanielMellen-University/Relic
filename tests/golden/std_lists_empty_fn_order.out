@@ -1,0 +1,11 @@
+lists.min_by(): the list is empty
+lists.max_by(): the list is empty
+lists.group_by(): key must be a function, got int
+lists.count_by(): key must be a function, got int
+lists.reduce(): f must be a function, got int
+lists.any(): test must be a function, got int
+lists.find(): test must be a function, got int
+lists.sum_by(): f must be a function, got int
+lists.partition(): test must be a function, got int
+maps.filter(): keep must be a function, got int
+maps.map_values(): f must be a function, got int

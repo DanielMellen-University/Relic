@@ -1,0 +1,6 @@
+print(append([1], 2), pop([1, 2]), insert([1, 2], 1, 9))
+let l = [1, 2, 3]
+print(pop(l), l, remove(l, 0), l)
+print(keys({}), len({}), len(""), len([]))
+print(str(none), str(true), str(1.5), str({a: [1]}))
+print(type(1..3))

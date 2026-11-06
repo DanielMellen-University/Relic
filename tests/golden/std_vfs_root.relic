@@ -1,0 +1,31 @@
+use std/vfs
+let fs = vfs.new()
+print(vfs.exists(fs, "/"), vfs.is_dir(fs, "/"), vfs.exists(fs, ""), vfs.is_dir(fs, ""), vfs.list(fs, ""))
+try
+    print(vfs.read(fs, "/"))
+catch err
+    print(err.message)
+try
+    print(vfs.size(fs, "/"))
+catch err
+    print(err.message)
+try
+    vfs.write(fs, "/", "x")
+catch err
+    print(err.message)
+try
+    vfs.append(fs, "/", "x")
+catch err
+    print(err.message)
+try
+    vfs.remove(fs, "/")
+catch err
+    print(err.message)
+try
+    vfs.remove_tree(fs, "/")
+catch err
+    print(err.message)
+try
+    vfs.rename(fs, "/", "/tmp/x")
+catch err
+    print(err.message)

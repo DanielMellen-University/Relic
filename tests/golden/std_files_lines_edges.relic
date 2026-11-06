@@ -1,0 +1,13 @@
+# lines of an empty file, a file with no trailing newline, and a CRLF file.
+use std/files
+let d = "std_files_lines_edges.tmpdir"
+if files.exists(d) or files.is_dir(d)
+    files.remove_tree(d)
+files.make_dir(d)
+files.write(d + "/empty.txt", "")
+print(files.size(d + "/empty.txt"), files.read(d + "/empty.txt") == "", files.lines(d + "/empty.txt"))
+files.write(d + "/notrail.txt", "one\ntwo")
+print(files.lines(d + "/notrail.txt"))
+files.write(d + "/crlf.txt", "a" + chr(13) + "\nb" + chr(13) + "\n")
+print(files.lines(d + "/crlf.txt"))
+files.remove_tree(d)

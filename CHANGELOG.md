@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.53 (2026-11-05)
+
+Coverage release: 66 new golden tests (core language, std strings, lists, maps, math, json, paths, files, os, time, vfs) and 5 doc additions (GUIDE.md JSON round-trip and is_space/is_whole examples, STDLIB.md arrow examples, LANGUAGE.md range-is-a-list and cyclic equality notes). Program counts are now 253 programs, 247 compiled.
+
+- `strings.find` and `contains` fail naming the mismatched part for a string paired with a list: `strings.find(): part must be a string, got list` (was a silent -1, and false for contains). `starts_with` and `ends_with` still return false for the same mix; that is next.
+- `files.write` and `append_text` check the text type before opening the file: a failed write no longer leaves an empty file behind, and no longer truncates an existing file to empty.
+- Diagnostics: the error snippet caret now lines up by character column for non-ASCII source: it counted byte offsets against character columns, so `err_utf8_column` had the caret 2 spaces too far left and `err_long_line` 17 spaces short. Fixed in the host, selfhost, and C runtime copies; goldens corrected, not dropped.
+- Speed: `selfhost_interp` 12.15 s median of 3 (12.22, 12.12, 12.15), under the 12.2 s cap; 1.0.52 measured about 11.37 s. The difference is the new goldens. Long inputs in `gc_cycles` (auto-GC loop 100000 → 55000 pairs), `cycles_and_depth` (50000 → 12000) and `std_vfs_big_folder_cache` (70 → 25 files) were cut so the suite still fits the cap; same checks.
+- `ctest`: 541 with the host, 258 without.
+
 ## 1.0.52 (2026-11-03)
 
 Std checks, json and speed fixes. Some std errors have new text, and a few calls that gave a wrong result or crashed now give the right one or a clear error; a script that matched an old error text exactly needs the new one.

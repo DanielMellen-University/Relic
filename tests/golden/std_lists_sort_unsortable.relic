@@ -1,0 +1,11 @@
+# sort of multi-item lists of lists or bools fails; one-item cases succeed.
+use std/lists
+try
+    lists.sort([[2], [1]])
+catch e
+    print(e.message)
+try
+    lists.sort([true, false])
+catch e
+    print(e.message)
+print(lists.sort([[1]]), lists.sort([true]))

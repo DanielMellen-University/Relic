@@ -1,0 +1,3 @@
+# relative from and to the empty path, down several levels, and past the start.
+use std/paths
+print(paths.relative("", "a"), paths.relative("a", ""), paths.relative("/a/b", "/a/b/c/d"), paths.relative("a", "../b"), paths.relative("/", "/"), paths.relative("a/b/c", "a"))

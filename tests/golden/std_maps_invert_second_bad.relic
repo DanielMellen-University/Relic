@@ -1,0 +1,10 @@
+use std/maps
+try
+    print(maps.invert({a: "x", b: 1}))
+catch e
+    print(e.message)
+try
+    print(maps.invert({a: 1, b: "x"}))
+catch e
+    print(e.message)
+print(maps.invert({a: "x"}), maps.invert({}))

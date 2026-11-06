@@ -1,0 +1,6 @@
+maps.from_items(): item 1 must be a [string key, value] pair, got string
+maps.from_items(): item 1 must be a [string key, value] pair, got a list of length 3
+maps.from_items(): item 1 must be a [string key, value] pair, got a list of length 1
+maps.from_items(): item 1 must be a [string key, value] pair, got map
+maps.from_items(): pairs must be a list, got string
+{a: 1} {"": 1}

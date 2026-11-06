@@ -1,0 +1,23 @@
+try
+    print(1.0 / 0.0)
+catch e
+    print(e.message)
+try
+    print(1 % 0.0)
+catch e
+    print(e.message)
+try
+    print(5.0 % 0.0)
+catch e
+    print(e.message)
+print(num("inf") - num("inf"), num("inf") + 1, num("inf") * 0)
+try
+    print(int(num("inf")))
+catch e
+    print(e.message)
+try
+    print(int(num("nan")))
+catch e
+    print(e.message)
+print(float(num("inf")), type(float(3)))
+print(int(-0.0), int(0.5), int(-0.5), float("inf") > 1e308)

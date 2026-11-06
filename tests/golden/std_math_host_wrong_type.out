@@ -1,0 +1,11 @@
+math.sin(): argument must be a number, got none
+math.cos(): argument must be a number, got list
+math.exp(): argument must be a number, got bool
+math.sqrt(): argument must be a number, got none
+math.is_whole(): argument must be a number, got list
+math.is_whole(): argument must be a number, got bool
+math.is_whole(): argument must be a number, got none
+math.is_odd(): argument must be an int, got float
+math.lerp(): argument must be a number, got string
+math.lerp(): argument must be a number, got string
+math.hypot(): argument must be a number, got string

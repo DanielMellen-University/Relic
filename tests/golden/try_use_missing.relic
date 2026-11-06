@@ -1,0 +1,5 @@
+try
+    use modules/nope
+catch e
+    print("caught", e.message)
+print("after")

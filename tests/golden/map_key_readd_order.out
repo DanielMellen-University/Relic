@@ -1,0 +1,7 @@
+["a", "b"]
+["b"] {b: 2}
+["b", "a"] {b: 2, a: 9}
+9
+2 [3, 1]
+remove(): map has no key 'z'
+remove(): index 5 is out of range
