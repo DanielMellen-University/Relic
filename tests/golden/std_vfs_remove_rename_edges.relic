@@ -1,0 +1,30 @@
+use std/vfs
+let fs = vfs.new()
+try
+    vfs.remove(fs, "/nope")
+catch err
+    print(err.message)
+vfs.make_dir(fs, "/home/empty")
+vfs.remove(fs, "/home/empty")
+print(vfs.exists(fs, "/home/empty"))
+vfs.write(fs, "/home/gone.txt", "x")
+vfs.remove_tree(fs, "/home/gone.txt")
+print(vfs.exists(fs, "/home/gone.txt"))
+vfs.write(fs, "/home/created.txt", "new")
+try
+    vfs.rename(fs, "/home/created.txt", "/home/welcome.txt")
+catch err
+    print(err.message)
+try
+    vfs.rename(fs, "/home/created.txt", "/no/b.txt")
+catch err
+    print(err.message)
+try
+    vfs.rename(fs, "/home/created.txt", "/home/created.txt")
+catch err
+    print(err.message)
+vfs.make_dir(fs, "/home/mv/sub")
+vfs.write(fs, "/home/mv/sub/f.txt", "deep")
+vfs.write(fs, "/home/mv/top.txt", "top")
+vfs.rename(fs, "/home/mv", "/tmp/mv")
+print(vfs.list(fs, "/tmp/mv"), vfs.read(fs, "/tmp/mv/sub/f.txt"), vfs.exists(fs, "/home/mv"))
