@@ -1,0 +1,14 @@
+# pick names a non-string key by index; drop needs a string key; get needs a map.
+use std/maps
+try
+    maps.pick({a: 1}, [0])
+catch e
+    print(e.message)
+try
+    maps.drop({a: 1}, 1)
+catch e
+    print(e.message)
+try
+    maps.get(5, "a", 1)
+catch e
+    print(e.message)
