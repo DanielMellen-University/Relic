@@ -377,11 +377,14 @@ void Interpreter::install_builtins() {
         if (ec) throw std::string("cannot rename ") + from;
         return Value();
     });
+    // A folder has no byte size. MSVC's file_size on a directory succeeds;
+    // libstdc++ and the C runtime report an error, and so does this.
     add("host_file_size", 1, [str_arg](std::vector<Value>& a) {
         const std::string& p = str_arg(a[0], "path");
-        std::error_code ec;
-        auto n = fs::file_size(fs::u8path(p), ec);
-        if (ec) throw std::string("cannot get the size of ") + p;
+        std::error_code ec, dec;
+        auto path = fs::u8path(p);
+        auto n = fs::file_size(path, ec);
+        if (ec || fs::is_directory(path, dec)) throw std::string("cannot get the size of ") + p;
         return Value(static_cast<long long>(n));
     });
     add("host_cwd", 0, [](std::vector<Value>&) { return Value(fs::current_path().generic_u8string()); });
