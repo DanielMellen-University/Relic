@@ -1,0 +1,9 @@
+# The timer fields at start, after ticks, and since with an int start.
+use std/time
+let t = time.timer()
+print(t.fps, t.frames, t.window, type(t.last), t.last > 0)
+let d1 = time.tick(t)
+print(d1 >= 0, type(d1), t.frames, t.fps)
+time.tick(t)
+print(t.frames, t.window > 0, t.fps)
+print(time.since(0) > 0, type(time.since(0)))
