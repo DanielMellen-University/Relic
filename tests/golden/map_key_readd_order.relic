@@ -1,0 +1,17 @@
+let m = {a: 1, b: 2}
+print(keys(m))
+remove(m, "a")
+print(keys(m), m)
+m.a = 9
+print(keys(m), m)
+print(m.a)
+let l = [3, 1, 2]
+print(remove(l, 2), l)
+try
+    print(remove({a: 1}, "z"))
+catch e
+    print(e.message)
+try
+    print(remove([1], 5))
+catch e
+    print(e.message)
