@@ -1,0 +1,13 @@
+paths.join(): path must be a string, got int
+paths.join(): path must be a string, got int
+paths.base(): path must be a string, got int
+paths.dir(): path must be a string, got int
+paths.ext(): path must be a string, got int
+paths.stem(): path must be a string, got int
+paths.normalize(): path must be a string, got int
+paths.is_abs(): path must be a string, got int
+paths.relative(): path must be a string, got int
+paths.relative(): path must be a string, got int
+paths.with_ext(): path must be a string, got int
+paths.with_ext(): ext must be a string, got int
+.md /.md a/.md

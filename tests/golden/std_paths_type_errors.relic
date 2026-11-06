@@ -1,0 +1,52 @@
+# A path that is not a string fails naming the function, and with_ext on an
+# empty or trailing-slash path keeps the slash before the new ext.
+use std/paths
+try
+    print(paths.join(5, "b"))
+catch e
+    print(e.message)
+try
+    print(paths.join("a", 5))
+catch e
+    print(e.message)
+try
+    print(paths.base(5))
+catch e
+    print(e.message)
+try
+    print(paths.dir(5))
+catch e
+    print(e.message)
+try
+    print(paths.ext(5))
+catch e
+    print(e.message)
+try
+    print(paths.stem(5))
+catch e
+    print(e.message)
+try
+    print(paths.normalize(5))
+catch e
+    print(e.message)
+try
+    print(paths.is_abs(5))
+catch e
+    print(e.message)
+try
+    print(paths.relative(5, "a"))
+catch e
+    print(e.message)
+try
+    print(paths.relative("a", 5))
+catch e
+    print(e.message)
+try
+    print(paths.with_ext(5, ".md"))
+catch e
+    print(e.message)
+try
+    print(paths.with_ext("a.md", 5))
+catch e
+    print(e.message)
+print(paths.with_ext("", ".md"), paths.with_ext("/", ".md"), paths.with_ext("a/", ".md"))
