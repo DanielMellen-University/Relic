@@ -6,6 +6,7 @@ Coverage release: 66 new golden tests (core language, std strings, lists, maps, 
 
 - `strings.find` and `contains` fail naming the mismatched part for a string paired with a list: `strings.find(): part must be a string, got list` (was a silent -1, and false for contains). `starts_with` and `ends_with` still return false for the same mix; that is next.
 - `files.write` and `append_text` check the text type before opening the file: a failed write no longer leaves an empty file behind, and no longer truncates an existing file to empty.
+- Diagnostics: the error snippet caret now lines up by character column for non-ASCII source: it counted byte offsets against character columns, so `err_utf8_column` had the caret 2 spaces too far left and `err_long_line` 17 spaces short. Fixed in the host, selfhost, and C runtime copies; goldens corrected, not dropped.
 
 ## 1.0.52 (2026-11-03)
 
