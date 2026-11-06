@@ -1,0 +1,18 @@
+use std/vfs
+let fs = vfs.new()
+for i in 0..70
+    vfs.write(fs, "/tmp/f{i}", "")
+let names = vfs.list(fs, "/tmp")
+print(len(names), slice(names, 0, 5), names[len(names) - 1])
+print(len(vfs.list(fs, "/tmp")))
+vfs.remove(fs, "/tmp/f10")
+let names2 = vfs.list(fs, "/tmp")
+print(len(names2), slice(names2, 0, 5), names2[10])
+vfs.rename(fs, "/tmp/f69", "/tmp/a")
+let names3 = vfs.list(fs, "/tmp")
+print(len(names3), names3[0], names3[1])
+vfs.write(fs, "/tmp/f10", "")
+let names4 = vfs.list(fs, "/tmp")
+print(len(names4), names4[1])
+let es = vfs.entries(fs, "/tmp")
+print(es[0], es[len(es) - 1])
