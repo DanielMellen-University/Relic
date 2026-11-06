@@ -1,0 +1,6 @@
+files.read(): cannot open std_files_errors.tmpdir/adir
+files.write(): cannot write std_files_errors.tmpdir/adir
+files.size(): cannot get the size of no_such
+files.size(): cannot get the size of std_files_errors.tmpdir/adir
+files.remove(): cannot remove no_such
+files.rename(): cannot rename no_such

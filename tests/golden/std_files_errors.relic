@@ -1,0 +1,33 @@
+# Failure messages for read, write, size, remove and rename on a folder and a missing path.
+use std/files
+let d = "std_files_errors.tmpdir"
+if files.exists(d) or files.is_dir(d)
+    files.remove_tree(d)
+files.make_dir(d)
+let adir = d + "/adir"
+files.make_dir(adir)
+try
+    files.read(adir)
+catch e
+    print(e.message)
+try
+    files.write(adir, "x")
+catch e
+    print(e.message)
+try
+    files.size("no_such")
+catch e
+    print(e.message)
+try
+    files.size(adir)
+catch e
+    print(e.message)
+try
+    files.remove("no_such")
+catch e
+    print(e.message)
+try
+    files.rename("no_such", "x")
+catch e
+    print(e.message)
+files.remove_tree(d)
