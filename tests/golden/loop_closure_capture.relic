@@ -1,0 +1,22 @@
+let fs = []
+for i in 0..3
+    fun get() = i
+    append(fs, get)
+for f in fs
+    print(f())
+let gs = []
+let j = 0
+while j < 3
+    fun h() = j
+    append(gs, h)
+    j = j + 1
+for g in gs
+    print(g())
+fun make()
+    let fs2 = []
+    for k in 10..13
+        fun get2() = k * 2
+        append(fs2, get2)
+    return fs2
+for f in make()
+    print(f())
