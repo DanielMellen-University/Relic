@@ -1,0 +1,5 @@
+  [] [2]
+ def
+slice(): start must be a whole number
+slice(): cannot slice an int
+él h
