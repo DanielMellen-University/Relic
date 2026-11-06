@@ -1,0 +1,3 @@
+eprint("to stderr")
+print("to stdout")
+:quit
