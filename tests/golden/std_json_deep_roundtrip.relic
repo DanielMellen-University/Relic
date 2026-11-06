@@ -1,0 +1,14 @@
+# A 101-deep nested list round-trips through encode and through hand-built text.
+# (0..101 runs 101 times: the range end is exclusive. Starting from 1, not [1],
+#  so the wrapped value and the hand-built text both hold 101 brackets.)
+use std/json
+let deep = 1
+for i in 0..101
+    deep = [deep]
+let txt = ""
+for i in 0..101
+    txt = txt + "["
+txt = txt + "1"
+for i in 0..101
+    txt = txt + "]"
+print(json.decode(txt) == deep, len(json.encode(deep)))
