@@ -1,0 +1,6 @@
+# hypot with nan and infinities, and dist whose difference overflows.
+use std/math
+let inf = 1e308 * 10
+let nan = inf - inf
+print(math.hypot(nan, 1), math.hypot(inf, 1), math.hypot(0, inf), math.hypot(0, 0.0))
+print(math.dist(1e308, 0, 0 - 1e308, 0))
