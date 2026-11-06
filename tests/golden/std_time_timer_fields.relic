@@ -1,9 +1,13 @@
 # The timer fields at start, after ticks, and since with an int start.
+# Only values that hold whatever the wall clock does are printed: once a
+# second of frames has passed, tick resets window to 0 and sets fps, so
+# exact window, frames and fps values after a tick depend on timing. What
+# never changes is that they start at 0 and never go negative.
 use std/time
 let t = time.timer()
 print(t.fps, t.frames, t.window, type(t.last), t.last > 0)
 let d1 = time.tick(t)
-print(d1 >= 0, type(d1), t.frames, t.fps)
+print(d1 >= 0, type(d1), t.frames >= 0, t.fps >= 0)
 time.tick(t)
-print(t.frames, t.window > 0, t.fps)
+print(t.frames >= 0, t.window >= 0, t.fps >= 0)
 print(time.since(0) > 0, type(time.since(0)))
