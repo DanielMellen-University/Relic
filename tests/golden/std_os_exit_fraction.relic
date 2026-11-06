@@ -1,0 +1,2 @@
+use std/os
+os.exit(1.5)
