@@ -1,0 +1,25 @@
+use std/strings
+try
+    print(strings.find("abc", [1]))
+catch e
+    print(e.message)
+try
+    print(strings.find([1, 2, 3], "2"))
+catch e
+    print(e.message)
+try
+    print(strings.contains("abc", [98]))
+catch e
+    print(e.message)
+try
+    print(strings.contains([1, 2], "1"))
+catch e
+    print(e.message)
+try
+    print(strings.find("abc", ["b"]))
+catch e
+    print(e.message)
+try
+    print(strings.find(["a", "b"], "b"))
+catch e
+    print(e.message)

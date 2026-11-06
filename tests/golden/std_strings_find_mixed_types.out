@@ -1,0 +1,6 @@
+strings.find(): part must be a string, got list
+strings.find(): part must be a list, got string
+strings.find(): part must be a string, got list
+strings.find(): part must be a list, got string
+strings.find(): part must be a string, got list
+strings.find(): part must be a list, got string

@@ -8,13 +8,19 @@ fun _text(name, what, s)
 
 fun find(s, sub)
     # index of the first `sub` in `s`, or -1. Two strings go to the host
-    # (host_find, linear time); lists and anything else take the loop below.
+    # (host_find, linear time); two lists take the loop below. A string
+    # paired with a list fails naming the part that does not match it,
+    # instead of silently returning -1 (nothing can match across kinds).
     if type(s) == "string" and type(sub) == "string"
         return host_find(s, sub)
     # since 1.0.52 anything but a string or a list names find (contains says
     # find too), not "len(): cannot get the length of an int"
     _text_or_list("find", "text", s)
     _text_or_list("find", "part", sub)
+    if type(s) == "string"
+        fail("strings.find(): part must be a string, got " + type(sub))
+    if type(sub) == "string"
+        fail("strings.find(): part must be a list, got " + type(sub))
     let n = len(sub)
     let ls = len(s)
     if ls > 1024
