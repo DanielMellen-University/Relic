@@ -1,0 +1,2 @@
+use std/strings
+print(strings.split("a,b", ",,"), strings.split("a,,b", ",,"), strings.split("aaa", "aa"), strings.split("ab", "ab"), strings.split("", ""))
