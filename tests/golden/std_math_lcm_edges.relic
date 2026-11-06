@@ -1,0 +1,7 @@
+# lcm(0, 0), gcd with a zero first argument, and an lcm past the int range.
+use std/math
+print(math.lcm(0, 0), math.gcd(0, 5), math.gcd(0, 0 - 5), math.lcm(0, 0 - 7))
+try
+    math.lcm(4611686018427387904, 3)
+catch e
+    print(e.message)
