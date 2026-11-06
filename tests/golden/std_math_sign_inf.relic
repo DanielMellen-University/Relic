@@ -1,0 +1,8 @@
+# sign of infinities, and the wrong-type error for a bool.
+use std/math
+let inf = 1e308 * 10
+print(math.sign(inf), math.sign(0 - inf), math.sign(1e-300))
+try
+    math.sign(true)
+catch e
+    print(e.message)
