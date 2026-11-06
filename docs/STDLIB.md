@@ -24,7 +24,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 
 | Call | Returns | Notes |
 |---|---|---|
-| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43). An empty `sub` gives `0`. Two lists work too, finding a run of items: `find([1, 2, 3], [2])` is `1`; anything else is `strings.find(): text must be a string, got int` (`part` for `sub`; `contains` says `find` too; since 1.0.52) |
+| `find(s, sub)` | int | index of first `sub`, or `-1`. On two strings the host finds it, in time linear in their length (200,000 characters: 0.08 s in 1.0.42, 0.0004 s since 1.0.43). An empty `sub` gives `0`. Two lists work too, finding a run of items: `find([1, 2, 3], [2])` is `1`; `find("hello", "ll")` → `2`. anything else is `strings.find(): text must be a string, got int` (`part` for `sub`; `contains` says `find` too; since 1.0.52) |
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `count(s, sub)` | int | how many times `sub` is in `s`, not overlapping, left to right; an empty `sub` is `strings.count(): part must not be empty` (since 1.0.49) |
 | `find_last(s, sub)` | int | where the last `sub` starts, or `-1`; overlaps count (`find_last("aaa", "aa")` is `1`), an empty `sub` is at `len(s)`; linear time (since 1.0.49) |
@@ -48,7 +48,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `center(s, width, fill)` | string | `fill` on both sides, as many copies on each or one more on the right, with the checks `pad_left` makes (since 1.0.50) |
 | `truncate(s, width, tail)` | string | `s` cut to at most `width` characters, ending in `tail` when cut: `truncate("abcdef", 4, "...")` is `"a..."`, and a tail as wide as `width` or wider is cut to it (`truncate("abcdef", 2, "...")` is `".."`); a `width` that is not a whole number 0 or more is `strings.truncate(): width must be a whole number, 0 or more, got -1` (since 1.0.50) |
 | `is_upper(s)` / `is_lower(s)` | bool | at least one ASCII letter, and none of the other case; other characters do not count (`is_upper("A1")` is `true`, `is_upper("1")` is `false`) (since 1.0.50) |
-| `is_space(c)` | bool | space, tab, newline, CR |
+| `is_space(c)` | bool | space, tab, newline, CR: `is_space(" ")` → `true` |
 
 `upper`, `lower`, `trim`, `split` and `repeat` fail with `strings.upper(): argument must be a string, got int` (since 1.0.28) when given something else (`split` says `text` or `separator`, `repeat` says `text`). Since 1.0.35 `repeat` also wants a whole-number count (`strings.repeat(): count must be a whole number, got 1.5`), and `pad_left` and `pad_right` check `text`, `fill` and `width` (`strings.pad_left(): width must not be infinite`; an infinite width used to pad forever). Their messages start with `strings.` like the rest.
 
@@ -59,7 +59,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `map(xs, f)` | list | |
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
-| `sum(xs)` | number | an item that is not a number is `lists.sum(): item 1 must be a number, got string` (since 1.0.52; `product`, `mean` and `sum_by` say the same with their own name) |
+| `sum(xs)` | number | an item that is not a number is `lists.sum(): item 1 must be a number, got string` (since 1.0.52; `product`, `mean` and `sum_by` say the same with their own name); `sum([1, 2, 3])` → `6` |
 | `mean(xs)` | float | the sum over the count; `lists.mean(): the list is empty` (since 1.0.50); ints whose sum would pass the int range are added as floats (since 1.0.52; it was `int overflow`) |
 | `sum_by(xs, f)` | number | `f(x)` for each item added up from `0`, as `sum(map(xs, f))` without the list in between (since 1.0.50) |
 | `product(xs)` | number | the items multiplied, `1` for an empty list (since 1.0.50) |
@@ -79,7 +79,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `key` is called once per item (since 1.0.52; the first was called twice); `lists.min_by(): the list is empty` (since 1.0.50) |
-| `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
+| `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50); `last([1, 2])` → `2` |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is `lists.windows(): size must be a whole number above 0, got 0` (since 1.0.50) |
 | `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |
 | `reverse(xs)` | list | new list; a string's characters or a map's keys work too (since 1.0.52; a map was an error) |
@@ -130,7 +130,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50) |
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
-| `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50); since 1.0.52 without overflow or underflow on the way, so `hypot(1e200, 1e200)` is `1.4142135623731e+200`, not `inf` |
+| `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50); since 1.0.52 without overflow or underflow on the way, so `hypot(1e200, 1e200)` is `1.4142135623731e+200`, not `inf`; `hypot(3, 4)` → `5.0` |
 | `dist(x1, y1, x2, y2)` | float: the distance from `(x1, y1)` to `(x2, y2)`, `hypot` of the differences (since 1.0.50) |
 | `radians(deg)` / `degrees(rad)` | float: an angle in degrees as radians, for `sin` and `cos`, and back (since 1.0.50) |
 | `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |
