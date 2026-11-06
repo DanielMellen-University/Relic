@@ -1,0 +1,10 @@
+# encode and pretty of bare scalars, and decode of bare literals and empty input.
+use std/json
+print(json.encode(none), json.encode(""), json.encode(0), json.encode(-0.0), json.encode(9223372036854775807), json.encode(true))
+print(json.pretty(5), json.pretty("x"), json.pretty(none), json.pretty([]))
+print(json.decode("true"), json.decode("false"), json.decode("null"))
+for t in ["", " ", "   \n\t "]
+    try
+        print(json.decode(t))
+    catch e
+        print(e.message)
