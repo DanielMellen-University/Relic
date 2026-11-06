@@ -1,0 +1,2 @@
+use std/strings
+print(strings.replace("aaaa", "aa", ""), strings.replace("", "", "-"), strings.replace("ab", "", "-"), strings.replace("abc", "abc", "abc"), strings.replace("héllo", "é", "e"))
