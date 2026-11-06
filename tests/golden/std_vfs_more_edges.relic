@@ -1,0 +1,35 @@
+# More vfs failure branches: rename with a non-string from, from a missing
+# path, and where the destination parent is a file; list and entries on a
+# missing path; write where the parent is a file; append under a missing
+# parent.
+use std/vfs
+let fs = vfs.new()
+try
+    vfs.rename(fs, 5, "/x")
+catch err
+    print(err.message)
+try
+    vfs.rename(fs, "/nope", "/x")
+catch err
+    print(err.message)
+vfs.write(fs, "/home/a.txt", "a")
+try
+    vfs.rename(fs, "/home/a.txt", "/home/welcome.txt/b.txt")
+catch err
+    print(err.message)
+try
+    print(vfs.list(fs, "/nope"))
+catch err
+    print(err.message)
+try
+    print(vfs.entries(fs, "/nope"))
+catch err
+    print(err.message)
+try
+    vfs.write(fs, "/home/welcome.txt/x", "t")
+catch err
+    print(err.message)
+try
+    vfs.append(fs, "/no/x", "t")
+catch err
+    print(err.message)

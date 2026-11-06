@@ -17,7 +17,13 @@ fun list(path) = host_list_dir(path)
 fun is_dir(path) = host_is_dir(path)
 fun make_dir(path) = host_make_dir(path)       # makes parent folders too
 fun remove(path) = host_remove(path)           # a file or an empty folder
-fun rename(from, to) = host_rename(from, to)
+# A folder is not renamed: rename moves a file only, so renaming a folder
+# fails as "files.rename(): cannot rename {from}". The type check keeps a
+# non-string from failing as before, from host_rename, not from is_dir.
+fun rename(from, to)
+    if type(from) == "string" and is_dir(from)
+        fail("files.rename(): cannot rename " + from)
+    host_rename(from, to)
 fun size(path) = host_file_size(path)          # in bytes
 
 # remove_tree(path): a folder and everything in it, or one file.

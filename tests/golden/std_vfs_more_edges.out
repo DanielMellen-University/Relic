@@ -1,0 +1,7 @@
+vfs.rename(): from must be a string, got int
+cannot rename /nope
+cannot rename /home/a.txt
+cannot list /nope
+cannot list /nope
+cannot write /home/welcome.txt/x
+cannot write /no/x

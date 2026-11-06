@@ -1,0 +1,8 @@
+files.list(): cannot list std_files_more_errors.tmpdir/f.txt
+files.read(): cannot open std_files_more_errors.tmpdir/no_such
+files.write(): cannot write std_files_more_errors.tmpdir/no_dir/f.txt
+files.append_text(): cannot write std_files_more_errors.tmpdir
+files.make_dir(): cannot make folder std_files_more_errors.tmpdir/f.txt/sub
+files.rename(): cannot rename std_files_more_errors.tmpdir/sub
+true
+[""]

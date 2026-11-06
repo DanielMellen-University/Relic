@@ -1,0 +1,38 @@
+# More failure messages: list on a file, read of a missing path, write under
+# a missing parent, append_text to a folder, make_dir through a file, rename
+# of a folder, and lines of a file holding only "\n".
+use std/files
+let d = "std_files_more_errors.tmpdir"
+if files.exists(d) or files.is_dir(d)
+    files.remove_tree(d)
+files.make_dir(d)
+files.write(d + "/f.txt", "x")
+try
+    print(files.list(d + "/f.txt"))
+catch e
+    print(e.message)
+try
+    print(files.read(d + "/no_such"))
+catch e
+    print(e.message)
+try
+    files.write(d + "/no_dir/f.txt", "x")
+catch e
+    print(e.message)
+try
+    files.append_text(d, "x")
+catch e
+    print(e.message)
+try
+    files.make_dir(d + "/f.txt/sub")
+catch e
+    print(e.message)
+files.make_dir(d + "/sub")
+try
+    files.rename(d + "/sub", d + "/sub2")
+catch e
+    print(e.message)
+print(files.is_dir(d + "/sub"))
+files.write(d + "/nl.txt", "\n")
+print(files.lines(d + "/nl.txt"))
+files.remove_tree(d)
