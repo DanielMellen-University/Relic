@@ -1,0 +1,3 @@
+maps.invert(): the value of b must be a string, got int
+maps.invert(): the value of a must be a string, got int
+{x: "a"} {}
