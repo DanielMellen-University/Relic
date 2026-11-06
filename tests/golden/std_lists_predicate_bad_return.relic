@@ -1,0 +1,15 @@
+# any and filter fail in the if on a non-bool predicate return; all fails in the not.
+use std/lists
+fun ident(x) = x
+try
+    lists.any([0, 1, 2], ident)
+catch e
+    print(e.message)
+try
+    lists.filter([1, 2], ident)
+catch e
+    print(e.message)
+try
+    lists.all([1], ident)
+catch e
+    print(e.message)
