@@ -1,0 +1,8 @@
+# min, max and clamp with nan, -0.0 against 0.0, and the pi and e constants.
+use std/math
+let inf = 1e308 * 10
+let nan = inf - inf
+print(math.min(nan, 1), math.min(1, nan), math.max(nan, 1), math.max(1, nan))
+print(math.clamp(nan, 0, 10), math.clamp(5, nan, 10))
+print(math.min(-0.0, 0.0), math.max(-0.0, 0.0))
+print(math.pi, math.e)
