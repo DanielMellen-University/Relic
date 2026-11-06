@@ -232,20 +232,6 @@ print(strings.capitalize("relic"), strings.is_upper("OK!"), strings.is_lower("ok
 Relic true true
 ```
 
-Two more small checks: `is_space` asks whether one character is a space, and `is_whole` asks whether a number has nothing after the point:
-
-```
-use std/strings
-use std/math
-print(strings.is_space(" "), strings.is_space("a"), strings.is_space("\t"))
-print(math.is_whole(2.0), math.is_whole(2.5), math.is_whole(7), math.is_whole(float("inf")))
-```
-
-```
-true false true
-true false true true
-```
-
 ## 6. Errors
 
 ```
@@ -376,28 +362,6 @@ docs/guide.md false true ["/", "a", "c"]
 - `relic tool.relic a b` passes `a` and `b` to the program. `os.args()` (or the built-in `args()`) gives `["a", "b"]`.
 - `std/files` reads and writes text files, `std/json` reads and writes JSON, `std/os` has `env`, `cwd` and `exit`.
 - Windows, drawing and input come from `std/graphics` in a build made with `-DRELIC_SDL=ON` (the host) or `-DRELIC_C_SDL=ON` (compiled programs). Start with `examples/hello_window.relic`. See [examples/](../examples/README.md).
-
-`std/json` turns a value into JSON text and back:
-
-```
-use std/json
-let data = {name: "Relic", version: 52}
-let text = json.encode(data)
-print(text)
-print(json.decode(text))
-print(json.decode(text) == data)
-print(json.pretty(data))
-```
-
-```
-{"name":"Relic","version":52}
-{name: "Relic", version: 52}
-true
-{
-  "name": "Relic",
-  "version": 52
-}
-```
 
 ## Where next
 
