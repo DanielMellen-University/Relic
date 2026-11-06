@@ -1,0 +1,3 @@
+lists.group_by(): key must give a string, got bool
+lists.count_by(): key must give a string, got bool
+lists.group_by(): key must give a string, got bool

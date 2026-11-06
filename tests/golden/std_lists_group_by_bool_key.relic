@@ -1,0 +1,15 @@
+# group_by and count_by need a string key; a bool key fails.
+use std/lists
+fun is_a(c) = c == "a"
+try
+    lists.group_by([1, 2], is_a)
+catch e
+    print(e.message)
+try
+    lists.count_by("aab", is_a)
+catch e
+    print(e.message)
+try
+    lists.group_by("aab", is_a)
+catch e
+    print(e.message)
