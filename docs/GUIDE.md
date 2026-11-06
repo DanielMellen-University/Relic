@@ -232,6 +232,20 @@ print(strings.capitalize("relic"), strings.is_upper("OK!"), strings.is_lower("ok
 Relic true true
 ```
 
+Two more small checks: `is_space` asks whether one character is a space, and `is_whole` asks whether a number has nothing after the point:
+
+```
+use std/strings
+use std/math
+print(strings.is_space(" "), strings.is_space("a"), strings.is_space("\t"))
+print(math.is_whole(2.0), math.is_whole(2.5), math.is_whole(7), math.is_whole(float("inf")))
+```
+
+```
+true false true
+true false true true
+```
+
 ## 6. Errors
 
 ```
