@@ -68,7 +68,7 @@ Lowest precedence first:
 | 2 | `and` | stops early; both sides must be bools |
 | 3 | `not` | needs a bool |
 | 4 | `== != < <= > >= in` | no chaining: `a < b < c` is an error |
-| 5 | `..` | `a..b` is the ints from `a` up to `b - 1` |
+| 5 | `..` | `a..b` is the ints from `a` up to `b - 1`. The result is a list, so `0..3 == [0, 1, 2]`. |
 | 6 | `+ -` | |
 | 7 | `* / %` | |
 | 8 | unary `-` | |
@@ -77,7 +77,7 @@ Lowest precedence first:
 - Math groups left: `1 - 2 - 3` is `(1 - 2) - 3`.
 - `+` adds numbers, joins two strings, or joins two lists. Mixing types is an error (`cannot add a string and an int`).
 - `/` always gives a float. `%` takes the sign of the right side: `-7 % 3` is `2`.
-- `==` and `!=` compare lists and maps by contents, strings by contents, and functions by identity. `none` equals only `none`. `1 == 1.0` is `true`.
+- `==` and `!=` compare lists and maps by contents, strings by contents, and functions by identity. `none` equals only `none`. `1 == 1.0` is `true`. Two distinct lists or maps that hold themselves are not equal, even when they hold the same shape; a cyclic value equals itself.
 - An int and a float compare as floats, in every engine: past 2^53 the int is rounded first, so `9007199254740993 == 9007199254740992.0` is `true` and `9007199254740993 > 9007199254740992.0` is `false`. Two ints compare exactly.
 - `<` and friends compare numbers with numbers and strings with strings (by code point).
 - `x in list` checks for an item, `"k" in map` for a key, `"ell" in "hello"` for a substring. Map keys are strings: `5 in m`, `m[5]` and `m[5] = v` fail with `map keys must be strings, got int` (the type is named since 1.0.52).
