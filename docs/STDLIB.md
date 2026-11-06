@@ -156,7 +156,7 @@ Paths are relative to where `relic` runs. Caught errors use the std name
 | `make_dir(path)` | none | parents too; **ok if it already exists**; `cannot make folder {path}` |
 | `remove(path)` | none | file or **empty** folder; fails if missing, or if the folder still has entries: `cannot remove {path}` |
 | `remove_tree(path)` | none | folder and contents, or one file; **missing path is a no-op**; a link is removed as the link, and what it points at is left alone (since 1.0.52; before, a link to a folder was followed and emptied, and a link to nothing made it fail) |
-| `rename(from, to)` | none | `cannot rename {from}` |
+| `rename(from, to)` | none | `cannot rename {from}`; a folder is not renamed |
 | `size(path)` | int (bytes) | `cannot get the size of {path}` (also for a folder) |
 
 ## std/paths
