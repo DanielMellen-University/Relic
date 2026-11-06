@@ -1,0 +1,15 @@
+# min, max and last walk a string or a map's keys; a bool or none cannot be compared, even with itself.
+use std/lists
+print(lists.min("cab"), lists.max({b: 1, a: 2}), lists.last({b: 1, a: 2}))
+try
+    lists.min([true, false])
+catch e
+    print(e.message)
+try
+    lists.max([true])
+catch e
+    print(e.message)
+try
+    lists.min([none])
+catch e
+    print(e.message)
