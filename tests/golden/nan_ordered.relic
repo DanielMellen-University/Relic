@@ -1,0 +1,13 @@
+# Ordered compares with nan are IEEE false, including <= and >=.
+# An int next to a nan is not the float-float fast path; it must agree.
+let nan = num("nan")
+let other = float("nan")
+print(nan == nan, nan != nan, nan == other, other != nan)
+print(nan == 1, 1 == nan, nan != 0, -2 != nan)
+print(nan < nan, nan <= nan, nan > nan, nan >= nan)
+print(nan < other, nan <= other, other > nan, other >= nan)
+print(nan < 1, nan <= 1, nan > 1, nan >= 1)
+print(1 < nan, 1 <= nan, 1 > nan, 1 >= nan)
+print(0 <= nan, nan <= 0, -5 >= nan, nan >= -5)
+let made = 1e308 * 10 - 1e308 * 10
+print(made == made, made != 1, made <= made, made >= 1, 1 <= made, made < 0)

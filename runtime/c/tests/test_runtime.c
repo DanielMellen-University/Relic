@@ -824,6 +824,23 @@ static void test_operator_errors(void) {
     CHECK(rl_compare(&cx, ">=", T("b"), T("a"), &r) == RL_OK && r.u.b == 1);
     CHECK(rl_compare(&cx, "<", T("B"), T("a"), &r) == RL_OK && r.u.b == 1);   /* by code point */
 
+    /* NaN is unordered: < <= > >= are all false, including <= and >= and an int. */
+    {
+        rl_value nan = rl_float(NAN);
+        CHECK(rl_compare(&cx, "<", nan, nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, "<=", nan, nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, ">", nan, nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, ">=", nan, nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, "<=", nan, rl_int(1), &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, ">=", rl_int(1), nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, "<", rl_int(0), nan, &r) == RL_OK && r.u.b == 0);
+        CHECK(rl_compare(&cx, ">", nan, rl_int(-1), &r) == RL_OK && r.u.b == 0);
+        CHECK(!rl_equal(nan, nan));
+        CHECK(!rl_equal(nan, rl_int(1)));
+        CHECK(rl_compare(&cx, "<=", rl_float(1.0), rl_int(1), &r) == RL_OK && r.u.b == 1);
+        CHECK(rl_compare(&cx, ">=", rl_int(2), rl_float(1.5), &r) == RL_OK && r.u.b == 1);
+    }
+
     /* == never fails: mixed types are just unequal, 1 == 1.0, none only equals none */
     CHECK(rl_equal(rl_int(1), rl_float(1.0)));
     CHECK(!rl_equal(T("1"), rl_int(1)));

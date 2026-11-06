@@ -190,8 +190,14 @@ int rl_compare(rl_ctx *cx, const char *op, rl_value a, rl_value b, rl_value *out
     *out = rl_none();
     if (a.k == RL_INT && b.k == RL_INT) c = a.u.i < b.u.i ? -1 : (a.u.i > b.u.i ? 1 : 0);
     else if (is_num(a) && is_num(b)) {
+        /* IEEE ordered compares. NaN is unordered, so < <= > >= are all
+         * false, including an int next to a float. A three-way result would
+         * treat NaN as equal and make <= and >= true. */
         double x = to_num(a), y = to_num(b);
-        c = x < y ? -1 : (x > y ? 1 : 0);
+        int r = op[0] == '<' ? (op[1] == '=' ? x <= y : x < y)
+                             : (op[1] == '=' ? x >= y : x > y);
+        *out = rl_bool(r);
+        return RL_OK;
     } else if (a.k == RL_STR && b.k == RL_STR) c = bytes_cmp(S(a), S(b));
     else return mismatch(cx, "compare", a, b);
     if (op[0] == '<') *out = rl_bool(op[1] == '=' ? c <= 0 : c < 0);

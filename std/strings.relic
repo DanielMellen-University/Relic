@@ -359,7 +359,10 @@ fun _pad(name, s, width, fill)
 # How many whole copies of fill bring s to at least width.
 fun _fills(s, width, fill)
     let ls = len(s)
-    if ls >= width
+    # A NaN width is unordered, so it is not past the text and adds no fill.
+    # `ls >= width` is false for NaN; it was true when >= treated NaN as equal,
+    # and that is what pad has always printed (the text comes back as it is).
+    if width != width or ls >= width
         return 0
     let lf = len(fill)
     let k = int((width - ls) / lf)
