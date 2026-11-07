@@ -31,7 +31,7 @@
 | [STDLIB.md](STDLIB.md) | users | each std module, with return values and errors; graphics events and headless testing |
 | [CLI.md](CLI.md) | users | commands, exit codes, `relic check`, REPL, environment variables |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits, running a program inside another, the compiler to C |
-| [TESTING.md](TESTING.md) | contributors | how each kind of test works and how to run it |
+| [TESTING.md](TESTING.md) | contributors | how each kind of test works, how to run it, and the acceptance record |
 | [HOST.md](HOST.md) | contributors | the C++ built-ins under `std/`, and running Relic from C++ |
 | [C-RUNTIME.md](C-RUNTIME.md) | contributors | `runtime/c/`: values, ownership, calling convention, errors, built-ins, cycle collector, tests |
 | [CGEN.md](CGEN.md) | contributors | `selfhost/cgen.relic`: using it, what it covers, the generated C, scopes, modules, error positions, tests, compiling itself, speed, decided and open choices |
