@@ -18,7 +18,7 @@ This plan turns the [roadmap](ROADMAP.md) into milestones you can work through i
 | M9 | Self-host | M8 | done (lexer, parser, interpreter in Relic; limits in ARCHITECTURE.md) |
 | M10 | Bytecode VM | M9 | host VM done and default; a VM in Relic is no longer planned (see C1 to C5) |
 | M11 | Graphics API | M10 | SDL2 slices 1 to 3 done; `std/vfs` done; C module over SDL2 for compiled programs done (1.0.9); window, cursor and frame slice done (1.0.11); high-DPI done (1.0.12). The roadmap item is closed. The desktop shell moved to M0N0LITH-2 |
-| M12 | Apps and IDE | M11 | moved to M0N0LITH-2 (the IDE is planned there, not started) |
+| M12 | Apps and IDE | M11 | moved to M0N0LITH-2; the IDE is an app there (`shell/wm.relic`). That repo's roadmap still has open IDE items |
 | SH1 | Self-hosted interpreter runs programs with args | M9 | done |
 | SH2 | Self-hosted interpreter runs itself | SH1 | done |
 | SH3 | Self-host parity: recursion, `gc()`, `num()` | SH2 | `num()` done; `gc()` done (1.0.13); deep recursion done (option C, frame stack, slices 1 to 6 in 1.0.14, 1.0.15, 1.0.19, 1.0.21 and 1.0.22) |
@@ -70,7 +70,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
 - M9 exit: the Relic lexer, parser and interpreter written in Relic pass the same golden tests as the host.
   - Stage 1, lexer: **done.** `selfhost/lexer.relic` matches `relic --tokens` on every golden, std and selfhost file, errors included (`selfhost_lexer` test).
   - Stage 2, parser: **done.** `selfhost/parser.relic` gives the same tree and the same errors as `relic --ast` on every file (`selfhost_parser` test).
-  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs every golden program but the REPL ones (183 today, the same set as `selfhost_interp` in TESTING.md), `std_*` included, with the same stdout and stderr as the host (`selfhost_interp` test). `gc_cycles` runs since 1.0.13, and `rt_recursion`, `try_recursion` and `c_demo` since 1.0.21; see ARCHITECTURE.md.
+  - Stage 3, interpreter: **done.** `selfhost/interp.relic` runs every golden program but the REPL ones (the same set as `selfhost_interp` in TESTING.md), `std_*` included, with the same stdout and stderr as the host (`selfhost_interp` test). `gc_cycles` runs since 1.0.13, and `rt_recursion`, `try_recursion` and `c_demo` since 1.0.21; see ARCHITECTURE.md.
   - **M9 done** (with those limits). The C++ host still runs the Relic-written stages; dropping the host for good needs a faster runtime (M10). `use std/...` works in the self-hosted interpreter too, since the MONOLITH 2 host pieces added `host_call`.
 - M10 exit: VM passes all golden tests and beats the tree-walker on a benchmark set.
   - Host VM: **done.** The VM is the default engine for `relic FILE`, including `use`, cycles and `std/`. It matches the tree-walker (`relic --tree FILE`) on all 133 golden programs (everything except the REPL tests) (`vm_matches_tree_walker` test) and is 1.2x to 2.1x faster on `bench/` (`tools/bench.sh`, local only). The REPL still runs on the tree-walker.
@@ -84,7 +84,7 @@ Planned at a coarser level than M1 to M6. Status under each exit line.
   - High-DPI: **done (1.0.12).** Daniel picked option A on Oct 22 2026. Windows open with `SDL_WINDOW_ALLOW_HIGHDPI` (and SDL's Windows DPI scaling hint), and the renderer is scaled by `scale()` so drawing and mouse positions stay in window units. TrueType fonts are opened at `size * scale()` pixels and drawn back at window-unit size; `font_size` gives window units, rounded up. Images and canvases keep their window-unit size. The scale is checked again on every input call, `present`, `set_window_size`, `set_fullscreen` and `draw_to(none)`, and fonts are reopened when it changes. The rounding is in `src/builtins/gfx_scale.h`, shared by the host and the C module and unit tested in `c_runtime`. Headless SDL has no high-DPI screens, so the tests check that the scale is 1.0 there and every existing output is unchanged.
   - Shell: started here (window model, Start menu, drag, resize, Terminal, Files, Editor), then moved with its history and the `shell_wm` test to [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) in 1.0.1. In-memory `std/vfs` (golden `std_vfs`) stays in Relic.
 - Language completion (after M11 slice 2): **done.** Catchable errors, int and float, `as` hints, private names, UTF-8 strings and the cycle collector, each with golden tests, on both engines and the self-hosted interpreter.
-- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. All of these, the IDE included, are apps built in M0N0LITH-2; Relic fixes what they find.
+- M12 exit: terminal, editor, file browser, drawing app, one game and the IDE run in Relic. All of these, the IDE included, are apps built in M0N0LITH-2; Relic fixes what they find. The IDE is in that repo: `shell/wm.relic` registers it (`_ide_init`, `_ide_run`) and `docs/apps/IDE.md` describes it. Checked on M0N0LITH-2 `f76aa2f` (main, 2026-11-06). That roadmap still leaves the IDE box open for programs that draw and for a run that continues in the background. Relic does not track those items.
 
 ## Self-host and bootstrap
 

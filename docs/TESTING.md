@@ -166,7 +166,7 @@ Getting SDL2:
 - macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 - Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
 
-The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 422 cases each (the host build's 406 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing.
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 565 cases each (the host build's 549 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing. 406 and 422 were the host total and that total plus graphics at 1.0.52 (see the changelog). They are not the current counts.
 
 ## relic_add_program
 
@@ -190,6 +190,123 @@ ctest --test-dir build-consumer --output-on-failure
 - `sdl`: the host and compiled graphics tests, headless, on Ubuntu 24.04, macOS and Windows (see [Graphics tests](#graphics-tests)).
 - Keep main green. A red run gets fixed before new work lands.
 - To save Actions minutes, run the tests locally first and push a few commits at once.
+
+## Acceptance record
+
+One finite pass on main `ed34bba` (Relic 1.0.53), 2026-11-07. No language or library change. The version and the changelog are unchanged. This record does not say the portfolio is done.
+
+### Frozen scope
+
+In this tree, and exercised below:
+
+- The language and the standard library.
+- The Relic-written compiler to C (`selfhost/cgen.relic`), the C runtime (`runtime/c/`), and the committed bootstrap (`bootstrap/cgen.c`). The default build needs only a C compiler.
+- The optional C++ host, REPL, and SDL graphics.
+
+Out of this pass. These are not release blockers for that frozen scope:
+
+- Native code generation. It stays an open stretch item on the roadmap. The C backend is the shipped compiler.
+- A VM written in Relic. Dropped (M10). The host bytecode VM remains the default engine.
+- New language or std features, a website, installers, release tags, or publishing.
+- MONOLITH 2 apps (M12). They live in M0N0LITH-2. The IDE there has started; see [PROJECT_PLAN.md](PROJECT_PLAN.md).
+
+### Accepted limits
+
+Decided behavior. A program that hits one of these is inside the language as shipped:
+
+- Self-host interpretation is slow. On this machine `selfhost_interp` took 12.29 s (one run).
+- Recursion stops at 800 calls.
+- Graphics libraries are optional. SDL2 for the window, SDL2_image and SDL2_ttf for PNG and TrueType.
+- `gc()` in compiled code is an approximate count.
+- A compiled error names the file, line and column. The source text is not embedded. The runtime prints the source line only when it can read the file at the time of the error.
+
+### What blocks a release
+
+A crash, a leak, a wrong result on supported behavior, a stale `bootstrap/cgen.c`, or a parity miss (VM against the tree-walker, `relicc` against the host, self-host against the host). None of those showed up in the checks below.
+
+### Checklist
+
+| Check | Result |
+|---|---|
+| README C-only configure, build, `ctest` from a clean tree | passed here: 262, 0 failed, 6.27 s |
+| README compile and link of a small program | passed here. See FizzBuzz below |
+| Consuming project `tests/consumer` | passed here: 6, 0 failed. `hello` printed the two expected lines |
+| Host build and `ctest` | passed here: 549, 0 failed, 51.23 s |
+| Bootstrap fresh, fixed point, host match | passed inside those suites |
+| Parity and `doc_counts` | passed inside the host suite |
+| Leak check on compiled goldens and `c_runtime` | passed (`RELIC_LEAK_CHECK` and `c_runtime`; nothing failed) |
+| Host REPL and `relic --version` | passed here. Version line `relic 1.0.53`. Piped REPL printed `3` |
+| Graphics example and SDL `ctest` on this Linux machine | passed here. `hello_window` printed `drew 123 frames`. SDL `ctest` 565, 0 failed, including all 16 graphics tests |
+| Human FizzBuzz, README only, by a person who has not seen the code | **unverified.** The box in [1.0-CHECKLIST.md](1.0-CHECKLIST.md) stays open |
+| Windows, macOS, Alpine with no C++ compiler, sanitizers | **not run on this machine.** Remote CI on the same commit is below |
+| Windows and macOS graphics | **not run on this machine.** The Linux graphics run above is the local one. Remote CI is below |
+
+The FizzBuzz row and the human row are different checks. The program for this pass was written by an agent from the README "Relic in five minutes" section (`for n in 1..21`, because `1..4` is 1, 2, 3) and compiled with the README `relicc` and `cc` lines. Stdout was 1 through 20 with Fizz, Buzz and FizzBuzz in the usual places, exit 0. The same file on the host printed the same stdout. That does not tick the human box.
+
+### Commands on this machine
+
+Linux. CMake 3.28.3. `/usr/bin/cc` and `/usr/bin/c++` are Clang 18.1.3. The C-only README build linked. The host configure did not, until `libstdc++-14-dev` was installed: this VM's clang looks for `libstdc++` in the gcc 14 directory, and only gcc 13's `libstdc++.so` was present. `g++` 13 linked before that package. That is this machine, not a Relic defect.
+
+C-only, from a clean checkout (no `build/` yet), as the README writes it:
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+262 passed, 0 failed, 6.27 s. That includes `doc_counts`, `example_compiled`, `bootstrap_fresh`, `bootstrap_fixed_point`, `depth_limit`, `c_runtime`, `c_demo` and the compiled goldens. `./build/example_compiled one two` printed the three greetings, `Ada, Linus, Grace`, and `args: ["one", "two"]`.
+
+Consumer, as CI and [the section above](#relic_add_program) write it:
+
+```
+cmake -S tests/consumer -B build-consumer -DCMAKE_BUILD_TYPE=Release
+cmake --build build-consumer
+ctest --test-dir build-consumer --output-on-failure
+```
+
+6 passed, 0 failed (`hello`, `doc_counts`, `bootstrap_fresh`, `bootstrap_fixed_point`, `c_runtime`, `c_demo`). `build-consumer/hello` printed:
+
+```
+hello from a consuming project
+HELLO
+```
+
+Host, in `build-host` so the README tree stayed C-only. Same flags as the README host section:
+
+```
+cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
+cmake --build build-host
+ctest --test-dir build-host --output-on-failure
+```
+
+549 passed, 0 failed, 51.23 s. Among them: `vm_matches_tree_walker`, `bootstrap_matches_host`, `bootstrap_fresh`, `bootstrap_fixed_point`, `cgen_stage1_matches_host`, `cgen_fixed_point`, `doc_counts`, `selfhost_lexer`, `selfhost_parser`, `selfhost_interp`, `selfhost_check`. `build-host/relic --version` printed `relic 1.0.53`. A pipe of `print(1 + 2)` and `:quit` into `build-host/relic` printed `3` and exited 0. There was no banner, because stdin was not a terminal.
+
+Graphics, after `libsdl2-dev` 2.30.0, SDL2_image 2.8.2, SDL2_ttf 2.22.0 and `fonts-dejavu-core`. The example README asks for `-DRELIC_SDL=ON`. This build also passed `-DRELIC_C_SDL=ON`, which is the CI graphics build, so the compiled graphics tests ran too.
+
+```
+cmake -S . -B build-sdl -DCMAKE_BUILD_TYPE=Release -DRELIC_SDL=ON -DRELIC_C_SDL=ON
+cmake --build build-sdl
+SDL_VIDEODRIVER=dummy SDL_VIDEO_DRIVER=dummy ./build-sdl/relic examples/hello_window.relic
+SDL_VIDEODRIVER=dummy SDL_VIDEO_DRIVER=dummy ctest --test-dir build-sdl --output-on-failure
+```
+
+`hello_window` printed `drew 123 frames` and exited 0. `ctest` was 565 passed, 0 failed, 65.95 s. The 16 graphics tests all passed: `gfx_smoke`, `gfx_events`, `gfx_simulate`, `gfx_window`, `gfx_window_errors`, `mini_desktop`, `gfx_png`, `gfx_ttf`, and the eight `c_gfx_*` / `c_mini_desktop` twins.
+
+### Remote CI on the same commit
+
+Not run here. Read from GitHub Actions run [42268705993](https://github.com/DanielMellen-University/Relic/actions/runs/42268705993) on `ed34bba`. All 18 jobs succeeded. Do not read this table as a local Windows or macOS run.
+
+| Job | What the log said |
+|---|---|
+| `build` on Ubuntu, macOS, Windows | 262 passed, then the consumer project 6 passed |
+| `no-cxx` (Alpine, no C++ compiler) | 262 passed, then consumer 6 passed |
+| `host` on Ubuntu, macOS, Windows | 549 passed |
+| `sdl` on Ubuntu 24.04, macOS, Windows | 16 graphics tests present, 565 passed |
+| `cgen` (Linux gcc sanitize, Linux clang sanitize, macOS clang, Windows MSVC) | 262 passed on each |
+| `c-runtime` (the same four) | 2 passed on each |
+
+Installers, new demos and more goldens were not part of this pass.
 
 ## Benchmarks
 
