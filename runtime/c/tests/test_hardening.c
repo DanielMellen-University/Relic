@@ -469,6 +469,51 @@ static void test_list_slice_ownership(void) {
     rl_release(slice);
 }
 
+static int failing_result(rl_ctx *ctx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+    (void)self; (void)argc; (void)argv;
+    *out = rl_list_new(1);
+    rl_list_push(L(*out), *out);
+    return rl_fail(ctx, "callback failed");
+}
+
+static int release_callee(rl_ctx *ctx, rl_fun *self, int argc, const rl_value *argv, rl_value *out) {
+    rl_value old = self->env->slots[0];
+    (void)ctx; (void)argc; (void)argv;
+    self->env->slots[0] = rl_none();
+    rl_release(old);
+    CHECK(self->h.rc == 1);
+    *out = rl_str_c(self->name->data);
+    return RL_OK;
+}
+
+static void test_call_lifetimes(void) {
+    size_t before = rl_live_objects();
+    rl_value f = rl_fun_new("bad", failing_result, 0, NULL), out;
+    rl_scope *scope;
+    error_is(rl_call(&cx, f, 0, NULL, &out), "callback failed");
+    CHECK(out.k == RL_NONE && cx.depth == 0);
+    rl_release(f);
+    CHECK(rl_gc_collect() == 1);
+    CHECK(rl_live_objects() == before);
+    scope = rl_scope_new(NULL, 1);
+    scope->slots[0] = rl_fun_new("self_release", release_callee, 0, scope);
+    CHECK(rl_call(&cx, scope->slots[0], 0, NULL, &out) == RL_OK);
+    bytes_are(out, "self_release", 12);
+    CHECK(scope->slots[0].k == RL_NONE && cx.depth == 0);
+    rl_release(out);
+    rl_scope_release(scope);
+    CHECK(rl_live_objects() == before);
+
+    f = rl_fun_new("blocked", failing_result, 0, NULL);
+    cx.depth = RL_MAX_DEPTH;
+    error_is(rl_call(&cx, f, 0, NULL, &out), "too much recursion (more than 800 calls deep)");
+    CHECK(out.k == RL_NONE && cx.depth == RL_MAX_DEPTH);
+    CHECK(call("gc", 0, NULL, &out) == RL_OK && out.k == RL_INT && out.u.i == 0);
+    CHECK(cx.depth == RL_MAX_DEPTH);
+    cx.depth = 0;
+    rl_release(f);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -486,6 +531,7 @@ int main(void) {
     test_map_collisions_and_binary_keys();
     test_iteration_snapshots();
     test_list_slice_ownership();
+    test_call_lifetimes();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
