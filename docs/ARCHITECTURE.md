@@ -14,6 +14,7 @@ Relic/
     core.*          Session (REPL and tree-walk runner), VM runner, dumps
     lexer/          source text to tokens, INDENT/DEDENT
     parser/         tokens to AST
+    fmt/            `relic fmt`: canonical source, comments kept (see FMT.md)
     ast/            AST node types and the --ast dump
     interp/         values, tree-walk interpreter, modules, ops.hpp (shared operations), gc.cpp (cycle collector)
     vm/             bytecode compiler and stack VM (the default engine)

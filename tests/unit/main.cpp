@@ -1,5 +1,6 @@
 // Small hand-written test harness (see docs/TESTING.md). No test library.
 #include "core.hpp"
+#include "fmt/fmt.hpp"
 #include "diag/diag.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
@@ -414,6 +415,70 @@ static void test_list_layout() {
     CHECK(l.size() == 1 && l[0].as<long long>() == 5);
 }
 
+static void expect_fmt(const char* in, const char* want) {
+    relic::FmtResult r = relic::format_source("t.relic", in);
+    if (r.exit_code != 0 || r.out != want) {
+        std::cerr << "fmt FAIL\n--- in\n" << in << "--- want\n" << want << "--- got\n" << r.out
+                  << "--- err\n" << r.err;
+        ++failures;
+        return;
+    }
+    relic::FmtResult again = relic::format_source("t.relic", r.out);
+    if (again.exit_code != 0 || again.out != r.out) {
+        std::cerr << "fmt not idempotent\n--- once\n" << r.out << "--- twice\n" << again.out;
+        ++failures;
+    }
+}
+
+static void test_fmt() {
+    expect_fmt("", "");
+    expect_fmt("\n\n", "");
+    expect_fmt("let x=1", "let x = 1\n");
+    expect_fmt("a+b*c-d/e%f\n", "a + b * c - d / e % f\n");
+    expect_fmt("a- -b\n", "a - -b\n");
+    expect_fmt("-x\n", "-x\n");
+    expect_fmt("--x\n", "- -x\n");
+    expect_fmt("- -4\n", "- -4\n");
+    expect_fmt("f(1,2,)\n", "f(1, 2,)\n");
+    expect_fmt("print( 1 , 2 )\n", "print(1, 2)\n");
+    expect_fmt("{a:1,\"b\":2,}\n", "{a: 1, \"b\": 2,}\n");
+    expect_fmt("{ a : 1 }\n", "{a: 1}\n");
+    expect_fmt("1..10\n", "1..10\n");
+    expect_fmt("1 .. 10\n", "1..10\n");
+    expect_fmt("a.b.c\n", "a.b.c\n");
+    expect_fmt("use std/strings\n", "use std/strings\n");
+    expect_fmt("use  ../a/b  as  c\n", "use ../a/b as c\n");
+    expect_fmt("if(x>1)\n    print(x)\n", "if (x > 1)\n    print(x)\n");
+    expect_fmt("fun f(x)=x+1\n", "fun f(x) = x + 1\n");
+    expect_fmt("not(a and b)\n", "not (a and b)\n");
+    expect_fmt("return-1\n", "return -1\n");
+    expect_fmt("(-1)\n", "(-1)\n");
+    expect_fmt("\"hi { name }\"\n", "\"hi {name}\"\n");
+    expect_fmt("\"a{1+2}b\"\n", "\"a{1 + 2}b\"\n");
+    expect_fmt("\"{{not code}}\"\n", "\"{{not code}}\"\n");
+    expect_fmt("\"a\\nb\"\n", "\"a\\nb\"\n");
+    expect_fmt("let x = 1 # kept\n", "let x = 1  # kept\n");
+    expect_fmt("let x = 1  # kept\n", "let x = 1  # kept\n");
+    expect_fmt("#  hi  \n", "#  hi\n");
+    expect_fmt("\n\nprint(1)\n\n\n", "print(1)\n");
+    expect_fmt("print(1)  \n", "print(1)\n");
+    expect_fmt("fun add(\n  a,\n    b)\n    return a+b\n",
+               "fun add(\n    a,\n    b)\n    return a + b\n");
+    expect_fmt("x = [1,\n  2]\n", "x = [1,\n    2]\n");
+    expect_fmt("print( # hi\n    1)\n", "print(  # hi\n    1)\n");
+    expect_fmt("print(\n# hi\n    1)\n", "print(\n    # hi\n    1)\n");
+    expect_fmt("\"{ {a: 1} }\"\n", "\"{ {a: 1} }\"\n");
+    expect_fmt("let n = 1e-4\n", "let n = 1e-4\n");
+    expect_fmt("for n in 1..4\n    print(n)\n", "for n in 1..4\n    print(n)\n");
+    expect_fmt("fun g(x as int) as int\n    return x\n", "fun g(x as int) as int\n    return x\n");
+    expect_fmt("if a\n    print(1)\nelse if b\n    print(2)\nelse\n    print(3)\n",
+               "if a\n    print(1)\nelse if b\n    print(2)\nelse\n    print(3)\n");
+    auto bad = relic::format_source("t.relic", "let x =\n");
+    CHECK(bad.exit_code == 1);
+    CHECK(bad.out.empty());
+    CHECK(bad.err.find("error:") != std::string::npos);
+}
+
 int main() {
     test_list_layout();
     test_string_values();
@@ -429,6 +494,7 @@ int main() {
     test_numbers();
     test_strings();
     test_layout();
+    test_fmt();
     if (failures) {
         std::cerr << failures << " failure(s)\n";
         return 1;

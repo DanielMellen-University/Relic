@@ -69,6 +69,29 @@ cmake --build build
 
 Run `./build/relic` alone for the REPL. For graphics add `-DRELIC_SDL=ON` (needs SDL2; it turns the host on); see [examples/](examples/README.md). Compiled programs get the same `std/graphics` with `-DRELIC_C_SDL=ON` and `relic_add_program(name file GRAPHICS)`, which needs SDL2 but not the host ([C-RUNTIME.md](docs/C-RUNTIME.md#graphics)). The host build runs the host's own tests too and checks that the host and the compiled compiler write the same C.
 
+## Format
+
+`relic fmt` prints a file in canonical form. It needs the C++ host (`-DRELIC_BUILD_HOST=ON`). One file:
+
+```
+./build/relic fmt tests/fmt/in/readme_example.relic
+```
+
+That command's stdout:
+
+```
+# a messy program
+let names = ["Ada", "Linus"]
+fun greet(who) = print("hello {who}")
+for name in names
+    if (name == "Ada")
+        greet(name)  # first
+    else
+        greet(name)
+```
+
+`--write` updates the file. `--check` prints nothing and exits 0 when every file is already formatted, and exits 1 when one would change. Details, including what is left alone, are in [FMT.md](docs/FMT.md).
+
 ## Relic in five minutes
 
 ```
@@ -129,6 +152,7 @@ Start at the [docs index](docs/README.md). The short list:
 - [Guide](docs/GUIDE.md) and [language reference](docs/LANGUAGE.md)
 - [Standard library](docs/STDLIB.md)
 - [Command line and REPL](docs/CLI.md)
+- [Formatter](docs/FMT.md)
 - [Roadmap](docs/ROADMAP.md) and [changelog](CHANGELOG.md)
 
 [M0N0LITH-2](https://github.com/DanielMellen-University/M0N0LITH-2) is written in Relic.

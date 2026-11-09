@@ -71,6 +71,7 @@ if(RELIC_BUILD_HOST)
     src/lexer/lexer.cpp
     src/ast/ast.cpp
     src/parser/parser.cpp
+    src/fmt/fmt.cpp
     src/interp/value.cpp
     src/interp/gc.cpp
     src/interp/interp.cpp

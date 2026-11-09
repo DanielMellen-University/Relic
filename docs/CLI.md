@@ -9,6 +9,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | `relic FILE [args...]` | runs the file on the bytecode VM; `args()` gives the extra words |
 | `relic --tree FILE [args...]` | runs it on the tree-walk interpreter instead |
 | `relic check FILE...` | finds mistakes without running anything (see below) |
+| `relic fmt [--check \| --write] FILE...` | prints canonical source, or rewrites files, or checks them (see below) |
 | `relic` | starts the REPL |
 | `relic --tokens FILE` | prints the tokens, one per line as `line:col KIND text` |
 | `relic --ast FILE` | prints the syntax tree |
@@ -55,6 +56,18 @@ area.relic:2:20: warning: 'hieght' is not defined (did you mean 'height'?)
 The exit code is 1 if anything was found, 0 if every file is clean. Graphics programs can be checked in a build without SDL.
 
 `selfhost/check.relic` is the same command written in Relic (`relic selfhost/check.relic a.relic b.relic`), with the same output and exit codes; it is a test of the self-hosted front end, not a replacement.
+
+## relic fmt
+
+`relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
+
+| Code | When |
+|---|---|
+| 0 | stdout was written, `--write` finished, or `--check` found nothing to change |
+| 1 | a file does not parse, or `--check` found a file that would change |
+| 2 | bad usage, or a file could not be opened or written (`relic: cannot open FILE`) |
+
+A syntax error is printed the same way as any other Relic error, and that file is left untouched.
 
 ## The REPL
 
