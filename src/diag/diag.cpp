@@ -121,6 +121,7 @@ struct ExpectRow {
 };
 const ExpectRow kExpect[] = {
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Plus, "", "Relic has no '+='", "write x = x + 1", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Minus, "", "Relic has no '-='", "write x = x - 1", 1, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };
