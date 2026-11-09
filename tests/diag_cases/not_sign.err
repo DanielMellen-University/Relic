@@ -1,0 +1,4 @@
+not_sign.relic:1:9: error: unexpected character '¬'
+    let a = ¬ b
+            ^
+hint: write 'not'
