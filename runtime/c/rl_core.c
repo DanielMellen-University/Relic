@@ -754,8 +754,9 @@ done:
 /* errors                                                               */
 
 int rl_fail_str(rl_ctx *cx, rl_str *msg) {
-    if (cx->err_msg) release_obj(&cx->err_msg->h);
+    /* msg may be the context's current message, with no other owner. */
     ++msg->h.rc;
+    if (cx->err_msg) release_obj(&cx->err_msg->h);
     cx->err_msg = msg;
     cx->has_err = 1;
     cx->err_line = cx->err_col = 0;

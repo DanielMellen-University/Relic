@@ -44,9 +44,27 @@ static void test_range_limits(void) {
     rl_release(r);
 }
 
+static void test_error_message_alias(void) {
+    size_t before = rl_live_strings();
+    rl_value message = rl_str_c("retry"), caught, field;
+    CHECK(rl_fail_str(&cx, S(message)) == RL_ERR);
+    rl_release(message);
+    rl_at3(&cx, "first.relic", 1, 3, 4, 3, 4, 3, 4);
+    CHECK(rl_fail_str(&cx, cx.err_msg) == RL_ERR);
+    CHECK(cx.err_line == 0 && cx.err_col == 0 && !cx.err_file && !cx.err_std);
+    CHECK(cx.err_msg->len == 5 && memcmp(cx.err_msg->data, "retry", 5) == 0);
+    CHECK(rl_catch(&cx, &caught));
+    CHECK(rl_field(&cx, caught, "message", &field) == RL_OK);
+    rl_release(caught);
+    CHECK(S(field)->len == 5 && memcmp(S(field)->data, "retry", 5) == 0);
+    rl_release(field);
+    CHECK(rl_live_strings() == before);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
+    test_error_message_alias();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
