@@ -1,0 +1,3 @@
+name_echo.relic:1:7: error: 'echo' is not defined (printing is print(...))
+    print(echo)
+          ^

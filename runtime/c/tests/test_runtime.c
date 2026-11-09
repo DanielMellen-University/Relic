@@ -663,6 +663,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "True", 0, NULL, NULL), "'True' is not defined (the boolean is written 'true')");
     ERR(rl_fail_undefined(&cx, "False", 0, NULL, NULL), "'False' is not defined (the boolean is written 'false')");
     ERR(rl_fail_undefined(&cx, "length", 0, NULL, NULL), "'length' is not defined (the length of a value is len(value))");
+    ERR(rl_fail_undefined(&cx, "echo", 0, NULL, NULL), "'echo' is not defined (printing is print(...))");
     /* @@NAME_TEST@@ */
     /* string interpolation joins shown values */
     parts[0] = T("n=");

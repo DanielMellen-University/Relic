@@ -193,6 +193,7 @@ const Pair kNames[] = {
     {"True", "the boolean is written 'true'"},
     {"False", "the boolean is written 'false'"},
     {"length", "the length of a value is len(value)"},
+    {"echo", "printing is print(...)"},
     // @@NAME@@
     {nullptr, nullptr},
 };
