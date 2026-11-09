@@ -1,0 +1,5 @@
+# lists.index_of is the first index of an item, or -1. 1 and 1.0 match.
+use std/lists
+print(lists.index_of(["a", "b", "a"], "a"))
+print(lists.index_of([1, 2, 3], 1.0))
+print(lists.index_of([1, 2], 9))
