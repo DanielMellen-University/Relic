@@ -170,7 +170,9 @@ private:
             if (width == indents_.back()) return true;
             if (width > indents_.back()) {
                 if (width != indents_.back() + kIndentWidth)
-                    error(line_, col_, "indent must be exactly 4 spaces deeper than the line above");
+                    error(line_, col_, "indent must be exactly 4 spaces deeper than the line above", 0,
+                      "this line is indented " + std::to_string(width) +
+                          " spaces; indent exactly 4 more than the line above");
                 if (out_.empty()) error(line_, col_, "unexpected indent");
                 indents_.push_back(width);
                 emit(Tok::Indent, "", line_, col_);

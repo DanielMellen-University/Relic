@@ -1,3 +1,4 @@
 err_indent_width.relic:2:3: error: indent must be exactly 4 spaces deeper than the line above
       print("x")
       ^
+hint: this line is indented 2 spaces; indent exactly 4 more than the line above

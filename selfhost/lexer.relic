@@ -165,7 +165,7 @@ fun layout(st)
             return true
         if width > top
             if width != top + indent_width
-                fail(st, st.line, st.col, "indent must be exactly 4 spaces deeper than the line above")
+                fail_span(st, st.line, st.col, st.col, "indent must be exactly 4 spaces deeper than the line above", "this line is indented {width} spaces; indent exactly 4 more than the line above")
                 return false
             if len(st.out) == 0
                 fail(st, st.line, st.col, "unexpected indent")
