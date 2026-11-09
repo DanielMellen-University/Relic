@@ -1,0 +1,22 @@
+# Wrap text on word boundaries.
+#   relic examples/learn/wrap.relic
+use std/strings
+
+fun wrap(text, width)
+    let lines = []
+    let cur = ""
+    for w in strings.words(text)
+        if cur == ""
+            cur = w
+        else if len(cur) + 1 + len(w) <= width
+            cur = cur + " " + w
+        else
+            append(lines, cur)
+            cur = w
+    if cur != ""
+        append(lines, cur)
+    return lines
+
+let text = "the cat sat on the mat and the dog sat on the log"
+for line in wrap(text, 16)
+    print(line)
