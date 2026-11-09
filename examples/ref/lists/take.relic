@@ -1,0 +1,4 @@
+# lists.take keeps the first n items, or the whole list if it is shorter.
+use std/lists
+print(lists.take([1, 2, 3, 4], 2))
+print(lists.take([1], 5))
