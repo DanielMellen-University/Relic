@@ -1,0 +1,3 @@
+# maps.values lists the values in the order the keys were added.
+use std/maps
+print(maps.values({a: 1, b: 2, c: 3}))
