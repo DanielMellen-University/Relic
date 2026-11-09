@@ -1,0 +1,4 @@
+at.relic:1:9: error: unexpected character '@'
+    let a = @b
+            ^
+hint: Relic does not use '@'
