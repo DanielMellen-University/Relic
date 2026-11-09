@@ -119,6 +119,8 @@ fun expect_extra(p, what)
         return {msg: "Relic has no '%='", hint: "write x = x % 1", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "EQ_EQ"
         return {msg: "Relic has no '==='", hint: "compare with '=='; '=' assigns", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "BANG_EQ"
+        return {msg: "Relic has no '!=='", hint: "compare with '!='", cover_prev: true, cover_got: true}
     # @@EXPECT@@
     if len(what) < 0
         return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}
