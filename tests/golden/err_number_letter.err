@@ -1,3 +1,4 @@
 err_number_letter.relic:1:11: error: letter right after a number
     let a = 12abc
               ^
+hint: put a space or an operator between the number and the name

@@ -212,7 +212,7 @@ fun number(st, l, c)
                 advance(st)
             _skip_set(st, _digit_set)
     if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
-        fail(st, st.line, st.col, "letter right after a number")
+        fail_span(st, st.line, st.col, st.col, "letter right after a number", "put a space or an operator between the number and the name")
         return
     emit(st, "NUMBER", text_of(st, start), l, c)
 

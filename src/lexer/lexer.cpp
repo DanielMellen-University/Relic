@@ -312,7 +312,8 @@ private:
             }
         }
         if (std::isalpha(static_cast<unsigned char>(peek())) || peek() == '_')
-            error(line_, col_, "letter right after a number");
+            error(line_, col_, "letter right after a number", 0,
+                      "put a space or an operator between the number and the name");
         emit(Tok::Number, src_.substr(start, pos_ - start), l, c);
     }
 
