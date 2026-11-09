@@ -1,0 +1,5 @@
+# math.min is the smaller of two values that can be compared.
+use std/math
+print(math.min(3, 1))
+print(math.min(3, 3.5))
+print(math.min("b", "a"))
