@@ -1,0 +1,33 @@
+# Levenshtein edit distance: inserts, deletes and substitutions.
+#   relic examples/learn/distance.relic
+
+fun distance(a, b)
+    let m = len(a)
+    let n = len(b)
+    let d = []
+    for i in 0..(m + 1)
+        let row = []
+        for j in 0..(n + 1)
+            append(row, 0)
+        append(d, row)
+    for i in 0..(m + 1)
+        d[i][0] = i
+    for j in 0..(n + 1)
+        d[0][j] = j
+    for i in 1..(m + 1)
+        for j in 1..(n + 1)
+            let cost = 1
+            if a[i - 1] == b[j - 1]
+                cost = 0
+            let best = d[i - 1][j] + 1
+            if d[i][j - 1] + 1 < best
+                best = d[i][j - 1] + 1
+            if d[i - 1][j - 1] + cost < best
+                best = d[i - 1][j - 1] + cost
+            d[i][j] = best
+    return d[m][n]
+
+print(distance("kitten", "sitting"))
+print(distance("relic", "relic"))
+print(distance("cat", "car"))
+print(distance("", "abc"))
