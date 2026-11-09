@@ -1,0 +1,31 @@
+# A small calculator for reverse Polish notation.
+#   relic examples/learn/rpn.relic
+use std/strings
+
+fun eval(line)
+    let st = []
+    for w in strings.words(line)
+        if w == "+"
+            let b = pop(st)
+            let a = pop(st)
+            append(st, a + b)
+        else if w == "-"
+            let b = pop(st)
+            let a = pop(st)
+            append(st, a - b)
+        else if w == "*"
+            let b = pop(st)
+            let a = pop(st)
+            append(st, a * b)
+        else if w == "/"
+            let b = pop(st)
+            let a = pop(st)
+            append(st, a / b)
+        else
+            append(st, num(w))
+    return st[0]
+
+print(eval("3 4 +"))
+print(eval("3 4 + 2 *"))
+print(eval("5 1 2 + 4 * + 3 -"))
+print(eval("8 2 /"))
