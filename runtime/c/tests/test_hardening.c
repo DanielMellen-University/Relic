@@ -328,6 +328,43 @@ static void test_append_utf8_cache(void) {
     rl_release(text);
 }
 
+static void test_list_reference_transfers(void) {
+    size_t before, i;
+    rl_value list = rl_list_new(32), out, saved;
+    CHECK(rl_builtin("pop", &out));
+    rl_release(out);
+    before = rl_live_strings();
+    for (i = 0; i < 24; ++i) {
+        char label[24];
+        rl_value text;
+        snprintf(label, sizeof label, "item%lu", (unsigned long)i);
+        text = rl_str_c(label);
+        rl_list_push(L(list), text);
+        rl_release(text);
+    }
+    out = rl_list_take(L(list), 3);
+    CHECK(L(list)->off == 1 && out.u.o->rc == 1);
+    bytes_are(out, "item3", 5);
+    rl_list_insert(L(list), 4, out);
+    CHECK(L(list)->off == 0 && out.u.o->rc == 2);
+    rl_release(out);
+    CHECK(rl_set_index(&cx, list, rl_int(4), L(list)->items[4]) == RL_OK);
+    CHECK(L(list)->items[4].u.o->rc == 1);
+    saved = rl_retain(L(list)->items[4]);
+    CHECK(rl_set_index(&cx, list, rl_int(4), L(list)->items[5]) == RL_OK);
+    bytes_are(saved, "item3", 5);
+    CHECK(L(list)->items[4].u.o == L(list)->items[5].u.o
+          && L(list)->items[4].u.o->rc == 2);
+    CHECK(call("pop", 1, &list, &out) == RL_OK);
+    CHECK(out.u.o->rc == 1);
+    rl_release(list);
+    bytes_are(out, "item23", 6);
+    bytes_are(saved, "item3", 5);
+    rl_release(out);
+    rl_release(saved);
+    CHECK(rl_live_strings() == before);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -341,6 +378,7 @@ int main(void) {
     test_unicode_boundaries();
     test_utf8_fragments_and_empty_strings();
     test_append_utf8_cache();
+    test_list_reference_transfers();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
