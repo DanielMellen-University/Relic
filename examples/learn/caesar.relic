@@ -1,0 +1,23 @@
+# A Caesar cipher. Letters move by the shift; everything else stays.
+#   relic examples/learn/caesar.relic
+
+fun shift_letter(c, n, base)
+    let k = (ord(c) - ord(base) + n) % 26
+    return chr(ord(base) + k)
+
+fun shift(text, n)
+    let out = ""
+    for c in text
+        if c >= "a" and c <= "z"
+            out = out + shift_letter(c, n, "a")
+        else if c >= "A" and c <= "Z"
+            out = out + shift_letter(c, n, "A")
+        else
+            out = out + c
+    return out
+
+let plain = "Hello, Relic!"
+let coded = shift(plain, 5)
+print(plain)
+print(coded)
+print(shift(coded, -5))
