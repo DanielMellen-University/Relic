@@ -345,7 +345,9 @@ int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
         long long i;
         size_t at = 0;
         if (whole(cx, idx, "string index", &i)) return at_index(cx);
-        at = i < 0 ? s->len : rl_str_offset(s, (size_t)i);
+        /* Reject before narrowing to size_t: a large index can wrap to a
+         * valid character offset on a 32-bit target. */
+        at = i < 0 || (unsigned long long)i >= s->len ? s->len : rl_str_offset(s, (size_t)i);
         if (at >= s->len) {
             size_t dummy;
             slot(cx, idx, rl_str_chars(s), "string index", &dummy);

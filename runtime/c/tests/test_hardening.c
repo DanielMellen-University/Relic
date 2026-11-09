@@ -262,6 +262,33 @@ static void test_unicode_boundaries(void) {
     rl_release(arg);
 }
 
+static void test_utf8_fragments_and_empty_strings(void) {
+    static const char raw[] = {'x', (char)0xE2, (char)0x82, 'y', (char)0x80, (char)0xF0};
+    rl_value text = rl_str_new(raw, sizeof raw), out, args[3], empty = rl_str_c("");
+    size_t i;
+    CHECK(rl_str_chars(S(text)) == sizeof raw);
+    for (i = 0; i < sizeof raw; ++i) {
+        CHECK(rl_str_offset(S(text), i) == i);
+        CHECK(rl_index(&cx, text, rl_int((long long)i), &out) == RL_OK);
+        bytes_are(out, raw + i, 1);
+        rl_release(out);
+    }
+    CHECK(rl_in(&cx, empty, empty, &out) == RL_OK && out.u.b);
+    CHECK(rl_in(&cx, text, empty, &out) == RL_OK && !out.u.b);
+    CHECK(rl_str_offset(S(empty), (size_t)-1) == 0);
+    error_is(rl_index(&cx, empty, rl_int(0), &out), "string index 0 is out of range (size 0)");
+    error_is(rl_index(&cx, text, rl_int(LLONG_MAX), &out),
+             "string index 9223372036854775807 is out of range (size 6)");
+    error_is(rl_index(&cx, text, rl_int(4294967296LL), &out),
+             "string index 4294967296 is out of range (size 6)");
+    args[0] = text; args[1] = rl_int(1); args[2] = rl_int(3);
+    CHECK(call("slice", 3, args, &out) == RL_OK);
+    bytes_are(out, raw + 1, 2);
+    rl_release(out);
+    rl_release(text);
+    rl_release(empty);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -273,6 +300,7 @@ int main(void) {
     test_integer_overflow_branches();
     test_division_modulo_limits();
     test_unicode_boundaries();
+    test_utf8_fragments_and_empty_strings();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
