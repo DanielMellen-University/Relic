@@ -1,0 +1,5 @@
+# paths.stem is the name without its last extension. A dotfile keeps its name.
+use std/paths
+print(paths.stem("b.txt"))
+print(paths.stem("a.tar.gz"))
+print(paths.stem(".bashrc"))
