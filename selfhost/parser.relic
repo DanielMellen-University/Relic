@@ -90,8 +90,67 @@ fun describe(t)
         return "name '{t.text}'"
     return "'{t.text}'"
 
+# Columns in a token's text. ASCII is the common case; a continuation byte
+# does not add a column.
+fun text_cols(s)
+    let n = 0
+    for ch in s
+        n = n + 1
+    if n < 1
+        return 1
+    return n
+
+# Common parse mistakes. none when the usual "expected ..., got ..." is enough.
+# Keep in step with kExpect and kWords in src/diag/diag.cpp.
+fun expect_extra(p, what)
+    let got = peek(p)
+    let prev = none
+    if p.pos > 0
+        prev = p.toks[p.pos - 1]
+    # @@EXPECT@@
+    if len(what) < 0
+        return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}
+    return none
+
+fun word_extra(word)
+    # @@WORD@@
+    if len(word) < 0
+        return word
+    return ""
+
+fun type_extra(name)
+    # @@TYPE@@
+    if len(name) < 0
+        return name
+    return ""
+
 fun fail_expected(p, what)
-    fail(p, peek(p), "expected " + what + ", got " + describe(peek(p)))
+    let got = peek(p)
+    let msg = "expected " + what + ", got " + describe(got)
+    let extra = expect_extra(p, what)
+    if extra != none
+        if extra.msg != ""
+            msg = extra.msg
+        let col = got.col
+        let end = got.col
+        if extra.cover_got
+            end = got.col + text_cols(got.text) - 1
+        if extra.cover_prev and p.pos > 0
+            let prev = p.toks[p.pos - 1]
+            if prev.line == got.line
+                col = prev.col
+        if end < col
+            end = col
+        fail_span(p, {kind: got.kind, text: got.text, line: got.line, col: col}, end, msg, extra.hint)
+        return
+    if what == "end of line" and p.pos > 0
+        let prev = p.toks[p.pos - 1]
+        if prev.kind == "NAME"
+            let word = word_extra(prev.text)
+            if word != ""
+                fail_span(p, got, got.col + text_cols(got.text) - 1, msg, word)
+                return
+    fail(p, got, msg)
 
 fun expect(p, kind, what)
     if not at(p, kind)
@@ -250,7 +309,12 @@ fun type_hint(p)
         return none
     advance(p)
     if not (t.text in known_types)
-        fail(p, t, "unknown type '{t.text}'; use any, none, bool, int, float, number, string, list, map, function or module")
+        let type_msg = "unknown type '{t.text}'; use any, none, bool, int, float, number, string, list, map, function or module"
+        let hinted = type_extra(t.text)
+        if hinted != ""
+            fail_span(p, t, t.col + text_cols(t.text) - 1, type_msg, hinted)
+        else
+            fail(p, t, type_msg)
         return none
     return node("Type", t, t.text)
 

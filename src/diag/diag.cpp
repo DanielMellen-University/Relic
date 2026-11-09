@@ -1,5 +1,7 @@
 #include "diag/diag.hpp"
 
+#include "lexer/token.hpp"
+
 #include <fstream>
 
 namespace relic::diag {
@@ -66,5 +68,110 @@ std::string format(const std::string& path, int line, int col, const std::string
 std::string format(const std::string& path, int line, int col, const std::string& msg, const char* kind) {
     return format(path, line, col, msg, Note{}, kind);
 }
+
+namespace {
+
+struct LexRow {
+    const char* g;
+    char next;
+    const char* msg;
+    const char* hint;
+    int extra;
+};
+const LexRow kLex[] = {
+    {"&", '&', "unexpected '&&'", "Relic uses 'and', not '&&'", 1},
+    // @@LEX@@
+    {nullptr, 0, nullptr, nullptr, 0},
+};
+
+struct ExpectRow {
+    const char* what;
+    int got;
+    const char* got_text;
+    int prev;
+    const char* prev_text;
+    const char* msg;
+    const char* hint;
+    int cover_prev;
+    int cover_got;
+};
+const ExpectRow kExpect[] = {
+    // @@EXPECT@@
+    {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
+};
+
+struct Pair {
+    const char* bad;
+    const char* note;
+};
+const Pair kWords[] = {
+    // @@WORD@@
+    {nullptr, nullptr},
+};
+const Pair kTypes[] = {
+    // @@TYPE@@
+    {nullptr, nullptr},
+};
+const Pair kNames[] = {
+    // @@NAME@@
+    {nullptr, nullptr},
+};
+
+const char* pair_note(const Pair* rows, const std::string& name) {
+    for (const Pair* p = rows; p->bad; ++p)
+        if (name == p->bad) return p->note;
+    return nullptr;
+}
+
+}  // namespace
+
+const LexHit* lex_mistake(const std::string& grapheme, char next) {
+    static LexHit found;
+    const LexRow* fallback = nullptr;
+    for (const LexRow& r : kLex) {
+        if (!r.g) break;
+        if (grapheme != r.g) continue;
+        if (r.next != 0) {
+            if (next == r.next) {
+                found = LexHit{r.msg, r.hint, r.extra};
+                return &found;
+            }
+        } else if (!fallback) {
+            fallback = &r;
+        }
+    }
+    if (!fallback) return nullptr;
+    found = LexHit{fallback->msg, fallback->hint, fallback->extra};
+    return &found;
+}
+
+bool expect_mistake(const std::string& what, int got_kind, const std::string& got_text, bool has_prev, int prev_kind,
+                    const std::string& prev_text, ExpectHit& out) {
+    for (const ExpectRow& r : kExpect) {
+        if (!r.what) break;
+        if (what != r.what) continue;
+        if (r.got >= 0 && got_kind != r.got) continue;
+        if (r.got_text && r.got_text[0] && got_text != r.got_text) continue;
+        if (r.prev >= 0) {
+            if (!has_prev || prev_kind != r.prev) continue;
+            if (r.prev_text && r.prev_text[0] && prev_text != r.prev_text) continue;
+        }
+        out.msg = (r.msg && r.msg[0]) ? r.msg : nullptr;
+        out.hint = (r.hint && r.hint[0]) ? r.hint : nullptr;
+        out.cover_prev = r.cover_prev != 0;
+        out.cover_got = r.cover_got != 0;
+        return true;
+    }
+    return false;
+}
+
+const char* word_mistake(const std::string& word) { return pair_note(kWords, word); }
+
+bool type_mistake(const std::string& name, const char*& hint) {
+    hint = pair_note(kTypes, name);
+    return hint != nullptr;
+}
+
+const char* name_mistake(const std::string& name) { return pair_note(kNames, name); }
 
 }  // namespace relic::diag

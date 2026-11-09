@@ -1,7 +1,7 @@
 # Bytecode VM check (M10): `relic FILE` (the VM) must give the same stdout
 # and stderr, and exit with the same code, as `relic --tree FILE` (the tree-walker) for every golden program
 # except repl_*, which are typed into the REPL.
-file(GLOB files ${SRC}/tests/golden/*.relic)
+file(GLOB files ${SRC}/tests/golden/*.relic ${SRC}/tests/diag_cases/*.relic ${SRC}/tests/diag_check/*.relic)
 set(bad 0)
 set(total 0)
 foreach(f ${files})

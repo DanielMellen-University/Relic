@@ -318,14 +318,24 @@ static const char *suggest(const char *k, size_t len, const char *best, size_t *
     return best;
 }
 
+/* Parenthetical for an undefined name, or NULL. Keep in step with kNames. */
+static const char *name_note(const char *name) {
+    /* @@NAME@@ */
+    (void)name;
+    return NULL;
+}
+
 int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *names, const rl_value *const *slots) {
     size_t len = strlen(name), best_d = (size_t)-1, i, nb = rl_builtin_count();
     const char *best = NULL;
+    const char *note;
     int j;
     for (j = 0; j < n; ++j)
         if (!slots[j] || slots[j]->k != RL_UNSET) best = suggest(name, len, best, &best_d, names[j]);
     for (i = 0; i < nb; ++i) best = suggest(name, len, best, &best_d, rl_builtin_at(i)->name);
     if (best) return rl_fail(cx, "'%s' is not defined (did you mean '%s'?)", name, best);
+    note = name_note(name);
+    if (note) return rl_fail(cx, "'%s' is not defined (%s)", name, note);
     return rl_fail(cx, "'%s' is not defined", name);
 }
 

@@ -21,6 +21,12 @@ elseif(CORPUS)
     ${SRC}/selfhost/*.relic ${SRC}/examples/*.relic ${SRC}/examples/*/*.relic ${SRC}/bench/*.relic)
   list(APPEND files ${more})
 endif()
+# Diagnostic cases are not part of the counted golden set. Skip them for the
+# slow nested run, which names two files and nothing else.
+if(NOT ONLY)
+  file(GLOB diags ${SRC}/tests/diag_cases/*.relic ${SRC}/tests/diag_check/*.relic)
+  list(APPEND files ${diags})
+endif()
 set(bad 0)
 set(total 0)
 foreach(f ${files})

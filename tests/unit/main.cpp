@@ -8,7 +8,9 @@
 // The built-in 8x12 text font (std/graphics text), shared with runtime/c.
 #include "builtins/font8x12.inc"
 
+#include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -177,6 +179,46 @@ static void test_noted_matches_golden() {
             ++failures;
         }
     }
+}
+
+static std::string with_base(std::string got, const std::string& abs, const std::string& base) {
+    for (size_t at = 0; (at = got.find(abs)) != std::string::npos; ) got.replace(at, abs.size(), base);
+    return got;
+}
+
+static void expect_diag(const std::string& abs, const std::string& err_path, bool check) {
+    std::string base = abs.substr(abs.rfind('/') + 1);
+    auto r = check ? relic::check_source(abs, slurp(abs)) : relic::run_source_vm(abs, slurp(abs));
+    std::string got = with_base(r.err, abs, base);
+    std::string want = slurp(err_path);
+    if (got != want) {
+        std::cerr << "diagnostic mismatch for " << base << "\n--- got\n" << got << "--- want\n" << want;
+        ++failures;
+    }
+}
+
+// tests/diag_cases are lex and parse failures (run and relicc).
+// tests/diag_check are static-check warnings, with an optional .run.err for
+// the same mistake when the program is run.
+static void test_diag_dirs() {
+    namespace fs = std::filesystem;
+    std::string root = tests_root();
+    auto run_dir = [&](const std::string& dir, bool check) {
+        if (!fs::exists(dir)) return;
+        std::vector<fs::path> files;
+        for (const auto& ent : fs::directory_iterator(dir))
+            if (ent.path().extension() == ".relic") files.push_back(ent.path());
+        std::sort(files.begin(), files.end());
+        for (const auto& p : files) {
+            expect_diag(p.string(), (p.parent_path() / (p.stem().string() + ".err")).string(), check);
+            if (check) {
+                auto run_err = p.parent_path() / (p.stem().string() + ".run.err");
+                if (fs::exists(run_err)) expect_diag(p.string(), run_err.string(), false);
+            }
+        }
+    };
+    run_dir(root + "/tests/diag_cases", false);
+    run_dir(root + "/tests/diag_check", true);
 }
 
 static void test_core() {
@@ -549,6 +591,7 @@ int main() {
     test_hint_line();
     test_span();
     test_noted_matches_golden();
+    test_diag_dirs();
     test_core();
     test_font();
     test_basic_tokens();

@@ -364,7 +364,20 @@ fun token(st)
         if st.err == none
             emit(st, "RBRACE", "}}", l, c)
     else
-        fail(st, l, c, unexpected(ch))
+        let extra = lex_extra(ch, peek(st, 0))
+        if extra != none
+            fail_span(st, l, c, c + extra.extra, extra.msg, extra.hint)
+        else
+            fail(st, l, c, unexpected(ch))
+
+# A character that is not a token, when it is a common mistake. none otherwise.
+# extra is how many columns past the first the span covers. Keep in step with
+# kLex in src/diag/diag.cpp.
+fun lex_extra(ch, nxt)
+    if ch == "&" and nxt == "&"
+        return {msg: "unexpected '&&'", hint: "Relic uses 'and', not '&&'", extra: 1}
+    # @@LEX@@
+    return none
 
 # The message for a character that starts no token (same words as src/lexer/lexer.cpp).
 # A character that looks like something else, or like nothing, says what it is

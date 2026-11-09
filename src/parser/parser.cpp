@@ -1,5 +1,7 @@
 #include "parser/parser.hpp"
 
+#include "diag/diag.hpp"
+
 #include <algorithm>
 #include <string>
 #include <unordered_set>
@@ -101,8 +103,32 @@ private:
     [[noreturn]] void fail(const Token& t, const std::string& msg, std::string hint = {}, int end_col = 0) {
         throw ParseError(t.line, t.col, msg, end_col, std::move(hint));
     }
+    static int text_cols(const std::string& s) {
+        int n = 0;
+        for (unsigned char c : s)
+            if ((c & 0xC0) != 0x80) ++n;
+        return n < 1 ? 1 : n;
+    }
     [[noreturn]] void fail_expected(const std::string& what) {
-        fail(peek(), "expected " + what + ", got " + describe(peek()));
+        const Token& got = peek();
+        const bool has_prev = pos_ > 0;
+        const Token* prev = has_prev ? &toks_[pos_ - 1] : nullptr;
+        std::string msg = "expected " + what + ", got " + describe(got);
+        diag::ExpectHit hit;
+        if (diag::expect_mistake(what, static_cast<int>(got.kind), got.text, has_prev,
+                                 prev ? static_cast<int>(prev->kind) : -1, prev ? prev->text : "", hit)) {
+            if (hit.msg) msg = hit.msg;
+            int col = got.col;
+            int end = got.col;
+            if (hit.cover_got) end = got.col + text_cols(got.text) - 1;
+            if (hit.cover_prev && prev && prev->line == got.line) col = prev->col;
+            if (end < col) end = col;
+            throw ParseError(got.line, col, msg, end, hit.hint ? hit.hint : "");
+        }
+        if (what == "end of line" && prev && prev->kind == Tok::Name) {
+            if (const char* h = diag::word_mistake(prev->text)) fail(got, msg, h, got.col + text_cols(got.text) - 1);
+        }
+        fail(got, msg);
     }
     const Token& expect(Tok k, const std::string& what) {
         if (!at(k)) fail_expected(what);
@@ -236,7 +262,12 @@ private:
                                       "list", "map", "function", "module"};
         for (const char* k : known)
             if (t.text == k) return make(Node::Type, t, t.text);
-        fail(t, "unknown type '" + t.text + "'; use any, none, bool, int, float, number, string, list, map, function or module");
+        const char* hint = nullptr;
+        std::string type_msg = "unknown type '" + t.text +
+                               "'; use any, none, bool, int, float, number, string, list, map, function or module";
+        if (diag::type_mistake(t.text, hint))
+            fail(t, type_msg, hint, t.col + text_cols(t.text) - 1);
+        fail(t, type_msg);
     }
 
     AstPtr if_stmt() {

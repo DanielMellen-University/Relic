@@ -1013,7 +1013,10 @@ private:
         for (size_t g = 0; g < p.mod->global_names.size(); ++g)
             if (p.mod->defined[g]) names.push_back(p.mod->global_names[g]);
         for (const auto& kv : host_.builtins()->vars) names.push_back(kv.first);
-        fail_at(*in.at, "'" + name + "' is not defined" + op_suggest(name, names));
+        std::string sug = op_suggest(name, names);
+        if (sug.empty())
+            if (const char* note = diag::name_mistake(name)) sug = std::string(" (") + note + ")";
+        fail_at(*in.at, "'" + name + "' is not defined" + sug);
     }
 
     RELIC_NOINLINE void range_prep(const Instr& in, std::vector<Value>& st) {
@@ -1340,7 +1343,10 @@ int vm_check(const Ast& program, const std::string& path, std::string& out) {
         for (size_t i = 0, j; (j = ls.find('\n', i)) != std::string::npos; i = j + 1)
             names.push_back(ls.substr(i, j - i));
         for (const auto& kv : builtins) names.push_back(kv.first);
-        it.msg += op_suggest(it.name, names);
+        std::string sug = op_suggest(it.name, names);
+        if (sug.empty())
+            if (const char* note = diag::name_mistake(it.name)) sug = std::string(" (") + note + ")";
+        it.msg += sug;
     }
     for (const auto& it : items) out += diag::format(path, it.line, it.col, it.msg, "warning");
     return static_cast<int>(items.size());

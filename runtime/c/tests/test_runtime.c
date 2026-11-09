@@ -657,6 +657,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "totl", 2, names, slots), "'totl' is not defined (did you mean 'total'?)");
     ERR(rl_fail_undefined(&cx, "coutn", 2, names, slots), "'coutn' is not defined");
     ERR(rl_fail_undefined(&cx, "prnt", 0, NULL, NULL), "'prnt' is not defined (did you mean 'print'?)");
+    /* @@NAME_TEST@@ */
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

@@ -1,5 +1,7 @@
 #include "lexer/lexer.hpp"
 
+#include "diag/diag.hpp"
+
 #include <cstdio>
 #include <cctype>
 
@@ -235,6 +237,8 @@ private:
             default: {
                 std::string whole(1, ch);  // the whole UTF-8 character, not just its first byte
                 while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
+                if (const diag::LexHit* hit = diag::lex_mistake(whole, peek()))
+                    error(l, c, hit->msg, c + hit->extra, hit->hint);
                 error(l, c, unexpected(whole));
             }
         }
