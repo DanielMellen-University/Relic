@@ -149,6 +149,7 @@ struct Pair {
     const char* note;
 };
 const Pair kWords[] = {
+    {"func", "functions are written with 'fun', not 'func'"},
     // @@WORD@@
     {nullptr, nullptr},
 };
