@@ -211,6 +211,8 @@ fun type_extra(name)
         return "did you mean 'list'?"
     if name == "void"
         return "did you mean 'none'?"
+    if name == "nil"
+        return "did you mean 'none'?"
     # @@TYPE@@
     if len(name) < 0
         return name

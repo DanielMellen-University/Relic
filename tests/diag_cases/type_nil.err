@@ -1,0 +1,4 @@
+type_nil.relic:1:10: error: unknown type 'nil'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as nil = 1
+             ^^^
+hint: did you mean 'none'?
