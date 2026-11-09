@@ -205,6 +205,8 @@ fun type_extra(name)
         return "did you mean 'string'?"
     if name == "boolean"
         return "did you mean 'bool'?"
+    if name == "dict"
+        return "did you mean 'map'?"
     # @@TYPE@@
     if len(name) < 0
         return name

@@ -1,0 +1,4 @@
+type_dict.relic:1:10: error: unknown type 'dict'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as dict = 1
+             ^^^^
+hint: did you mean 'map'?
