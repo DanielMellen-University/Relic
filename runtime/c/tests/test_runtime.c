@@ -667,7 +667,6 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
-    /* @@NAME_TEST@@ */
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
