@@ -1,0 +1,5 @@
+# strings.truncate cuts the text and ends a cut string with the tail.
+use std/strings
+print(strings.truncate("abcdef", 4, "..."))
+print(strings.truncate("abcdef", 2, "..."))
+print(strings.truncate("hi", 4, "..."))
