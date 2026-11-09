@@ -1,0 +1,6 @@
+# vfs.remove deletes a file or an empty folder.
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/gone.txt", "x")
+vfs.remove(fs, "/tmp/gone.txt")
+print(vfs.exists(fs, "/tmp/gone.txt"))
