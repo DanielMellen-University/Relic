@@ -1,0 +1,5 @@
+# math.gcd is never negative. gcd(0, 0) is 0.
+use std/math
+print(math.gcd(12, 8))
+print(math.gcd(-12, 8))
+print(math.gcd(0, 0))
