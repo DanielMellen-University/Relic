@@ -1,0 +1,6 @@
+use std/strings
+print(strings.remove_prefix("abc", "abc"))
+print(strings.remove_suffix("abc", "abc"))
+print(strings.remove_prefix("abc", ""))
+print(strings.remove_suffix("", "a"))
+print(strings.capitalize("a"), strings.capitalize("A"), strings.capitalize(" "))
