@@ -1,0 +1,4 @@
+if false
+    print(1)
+else if
+    print(2)
