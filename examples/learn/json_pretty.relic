@@ -1,0 +1,14 @@
+# Build a value and show it as JSON, compact and indented.
+#   relic examples/learn/json_pretty.relic
+use std/json
+
+let note = {
+    name: "Ada",
+    year: 2026,
+    tags: ["lang", "demo"],
+    ok: true,
+    extra: none
+}
+print(json.encode(note))
+print(json.pretty(note))
+print(json.decode(json.encode(note)) == note)
