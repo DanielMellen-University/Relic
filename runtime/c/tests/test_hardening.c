@@ -760,6 +760,24 @@ static void test_host_reflection(void) {
     rl_release(values);
 }
 
+static void test_file_read_failure(void) {
+#if defined(__linux__)
+    /* This proc file opens but reading its unmapped first byte fails. Check
+     * that the facility is available before exercising the runtime path. */
+    FILE *probe = fopen("/proc/self/mem", "rb");
+    if (probe) {
+        int ch = fgetc(probe), failed = ferror(probe);
+        fclose(probe);
+        if (ch == EOF && failed) {
+            rl_value path = rl_str_c("/proc/self/mem"), out;
+            error_is(call("host_read_file", 1, &path, &out), "host_read_file(): cannot open /proc/self/mem");
+            CHECK(out.k == RL_NONE);
+            rl_release(path);
+        }
+    }
+#endif
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -785,6 +803,7 @@ int main(void) {
     test_host_find_boundaries();
     test_large_error_messages();
     test_host_reflection();
+    test_file_read_failure();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);

@@ -111,6 +111,11 @@ BI(h_read_file) {
         n += got;
         if (got == 0) break;
     }
+    if (ferror(f)) {
+        fclose(f);
+        free(data);
+        return rl_fail(cx, "cannot open %s", S(a[0])->data);
+    }
     fclose(f);
     *out = rl_str_new(data, n);
     free(data);
