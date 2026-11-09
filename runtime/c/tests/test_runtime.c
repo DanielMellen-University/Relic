@@ -660,6 +660,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "null", 0, NULL, NULL), "'null' is not defined (none is the empty value, not 'null')");
     ERR(rl_fail_undefined(&cx, "None", 0, NULL, NULL), "'None' is not defined (the empty value is written 'none')");
     ERR(rl_fail_undefined(&cx, "undefined", 0, NULL, NULL), "'undefined' is not defined (an unset value is 'none')");
+    ERR(rl_fail_undefined(&cx, "True", 0, NULL, NULL), "'True' is not defined (the boolean is written 'true')");
     /* @@NAME_TEST@@ */
     /* string interpolation joins shown values */
     parts[0] = T("n=");
