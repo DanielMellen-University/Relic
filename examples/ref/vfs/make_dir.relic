@@ -1,0 +1,7 @@
+# vfs.make_dir creates parents too, and is fine if the folder is already there.
+use std/vfs
+let fs = vfs.new()
+vfs.make_dir(fs, "/tmp/a/b")
+vfs.make_dir(fs, "/tmp/a/b")
+print(vfs.is_dir(fs, "/tmp/a/b"))
+print(vfs.list(fs, "/tmp/a"))
