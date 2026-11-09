@@ -92,6 +92,8 @@ fun name_note(name)
         return "the loop keyword is 'next', not 'continue'"
     if name == "foreach"
         return "loops are written 'for name in list'"
+    if name == "nil"
+        return "the empty value is 'none', not 'nil'"
     # @@NAME@@
     if len(name) < 0
         return name

@@ -329,6 +329,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "echo") == 0) return "printing is print(...)";
     if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
     if (strcmp(name, "foreach") == 0) return "loops are written 'for name in list'";
+    if (strcmp(name, "nil") == 0) return "the empty value is 'none', not 'nil'";
     /* @@NAME@@ */
     (void)name;
     return NULL;
