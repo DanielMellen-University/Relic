@@ -1,0 +1,3 @@
+rt_int_text.relic:1:4: error: int(): not a number: "x"
+    int("x")
+       ^
