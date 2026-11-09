@@ -1,0 +1,4 @@
+# strings.lines splits on newlines and drops a trailing empty line.
+use std/strings
+print(strings.lines("one\ntwo\n"))
+print(strings.lines("one\ntwo"))
