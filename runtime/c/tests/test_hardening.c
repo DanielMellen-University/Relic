@@ -444,6 +444,31 @@ static void test_iteration_snapshots(void) {
     rl_release(concat);
 }
 
+static void test_list_slice_ownership(void) {
+    rl_value list = rl_list_new(0), child = rl_map_new(), args[3], slice, r;
+    rl_list_push(L(list), child);
+    rl_list_push(L(list), rl_int(2));
+    rl_list_push(L(list), rl_int(3));
+    args[0] = list; args[1] = rl_float(-HUGE_VAL); args[2] = rl_float(HUGE_VAL);
+    CHECK(call("slice", 3, args, &slice) == RL_OK);
+    CHECK(slice.u.o != list.u.o && L(slice)->n == 3 && L(slice)->items[0].u.o == child.u.o);
+    CHECK(rl_set_index(&cx, list, rl_int(1), rl_int(9)) == RL_OK);
+    CHECK(L(slice)->items[1].u.i == 2);
+    args[1] = rl_int(3); args[2] = rl_int(1);
+    CHECK(call("slice", 3, args, &r) == RL_OK && L(r)->n == 0);
+    rl_release(r);
+    args[1] = rl_float(0.5);
+    error_is(call("slice", 3, args, &r), "slice(): start must be a whole number");
+    CHECK(r.k == RL_NONE);
+    args[1] = rl_int(0); args[2] = rl_float(NAN);
+    error_is(call("slice", 3, args, &r), "slice(): end must be a whole number");
+    rl_release(list);
+    rl_release(child);
+    CHECK(rl_set_field(&cx, L(slice)->items[0], "alive", rl_int(1)) == RL_OK);
+    CHECK(rl_field(&cx, L(slice)->items[0], "alive", &r) == RL_OK && r.u.i == 1);
+    rl_release(slice);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -460,6 +485,7 @@ int main(void) {
     test_list_reference_transfers();
     test_map_collisions_and_binary_keys();
     test_iteration_snapshots();
+    test_list_slice_ownership();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
