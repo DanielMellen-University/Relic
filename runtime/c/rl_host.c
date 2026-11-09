@@ -119,6 +119,7 @@ BI(h_read_file) {
 
 BI(h_write_file) {
     FILE *f;
+    int failed;
     int app = a[2].k == RL_BOOL && a[2].u.b;
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
@@ -127,8 +128,11 @@ BI(h_write_file) {
     if (rl_arg_str(cx, a[1], "text")) return RL_ERR;
     f = open_file(S(a[0])->data, app ? "ab" : "wb");
     if (!f) return rl_fail(cx, "cannot write %s", S(a[0])->data);
-    fwrite(S(a[1])->data, 1, S(a[1])->len, f);
-    fclose(f);
+    failed = fwrite(S(a[1])->data, 1, S(a[1])->len, f) != S(a[1])->len;
+    /* A buffered write can succeed here and fail only when fclose flushes.
+     * Always close the stream, including after a short write. */
+    if (fclose(f) != 0) failed = 1;
+    if (failed) return rl_fail(cx, "cannot write %s", S(a[0])->data);
     *out = rl_none();
     return RL_OK;
 }

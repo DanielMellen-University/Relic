@@ -123,6 +123,45 @@ static void test_report_without_source(void) {
     rl_release(caught);
 }
 
+static int call(const char *name, int argc, const rl_value *argv, rl_value *out) {
+    rl_value f;
+    int status;
+    CHECK(rl_builtin(name, &f));
+    status = rl_call(&cx, f, argc, argv, out);
+    rl_release(f);
+    return status;
+}
+
+static void test_file_write_errors(void) {
+    rl_value args[3], out;
+    args[0] = rl_str_c("rt_hardening_absent/file.bin");
+    args[1] = rl_str_c("data");
+    args[2] = rl_bool(0);
+    error_is(call("host_write_file", 3, args, &out),
+             "host_write_file(): cannot write rt_hardening_absent/file.bin");
+    CHECK(out.k == RL_NONE);
+    rl_release(args[0]);
+    rl_release(args[1]);
+#if defined(__linux__)
+    /* /dev/full opens successfully but rejects both buffered flushes and
+     * larger writes. Other platforms still run the open-failure case. */
+    {
+        char large[8192];
+        memset(large, 'x', sizeof large);
+        args[0] = rl_str_c("/dev/full");
+        args[1] = rl_str_c("x");
+        error_is(call("host_write_file", 3, args, &out), "host_write_file(): cannot write /dev/full");
+        CHECK(out.k == RL_NONE);
+        rl_release(args[1]);
+        args[1] = rl_str_new(large, sizeof large);
+        error_is(call("host_write_file", 3, args, &out), "host_write_file(): cannot write /dev/full");
+        CHECK(out.k == RL_NONE);
+        rl_release(args[0]);
+        rl_release(args[1]);
+    }
+#endif
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -130,6 +169,7 @@ int main(void) {
     test_number_spans();
     test_binary_std_error();
     test_report_without_source();
+    test_file_write_errors();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
