@@ -1,0 +1,5 @@
+use std/json
+print(json.decode("[]"), json.decode("{{}}"))
+print(json.decode("true"), json.decode("false"), json.decode("null"))
+print(json.decode("0"), json.decode("-0"), type(json.decode("0")))
+print(json.pretty(1), json.pretty([]), json.pretty({}))
