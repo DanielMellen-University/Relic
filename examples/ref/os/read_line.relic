@@ -1,0 +1,8 @@
+# os.read_line returns the next line without its line end, then none.
+use std/os
+let a = os.read_line()
+let b = os.read_line()
+let c = os.read_line()
+print(a)
+print(b)
+print(c == none)
