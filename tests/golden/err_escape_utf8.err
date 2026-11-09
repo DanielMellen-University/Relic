@@ -1,3 +1,4 @@
 err_escape_utf8.relic:3:10: error: unknown escape '\é'
     print("sm\érgas")
              ^
+hint: known escapes are \n \t \" \\ and \u with hex digits

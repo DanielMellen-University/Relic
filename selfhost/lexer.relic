@@ -266,7 +266,7 @@ fun string_body(st, l, c, first)
                     let hex = "0123456789ABCDEF"
                     fail(st, el, ec, "unknown escape: a backslash then U+00{hex[int(code / 16)]}{hex[code % 16]} (a control character; delete it)")
                 else
-                    fail(st, el, ec, "unknown escape '\\{e}'")
+                    fail_span(st, el, ec, ec, "unknown escape '\\{e}'", "known escapes are \\n \\t \\\" \\\\ and \\u with hex digits")
                 return
             next
         if ch == "{{"

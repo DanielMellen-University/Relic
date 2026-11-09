@@ -373,7 +373,8 @@ private:
                             std::snprintf(code, sizeof code, "U+%04X", static_cast<unsigned>(b));
                             error(el, ec, std::string("unknown escape: a backslash then ") + code + " (a control character; delete it)");
                         }
-                        error(el, ec, "unknown escape '\\" + whole + "'");
+                        error(el, ec, "unknown escape '\\" + whole + "'", 0,
+                            "known escapes are \x5cn \x5ct \x5c\x22 \x5c\x5c and \x5cu with hex digits");
                     }
                 }
                 continue;
