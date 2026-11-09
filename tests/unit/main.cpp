@@ -79,6 +79,68 @@ static void test_hint_line() {
     std::remove(path.c_str());
 }
 
+// A span underlines every column from the start through end_col.
+static void test_span() {
+    std::string path = "span_src.relic";
+    {
+        std::ofstream f(path);
+        f << "let a = 1 && 2\n";
+    }
+    relic::diag::Note one;
+    one.end_col = 11;
+    CHECK(relic::diag::format(path, 1, 11, "bad", one) == relic::diag::format(path, 1, 11, "bad"));
+    relic::diag::Note both;
+    both.end_col = 12;
+    both.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format(path, 1, 11, "unexpected '&&'", both) ==
+          path + ":1:11: error: unexpected '&&'\n    let a = 1 && 2\n              ^^\nhint: Relic uses 'and', not '&&'\n");
+    relic::diag::Note back;
+    back.end_col = 3;
+    CHECK(relic::diag::format(path, 1, 11, "bad", back) == relic::diag::format(path, 1, 11, "bad"));
+    std::remove(path.c_str());
+
+    // A multi-byte character is one column, so the carets follow characters.
+    path = "span_utf8.relic";
+    {
+        std::ofstream f(path);
+        f << "caf\xc3\xa9 X\n";
+    }
+    relic::diag::Note utf;
+    utf.end_col = 4;  // 'f' and 'é'
+    CHECK(relic::diag::format(path, 1, 3, "span", utf) ==
+          path + ":1:3: error: span\n    caf\xc3\xa9 X\n      ^^\n");
+    std::remove(path.c_str());
+
+    // A tab is one column in the pad, and the span starts after it.
+    path = "span_tab.relic";
+    {
+        std::ofstream f(path, std::ios::binary);
+        f << "\txx\n";
+    }
+    relic::diag::Note tab;
+    tab.end_col = 3;
+    CHECK(relic::diag::format(path, 1, 2, "span", tab) ==
+          path + ":1:2: error: span\n    \txx\n    \t^^\n");
+    std::remove(path.c_str());
+
+    // A long line is windowed, and the span moves with the column.
+    path = "span_long.relic";
+    {
+        std::ofstream f(path);
+        f << std::string(200, 'a') << "\n";
+    }
+    relic::diag::Note wide;
+    wide.end_col = 155;
+    std::string got = relic::diag::format(path, 1, 150, "span", wide);
+    auto caret = got.find('\n');
+    caret = got.find('\n', caret + 1);
+    std::string marks = got.substr(caret + 1);
+    CHECK(marks.find("^^^^^^") != std::string::npos);
+    CHECK(marks.find("^^^^^^^") == std::string::npos);
+    CHECK(got.find(std::string(80, 'a')) != std::string::npos);
+    std::remove(path.c_str());
+}
+
 static void test_core() {
     CHECK(relic::version_string().rfind("relic ", 0) == 0);
     CHECK(relic::diag::format("a.relic", 3, 5, "x") == "a.relic:3:5: error: x\n");
@@ -447,6 +509,7 @@ int main() {
     test_interp();
     test_builtins();
     test_hint_line();
+    test_span();
     test_core();
     test_font();
     test_basic_tokens();

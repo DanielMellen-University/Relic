@@ -4,12 +4,14 @@
 
 namespace relic::diag {
 
-// The source line an error points at, with a caret under the column:
+// The source line an error points at, with carets under the columns:
 //     print(cuont)
 //           ^
+// end_col draws through that column (one caret when it is col).
 // Empty when the file cannot be read or the line is not there.
-std::string snippet(const std::string& path, int line, int col) {
+std::string snippet(const std::string& path, int line, int col, int end_col = 0) {
     if (line < 1 || col < 1) return "";
+    if (end_col < col) end_col = col;
     std::ifstream f(path, std::ios::binary);
     if (!f) return "";
     std::string text;
@@ -36,6 +38,8 @@ std::string snippet(const std::string& path, int line, int col) {
         while (to < text.size() && (static_cast<unsigned char>(text[to]) & 0xC0) == 0x80) ++to;
         text = text.substr(from, to - from);
         col -= static_cast<int>(cut);
+        end_col -= static_cast<int>(cut);
+        if (end_col < col) end_col = col;
     }
     std::string pad;
     // Columns count characters: one pad space per character before the column.
@@ -45,13 +49,16 @@ std::string snippet(const std::string& path, int line, int col) {
         pad += c == '\t' ? '\t' : ' ';
         ++n;
     }
-    return "    " + text + "\n    " + pad + "^\n";
+    int marks = end_col - col + 1;
+    if (marks < 1) marks = 1;
+    if (marks > 200) marks = 200;
+    return "    " + text + "\n    " + pad + std::string(static_cast<size_t>(marks), '^') + "\n";
 }
 
 std::string format(const std::string& path, int line, int col, const std::string& msg, const Note& note,
                    const char* kind) {
     std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
-                      "\n" + snippet(path, line, col);
+                      "\n" + snippet(path, line, col, note.end_col);
     if (!note.hint.empty()) out += "hint: " + note.hint + "\n";
     return out;
 }
