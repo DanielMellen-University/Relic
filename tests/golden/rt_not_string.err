@@ -1,0 +1,3 @@
+rt_not_string.relic:1:7: error: 'not' needs true or false, got string
+    print(not "a")
+          ^
