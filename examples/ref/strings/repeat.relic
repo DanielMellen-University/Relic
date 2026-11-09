@@ -1,0 +1,4 @@
+# strings.repeat copies the text. Zero or less gives an empty string.
+use std/strings
+print(strings.repeat("ab", 3))
+print(strings.repeat("ab", 0))
