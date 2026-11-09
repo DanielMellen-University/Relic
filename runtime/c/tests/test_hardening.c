@@ -162,6 +162,43 @@ static void test_file_write_errors(void) {
 #endif
 }
 
+static void test_integer_overflow_branches(void) {
+    typedef int (*binary_op)(rl_ctx *, rl_value, rl_value, rl_value *);
+    static const struct {
+        binary_op op;
+        long long a, b, result;
+        int overflow;
+    } cases[] = {
+        {rl_add, LLONG_MIN, -1, 0, 1},
+        {rl_add, LLONG_MIN, LLONG_MAX, -1, 0},
+        {rl_add, LLONG_MAX, -1, LLONG_MAX - 1, 0},
+        {rl_sub, LLONG_MAX, -1, 0, 1},
+        {rl_sub, LLONG_MIN, 1, 0, 1},
+        {rl_sub, -1, LLONG_MIN, LLONG_MAX, 0},
+        {rl_sub, LLONG_MIN, LLONG_MIN, 0, 0},
+        {rl_mul, -1, LLONG_MIN, 0, 1},
+        {rl_mul, LLONG_MIN, -1, 0, 1},
+        {rl_mul, LLONG_MIN, 2, 0, 1},
+        {rl_mul, 2, LLONG_MIN, 0, 1},
+        {rl_mul, -3037000500LL, -3037000500LL, 0, 1},
+        {rl_mul, -3037000499LL, -3037000499LL, 9223372030926249001LL, 0},
+        {rl_mul, LLONG_MIN, 1, LLONG_MIN, 0},
+        {rl_mul, LLONG_MIN, 0, 0, 0},
+        {rl_mul, 0, LLONG_MIN, 0, 0}
+    };
+    size_t i;
+    for (i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
+        rl_value out = rl_int(123);
+        int status = cases[i].op(&cx, rl_int(cases[i].a), rl_int(cases[i].b), &out);
+        if (cases[i].overflow) {
+            error_is(status, "int overflow");
+            CHECK(out.k == RL_NONE);
+        } else {
+            CHECK(status == RL_OK && out.k == RL_INT && out.u.i == cases[i].result);
+        }
+    }
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -170,6 +207,7 @@ int main(void) {
     test_binary_std_error();
     test_report_without_source();
     test_file_write_errors();
+    test_integer_overflow_branches();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
