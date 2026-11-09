@@ -1,0 +1,16 @@
+# Collatz (3n+1) steps until 1, for a few starting numbers.
+#   relic examples/learn/collatz.relic
+
+fun sequence(n)
+    let steps = [n]
+    while n != 1
+        if n % 2 == 0
+            n = int(n / 2)
+        else
+            n = 3 * n + 1
+        append(steps, n)
+    return steps
+
+for start in [6, 7, 19]
+    let steps = sequence(start)
+    print("{start}: {len(steps) - 1} steps  {steps}")
