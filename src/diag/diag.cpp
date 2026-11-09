@@ -89,6 +89,7 @@ const LexRow kLex[] = {
     {"~", '\0', "unexpected character '~'", "write 'not' to negate a boolean", 0},
     {"?", '\0', "unexpected character '?'", "Relic has no ternary operator; use if and else", 0},
     {"@", '\0', "unexpected character '@'", "Relic does not use '@'", 0},
+    {"^", '\0', "unexpected character '^'", "Relic has no xor operator", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };

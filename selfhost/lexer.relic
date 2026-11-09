@@ -394,6 +394,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '?'", hint: "Relic has no ternary operator; use if and else", extra: 0}
     if ch == "@"
         return {msg: "unexpected character '@'", hint: "Relic does not use '@'", extra: 0}
+    if ch == "^"
+        return {msg: "unexpected character '^'", hint: "Relic has no xor operator", extra: 0}
     # @@LEX@@
     return none
 
