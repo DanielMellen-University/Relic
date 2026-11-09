@@ -76,7 +76,7 @@ Lowest precedence first:
 
 - Math groups left: `1 - 2 - 3` is `(1 - 2) - 3`.
 - `+` adds numbers, joins two strings, or joins two lists. Mixing types is an error (`cannot add a string and an int`).
-- `/` always gives a float. `%` takes the sign of the right side: `-7 % 3` is `2`.
+- `/` always gives a float. `%` takes the sign of the right side: `-7 % 3` is `2`. A zero remainder does too, so `-7.5 % 2.5` is `0.0` and `1.0 % -1.0` is `-0.0`.
 - `==` and `!=` compare lists and maps by contents, strings by contents, and functions by identity. `none` equals only `none`. `1 == 1.0` is `true`.
 - An int and a float compare as floats, in every engine: past 2^53 the int is rounded first, so `9007199254740993 == 9007199254740992.0` is `true` and `9007199254740993 > 9007199254740992.0` is `false`. Two ints compare exactly.
 - `<` and friends compare numbers with numbers and strings with strings (by code point). They follow IEEE order: `nan` is unordered, so `<`, `<=`, `>` and `>=` are all `false`, including `nan <= nan` and an int next to a float (`nan <= 1`, `1 >= nan`). `nan == nan` is `false` and `nan != nan` is `true`. Every engine does this.
