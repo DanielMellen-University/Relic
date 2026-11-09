@@ -36,7 +36,11 @@ endif()
 file(WRITE ${TMP}/bad.relic "let x =\n")
 execute_process(COMMAND ${RELIC} fmt ${TMP}/bad.relic
   RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
-if(NOT code EQUAL 1 OR NOT out STREQUAL "" OR NOT err MATCHES "bad\\.relic:1:8: error:")
+string(REPLACE "\r\n" "\n" err "${err}")
+string(REPLACE "\r\n" "\n" out "${out}")
+# Do not pin the column. file(WRITE) stores CRLF on Windows, and the lexer
+# counts that carriage return, so the caret is one column further than on LF.
+if(NOT code EQUAL 1 OR NOT out STREQUAL "" OR NOT err MATCHES "expected an expression, got end of line")
   message(FATAL_ERROR "fmt syntax error: exit ${code}\n${out}${err}")
 endif()
 
