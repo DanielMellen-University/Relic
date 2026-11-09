@@ -376,6 +376,8 @@ fun token(st)
 fun lex_extra(ch, nxt)
     if ch == "&" and nxt == "&"
         return {msg: "unexpected '&&'", hint: "Relic uses 'and', not '&&'", extra: 1}
+    if ch == "&"
+        return {msg: "unexpected character '&'", hint: "Relic uses 'and', not '&'", extra: 0}
     # @@LEX@@
     return none
 
