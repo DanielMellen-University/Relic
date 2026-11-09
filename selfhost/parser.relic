@@ -185,6 +185,8 @@ fun word_extra(word)
         return "call it as print(...); the parentheses are required"
     if word == "len"
         return "call it as len(...); the parentheses are required"
+    if word == "class"
+        return "Relic has no classes; use a map or a module"
     # @@WORD@@
     if len(word) < 0
         return word

@@ -1,0 +1,4 @@
+word_class.relic:1:7: error: expected end of line, got name 'x'
+    class x
+          ^
+hint: Relic has no classes; use a map or a module

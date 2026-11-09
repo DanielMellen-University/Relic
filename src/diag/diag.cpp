@@ -165,6 +165,7 @@ const Pair kWords[] = {
     {"import", "modules are loaded with 'use', not 'import'"},
     {"print", "call it as print(...); the parentheses are required"},
     {"len", "call it as len(...); the parentheses are required"},
+    {"class", "Relic has no classes; use a map or a module"},
     // @@WORD@@
     {nullptr, nullptr},
 };
