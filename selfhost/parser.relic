@@ -175,6 +175,8 @@ fun word_extra(word)
         return "write 'let name = ... as int', not a C declaration"
     if word == "string"
         return "write 'let name = ... as string'"
+    if word == "bool"
+        return "write 'let name = ... as bool'"
     # @@WORD@@
     if len(word) < 0
         return word

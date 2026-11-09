@@ -160,6 +160,7 @@ const Pair kWords[] = {
     {"const", "bindings start with 'let'; Relic has no const"},
     {"int", "write 'let name = ... as int', not a C declaration"},
     {"string", "write 'let name = ... as string'"},
+    {"bool", "write 'let name = ... as bool'"},
     // @@WORD@@
     {nullptr, nullptr},
 };

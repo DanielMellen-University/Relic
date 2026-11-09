@@ -1,0 +1,4 @@
+word_bool.relic:1:6: error: expected end of line, got name 'x'
+    bool x = 1
+         ^
+hint: write 'let name = ... as bool'
