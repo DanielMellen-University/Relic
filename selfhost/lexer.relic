@@ -412,6 +412,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '≠'", hint: "write '!=' to test inequality", extra: 0}
     if ch == "≤"
         return {msg: "unexpected character '≤'", hint: "write '<='", extra: 0}
+    if ch == "≥"
+        return {msg: "unexpected character '≥'", hint: "write '>='", extra: 0}
     # @@LEX@@
     return none
 
