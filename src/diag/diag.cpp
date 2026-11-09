@@ -97,6 +97,7 @@ const LexRow kLex[] = {
     {"\xc3\x97", '\0', "unexpected character '\xc3\x97'", "multiplication is '*'", 0},
     {"\xc3\xb7", '\0', "unexpected character '\xc3\xb7'", "division is '/'", 0},
     {"\xe2\x89\xa0", '\0', "unexpected character '\xe2\x89\xa0'", "write '!=' to test inequality", 0},
+    {"\xe2\x89\xa4", '\0', "unexpected character '\xe2\x89\xa4'", "write '<='", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
