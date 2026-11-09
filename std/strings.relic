@@ -88,14 +88,25 @@ fun _text_or_list(name, what, s)
     if type(s) != "string" and type(s) != "list"
         fail("strings." + name + "(): " + what + " must be a string, got " + type(s))
 
+# A string paired with a list is an error naming that side, as find does,
+# instead of comparing the two and returning false.
+fun _same_kind(name, what, s, part)
+    if type(s) == type(part)
+        return
+    if type(s) == "string"
+        fail("strings." + name + "(): " + what + " must be a string, got " + type(part))
+    fail("strings." + name + "(): " + what + " must be a list, got " + type(part))
+
 fun starts_with(s, pre)
     _text_or_list("starts_with", "text", s)
     _text_or_list("starts_with", "prefix", pre)
+    _same_kind("starts_with", "prefix", s, pre)
     return slice(s, 0, len(pre)) == pre
 
 fun ends_with(s, suf)
     _text_or_list("ends_with", "text", s)
     _text_or_list("ends_with", "suffix", suf)
+    _same_kind("ends_with", "suffix", s, suf)
     return len(suf) <= len(s) and slice(s, len(s) - len(suf), len(s)) == suf
 
 # ASCII letters to the other case, looked up a character at a time, with the
