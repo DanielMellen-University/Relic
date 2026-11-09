@@ -313,7 +313,10 @@ fun block(p)
     advance(p)
     if not at(p, "INDENT")
         let got = peek(p)
-        fail_span(p, got, got.col, "expected an indented block, got " + describe(got), "indent that line by exactly 4 spaces")
+        let hint = ""
+        if got.kind != "EOF"
+            hint = "indent that line by exactly 4 spaces"
+        fail_span(p, got, got.col, "expected an indented block, got " + describe(got), hint)
     advance(p)
     let b = node("Block", start, "")
     while not at(p, "DEDENT") and not at(p, "EOF") and p.err == none
