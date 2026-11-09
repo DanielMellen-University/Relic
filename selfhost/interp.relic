@@ -90,6 +90,8 @@ fun name_note(name)
         return "printing is print(...)"
     if name == "continue"
         return "the loop keyword is 'next', not 'continue'"
+    if name == "foreach"
+        return "loops are written 'for name in list'"
     # @@NAME@@
     if len(name) < 0
         return name

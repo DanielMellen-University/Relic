@@ -195,6 +195,7 @@ const Pair kNames[] = {
     {"length", "the length of a value is len(value)"},
     {"echo", "printing is print(...)"},
     {"continue", "the loop keyword is 'next', not 'continue'"},
+    {"foreach", "loops are written 'for name in list'"},
     // @@NAME@@
     {nullptr, nullptr},
 };
