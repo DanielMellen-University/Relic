@@ -203,6 +203,8 @@ fun type_extra(name)
         return "did you mean 'int'?"
     if name == "str"
         return "did you mean 'string'?"
+    if name == "boolean"
+        return "did you mean 'bool'?"
     # @@TYPE@@
     if len(name) < 0
         return name

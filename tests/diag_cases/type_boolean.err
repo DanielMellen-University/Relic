@@ -1,0 +1,4 @@
+type_boolean.relic:1:10: error: unknown type 'boolean'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as boolean = 1
+             ^^^^^^^
+hint: did you mean 'bool'?

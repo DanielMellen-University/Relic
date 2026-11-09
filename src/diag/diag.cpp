@@ -175,6 +175,7 @@ const Pair kWords[] = {
 const Pair kTypes[] = {
     {"integer", "did you mean 'int'?"},
     {"str", "did you mean 'string'?"},
+    {"boolean", "did you mean 'bool'?"},
     // @@TYPE@@
     {nullptr, nullptr},
 };
