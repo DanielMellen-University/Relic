@@ -183,7 +183,8 @@ private:
                 emit(Tok::Dedent, "", line_, col_);
             }
             if (width != indents_.back())
-                error(line_, col_, "dedent does not line up with any outer block");
+                error(line_, col_, "dedent does not line up with any outer block", 0,
+                      "line this up with the header of the block it closes");
             return true;
         }
     }

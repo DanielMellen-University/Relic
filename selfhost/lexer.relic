@@ -177,7 +177,7 @@ fun layout(st)
             pop(st.indents)
             emit(st, "DEDENT", "", st.line, st.col)
         if width != last(st.indents)
-            fail(st, st.line, st.col, "dedent does not line up with any outer block")
+            fail_span(st, st.line, st.col, st.col, "dedent does not line up with any outer block", "line this up with the header of the block it closes")
             return false
         return true
 
