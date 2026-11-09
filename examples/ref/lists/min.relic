@@ -1,0 +1,4 @@
+# lists.min is the smallest item by <.
+use std/lists
+print(lists.min([3, 1, 2]))
+print(lists.min(["b", "a", "c"]))
