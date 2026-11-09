@@ -157,6 +157,8 @@ fun word_extra(word)
         return "functions are written with 'fun', not 'func'"
     if word == "function"
         return "functions are written with 'fun', not 'function'"
+    if word == "def"
+        return "functions are written with 'fun', not 'def'"
     # @@WORD@@
     if len(word) < 0
         return word

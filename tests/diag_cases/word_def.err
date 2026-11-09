@@ -1,0 +1,4 @@
+word_def.relic:1:5: error: expected end of line, got name 'foo'
+    def foo
+        ^^^
+hint: functions are written with 'fun', not 'def'

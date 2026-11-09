@@ -151,6 +151,7 @@ struct Pair {
 const Pair kWords[] = {
     {"func", "functions are written with 'fun', not 'func'"},
     {"function", "functions are written with 'fun', not 'function'"},
+    {"def", "functions are written with 'fun', not 'def'"},
     // @@WORD@@
     {nullptr, nullptr},
 };
