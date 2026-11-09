@@ -178,6 +178,7 @@ const Pair kTypes[] = {
     {"boolean", "did you mean 'bool'?"},
     {"dict", "did you mean 'map'?"},
     {"array", "did you mean 'list'?"},
+    {"void", "did you mean 'none'?"},
     // @@TYPE@@
     {nullptr, nullptr},
 };
