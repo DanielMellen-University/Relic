@@ -1,0 +1,4 @@
+# math.is_odd is for ints, negative ones too.
+use std/math
+print(math.is_odd(4))
+print(math.is_odd(-3))
