@@ -1,0 +1,5 @@
+# paths.dir is everything before the last name.
+use std/paths
+print(paths.dir("a/b.txt"))
+print(paths.dir("b.txt"))
+print(paths.dir("/a/b"))
