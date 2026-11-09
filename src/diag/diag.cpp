@@ -100,6 +100,7 @@ const LexRow kLex[] = {
     {"\xe2\x89\xa4", '\0', "unexpected character '\xe2\x89\xa4'", "write '<='", 0},
     {"\xe2\x89\xa5", '\0', "unexpected character '\xe2\x89\xa5'", "write '>='", 0},
     {"\xe2\x80\xa6", '\0', "unexpected character '\xe2\x80\xa6'", "a range is written '..'", 0},
+    {"\xe2\x86\x92", '\0', "unexpected character '\xe2\x86\x92'", "Relic has no arrow character", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };

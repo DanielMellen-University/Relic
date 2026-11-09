@@ -416,6 +416,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '≥'", hint: "write '>='", extra: 0}
     if ch == "…"
         return {msg: "unexpected character '…'", hint: "a range is written '..'", extra: 0}
+    if ch == "→"
+        return {msg: "unexpected character '→'", hint: "Relic has no arrow character", extra: 0}
     # @@LEX@@
     return none
 
