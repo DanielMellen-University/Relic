@@ -1,0 +1,4 @@
+# files.read returns the whole file, including newlines.
+use std/files
+files.write("note.txt", "one\ntwo\n")
+print(files.read("note.txt") == "one\ntwo\n")
