@@ -1,0 +1,32 @@
+# Arabic numbers as Roman numerals, and back.
+#   relic examples/learn/roman.relic
+
+fun to_roman(n)
+    let vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    let syms = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+    let out = ""
+    let i = 0
+    while n > 0
+        while n >= vals[i]
+            out = out + syms[i]
+            n = n - vals[i]
+        i = i + 1
+    return out
+
+fun from_roman(s)
+    let val = {I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000}
+    let n = 0
+    let i = 0
+    while i < len(s)
+        let cur = val[s[i]]
+        if i + 1 < len(s) and cur < val[s[i + 1]]
+            n = n + val[s[i + 1]] - cur
+            i = i + 2
+        else
+            n = n + cur
+            i = i + 1
+    return n
+
+for n in [4, 9, 42, 1994, 2026]
+    let text = to_roman(n)
+    print("{n} = {text} = {from_roman(text)}")
