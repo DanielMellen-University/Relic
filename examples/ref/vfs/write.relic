@@ -1,0 +1,6 @@
+# vfs.write stores text, replacing whatever was there.
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/note.txt", "one")
+vfs.write(fs, "/tmp/note.txt", "two")
+print(vfs.read(fs, "/tmp/note.txt"))
