@@ -162,6 +162,7 @@ const Pair kWords[] = {
     {"string", "write 'let name = ... as string'"},
     {"bool", "write 'let name = ... as bool'"},
     {"float", "write 'let name = ... as float'"},
+    {"import", "modules are loaded with 'use', not 'import'"},
     // @@WORD@@
     {nullptr, nullptr},
 };

@@ -179,6 +179,8 @@ fun word_extra(word)
         return "write 'let name = ... as bool'"
     if word == "float"
         return "write 'let name = ... as float'"
+    if word == "import"
+        return "modules are loaded with 'use', not 'import'"
     # @@WORD@@
     if len(word) < 0
         return word

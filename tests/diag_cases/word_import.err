@@ -1,0 +1,4 @@
+word_import.relic:1:8: error: expected end of line, got name 'x'
+    import x
+           ^
+hint: modules are loaded with 'use', not 'import'
