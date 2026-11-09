@@ -1,0 +1,2 @@
+# Compiled run of examples/word_count.relic. Stdout must match that program.
+use ../../examples/word_count
