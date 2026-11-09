@@ -1,0 +1,24 @@
+# Primes below 50, by the sieve of Eratosthenes.
+#   relic examples/learn/primes.relic
+
+fun sieve(n)
+    let mark = []
+    for i in 0..n
+        append(mark, true)
+    mark[0] = false
+    mark[1] = false
+    for i in 2..n
+        if mark[i]
+            let j = i * i
+            while j < n
+                mark[j] = false
+                j = j + i
+    let out = []
+    for i in 2..n
+        if mark[i]
+            append(out, i)
+    return out
+
+let primes = sieve(50)
+print(primes)
+print("{len(primes)} primes below 50")
