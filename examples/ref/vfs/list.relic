@@ -1,0 +1,7 @@
+# vfs.list returns the names in a folder, sorted.
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/b.txt", "b")
+vfs.write(fs, "/tmp/a.txt", "a")
+print(vfs.list(fs, "/tmp"))
+print(vfs.list(fs, "/home"))
