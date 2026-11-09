@@ -1,0 +1,100 @@
+# A three-room adventure. Commands are a fixed script so the run is the same
+# every time. Change `script` to try another path.
+#   relic examples/learn/adventure.relic
+use std/strings
+
+let rooms = {
+    porch: {desc: "You are on a cold porch.", item: "key"},
+    hall: {desc: "You are in a dim hall.", item: none},
+    study: {desc: "You are in a study. A note reads: welcome.", item: none}
+}
+let exits = {
+    porch: {north: "hall"},
+    hall: {south: "porch", east: "study"},
+    study: {west: "hall"}
+}
+let locks = {hall: "east"}
+let here = ["porch"]
+let bag = []
+
+fun look()
+    let room = here[0]
+    print(rooms[room].desc)
+    if rooms[room].item != none
+        print("You see a {rooms[room].item}.")
+    if room in locks
+        print("The {locks[room]} door is locked.")
+
+fun have(thing)
+    for it in bag
+        if it == thing
+            return true
+    return false
+
+fun go(dir)
+    let room = here[0]
+    if not (dir in exits[room])
+        print("You cannot go {dir}.")
+        return
+    if room in locks and locks[room] == dir
+        print("The {dir} door is locked.")
+        return
+    here[0] = exits[room][dir]
+    print("You go {dir}.")
+    look()
+
+fun take()
+    let room = here[0]
+    let item = rooms[room].item
+    if item == none
+        print("There is nothing to take.")
+        return
+    append(bag, item)
+    rooms[room].item = none
+    print("You take the {item}.")
+
+fun unlock(dir)
+    let room = here[0]
+    if not (room in locks) or locks[room] != dir
+        print("That door is not locked.")
+        return
+    if not have("key")
+        print("You need a key.")
+        return
+    remove(locks, room)
+    print("You unlock the {dir} door.")
+
+fun play(line)
+    let parts = strings.words(line)
+    if len(parts) == 0
+        return
+    if parts[0] == "look"
+        look()
+    else if parts[0] == "go"
+        go(parts[1])
+    else if parts[0] == "take"
+        take()
+    else if parts[0] == "unlock"
+        unlock(parts[1])
+    else if parts[0] == "bag"
+        print(bag)
+    else if parts[0] == "quit"
+        print("Goodbye.")
+    else
+        print("Try look, go, take, unlock, bag or quit.")
+
+let script = [
+    "look",
+    "go north",
+    "go east",
+    "go south",
+    "take",
+    "go north",
+    "unlock east",
+    "go east",
+    "bag",
+    "quit"
+]
+for line in script
+    print("> {line}")
+    play(line)
