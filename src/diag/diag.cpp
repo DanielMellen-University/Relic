@@ -168,6 +168,7 @@ const Pair kWords[] = {
     {"class", "Relic has no classes; use a map or a module"},
     {"switch", "branch with if and else if"},
     {"lambda", "write 'fun name() = ...'"},
+    {"except", "catch an error with try and catch"},
     // @@WORD@@
     {nullptr, nullptr},
 };

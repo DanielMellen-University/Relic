@@ -191,6 +191,8 @@ fun word_extra(word)
         return "branch with if and else if"
     if word == "lambda"
         return "write 'fun name() = ...'"
+    if word == "except"
+        return "catch an error with try and catch"
     # @@WORD@@
     if len(word) < 0
         return word

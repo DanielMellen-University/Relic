@@ -1,0 +1,4 @@
+word_except.relic:1:8: error: expected end of line, got name 'x'
+    except x
+           ^
+hint: catch an error with try and catch
