@@ -1,0 +1,4 @@
+# strings.capitalize puts the first character in upper case.
+use std/strings
+print(strings.capitalize("hello"))
+print(strings.capitalize("relic lang"))
