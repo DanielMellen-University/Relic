@@ -1,0 +1,3 @@
+syn_map_space.relic:1:12: error: expected ':' after the map key, got number 1
+    let m = {a 1}
+               ^

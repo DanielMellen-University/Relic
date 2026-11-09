@@ -1,0 +1,3 @@
+rt_int_bool.relic:1:4: error: int(): cannot turn a bool into an int
+    int(true)
+       ^

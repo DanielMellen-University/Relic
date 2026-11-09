@@ -1,0 +1,6 @@
+use std/strings
+print(strings.pad_left("ab", -4, "xy"))
+print(strings.pad_right("ab", 0, "x"))
+print(strings.center("hi", -2, "*"))
+print(strings.pad_left("", 0, "a"))
+print(strings.pad_right("ab", -1.0, "z"))

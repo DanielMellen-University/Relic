@@ -1,0 +1,3 @@
+syn_fun_bare.relic:1:4: error: expected a function name after 'fun', got end of line
+    fun
+       ^

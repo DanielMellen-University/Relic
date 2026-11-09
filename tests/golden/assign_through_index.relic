@@ -1,0 +1,4 @@
+let row = {n: 1}
+let xs = [row]
+xs[0].n = 5
+print(row.n, xs[0].n)

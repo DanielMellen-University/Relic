@@ -1,0 +1,3 @@
+rt_div_string.relic:1:11: error: cannot divide a string and an int
+    print("a" / 2)
+              ^

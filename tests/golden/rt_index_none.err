@@ -1,0 +1,3 @@
+rt_index_none.relic:2:10: error: list index must be a number, got none
+    print(xs[none])
+             ^

@@ -167,6 +167,9 @@ Value op_math(const Ast& n, const Value& a, const Value& b) {
     if (o == '/') return Value(x / y);
     double r = std::fmod(x, y);
     if (r != 0 && ((r < 0) != (y < 0))) r += y;
+    // A zero from fmod keeps the dividend's sign, so -7.5 % 2.5 was -0.0.
+    // The remainder takes the sign of the divisor, zeros included.
+    else if (r == 0 && std::signbit(r) != std::signbit(y)) r = std::copysign(0.0, y);
     return Value(r);
 }
 

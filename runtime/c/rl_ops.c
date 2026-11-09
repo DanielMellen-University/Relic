@@ -69,6 +69,9 @@ static int math(rl_ctx *cx, char o, rl_value a, rl_value b, rl_value *out) {
         if (o == '/') { *out = rl_float(x / y); return RL_OK; }
         r = fmod(x, y);
         if (r != 0 && ((r < 0) != (y < 0))) r += y;
+        /* A zero from fmod keeps the dividend's sign (-7.5 % 2.5 was -0.0).
+           The remainder takes the sign of the divisor, zeros included. */
+        else if (r == 0 && signbit(r) != signbit(y)) r = copysign(0.0, y);
         *out = rl_float(r);
         return RL_OK;
     }

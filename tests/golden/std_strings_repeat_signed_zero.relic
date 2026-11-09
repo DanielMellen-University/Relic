@@ -1,0 +1,5 @@
+use std/strings
+print(strings.repeat("ab", -2.0))
+print(strings.repeat("ab", 0.0))
+print(strings.repeat("", 4))
+print(strings.repeat("é", 2.0))

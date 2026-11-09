@@ -1,0 +1,9 @@
+use std/strings
+fun shown(xs)
+    let out = []
+    for line in xs
+        append(out, strings.replace(line, chr(13), "<CR>"))
+    return out
+print(shown(strings.lines("a" + chr(13) + "b")))
+print(shown(strings.lines(chr(13))))
+print(shown(strings.lines("a\n\nb")))

@@ -1,0 +1,3 @@
+rt_remove_range.relic:1:7: error: remove(): index 7 is out of range
+    remove([1, 2], 7)
+          ^

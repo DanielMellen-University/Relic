@@ -1,0 +1,3 @@
+syn_empty_group.relic:1:10: error: expected an expression, got ')'
+    let x = ()
+             ^

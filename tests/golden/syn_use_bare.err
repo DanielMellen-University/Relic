@@ -1,0 +1,3 @@
+syn_use_bare.relic:1:4: error: expected a module name after 'use', got end of line
+    use
+       ^

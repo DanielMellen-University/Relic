@@ -1,0 +1,3 @@
+rt_slice_map.relic:1:6: error: slice(): cannot slice a map
+    slice({a: 1}, 0, 1)
+         ^

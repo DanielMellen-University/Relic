@@ -1,0 +1,6 @@
+let m = {a: 1}
+let seen = ""
+for k in m
+    m.b = 2
+    seen = seen + k
+print(seen, keys(m))

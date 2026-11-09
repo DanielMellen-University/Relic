@@ -1,0 +1,3 @@
+rt_ord_type.relic:1:4: error: ord(): argument must be a string, got int
+    ord(65)
+       ^

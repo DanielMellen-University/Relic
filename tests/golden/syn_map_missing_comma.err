@@ -1,0 +1,3 @@
+syn_map_missing_comma.relic:1:15: error: expected '}' to close the map, got name 'b'
+    let m = {a: 1 b: 2}
+                  ^

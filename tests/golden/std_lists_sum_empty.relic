@@ -1,0 +1,6 @@
+use std/lists
+print(lists.sum([]), lists.sum(""), lists.product([]), lists.product([-2, 3]))
+try
+    print(lists.sum("a"))
+catch e
+    print(e.message)

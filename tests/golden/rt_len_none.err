@@ -1,0 +1,3 @@
+rt_len_none.relic:1:4: error: len(): cannot get the length of a none
+    len(none)
+       ^

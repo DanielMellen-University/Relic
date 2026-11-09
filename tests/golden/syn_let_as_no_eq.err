@@ -1,0 +1,3 @@
+syn_let_as_no_eq.relic:1:13: error: expected '=' after the name, got end of line
+    let x as int
+                ^

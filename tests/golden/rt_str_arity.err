@@ -1,0 +1,3 @@
+rt_str_arity.relic:1:4: error: str() takes 1 argument, got 0
+    str()
+       ^

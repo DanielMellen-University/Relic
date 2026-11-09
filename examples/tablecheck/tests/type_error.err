@@ -1,0 +1,3 @@
+tests/type_error.relic:3:16: error: summarize() argument 'text' must be string, got int
+    table.summarize(42, ",", "")
+                   ^

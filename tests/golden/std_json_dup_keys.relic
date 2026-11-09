@@ -1,0 +1,5 @@
+use std/json
+let q = chr(34)
+let t = "{{" + q + "a" + q + ":1," + q + "a" + q + ":2}}"
+print(json.decode(t))
+print(json.encode(json.decode(t)))

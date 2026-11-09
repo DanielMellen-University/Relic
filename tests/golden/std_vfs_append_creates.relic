@@ -1,0 +1,6 @@
+use std/vfs
+let fs = vfs.new()
+vfs.append(fs, "/tmp/new.txt", "hi")
+print(vfs.read(fs, "/tmp/new.txt"), vfs.exists(fs, "/tmp/new.txt"))
+vfs.append(fs, "/tmp/new.txt", "!")
+print(vfs.read(fs, "/tmp/new.txt"))

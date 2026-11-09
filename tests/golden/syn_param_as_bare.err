@@ -1,0 +1,3 @@
+syn_param_as_bare.relic:1:11: error: expected a type name after 'as', got ')'
+    fun f(a as)
+              ^

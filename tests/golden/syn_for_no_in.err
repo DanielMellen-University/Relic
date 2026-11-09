@@ -1,0 +1,3 @@
+syn_for_no_in.relic:1:7: error: expected 'in' after the loop name, got name 'x'
+    for i x
+          ^

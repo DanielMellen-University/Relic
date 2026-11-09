@@ -1,0 +1,3 @@
+syn_call_blank_arg.relic:1:7: error: expected an expression, got ','
+    print(,)
+          ^
