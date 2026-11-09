@@ -1,0 +1,3 @@
+rt_loop_none.relic:1:10: error: cannot loop over a none
+    for x in none
+             ^
