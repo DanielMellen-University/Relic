@@ -1,0 +1,3 @@
+rt_hint_assign.relic:2:5: error: 'x' must be int, got string
+    x = "no"
+        ^

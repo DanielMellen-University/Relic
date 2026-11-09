@@ -1,0 +1,3 @@
+rt_mul_list.relic:1:11: error: cannot multiply a list and an int
+    print([1] * 2)
+              ^

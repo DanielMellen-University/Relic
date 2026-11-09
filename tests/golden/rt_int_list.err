@@ -1,0 +1,3 @@
+rt_int_list.relic:1:4: error: int(): cannot turn a list into an int
+    int([1])
+       ^

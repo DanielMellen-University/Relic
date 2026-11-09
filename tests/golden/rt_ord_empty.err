@@ -1,0 +1,3 @@
+rt_ord_empty.relic:1:4: error: ord(): needs a one-character string
+    ord("")
+       ^

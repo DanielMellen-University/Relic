@@ -1,0 +1,3 @@
+rt_hint_let_fun.relic:1:21: error: 'x' must be function, got int
+    let x as function = 1
+                        ^

@@ -1,0 +1,3 @@
+rt_hint_let_mod.relic:1:19: error: 'x' must be module, got int
+    let x as module = 1
+                      ^

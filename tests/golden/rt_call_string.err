@@ -1,0 +1,3 @@
+rt_call_string.relic:2:2: error: cannot call a string
+    f()
+     ^

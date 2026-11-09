@@ -1,0 +1,3 @@
+syn_for_no_iter.relic:1:9: error: expected an expression, got end of line
+    for i in
+            ^

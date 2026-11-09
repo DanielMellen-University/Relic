@@ -11,7 +11,7 @@ option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); turns on REL
 option(RELIC_C_RUNTIME "Build the C runtime in runtime/c and the C compiler on it" ON)
 option(RELIC_C_SDL "Also build relic_rt_gfx, the C runtime with SDL2 graphics, for relic_add_program(... GRAPHICS) (needs SDL2)" OFF)
 # Added to another project with add_subdirectory, Relic leaves out its own
-# compiled goldens by default (134 extra targets) and keeps relicc and
+# compiled goldens by default and keeps relicc and
 # relic_add_program (cmake/Relic.cmake).
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(RELIC_TOP_LEVEL ON)
@@ -429,7 +429,7 @@ endif()
 # (in parallel, one could remove the folder while another was using it).
 # The files goldens below each use their own .tmpdir, but a golden and its
 # cgen twin share it, so they take turns too.
-foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_write_edges golden_std_files_type_errors cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_write_edges cgen_std_files_type_errors selfhost_interp vm_matches_tree_walker)
+foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_more_errors golden_std_files_write_edges golden_std_files_type_errors golden_std_strings_more cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_more_errors cgen_std_files_write_edges cgen_std_files_type_errors cgen_std_strings_more selfhost_interp vm_matches_tree_walker)
   if(TEST ${t})
     set_tests_properties(${t} PROPERTIES RESOURCE_LOCK golden_disk_files)
   endif()

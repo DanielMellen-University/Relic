@@ -1,0 +1,4 @@
+use std/maps
+print(maps.merge({}, {b: 1, a: 2}))
+print(maps.merge({a: 1}, {}))
+print(keys(maps.merge({z: 1}, {a: 2})))

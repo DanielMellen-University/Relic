@@ -1,0 +1,3 @@
+rt_add_bool.relic:1:12: error: cannot add a bool and an int
+    print(true + 1)
+               ^

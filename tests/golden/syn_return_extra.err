@@ -1,0 +1,3 @@
+syn_return_extra.relic:2:14: error: expected end of line, got number 2
+        return 1 2
+                 ^

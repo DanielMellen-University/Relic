@@ -1,0 +1,10 @@
+strings.starts_with(): prefix must be a string, got list
+strings.starts_with(): prefix must be a list, got string
+strings.ends_with(): suffix must be a string, got list
+strings.ends_with(): suffix must be a list, got string
+strings.starts_with(): prefix must be a string, got list
+strings.ends_with(): suffix must be a list, got string
+true
+true
+true
+c

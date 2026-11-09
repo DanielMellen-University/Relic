@@ -1,0 +1,3 @@
+rt_float_list.relic:1:6: error: float(): cannot turn a list into a float
+    float([1])
+         ^

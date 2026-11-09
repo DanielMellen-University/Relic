@@ -1,0 +1,3 @@
+rt_append_string.relic:1:7: error: append(): first argument must be a list, got string
+    append("ab", "c")
+          ^

@@ -1,0 +1,5 @@
+use std/math
+let lo = 0 - 9223372036854775807 - 1
+print(math.is_even(lo), math.is_odd(lo))
+print(math.is_even(lo + 1), math.is_odd(lo + 1))
+print(math.is_even(0), math.is_odd(-1), math.is_odd(0))

@@ -1,0 +1,7 @@
+use std/strings
+print(strings.find([1, 2, 3], [1, 2, 3]))
+print(strings.find([1, 2], [1, 2, 3]))
+print(strings.find([], []))
+print(strings.starts_with([1, 2, 3], [1]))
+print(strings.ends_with([1, 2, 3], []))
+print(strings.ends_with("abc", ""))

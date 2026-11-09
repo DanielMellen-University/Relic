@@ -1,0 +1,3 @@
+syn_while_bare.relic:1:6: error: expected an expression, got end of line
+    while
+         ^

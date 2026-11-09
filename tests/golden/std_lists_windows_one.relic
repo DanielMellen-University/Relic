@@ -1,0 +1,4 @@
+use std/lists
+print(lists.windows([1, 2, 3], 1))
+print(lists.windows("ab", 1))
+print(lists.chunk({b: 1, a: 2}, 1))

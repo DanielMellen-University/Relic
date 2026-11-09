@@ -1,0 +1,3 @@
+syn_map_num_key.relic:1:10: error: expected a map key (a name or a string), got number 1
+    let m = {1: 2}
+             ^

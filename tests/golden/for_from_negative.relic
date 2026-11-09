@@ -1,0 +1,4 @@
+let s = ""
+for i in -2..3
+    s = s + str(i)
+print(s)

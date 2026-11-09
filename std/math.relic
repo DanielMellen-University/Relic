@@ -63,6 +63,11 @@ fun lcm(a, b)
     _ints("lcm", a, b)
     if a == 0 or b == 0
         return 0
+    # -2^63 has no positive int. lcm with anything but 0 is at least 2^63,
+    # which does not fit, so this is the same overflow the multiply reports.
+    # abs() would name itself instead of leaving the usual overflow error.
+    if a == -9223372036854775807 - 1 or b == -9223372036854775807 - 1
+        fail("int overflow")
     a = abs(a)
     let g = gcd(a, b)
     # a / g exactly: / gives a float, which is off past 2^53, so fix it up

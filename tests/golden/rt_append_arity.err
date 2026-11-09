@@ -1,0 +1,3 @@
+rt_append_arity.relic:1:7: error: append() takes 2 arguments, got 1
+    append([1])
+          ^

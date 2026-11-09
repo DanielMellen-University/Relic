@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `strings.starts_with` and `ends_with` fail when one side is a string and the other is a list: `strings.starts_with(): prefix must be a string, got list` (it was `false`; the 1.0.53 note left this for later). Same-kind calls are unchanged. Golden `std_strings_affix_mixed`.
+- `math.lcm` of `-2^63` and any non-zero int is `int overflow`, the same overflow other results past the int range report. It named `math.abs` before. `lcm` with `0` is still `0`. Golden `std_math_lcm_min_int`.
+- `%` of floats gives a zero the sign of the divisor: `-7.5 % 2.5` is `0.0` and `1.0 % -1.0` is `-0.0` (they were `-0.0` and `0.0`). Golden `float_rem_sign`.
+
 ## 1.0.53 (2026-11-05)
 
 Coverage release: 66 new golden tests (core language, std strings, lists, maps, math, json, paths, files, os, time, vfs) and 5 doc additions (GUIDE.md JSON round-trip and is_space/is_whole examples, STDLIB.md arrow examples, LANGUAGE.md range-is-a-list and cyclic equality notes). Program counts are now 254 programs, 248 compiled.

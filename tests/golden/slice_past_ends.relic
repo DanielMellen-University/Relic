@@ -1,0 +1,2 @@
+print(slice("abcdef", 0, 100), slice("abcdef", 4, 2))
+print(slice([1, 2, 3], -5, 2), slice("", 0, 1), slice([1], 1, 0))
