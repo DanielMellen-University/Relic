@@ -177,6 +177,8 @@ fun word_extra(word)
         return "write 'let name = ... as string'"
     if word == "bool"
         return "write 'let name = ... as bool'"
+    if word == "float"
+        return "write 'let name = ... as float'"
     # @@WORD@@
     if len(word) < 0
         return word

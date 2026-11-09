@@ -161,6 +161,7 @@ const Pair kWords[] = {
     {"int", "write 'let name = ... as int', not a C declaration"},
     {"string", "write 'let name = ... as string'"},
     {"bool", "write 'let name = ... as bool'"},
+    {"float", "write 'let name = ... as float'"},
     // @@WORD@@
     {nullptr, nullptr},
 };
