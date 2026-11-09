@@ -434,7 +434,12 @@ fun lex(src)
         fail(st, t.line, t.col, "unterminated string")
     if st.err == none and len(st.brackets) > 0
         let b = last(st.brackets)
-        fail(st, b.line, b.col, "unclosed '{b.ch}'")
+        let closer = ")"
+        if b.ch == "["
+            closer = "]"
+        else if b.ch == "{{"
+            closer = "}}"
+        fail_span(st, b.line, b.col, b.col, "unclosed '{b.ch}'", "close it with '{closer}'")
     if st.err == none
         if len(st.out) > 0 and last(st.out).kind != "NEWLINE" and last(st.out).kind != "DEDENT"
             emit(st, "NEWLINE", "", st.line, st.col)

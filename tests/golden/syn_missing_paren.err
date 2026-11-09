@@ -1,3 +1,4 @@
 syn_missing_paren.relic:1:6: error: unclosed '('
     print(1, 2
          ^
+hint: close it with ')'

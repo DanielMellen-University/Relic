@@ -111,9 +111,13 @@ public:
             token();
         }
         if (!interp_.empty()) error(interp_.back().line, interp_.back().col, "unterminated string");
-        if (!brackets_.empty())
+        if (!brackets_.empty()) {
+            char open = brackets_.back().ch;
+            const char* closer = open == '(' ? ")" : open == '[' ? "]" : "}";
             error(brackets_.back().line, brackets_.back().col,
-                  std::string("unclosed '") + brackets_.back().ch + "'");
+                  std::string("unclosed '") + open + "'", 0,
+                  std::string("close it with '") + closer + "'");
+        }
         if (!out_.empty() && out_.back().kind != Tok::Newline && out_.back().kind != Tok::Dedent)
             emit(Tok::Newline, "", line_, col_);
         while (indents_.size() > 1) { indents_.pop_back(); emit(Tok::Dedent, "", line_, col_); }
