@@ -1,0 +1,3 @@
+rt_insert_type.relic:1:7: error: insert(): index must be a number, got string
+    insert([1], "a", 9)
+          ^
