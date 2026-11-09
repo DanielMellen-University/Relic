@@ -1,0 +1,4 @@
+# strings.split keeps empty pieces. An empty separator splits into characters.
+use std/strings
+print(strings.split("a,,b", ","))
+print(strings.split("ab", ""))
