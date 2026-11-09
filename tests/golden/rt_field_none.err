@@ -1,0 +1,3 @@
+rt_field_none.relic:2:8: error: cannot read a field of a none
+    print(n.a)
+           ^
