@@ -630,6 +630,45 @@ static void test_binary_file_lifecycle(void) {
     rl_release(dir);
 }
 
+static void test_host_sort_boundaries(void) {
+    static const char first[] = {'a', 0, 'b'};
+    static const char second[] = {'a', 0, 'a'};
+    rl_value list = rl_list_new(0), out, text;
+    rl_list_push(L(list), rl_none());
+    text = rl_str_new(first, sizeof first); rl_list_push(L(list), text); rl_release(text);
+    text = rl_str_c("a"); rl_list_push(L(list), text); rl_release(text);
+    text = rl_str_new(second, sizeof second); rl_list_push(L(list), text); rl_release(text);
+    text = rl_str_c(""); rl_list_push(L(list), text); rl_release(text);
+    rl_release(rl_list_take(L(list), 0));
+    CHECK(L(list)->off == 1);
+    CHECK(call("host_sort", 1, &list, &out) == RL_OK);
+    CHECK(out.u.o != list.u.o && L(out)->n == 4);
+    bytes_are(L(out)->items[0], "", 0);
+    bytes_are(L(out)->items[1], "a", 1);
+    bytes_are(L(out)->items[2], second, sizeof second);
+    bytes_are(L(out)->items[3], first, sizeof first);
+    CHECK(L(list)->off == 1 && L(list)->items[0].u.o == L(out)->items[3].u.o);
+    rl_release(list);
+    bytes_are(L(out)->items[2], second, sizeof second);
+    rl_release(out);
+    list = rl_list_new(4);
+    rl_list_push(L(list), rl_int(LLONG_MAX));
+    rl_list_push(L(list), rl_int(LLONG_MAX - 1));
+    rl_list_push(L(list), rl_int(LLONG_MIN + 1));
+    rl_list_push(L(list), rl_int(LLONG_MIN));
+    CHECK(call("host_sort", 1, &list, &out) == RL_OK);
+    CHECK(L(out)->items[0].u.i == LLONG_MIN && L(out)->items[1].u.i == LLONG_MIN + 1
+          && L(out)->items[2].u.i == LLONG_MAX - 1 && L(out)->items[3].u.i == LLONG_MAX);
+    CHECK(L(list)->items[0].u.i == LLONG_MAX);
+    rl_release(out);
+    rl_release(list);
+    list = rl_list_new(0);
+    CHECK(call("host_sort", 1, &list, &out) == RL_OK);
+    CHECK(out.k == RL_LIST && out.u.o != list.u.o && L(out)->n == 0);
+    rl_release(out);
+    rl_release(list);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -651,6 +690,7 @@ int main(void) {
     test_collector_mixed_graph();
     test_deep_and_wide_equality();
     test_binary_file_lifecycle();
+    test_host_sort_boundaries();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
