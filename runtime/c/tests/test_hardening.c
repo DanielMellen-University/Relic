@@ -199,6 +199,31 @@ static void test_integer_overflow_branches(void) {
     }
 }
 
+static void test_division_modulo_limits(void) {
+    static const struct { long long a, b, result; } cases[] = {
+        {LLONG_MIN, LLONG_MAX, LLONG_MAX - 1},
+        {LLONG_MAX, LLONG_MIN, -1},
+        {LLONG_MIN + 1, LLONG_MIN, LLONG_MIN + 1},
+        {-6, -3, 0}, {7, 3, 1}, {-7, -3, -1}
+    };
+    size_t i;
+    rl_value r;
+    for (i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
+        CHECK(rl_mod(&cx, rl_int(cases[i].a), rl_int(cases[i].b), &r) == RL_OK);
+        CHECK(r.k == RL_INT && r.u.i == cases[i].result);
+    }
+    CHECK(rl_div(&cx, rl_int(LLONG_MIN), rl_int(-1), &r) == RL_OK);
+    CHECK(r.k == RL_FLOAT && r.u.f == 9223372036854775808.0);
+    CHECK(rl_mod(&cx, rl_float(-7.5), rl_int(3), &r) == RL_OK && r.u.f == 1.5);
+    CHECK(rl_mod(&cx, rl_int(7), rl_float(-3.0), &r) == RL_OK && r.u.f == -2.0);
+    CHECK(rl_mod(&cx, rl_float(-6.0), rl_float(3.0), &r) == RL_OK);
+    CHECK(r.k == RL_FLOAT && r.u.f == 0.0 && signbit(r.u.f));
+    error_is(rl_div(&cx, rl_int(1), rl_float(-0.0), &r), "division by zero");
+    CHECK(r.k == RL_NONE);
+    error_is(rl_mod(&cx, rl_float(1.0), rl_float(-0.0), &r), "division by zero");
+    CHECK(r.k == RL_NONE);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -208,6 +233,7 @@ int main(void) {
     test_report_without_source();
     test_file_write_errors();
     test_integer_overflow_branches();
+    test_division_modulo_limits();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
