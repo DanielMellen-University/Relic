@@ -1,0 +1,5 @@
+([]{})  yes
+([)]  no
+(empty)  yes
+((]  no
+{[()]}  yes
