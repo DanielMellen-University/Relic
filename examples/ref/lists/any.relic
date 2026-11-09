@@ -1,0 +1,6 @@
+# lists.any stops at the first item the test accepts. An empty list is false.
+use std/lists
+fun even(n) = n % 2 == 0
+print(lists.any([1, 3, 4], even))
+print(lists.any([1, 3], even))
+print(lists.any([], even))
