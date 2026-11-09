@@ -108,15 +108,15 @@ fun expect_extra(p, what)
     if p.pos > 0
         prev = p.toks[p.pos - 1]
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PLUS"
-        return {msg: "Relic has no '+='", hint: "write x = x + 1", cover_prev: true, cover_got: true}
+        return {msg: "Relic has no '+='", hint: "write it out, as in x = x + n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "MINUS"
-        return {msg: "Relic has no '-='", hint: "write x = x - 1", cover_prev: true, cover_got: true}
+        return {msg: "Relic has no '-='", hint: "write it out, as in x = x - n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "STAR"
-        return {msg: "Relic has no '*='", hint: "write x = x * 1", cover_prev: true, cover_got: true}
+        return {msg: "Relic has no '*='", hint: "write it out, as in x = x * n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "SLASH"
-        return {msg: "Relic has no '/='", hint: "write x = x / 1", cover_prev: true, cover_got: true}
+        return {msg: "Relic has no '/='", hint: "write it out, as in x = x / n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PERCENT"
-        return {msg: "Relic has no '%='", hint: "write x = x % 1", cover_prev: true, cover_got: true}
+        return {msg: "Relic has no '%='", hint: "write it out, as in x = x % n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "EQ_EQ"
         return {msg: "Relic has no '==='", hint: "compare with '=='; '=' assigns", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "BANG_EQ"

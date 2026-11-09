@@ -119,11 +119,11 @@ struct ExpectRow {
     int cover_got;
 };
 const ExpectRow kExpect[] = {
-    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Plus, "", "Relic has no '+='", "write x = x + 1", 1, 1},
-    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Minus, "", "Relic has no '-='", "write x = x - 1", 1, 1},
-    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Star, "", "Relic has no '*='", "write x = x * 1", 1, 1},
-    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Slash, "", "Relic has no '/='", "write x = x / 1", 1, 1},
-    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Percent, "", "Relic has no '%='", "write x = x % 1", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Plus, "", "Relic has no '+='", "write it out, as in x = x + n", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Minus, "", "Relic has no '-='", "write it out, as in x = x - n", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Star, "", "Relic has no '*='", "write it out, as in x = x * n", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Slash, "", "Relic has no '/='", "write it out, as in x = x / n", 1, 1},
+    {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Percent, "", "Relic has no '%='", "write it out, as in x = x % n", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::EqEq, "", "Relic has no '==='", "compare with '=='; '=' assigns", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::BangEq, "", "Relic has no '!=='", "compare with '!='", 1, 1},
     {"an expression", (int)relic::Tok::Greater, "", (int)relic::Tok::Minus, "", "Relic has no '->'", "there is no arrow; write the steps out", 1, 1},

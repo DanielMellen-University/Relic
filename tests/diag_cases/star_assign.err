@@ -1,4 +1,4 @@
 star_assign.relic:1:3: error: Relic has no '*='
     x *= 2
       ^^
-hint: write x = x * 1
+hint: write it out, as in x = x * n
