@@ -122,6 +122,16 @@ add_test(NAME c_runtime_hardening COMMAND relic_rt_hardening_tests
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(c_runtime_hardening PROPERTIES ENVIRONMENT "RELIC_LEAK_CHECK=1")
 
+add_executable(relic_rt_input_tests tests/test_input.c)
+target_link_libraries(relic_rt_input_tests PRIVATE relic_rt)
+relic_c_target(relic_rt_input_tests)
+add_test(NAME c_runtime_input
+  COMMAND ${CMAKE_COMMAND}
+    -DEXE=$<TARGET_FILE:relic_rt_input_tests>
+    -DTMP=${CMAKE_CURRENT_BINARY_DIR}/input_fixtures
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_input.cmake)
+set_tests_properties(c_runtime_input PROPERTIES ENVIRONMENT "RELIC_LEAK_CHECK=1")
+
 add_executable(relic_rt_demo tests/demo.c)
 target_link_libraries(relic_rt_demo PRIVATE relic_rt)
 relic_c_target(relic_rt_demo)
