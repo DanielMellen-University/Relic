@@ -1,0 +1,5 @@
+# math.pow(x, y) is x to the power y, as a float.
+use std/math
+print(math.pow(2, 10))
+print(math.pow(2, -1))
+print(math.pow(3, 2))
