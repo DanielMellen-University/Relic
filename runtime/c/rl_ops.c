@@ -496,7 +496,7 @@ static int same_word(const char *s, size_t n, const char *w) {
     return 1;
 }
 
-int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
+static int parse_num_text(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     size_t i, j;
     int neg;
     char *end;
@@ -546,4 +546,22 @@ int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     return RL_OK;
 bad:
     return rl_fail_wrap(cx, "not a number: \"", s, len, "\"");
+}
+
+int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
+    char small[128];
+    char *text = small;
+    int status;
+    /* The public API accepts a byte span. C number readers need a trailing
+     * NUL, including when the span is only a prefix of a larger buffer. */
+    if (len >= sizeof small) {
+        if (len == (size_t)-1) abort();
+        text = (char *)malloc(len + 1);
+        if (!text) abort();
+    }
+    if (len) memcpy(text, s, len);
+    text[len] = 0;
+    status = parse_num_text(cx, text, len, out);
+    if (text != small) free(text);
+    return status;
 }
