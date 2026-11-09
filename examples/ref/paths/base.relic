@@ -1,0 +1,5 @@
+# paths.base is the last name. A path that ends in / has none.
+use std/paths
+print(paths.base("a/b.txt"))
+print(paths.base("b.txt"))
+print(paths.base("a/"))
