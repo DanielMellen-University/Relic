@@ -1,0 +1,3 @@
+rt_if_string.relic:1:4: error: 'if' condition must be true or false, got string
+    if "yes"
+       ^
