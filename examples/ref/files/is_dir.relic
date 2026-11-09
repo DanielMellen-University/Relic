@@ -1,0 +1,7 @@
+# files.is_dir is false for a file and for a missing path.
+use std/files
+files.make_dir("box")
+files.write("note.txt", "x")
+print(files.is_dir("box"))
+print(files.is_dir("note.txt"))
+print(files.is_dir("missing"))
