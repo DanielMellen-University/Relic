@@ -1,0 +1,3 @@
+# strings.pad_right adds fill on the right until the text is wide enough.
+use std/strings
+print(strings.pad_right("go", 5, "."))
