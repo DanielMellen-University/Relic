@@ -1,0 +1,5 @@
+# strings.ends_with on a string, and on a list.
+use std/strings
+print(strings.ends_with("hello", "lo"))
+print(strings.ends_with("hello", "he"))
+print(strings.ends_with([1, 2, 3], [2, 3]))
