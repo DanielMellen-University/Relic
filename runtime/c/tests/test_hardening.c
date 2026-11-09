@@ -61,10 +61,34 @@ static void test_error_message_alias(void) {
     CHECK(rl_live_strings() == before);
 }
 
+static void test_number_spans(void) {
+    const char raw[2] = {'4', '2'};
+    const char prefix[] = "-12.5junk";
+    const char binary[3] = {'1', 0, '2'};
+    char long_number[300];
+    rl_value r;
+    CHECK(rl_parse_num(&cx, raw, sizeof raw, &r) == RL_OK);
+    CHECK(r.k == RL_INT && r.u.i == 42);
+    CHECK(rl_parse_num(&cx, prefix, 5, &r) == RL_OK);
+    CHECK(r.k == RL_FLOAT && r.u.f == -12.5);
+    CHECK(rl_parse_num(&cx, binary, sizeof binary, &r) == RL_ERR);
+    CHECK(r.k == RL_NONE && cx.err_msg->len == 19);
+    CHECK(memcmp(cx.err_msg->data, "not a number: \"1\0" "2\"", 19) == 0);
+    CHECK(rl_catch(&cx, &r));
+    rl_release(r);
+    memset(long_number, '0', sizeof long_number);
+    long_number[sizeof long_number - 1] = '7';
+    CHECK(rl_parse_num(&cx, long_number, sizeof long_number, &r) == RL_OK);
+    CHECK(r.k == RL_INT && r.u.i == 7);
+    CHECK(rl_parse_num(&cx, "1e-400", 6, &r) == RL_OK);
+    CHECK(r.k == RL_FLOAT && r.u.f == 0.0);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
     test_error_message_alias();
+    test_number_spans();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
