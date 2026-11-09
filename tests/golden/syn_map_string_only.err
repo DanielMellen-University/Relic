@@ -1,0 +1,3 @@
+syn_map_string_only.relic:1:13: error: expected ':' after the map key, got '}'
+    let m = {"a"}
+                ^
