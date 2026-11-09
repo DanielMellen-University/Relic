@@ -1,0 +1,4 @@
+minus_sign.relic:1:11: error: unexpected character '−'
+    let a = 1 − 2
+              ^
+hint: this minus sign is not '-'; use '-'
