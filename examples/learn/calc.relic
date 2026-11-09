@@ -1,0 +1,68 @@
+# An infix calculator: + - * / and parentheses. * and / bind tighter.
+#   relic examples/learn/calc.relic
+
+fun tokenize(s)
+    let out = []
+    let i = 0
+    while i < len(s)
+        let c = s[i]
+        if c == " "
+            i = i + 1
+        else if c == "+" or c == "-" or c == "*" or c == "/" or c == "(" or c == ")"
+            append(out, c)
+            i = i + 1
+        else
+            let num = ""
+            while i < len(s) and s[i] >= "0" and s[i] <= "9"
+                num = num + s[i]
+                i = i + 1
+            append(out, num)
+    return out
+
+fun parse(s)
+    let toks = tokenize(s)
+    let pos = [0]
+    return expr(toks, pos)
+
+fun peek(toks, pos)
+    if pos[0] >= len(toks)
+        return none
+    return toks[pos[0]]
+
+fun eat(toks, pos)
+    let t = toks[pos[0]]
+    pos[0] = pos[0] + 1
+    return t
+
+fun expr(toks, pos)
+    let left = term(toks, pos)
+    while peek(toks, pos) == "+" or peek(toks, pos) == "-"
+        let op = eat(toks, pos)
+        let right = term(toks, pos)
+        if op == "+"
+            left = left + right
+        else
+            left = left - right
+    return left
+
+fun term(toks, pos)
+    let left = factor(toks, pos)
+    while peek(toks, pos) == "*" or peek(toks, pos) == "/"
+        let op = eat(toks, pos)
+        let right = factor(toks, pos)
+        if op == "*"
+            left = left * right
+        else
+            left = left / right
+    return left
+
+fun factor(toks, pos)
+    let t = eat(toks, pos)
+    if t == "("
+        let v = expr(toks, pos)
+        eat(toks, pos)
+        return v
+    return num(t)
+
+for line in ["1+2*3", "(1+2)*3", "20-3*4", "8/2"]
+    print("{line} = {parse(line)}")
