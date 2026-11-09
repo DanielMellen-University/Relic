@@ -1,0 +1,4 @@
+# time.now is UTC seconds since 1970. Only the kind of value is fixed.
+use std/time
+let t = time.now()
+print(type(t) == "float" and t > 0)
