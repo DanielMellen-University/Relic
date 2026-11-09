@@ -104,7 +104,6 @@ const LexRow kLex[] = {
     {"\xc2\xac", '\0', "unexpected character '\xc2\xac'", "write 'not'", 0},
     {"\xe2\x88\xa7", '\0', "unexpected character '\xe2\x88\xa7'", "write 'and'", 0},
     {"\xe2\x88\xa8", '\0', "unexpected character '\xe2\x88\xa8'", "write 'or'", 0},
-    // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
 
@@ -140,7 +139,6 @@ const ExpectRow kExpect[] = {
     {"'in' after the loop name", (int)relic::Tok::Colon, "", -1, "", "", "loops are written 'for name in list', not a colon", 0, 1},
     {"end of line", (int)relic::Tok::Not, "", -1, "", "", "write 'not (a in b)' to negate a test", 0, 1},
     {"'catch' after the 'try' block", -1, "", -1, "", "", "a try needs a catch after its block", 0, 1},
-    // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };
 
@@ -158,10 +156,10 @@ const Pair kWords[] = {
     {"elsif", "write 'else if', not 'elsif'"},
     {"var", "bindings start with 'let', not 'var'"},
     {"const", "bindings start with 'let'; Relic has no const"},
-    {"int", "write 'let name = ... as int', not a C declaration"},
-    {"string", "write 'let name = ... as string'"},
-    {"bool", "write 'let name = ... as bool'"},
-    {"float", "write 'let name = ... as float'"},
+    {"int", "write 'let name as int = ...', not a C declaration"},
+    {"string", "write 'let name as string = ...'"},
+    {"bool", "write 'let name as bool = ...'"},
+    {"float", "write 'let name as float = ...'"},
     {"import", "modules are loaded with 'use', not 'import'"},
     {"print", "call it as print(...); the parentheses are required"},
     {"len", "call it as len(...); the parentheses are required"},
@@ -169,7 +167,6 @@ const Pair kWords[] = {
     {"switch", "branch with if and else if"},
     {"lambda", "write 'fun name() = ...'"},
     {"except", "catch an error with try and catch"},
-    // @@WORD@@
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {
@@ -183,7 +180,6 @@ const Pair kTypes[] = {
     {"double", "did you mean 'float'?"},
     {"i64", "did you mean 'int'?"},
     {"text", "did you mean 'string'?"},
-    // @@TYPE@@
     {nullptr, nullptr},
 };
 const Pair kNames[] = {
@@ -197,7 +193,6 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
-    // @@NAME@@
     {nullptr, nullptr},
 };
 
