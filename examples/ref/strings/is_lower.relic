@@ -1,0 +1,5 @@
+# strings.is_lower wants at least one ASCII letter, and none upper case.
+use std/strings
+print(strings.is_lower("relic"))
+print(strings.is_lower("a1"))
+print(strings.is_lower("Relic"))
