@@ -155,6 +155,8 @@ fun expect_extra(p, what)
 fun word_extra(word)
     if word == "func"
         return "functions are written with 'fun', not 'func'"
+    if word == "function"
+        return "functions are written with 'fun', not 'function'"
     # @@WORD@@
     if len(word) < 0
         return word
