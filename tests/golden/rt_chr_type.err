@@ -1,0 +1,3 @@
+rt_chr_type.relic:1:4: error: chr(): argument must be a number, got string
+    chr("A")
+       ^
