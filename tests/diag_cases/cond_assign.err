@@ -1,0 +1,4 @@
+cond_assign.relic:1:6: error: expected end of line before the block, got '='
+    if a = b
+         ^
+hint: compare with '=='; a single '=' assigns
