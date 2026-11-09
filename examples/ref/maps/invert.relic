@@ -1,0 +1,3 @@
+# maps.invert swaps string values back to keys. A later key wins a tie.
+use std/maps
+print(maps.invert({a: "x", b: "y", c: "x"}))
