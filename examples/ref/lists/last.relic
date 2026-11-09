@@ -1,0 +1,4 @@
+# lists.last is the last item.
+use std/lists
+print(lists.last([1, 2, 3]))
+print(lists.last("relic"))
