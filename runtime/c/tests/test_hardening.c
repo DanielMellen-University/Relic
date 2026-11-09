@@ -264,7 +264,7 @@ static void test_unicode_boundaries(void) {
 }
 
 static void test_utf8_fragments_and_empty_strings(void) {
-    static const char raw[] = {'x', (char)0xE2, (char)0x82, 'y', (char)0x80, (char)0xF0};
+    static const char raw[] = {'x', '\xE2', '\x82', 'y', '\x80', '\xF0'};
     rl_value text = rl_str_new(raw, sizeof raw), out, args[3], empty = rl_str_c("");
     size_t i;
     CHECK(rl_str_chars(S(text)) == sizeof raw);
@@ -301,7 +301,7 @@ static void test_append_utf8_cache(void) {
     char raw[512];
     size_t i;
     rl_value text, suffix;
-    for (i = 0; i < sizeof raw; i += 2) { raw[i] = (char)0xC3; raw[i + 1] = (char)0xA9; }
+    for (i = 0; i < sizeof raw; i += 2) { raw[i] = '\xC3'; raw[i + 1] = '\xA9'; }
     text = rl_str_new(raw, sizeof raw);
     CHECK(rl_str_offset(S(text), 200) == 400 && S(text)->marks != NULL);
     suffix = rl_str_c("\xE2\x82\xAC");
