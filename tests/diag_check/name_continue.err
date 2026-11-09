@@ -1,0 +1,3 @@
+name_continue.relic:1:7: warning: 'continue' is not defined (the loop keyword is 'next', not 'continue')
+    print(continue)
+          ^

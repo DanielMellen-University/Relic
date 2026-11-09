@@ -327,6 +327,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "False") == 0) return "the boolean is written 'false'";
     if (strcmp(name, "length") == 0) return "the length of a value is len(value)";
     if (strcmp(name, "echo") == 0) return "printing is print(...)";
+    if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
     /* @@NAME@@ */
     (void)name;
     return NULL;

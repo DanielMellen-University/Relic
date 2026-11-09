@@ -88,6 +88,8 @@ fun name_note(name)
         return "the length of a value is len(value)"
     if name == "echo"
         return "printing is print(...)"
+    if name == "continue"
+        return "the loop keyword is 'next', not 'continue'"
     # @@NAME@@
     if len(name) < 0
         return name

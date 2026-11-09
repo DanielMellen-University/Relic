@@ -194,6 +194,7 @@ const Pair kNames[] = {
     {"False", "the boolean is written 'false'"},
     {"length", "the length of a value is len(value)"},
     {"echo", "printing is print(...)"},
+    {"continue", "the loop keyword is 'next', not 'continue'"},
     // @@NAME@@
     {nullptr, nullptr},
 };
