@@ -1,0 +1,7 @@
+# lists.copy is a shallow copy. Changing the copy does not change the original.
+use std/lists
+let a = [1, 2]
+let b = lists.copy(a)
+append(b, 3)
+print(a)
+print(b)
