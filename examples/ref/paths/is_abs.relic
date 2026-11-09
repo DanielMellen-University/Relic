@@ -1,0 +1,5 @@
+# paths.is_abs is true when the path starts with / or backslash.
+use std/paths
+print(paths.is_abs("/a"))
+print(paths.is_abs("a/b"))
+print(paths.is_abs(""))
