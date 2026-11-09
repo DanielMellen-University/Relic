@@ -54,8 +54,9 @@ relic_add_program(hello src/hello.relic)   # makes the executable target hello
 It works the same inside this repo (`examples/compiled/` is built that way) and needs only a C compiler. Details are in [CGEN.md](docs/CGEN.md#in-cmake).
 
 For a practical standalone CLI, see [tablecheck](examples/tablecheck/README.md):
-validate an unquoted CSV/TSV export, check a unique key, and summarize missing
-and distinct values. Its README has clean build/run instructions and samples.
+validate a CSV or TSV export, including quoted fields, check a unique key, and
+summarize missing and distinct values. Its README has a one-command build and
+a sample with the output from a real run.
 
 ### The C++ host
 
