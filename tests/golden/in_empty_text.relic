@@ -1,0 +1,2 @@
+print("" in "abc", "abc" in "", "" in "")
+print("a" in "a", 1.0 in [1, 2], none in [none])
