@@ -1,0 +1,5 @@
+# math.sqrt returns a float. A perfect square is exact.
+use std/math
+print(math.sqrt(4))
+print(math.sqrt(0))
+print(math.sqrt(2))
