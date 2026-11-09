@@ -84,6 +84,8 @@ fun name_note(name)
         return "the boolean is written 'true'"
     if name == "False"
         return "the boolean is written 'false'"
+    if name == "length"
+        return "the length of a value is len(value)"
     # @@NAME@@
     if len(name) < 0
         return name

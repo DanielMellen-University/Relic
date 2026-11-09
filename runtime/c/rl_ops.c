@@ -325,6 +325,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "undefined") == 0) return "an unset value is 'none'";
     if (strcmp(name, "True") == 0) return "the boolean is written 'true'";
     if (strcmp(name, "False") == 0) return "the boolean is written 'false'";
+    if (strcmp(name, "length") == 0) return "the length of a value is len(value)";
     /* @@NAME@@ */
     (void)name;
     return NULL;
