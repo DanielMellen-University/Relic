@@ -388,6 +388,8 @@ fun lex_extra(ch, nxt)
         return {msg: "single quotes are not strings", hint: "strings use straight double quotes", extra: 0}
     if ch == "`"
         return {msg: "backticks are not strings", hint: "strings use straight double quotes, not backticks", extra: 0}
+    if ch == "~"
+        return {msg: "unexpected character '~'", hint: "write 'not' to negate a boolean", extra: 0}
     # @@LEX@@
     return none
 
