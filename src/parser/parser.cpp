@@ -169,7 +169,9 @@ private:
         const Token& start = peek();
         if (!at(Tok::Newline)) fail_expected("end of line before the block");
         advance();
-        if (!at(Tok::Indent)) fail_expected("an indented block");
+        if (!at(Tok::Indent))
+            fail(peek(), "expected an indented block, got " + describe(peek()),
+                 "indent that line by exactly 4 spaces");
         advance();
         auto b = make(Node::Block, start);
         while (!at(Tok::Dedent) && !at(Tok::Eof)) b->kids.push_back(statement());
