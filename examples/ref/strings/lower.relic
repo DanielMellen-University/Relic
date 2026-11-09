@@ -1,0 +1,4 @@
+# strings.lower changes ASCII letters only.
+use std/strings
+print(strings.lower("Hello"))
+print(strings.lower("RELIC"))
