@@ -1,0 +1,3 @@
+syn_for_bare.relic:1:4: error: expected a loop name after 'for', got end of line
+    for
+       ^
