@@ -145,6 +145,8 @@ fun expect_extra(p, what)
         return {msg: "", hint: "loops are written 'for name in list', not a colon", cover_prev: false, cover_got: true}
     if what == "end of line" and got.kind == "NOT"
         return {msg: "", hint: "write 'not (a in b)' to negate a test", cover_prev: false, cover_got: true}
+    if what == "'catch' after the 'try' block"
+        return {msg: "", hint: "a try needs a catch after its block", cover_prev: false, cover_got: true}
     # @@EXPECT@@
     if len(what) < 0
         return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}

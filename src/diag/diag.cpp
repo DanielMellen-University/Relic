@@ -139,6 +139,7 @@ const ExpectRow kExpect[] = {
     {"'in' after the loop name", (int)relic::Tok::Name, "of", -1, "", "", "loops are written 'for name in list'", 0, 1},
     {"'in' after the loop name", (int)relic::Tok::Colon, "", -1, "", "", "loops are written 'for name in list', not a colon", 0, 1},
     {"end of line", (int)relic::Tok::Not, "", -1, "", "", "write 'not (a in b)' to negate a test", 0, 1},
+    {"'catch' after the 'try' block", -1, "", -1, "", "", "a try needs a catch after its block", 0, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };
