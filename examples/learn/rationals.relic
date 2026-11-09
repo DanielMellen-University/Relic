@@ -1,0 +1,26 @@
+# Fractions reduced by their greatest common divisor.
+#   relic examples/learn/rationals.relic
+use std/math
+
+fun make(n, d)
+    if d < 0
+        n = 0 - n
+        d = 0 - d
+    let g = math.gcd(n, d)
+    return {n: int(n / g), d: int(d / g)}
+
+fun text(r)
+    return "{r.n}/{r.d}"
+
+fun add(a, b)
+    return make(a.n * b.d + b.n * a.d, a.d * b.d)
+
+fun mul(a, b)
+    return make(a.n * b.n, a.d * b.d)
+
+let half = make(1, 2)
+let third = make(1, 3)
+print(text(add(half, third)))
+print(text(mul(make(2, 4), make(2, 3))))
+print(text(make(-2, -4)))
+print(text(add(make(1, 6), make(1, 3))))
