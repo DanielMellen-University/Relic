@@ -543,6 +543,44 @@ static void test_collector_mixed_graph(void) {
     CHECK(rl_gc_collect() == 0);
 }
 
+static void test_deep_and_wide_equality(void) {
+    size_t before = rl_live_objects(), i;
+    rl_value a = rl_list_new(1), b = rl_list_new(1), leaf = rl_retain(b);
+    rl_list_push(L(a), rl_int(1));
+    rl_list_push(L(b), rl_float(1.0));
+    for (i = 0; i < 2048; ++i) {
+        rl_value next_a = rl_list_new(1), next_b = rl_list_new(1);
+        rl_list_push(L(next_a), a);
+        rl_list_push(L(next_b), b);
+        rl_release(a);
+        rl_release(b);
+        a = next_a;
+        b = next_b;
+    }
+    CHECK(rl_equal(a, b));
+    CHECK(rl_set_index(&cx, leaf, rl_int(0), rl_int(2)) == RL_OK);
+    CHECK(!rl_equal(a, b));
+    rl_release(leaf);
+    rl_release(a);
+    rl_release(b);
+    CHECK(rl_live_objects() == before);
+    a = rl_list_new(4096);
+    b = rl_list_new(4096);
+    for (i = 0; i < 4096; ++i) {
+        rl_list_push(L(a), rl_int((long long)i));
+        rl_list_push(L(b), rl_int((long long)i));
+    }
+    CHECK(rl_equal(a, b));
+    CHECK(rl_set_index(&cx, b, rl_int(0), rl_int(-1)) == RL_OK);
+    CHECK(!rl_equal(a, b));
+    CHECK(rl_set_index(&cx, b, rl_int(0), rl_int(0)) == RL_OK);
+    rl_list_push(L(b), rl_none());
+    CHECK(!rl_equal(a, b));
+    rl_release(a);
+    rl_release(b);
+    CHECK(rl_live_objects() == before);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -562,6 +600,7 @@ int main(void) {
     test_list_slice_ownership();
     test_call_lifetimes();
     test_collector_mixed_graph();
+    test_deep_and_wide_equality();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
