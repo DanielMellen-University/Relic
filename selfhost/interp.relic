@@ -82,6 +82,8 @@ fun name_note(name)
         return "an unset value is 'none'"
     if name == "True"
         return "the boolean is written 'true'"
+    if name == "False"
+        return "the boolean is written 'false'"
     # @@NAME@@
     if len(name) < 0
         return name

@@ -191,6 +191,7 @@ const Pair kNames[] = {
     {"None", "the empty value is written 'none'"},
     {"undefined", "an unset value is 'none'"},
     {"True", "the boolean is written 'true'"},
+    {"False", "the boolean is written 'false'"},
     // @@NAME@@
     {nullptr, nullptr},
 };
