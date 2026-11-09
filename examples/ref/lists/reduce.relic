@@ -1,0 +1,5 @@
+# lists.reduce folds the list: f(f(start, first), next) and so on.
+use std/lists
+fun add(a, b) = a + b
+print(lists.reduce([1, 2, 3, 4], add, 0))
+print(lists.reduce([], add, 10))
