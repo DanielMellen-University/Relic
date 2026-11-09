@@ -365,6 +365,60 @@ static void test_list_reference_transfers(void) {
     CHECK(rl_live_strings() == before);
 }
 
+static void test_map_collisions_and_binary_keys(void) {
+    static const char *const keys[] = {"a", "i", "q", "y"};
+    rl_value map = rl_map_new(), out;
+    size_t i, round;
+    for (i = 0; i < 4; ++i) {
+        rl_value key = rl_str_c(keys[i]);
+        rl_map_set(M(map), S(key), rl_int((long long)i));
+        rl_release(key);
+    }
+    /* These keys share the low three hash bits. A deleted first entry must
+     * leave the rest of its probe chain searchable. */
+    CHECK(M(map)->index_cap == 8);
+    CHECK(rl_map_remove(M(map), "a", 1, &out));
+    CHECK(rl_map_get(M(map), "y", 1)->u.i == 3);
+    CHECK(rl_map_get(M(map), "i", 1)->u.i == 1);
+    CHECK(!rl_map_get(M(map), "a", 1));
+    for (round = 0; round < 4; ++round) {
+        for (i = 0; i < 96; ++i) {
+            char raw[3] = {'k', 0, 0};
+            rl_value key;
+            raw[2] = (char)i;
+            key = rl_str_new(raw, sizeof raw);
+            rl_map_set(M(map), S(key), rl_int((long long)(round * 100 + i)));
+            rl_release(key);
+        }
+        for (i = 0; i < 96; ++i) {
+            char raw[3] = {'k', 0, 0};
+            rl_value *found;
+            raw[2] = (char)i;
+            found = rl_map_get(M(map), raw, sizeof raw);
+            CHECK(found && found->u.i == (long long)(round * 100 + i));
+            if (i % 4 != 0) {
+                CHECK(rl_map_remove(M(map), raw, sizeof raw, &out));
+                CHECK(out.u.i == (long long)(round * 100 + i));
+            }
+        }
+        CHECK(M(map)->count == 27);
+        CHECK(M(map)->used == M(map)->count + M(map)->holes);
+    }
+    {
+        rl_value key = rl_str_c(""), text = rl_str_c("owned");
+        rl_map_set(M(map), S(key), text);
+        rl_release(key);
+        rl_release(text);
+        rl_map_set(M(map), M(map)->keys[M(map)->used - 1],
+                   *rl_map_get(M(map), "", 0));
+        CHECK(rl_map_remove(M(map), "", 0, &out));
+        CHECK(out.u.o->rc == 1);
+        rl_release(map);
+        bytes_are(out, "owned", 5);
+        rl_release(out);
+    }
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -379,6 +433,7 @@ int main(void) {
     test_utf8_fragments_and_empty_strings();
     test_append_utf8_cache();
     test_list_reference_transfers();
+    test_map_collisions_and_binary_keys();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
