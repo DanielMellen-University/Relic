@@ -406,6 +406,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '−'", hint: "this minus sign is not '-'; use '-'", extra: 0}
     if ch == "×"
         return {msg: "unexpected character '×'", hint: "multiplication is '*'", extra: 0}
+    if ch == "÷"
+        return {msg: "unexpected character '÷'", hint: "division is '/'", extra: 0}
     # @@LEX@@
     return none
 

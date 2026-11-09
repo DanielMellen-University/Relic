@@ -95,6 +95,7 @@ const LexRow kLex[] = {
     {"\xe2\x80\x94", '\0', "unexpected character '\xe2\x80\x94'", "this dash is not a minus sign; use '-'", 0},
     {"\xe2\x88\x92", '\0', "unexpected character '\xe2\x88\x92'", "this minus sign is not '-'; use '-'", 0},
     {"\xc3\x97", '\0', "unexpected character '\xc3\x97'", "multiplication is '*'", 0},
+    {"\xc3\xb7", '\0', "unexpected character '\xc3\xb7'", "division is '/'", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
