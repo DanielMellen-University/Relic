@@ -1,0 +1,3 @@
+rt_hint_let_map.relic:1:16: error: 'x' must be map, got list
+    let x as map = []
+                   ^
