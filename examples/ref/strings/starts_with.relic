@@ -1,0 +1,5 @@
+# strings.starts_with on a string, and on a list (a run of items).
+use std/strings
+print(strings.starts_with("hello", "he"))
+print(strings.starts_with("hello", "lo"))
+print(strings.starts_with([1, 2, 3], [1, 2]))
