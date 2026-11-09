@@ -1,0 +1,6 @@
+# files.rename moves a file. A folder is not renamed.
+use std/files
+files.write("old.txt", "hi")
+files.rename("old.txt", "new.txt")
+print(files.read("new.txt"))
+print(files.exists("old.txt"))
