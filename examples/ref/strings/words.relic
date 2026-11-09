@@ -1,0 +1,3 @@
+# strings.words splits on runs of space. Empty pieces are left out.
+use std/strings
+print(strings.words("  a  b\n c "))
