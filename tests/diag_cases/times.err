@@ -1,0 +1,4 @@
+times.relic:1:11: error: unexpected character '×'
+    let a = 1 × 2
+              ^
+hint: multiplication is '*'
