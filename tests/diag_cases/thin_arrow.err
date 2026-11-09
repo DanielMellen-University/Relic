@@ -1,0 +1,4 @@
+thin_arrow.relic:1:3: error: Relic has no '->'
+    a -> b
+      ^^
+hint: there is no arrow; write the steps out

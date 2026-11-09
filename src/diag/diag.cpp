@@ -127,6 +127,7 @@ const ExpectRow kExpect[] = {
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Percent, "", "Relic has no '%='", "write x = x % 1", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::EqEq, "", "Relic has no '==='", "compare with '=='; '=' assigns", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::BangEq, "", "Relic has no '!=='", "compare with '!='", 1, 1},
+    {"an expression", (int)relic::Tok::Greater, "", (int)relic::Tok::Minus, "", "Relic has no '->'", "there is no arrow; write the steps out", 1, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };
