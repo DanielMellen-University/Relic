@@ -679,8 +679,11 @@ BI(h_call) {
     const rl_builtin_def *d = NULL;
     UNUSED;
     if (rl_arg_str(cx, a[0], "name")) return RL_ERR;
-    for (i = 0; i < total; ++i)
-        if (strcmp(rl_builtin_at(i)->name, S(a[0])->data) == 0) d = rl_builtin_at(i);
+    for (i = 0; i < total; ++i) {
+        const rl_builtin_def *candidate = rl_builtin_at(i);
+        if (strlen(candidate->name) == S(a[0])->len &&
+            memcmp(candidate->name, S(a[0])->data, S(a[0])->len) == 0) d = candidate;
+    }
     if (strncmp(S(a[0])->data, "host_", 5) != 0 || !d) return rl_fail(cx, "no host built-in %s", S(a[0])->data);
     if (a[1].k != RL_LIST) return rl_fail(cx, "first argument must be a list, got %s", rl_type_name(a[1]));
     if (d->arity >= 0 && (size_t)d->arity != L(a[1])->n)

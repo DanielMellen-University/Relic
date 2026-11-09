@@ -721,6 +721,45 @@ static void test_large_error_messages(void) {
     rl_release(caught);
 }
 
+static void test_host_reflection(void) {
+    rl_value names, out, args[2], values = rl_list_new(0);
+    size_t i;
+    CHECK(call("host_names", 0, NULL, &names) == RL_OK && L(names)->n > 0);
+    for (i = 0; i < L(names)->n; ++i) {
+        rl_value pair = L(names)->items[i], f;
+        CHECK(pair.k == RL_LIST && L(pair)->n == 2);
+        CHECK(L(pair)->items[0].k == RL_STR && L(pair)->items[1].k == RL_INT);
+        CHECK(strncmp(S(L(pair)->items[0])->data, "host_", 5) == 0);
+        if (i) CHECK(strcmp(S(L(L(names)->items[i - 1])->items[0])->data,
+                            S(L(pair)->items[0])->data) < 0);
+        CHECK(rl_builtin(S(L(pair)->items[0])->data, &f));
+        CHECK(((rl_fun *)f.u.o)->arity == L(pair)->items[1].u.i);
+        rl_release(f);
+    }
+    rl_release(names);
+    rl_list_push(L(values), rl_float(3.75));
+    args[0] = rl_str_c("host_floor"); args[1] = values;
+    CHECK(call("host_call", 2, args, &out) == RL_OK && out.k == RL_FLOAT && out.u.f == 3.0);
+    rl_release(args[0]);
+    args[0] = rl_str_c("len");
+    error_is(call("host_call", 2, args, &out), "host_call(): no host built-in len");
+    rl_release(args[0]);
+    args[0] = rl_str_c("host_args");
+    error_is(call("host_call", 2, args, &out), "host_call(): host_args() takes 0 arguments");
+    rl_release(rl_list_take(L(values), 0));
+    CHECK(call("host_call", 2, args, &out) == RL_OK && out.k == RL_LIST && L(out)->n == 0);
+    rl_release(out);
+    args[1] = rl_none();
+    error_is(call("host_call", 2, args, &out), "host_call(): first argument must be a list, got none");
+    rl_release(args[0]);
+    args[0] = rl_str_new("host_args\0suffix", sizeof "host_args\0suffix" - 1);
+    args[1] = values;
+    error_is(call("host_call", 2, args, &out), "host_call(): no host built-in host_args");
+    CHECK(out.k == RL_NONE);
+    rl_release(args[0]);
+    rl_release(values);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -745,6 +784,7 @@ int main(void) {
     test_host_sort_boundaries();
     test_host_find_boundaries();
     test_large_error_messages();
+    test_host_reflection();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
