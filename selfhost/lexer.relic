@@ -384,6 +384,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '|'", hint: "Relic uses 'or', not '|'", extra: 0}
     if ch == ";"
         return {msg: "unexpected character ';'", hint: "statements end at a newline; delete the semicolon", extra: 0}
+    if ch == "'"
+        return {msg: "single quotes are not strings", hint: "strings use straight double quotes", extra: 0}
     # @@LEX@@
     return none
 

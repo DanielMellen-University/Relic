@@ -84,6 +84,7 @@ const LexRow kLex[] = {
     {"|", '|', "unexpected '||'", "Relic uses 'or', not '||'", 1},
     {"|", '\0', "unexpected character '|'", "Relic uses 'or', not '|'", 0},
     {";", '\0', "unexpected character ';'", "statements end at a newline; delete the semicolon", 0},
+    {"'", '\0', "single quotes are not strings", "strings use straight double quotes", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
