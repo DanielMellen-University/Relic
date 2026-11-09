@@ -1,0 +1,4 @@
+not_in.relic:1:3: error: expected end of line, got 'not'
+    a not in b
+      ^^^
+hint: write 'not (a in b)' to negate a test
