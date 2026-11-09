@@ -91,6 +91,7 @@ const LexRow kLex[] = {
     {"@", '\0', "unexpected character '@'", "Relic does not use '@'", 0},
     {"^", '\0', "unexpected character '^'", "Relic has no xor operator", 0},
     {"\x5c", '\0', "a backslash is not an operator", "escapes belong inside a string", 0},
+    {"\xe2\x80\x93", '\0', "unexpected character '\xe2\x80\x93'", "this dash is not a minus sign; use '-'", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
