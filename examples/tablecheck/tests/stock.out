@@ -1,0 +1,6 @@
+rows: 4
+columns: 3
+column	present	empty	distinct
+sku	4	0	4
+warehouse	4	0	2
+bin	3	1	2

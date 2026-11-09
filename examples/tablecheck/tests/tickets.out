@@ -1,0 +1,7 @@
+rows: 6
+columns: 4
+column	present	empty	distinct
+ticket	6	0	6
+team	6	0	2
+status	6	0	3
+owner	4	2	3
