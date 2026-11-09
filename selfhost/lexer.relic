@@ -168,7 +168,7 @@ fun layout(st)
                 fail_span(st, st.line, st.col, st.col, "indent must be exactly 4 spaces deeper than the line above", "this line is indented {width} spaces; indent exactly 4 more than the line above")
                 return false
             if len(st.out) == 0
-                fail(st, st.line, st.col, "unexpected indent")
+                fail_span(st, st.line, st.col, st.col, "unexpected indent", "the first line of a file is not indented")
                 return false
             append(st.indents, width)
             emit(st, "INDENT", "", st.line, st.col)

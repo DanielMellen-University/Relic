@@ -173,7 +173,8 @@ private:
                     error(line_, col_, "indent must be exactly 4 spaces deeper than the line above", 0,
                       "this line is indented " + std::to_string(width) +
                           " spaces; indent exactly 4 more than the line above");
-                if (out_.empty()) error(line_, col_, "unexpected indent");
+                if (out_.empty()) error(line_, col_, "unexpected indent", 0,
+                              "the first line of a file is not indented");
                 indents_.push_back(width);
                 emit(Tok::Indent, "", line_, col_);
                 return true;
