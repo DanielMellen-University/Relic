@@ -76,6 +76,8 @@ fun suggest(name, names)
 fun name_note(name)
     if name == "null"
         return "none is the empty value, not 'null'"
+    if name == "None"
+        return "the empty value is written 'none'"
     # @@NAME@@
     if len(name) < 0
         return name

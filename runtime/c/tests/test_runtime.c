@@ -658,6 +658,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "coutn", 2, names, slots), "'coutn' is not defined");
     ERR(rl_fail_undefined(&cx, "prnt", 0, NULL, NULL), "'prnt' is not defined (did you mean 'print'?)");
     ERR(rl_fail_undefined(&cx, "null", 0, NULL, NULL), "'null' is not defined (none is the empty value, not 'null')");
+    ERR(rl_fail_undefined(&cx, "None", 0, NULL, NULL), "'None' is not defined (the empty value is written 'none')");
     /* @@NAME_TEST@@ */
     /* string interpolation joins shown values */
     parts[0] = T("n=");
