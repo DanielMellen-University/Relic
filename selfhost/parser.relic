@@ -161,6 +161,8 @@ fun word_extra(word)
         return "functions are written with 'fun', not 'def'"
     if word == "fn"
         return "functions are written with 'fun', not 'fn'"
+    if word == "elseif"
+        return "write 'else if', not 'elseif'"
     # @@WORD@@
     if len(word) < 0
         return word
