@@ -1,0 +1,8 @@
+# time.timer and time.tick track frames. fps stays 0 until a second has passed.
+use std/time
+let t = time.timer()
+let dt = time.tick(t)
+print(type(dt) == "float" and dt >= 0)
+print(t.frames)
+print(t.fps == 0)
+print(keys(t))
