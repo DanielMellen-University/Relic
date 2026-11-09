@@ -847,10 +847,11 @@ int rl_catch(rl_ctx *cx, rl_value *out) {
 
 /* Port of diag::snippet in src/diag/diag.cpp. */
 static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
-    const char *p = src, *end, *stop = src + len;
+    const char *p = src, *end, *stop;
     size_t n, from = 0, i;
     int k;
     if (!src || line < 1 || col < 1) return;
+    stop = src + len;
     for (k = 1; k < line; ++k) {   /* by length, not to a NUL: a line can hold NUL bytes */
         p = (const char *)memchr(p, '\n', (size_t)(stop - p));
         if (!p) return;

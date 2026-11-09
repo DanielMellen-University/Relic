@@ -105,12 +105,31 @@ static void test_binary_std_error(void) {
     rl_release(f);
 }
 
+static void test_report_without_source(void) {
+    FILE *stream = tmpfile();
+    char bytes[128];
+    size_t n;
+    rl_value caught;
+    CHECK(stream != NULL);
+    CHECK(rl_fail(&cx, "missing source") == RL_ERR);
+    rl_at(&cx, "rt_hardening_absent/source.relic", 2, 4);
+    rl_report(&cx, stream, NULL);
+    rewind(stream);
+    n = fread(bytes, 1, sizeof bytes, stream);
+    CHECK(n == strlen("rt_hardening_absent/source.relic:2:4: error: missing source\n"));
+    CHECK(memcmp(bytes, "rt_hardening_absent/source.relic:2:4: error: missing source\n", n) == 0);
+    fclose(stream);
+    CHECK(rl_catch(&cx, &caught));
+    rl_release(caught);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
     test_error_message_alias();
     test_number_spans();
     test_binary_std_error();
+    test_report_without_source();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
