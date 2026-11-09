@@ -224,6 +224,44 @@ static void test_division_modulo_limits(void) {
     CHECK(r.k == RL_NONE);
 }
 
+static void bytes_are(rl_value v, const char *bytes, size_t len) {
+    CHECK(v.k == RL_STR && S(v)->len == len);
+    CHECK(memcmp(S(v)->data, bytes, len) == 0 && S(v)->data[len] == 0);
+}
+
+static void test_unicode_boundaries(void) {
+    static const struct { long long cp; const char *bytes; size_t n; } cases[] = {
+        {0, "\0", 1}, {0x7F, "\x7F", 1}, {0x80, "\xC2\x80", 2},
+        {0x7FF, "\xDF\xBF", 2}, {0x800, "\xE0\xA0\x80", 3},
+        {0xD7FF, "\xED\x9F\xBF", 3}, {0xE000, "\xEE\x80\x80", 3},
+        {0xFFFF, "\xEF\xBF\xBF", 3}, {0x10000, "\xF0\x90\x80\x80", 4},
+        {0x10FFFF, "\xF4\x8F\xBF\xBF", 4}
+    };
+    static const long long invalid[] = {-1, 0xD800, 0xDFFF, 0x110000};
+    size_t i;
+    rl_value arg, text, code;
+    for (i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
+        arg = rl_int(cases[i].cp);
+        CHECK(call("chr", 1, &arg, &text) == RL_OK);
+        bytes_are(text, cases[i].bytes, cases[i].n);
+        CHECK(rl_str_chars(S(text)) == 1);
+        CHECK(call("ord", 1, &text, &code) == RL_OK);
+        CHECK(code.k == RL_INT && code.u.i == cases[i].cp);
+        rl_release(text);
+    }
+    for (i = 0; i < sizeof invalid / sizeof invalid[0]; ++i) {
+        arg = rl_int(invalid[i]);
+        error_is(call("chr", 1, &arg, &text),
+                 "chr(): code must be 0 to 1114111 and not 55296 to 57343 (surrogates)");
+        CHECK(text.k == RL_NONE);
+    }
+    arg = rl_float(NAN);
+    error_is(call("chr", 1, &arg, &text), "chr(): argument must be a whole number");
+    arg = rl_str_c("");
+    error_is(call("ord", 1, &arg, &code), "ord(): needs a one-character string");
+    rl_release(arg);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -234,6 +272,7 @@ int main(void) {
     test_file_write_errors();
     test_integer_overflow_branches();
     test_division_modulo_limits();
+    test_unicode_boundaries();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
