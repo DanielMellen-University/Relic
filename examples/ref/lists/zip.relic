@@ -1,0 +1,3 @@
+# lists.zip pairs items until the shorter list runs out.
+use std/lists
+print(lists.zip([1, 2, 3], ["a", "b"]))
