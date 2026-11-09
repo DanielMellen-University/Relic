@@ -1,0 +1,5 @@
+# paths.with_ext swaps the extension. The new one must start with a dot, or be empty.
+use std/paths
+print(paths.with_ext("a/b.txt", ".md"))
+print(paths.with_ext("a/b.txt", ""))
+print(paths.with_ext(".hidden", ".txt"))
