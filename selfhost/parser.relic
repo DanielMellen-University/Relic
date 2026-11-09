@@ -131,6 +131,8 @@ fun expect_extra(p, what)
         return {msg: "comments start with '#'", hint: "a comment runs from '#' to the end of the line", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "STAR" and prev != none and prev.kind == "SLASH"
         return {msg: "Relic comments start with '#', not '/*'", hint: "delete the '/*'", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "PLUS" and prev != none and prev.kind == "PLUS"
+        return {msg: "Relic has no '++'", hint: "write the new value out, as in n = n + 1", cover_prev: true, cover_got: true}
     # @@EXPECT@@
     if len(what) < 0
         return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}
