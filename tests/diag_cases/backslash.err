@@ -1,0 +1,4 @@
+backslash.relic:1:11: error: a backslash is not an operator
+    let a = 1 \ 2
+              ^
+hint: escapes belong inside a string
