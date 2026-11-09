@@ -1,0 +1,4 @@
+# lists.max_by returns the item whose key is largest. Ties keep the first.
+use std/lists
+fun size(s) = len(s)
+print(lists.max_by(["bb", "a", "ccc", "dddd"], size))
