@@ -1,0 +1,5 @@
+# lists.find returns the first item the test accepts, or none.
+use std/lists
+fun even(n) = n % 2 == 0
+print(lists.find([1, 4, 3], even))
+print(lists.find([1, 3], even))
