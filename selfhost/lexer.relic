@@ -1,7 +1,8 @@
 # selfhost/lexer.relic: the Relic lexer, written in Relic (M9, stage 1).
 # Mirrors src/lexer/lexer.cpp token for token, including error messages and
 # positions. lex(src) gives back {tokens: [...], err: none} or, on the first
-# error, {tokens: [...], err: {line, col, msg}}.
+# error, {tokens: [...], err: {line, col, end, msg, hint}}.
+# end equals col and hint is "" unless a span or a hint line is set.
 # Each token is a map {kind, text, line, col}; kind uses the --tokens names.
 
 let keywords = {"let": "LET", "fun": "FUN", "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "in": "IN", "break": "BREAK", "next": "NEXT", "return": "RETURN", "and": "AND", "or": "OR", "not": "NOT", "true": "TRUE", "false": "FALSE", "none": "NONE", "use": "USE", "try": "TRY", "catch": "CATCH", "as": "AS"}
@@ -96,8 +97,12 @@ fun emit(st, kind, text, l, c)
     append(st.out, {kind: kind, text: text, line: l, col: c})
 
 fun fail(st, l, c, msg)
+    fail_span(st, l, c, c, msg, "")
+
+# end is the last column of the span (c underlines one column). hint may be "".
+fun fail_span(st, l, c, end, msg, hint)
     if st.err == none
-        st.err = {line: l, col: c, msg: msg}
+        st.err = {line: l, col: c, end: end, msg: msg, hint: hint}
 
 fun last(xs) = xs[len(xs) - 1]
 

@@ -65,8 +65,12 @@ fun match(p, kind)
     return true
 
 fun fail(p, t, msg)
+    fail_span(p, t, t.col, msg, "")
+
+# end is the last underlined column. hint may be "".
+fun fail_span(p, t, end, msg, hint)
     if p.err == none
-        p.err = {line: t.line, col: t.col, msg: msg}
+        p.err = {line: t.line, col: t.col, end: end, msg: msg, hint: hint}
 
 fun describe(t)
     let k = t.kind

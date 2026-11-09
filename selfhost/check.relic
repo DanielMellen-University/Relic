@@ -300,7 +300,7 @@ fun before(a, b) = a.line < b.line or (a.line == b.line and a.col < b.col)
 
 fun warn(path, lines, it)
     eprint("{path}:{it.line}:{it.col}: warning: {it.msg}")
-    let s = errfmt.snippet_in(lines, it.line, it.col)
+    let s = errfmt.snippet_in(lines, it.line, it.col, it.col)
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
 

@@ -1316,12 +1316,17 @@ fun stub_skip(why)
 
 # A program that prints a lex or parse error the way the host does.
 fun stub_error(path, err)
-    let lines = ["{path}:{err.line}:{err.col}: error: {err.msg}"]
-    let s = errfmt.snippet(path, err.line, err.col)
+    let end = err.col
+    if "end" in err and err.end != none and err.end >= err.col
+        end = err.end
+    let s = errfmt.snippet(path, err.line, err.col, end)
+    let text = "{path}:{err.line}:{err.col}: error: {err.msg}\n" + s
+    if "hint" in err and err.hint != none and err.hint != ""
+        text = text + "hint: {err.hint}\n"
     let parts = []
     append(parts, "#include <stdio.h>")
     append(parts, "int main(void) " + LB)
-    append(parts, "    fputs(" + c_string(lines[0] + "\n" + s).lit + ", stderr);")
+    append(parts, "    fputs(" + c_string(text).lit + ", stderr);")
     append(parts, "    return 1;")
     append(parts, RB)
     return strings.join(parts, "\n") + "\n"

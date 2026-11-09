@@ -10,7 +10,10 @@ namespace relic {
 struct LexError : std::runtime_error {
     int line;
     int col;
-    LexError(int l, int c, const std::string& msg) : std::runtime_error(msg), line(l), col(c) {}
+    int end_col;
+    std::string hint;
+    LexError(int l, int c, const std::string& msg, int end = 0, std::string hint_text = {})
+        : std::runtime_error(msg), line(l), col(c), end_col(end > c ? end : c), hint(std::move(hint_text)) {}
 };
 
 // Turns Relic source into tokens. Throws LexError on bad input.

@@ -141,6 +141,42 @@ static void test_span() {
     std::remove(path.c_str());
 }
 
+static std::string slurp(const std::string& path) {
+    std::ifstream in(path);
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    return ss.str();
+}
+
+static std::string tests_root() {
+    std::string p = __FILE__;
+    auto at = p.rfind("/tests/unit/");
+    return p.substr(0, at);
+}
+
+// Host check of an existing golden still matches its .err file: a span that
+// is one column and an empty hint do not change the text.
+static void test_noted_matches_golden() {
+    const char* files[] = {"tests/golden/err_bang.relic", "tests/golden/err_long_line.relic",
+                           "tests/golden/err_utf8_column.relic", "tests/golden/syn_chained_compare.relic",
+                           "tests/golden/syn_unknown_type.relic"};
+    std::string root = tests_root();
+    for (const char* rel : files) {
+        std::string abs = root + "/" + rel;
+        auto r = relic::check_source(abs, slurp(abs));
+        std::string got = r.err;
+        std::string base = std::string(rel).substr(std::string(rel).rfind('/') + 1);
+        for (size_t at = 0; (at = got.find(abs)) != std::string::npos; ) got.replace(at, abs.size(), base);
+        std::string want_path = abs;
+        want_path.replace(want_path.rfind('.'), std::string::npos, ".err");
+        std::string want = slurp(want_path);
+        if (got != want) {
+            std::cerr << "diagnostic mismatch for " << rel << "\n--- got\n" << got << "--- want\n" << want;
+            ++failures;
+        }
+    }
+}
+
 static void test_core() {
     CHECK(relic::version_string().rfind("relic ", 0) == 0);
     CHECK(relic::diag::format("a.relic", 3, 5, "x") == "a.relic:3:5: error: x\n");
@@ -510,6 +546,7 @@ int main() {
     test_builtins();
     test_hint_line();
     test_span();
+    test_noted_matches_golden();
     test_core();
     test_font();
     test_basic_tokens();

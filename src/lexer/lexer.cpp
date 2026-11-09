@@ -131,7 +131,9 @@ private:
     std::vector<Interp> interp_;
     std::vector<Token> out_;
 
-    [[noreturn]] void error(int l, int c, const std::string& m) { throw LexError(l, c, m); }
+    [[noreturn]] void error(int l, int c, const std::string& m, int end = 0, std::string hint = {}) {
+        throw LexError(l, c, m, end, std::move(hint));
+    }
     bool eof() const { return pos_ >= src_.size(); }
     char peek(size_t ahead = 0) const {
         return pos_ + ahead < src_.size() ? src_[pos_ + ahead] : '\0';

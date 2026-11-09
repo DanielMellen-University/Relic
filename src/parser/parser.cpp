@@ -71,7 +71,8 @@ private:
     void grow(const Ast& n, int h) {
         h_ = std::max(h, h_) + 1;
         if (h_ > kMaxDepth)
-            throw ParseError(n.line, n.col, "expression is too deeply nested (limit " + std::to_string(kMaxDepth) + ")");
+            throw ParseError(n.line, n.col,
+                              "expression is too deeply nested (limit " + std::to_string(kMaxDepth) + ")");
     }
     struct Nest {
         Parser& p;
@@ -97,8 +98,8 @@ private:
         advance();
         return true;
     }
-    [[noreturn]] void fail(const Token& t, const std::string& msg) {
-        throw ParseError(t.line, t.col, msg);
+    [[noreturn]] void fail(const Token& t, const std::string& msg, std::string hint = {}, int end_col = 0) {
+        throw ParseError(t.line, t.col, msg, end_col, std::move(hint));
     }
     [[noreturn]] void fail_expected(const std::string& what) {
         fail(peek(), "expected " + what + ", got " + describe(peek()));
