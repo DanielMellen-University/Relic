@@ -53,6 +53,10 @@ relic_add_program(hello src/hello.relic)   # makes the executable target hello
 
 It works the same inside this repo (`examples/compiled/` is built that way) and needs only a C compiler. Details are in [CGEN.md](docs/CGEN.md#in-cmake).
 
+For a practical standalone CLI, see [tablecheck](examples/tablecheck/README.md):
+validate an unquoted CSV/TSV export, check a unique key, and summarize missing
+and distinct values. Its README has clean build/run instructions and samples.
+
 ### The C++ host
 
 The host runs programs directly, has the REPL and the SDL2 graphics, and is the reference the compiled side is checked against. It needs a C++17 compiler:

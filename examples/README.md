@@ -4,6 +4,11 @@ Small programs that show the language at work. They are examples, not the MONOLI
 
 `compiled/` is built with no graphics and no host: `relic_add_program` in the top-level `CMakeLists.txt` compiles `compiled/main.relic` to C, so a normal build makes `build/example_compiled`. Try `./build/example_compiled one two`.
 
+[`tablecheck/`](tablecheck/README.md) is a standalone CLI for validating unquoted
+CSV/TSV exports, checking a unique key, and reporting column completeness and
+distinct values. Its README includes a C-only consumer build, realistic samples,
+and exact output/error/exit checks. A top-level build includes it too.
+
 `word_count.relic` runs in any build: it counts the words in a file, or in a short text of its own, and prints the five most common, using `std/strings`, `std/lists` and `std/maps` (`words`, `group_by`, `map_values`, `sort_by`, `take`). Try `build/relic examples/word_count.relic README.md`.
 
 The other three need a graphics build. Run the commands from the repo root unless the table says otherwise.

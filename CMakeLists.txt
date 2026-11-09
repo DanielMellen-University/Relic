@@ -271,6 +271,7 @@ if(RELIC_C_RUNTIME)
   # relic_add_program(name file): a .relic program as an executable target.
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Relic.cmake)
   if(RELIC_TOP_LEVEL)
+    add_subdirectory(examples/tablecheck)
     relic_add_program(example_compiled examples/compiled/main.relic)
     add_test(NAME example_compiled COMMAND example_compiled one two)
     set_tests_properties(example_compiled PROPERTIES PASS_REGULAR_EXPRESSION

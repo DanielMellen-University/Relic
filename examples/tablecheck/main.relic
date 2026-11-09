@@ -1,0 +1,74 @@
+use std/files
+use std/os
+use std/strings
+use table
+
+fun usage()
+    print("usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE")
+    print("Validate unquoted delimited text and summarize column completeness.")
+    print("Default: csv. --key requires nonblank, unique values. --help shows this help.")
+    print("Exit: 0 valid/help, 2 usage error, 3 input/read error. No summary on error.")
+
+fun usage_error(message)
+    eprint("tablecheck: {message}; run tablecheck --help")
+    os.exit(2)
+
+fun main()
+    let words = os.args()
+    if words == ["--help"]
+        usage()
+        return
+    let delimiter = ","
+    let key = ""
+    let have_delimiter = false
+    let have_key = false
+    let positional = false
+    let paths = []
+    let i = 0
+    while i < len(words)
+        let word = words[i]
+        if not positional and word == "--"
+            positional = true
+        else if not positional and (word == "--delimiter" or word == "--key")
+            if i + 1 >= len(words)
+                usage_error("{word} needs a value")
+            i = i + 1
+            let value = words[i]
+            if word == "--delimiter"
+                if have_delimiter
+                    usage_error("--delimiter was supplied twice")
+                have_delimiter = true
+                if value == "tsv"
+                    delimiter = "\t"
+                else if value != "csv"
+                    usage_error("unknown delimiter '{value}' (choose csv or tsv)")
+            else
+                if have_key
+                    usage_error("--key was supplied twice")
+                have_key = true
+                if strings.trim(value) == ""
+                    usage_error("--key needs a nonblank column name")
+                key = value
+        else if not positional and strings.starts_with(word, "-")
+            usage_error("unknown option '{word}' (use -- before a filename starting with '-')")
+        else
+            append(paths, word)
+        i = i + 1
+    if len(paths) != 1
+        usage_error("expected exactly one input file, got {len(paths)}")
+    let path = paths[0]
+    let text = ""
+    try
+        text = files.read(path)
+    catch err
+        eprint("tablecheck: cannot read '{path}'; check that it is a readable file ({err.message})")
+        os.exit(3)
+    let summary = none
+    try
+        summary = table.summarize(text, delimiter, key)
+    catch err
+        eprint("tablecheck: {path}: {err.message}")
+        os.exit(3)
+    table.report(summary)
+
+main()
