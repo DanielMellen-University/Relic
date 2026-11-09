@@ -11,7 +11,7 @@ option(RELIC_SDL "Build the SDL2 graphics built-ins (std/graphics); turns on REL
 option(RELIC_C_RUNTIME "Build the C runtime in runtime/c and the C compiler on it" ON)
 option(RELIC_C_SDL "Also build relic_rt_gfx, the C runtime with SDL2 graphics, for relic_add_program(... GRAPHICS) (needs SDL2)" OFF)
 # Added to another project with add_subdirectory, Relic leaves out its own
-# compiled goldens by default (134 extra targets) and keeps relicc and
+# compiled goldens by default and keeps relicc and
 # relic_add_program (cmake/Relic.cmake).
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(RELIC_TOP_LEVEL ON)
