@@ -154,8 +154,10 @@ static std::string tests_root() {
     return p.substr(0, at);
 }
 
-// Host check of an existing golden still matches its .err file: a span that
-// is one column and an empty hint do not change the text.
+// Host run of an existing golden still matches its .err file: a span that
+// is one column and an empty hint do not change the text. These are lex,
+// parse, and runtime failures, so they go through run, not check (check
+// would call an undefined name a warning).
 static void test_noted_matches_golden() {
     const char* files[] = {"tests/golden/err_bang.relic", "tests/golden/err_long_line.relic",
                            "tests/golden/err_utf8_column.relic", "tests/golden/syn_chained_compare.relic",
@@ -163,7 +165,7 @@ static void test_noted_matches_golden() {
     std::string root = tests_root();
     for (const char* rel : files) {
         std::string abs = root + "/" + rel;
-        auto r = relic::check_source(abs, slurp(abs));
+        auto r = relic::run_source_vm(abs, slurp(abs));
         std::string got = r.err;
         std::string base = std::string(rel).substr(std::string(rel).rfind('/') + 1);
         for (size_t at = 0; (at = got.find(abs)) != std::string::npos; ) got.replace(at, abs.size(), base);
