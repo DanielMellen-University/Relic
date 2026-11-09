@@ -1,0 +1,8 @@
+# a messy program
+let names = ["Ada", "Linus"]
+fun greet(who) = print("hello {who}")
+for name in names
+    if (name == "Ada")
+        greet(name)  # first
+    else
+        greet(name)

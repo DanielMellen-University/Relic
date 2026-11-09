@@ -1,0 +1,21 @@
+fun add(
+    a,
+    b)
+    return a + b
+
+if add(1, 2) == 3
+    print("yes")
+else if add(1, 1) == 3
+    print("no")
+else
+    print("else")
+
+for n in 0..2
+    if n == 1
+        next
+    print(n)
+
+try
+    fail("nope")
+catch err
+    print(err.message)

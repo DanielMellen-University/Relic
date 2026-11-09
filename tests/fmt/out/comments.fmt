@@ -1,0 +1,10 @@
+#  title
+
+let x = 1  # kept
+
+print(x)
+
+# inside the call, and a wrapped argument
+print(
+    # note
+    x)
