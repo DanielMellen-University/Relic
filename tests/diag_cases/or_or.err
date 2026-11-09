@@ -1,0 +1,4 @@
+or_or.relic:1:11: error: unexpected '||'
+    let a = 1 || 2
+              ^^
+hint: Relic uses 'or', not '||'
