@@ -185,7 +185,7 @@ fun statement(p)
     if k == "TRY"
         return try_stmt(p)
     if k == "CATCH"
-        fail(p, t, "'catch' without a matching 'try'")
+        fail_span(p, t, t.col, "'catch' without a matching 'try'", "a catch follows the block of a try")
     if k == "RETURN"
         advance(p)
         let n = node("Return", t, "")

@@ -1,3 +1,4 @@
 syn_catch_without_try.relic:1:1: error: 'catch' without a matching 'try'
     catch e
     ^
+hint: a catch follows the block of a try

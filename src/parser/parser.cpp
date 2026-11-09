@@ -148,7 +148,7 @@ private:
             case Tok::For: return for_stmt();
             case Tok::Use: return use_stmt();
             case Tok::Try: return try_stmt();
-            case Tok::Catch: fail(t, "'catch' without a matching 'try'");
+            case Tok::Catch: fail(t, "'catch' without a matching 'try'", "a catch follows the block of a try");
             case Tok::Return: {
                 advance();
                 auto n = make(Node::Return, t);
