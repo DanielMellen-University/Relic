@@ -1,0 +1,4 @@
+word_const.relic:1:7: error: expected end of line, got name 'x'
+    const x = 1
+          ^
+hint: bindings start with 'let'; Relic has no const

@@ -157,6 +157,7 @@ const Pair kWords[] = {
     {"elif", "write 'else if', not 'elif'"},
     {"elsif", "write 'else if', not 'elsif'"},
     {"var", "bindings start with 'let', not 'var'"},
+    {"const", "bindings start with 'let'; Relic has no const"},
     // @@WORD@@
     {nullptr, nullptr},
 };

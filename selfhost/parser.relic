@@ -169,6 +169,8 @@ fun word_extra(word)
         return "write 'else if', not 'elsif'"
     if word == "var"
         return "bindings start with 'let', not 'var'"
+    if word == "const"
+        return "bindings start with 'let'; Relic has no const"
     # @@WORD@@
     if len(word) < 0
         return word
