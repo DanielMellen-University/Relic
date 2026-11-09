@@ -1,0 +1,3 @@
+let m = {a: none}
+print("a" in m, m.a == none)
+print(not ("b" in m))
