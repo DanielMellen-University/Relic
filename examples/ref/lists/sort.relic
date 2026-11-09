@@ -1,0 +1,4 @@
+# lists.sort returns a new list. Numbers and strings each have a host sort.
+use std/lists
+print(lists.sort([3, 1, 2, 1]))
+print(lists.sort(["b", "a", "c"]))
