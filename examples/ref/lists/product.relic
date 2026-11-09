@@ -1,0 +1,4 @@
+# lists.product multiplies the items. An empty list gives 1.
+use std/lists
+print(lists.product([2, 3, 4]))
+print(lists.product([]))
