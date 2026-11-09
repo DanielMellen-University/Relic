@@ -1,0 +1,5 @@
+# math.abs is the size of a number, never negative.
+use std/math
+print(math.abs(-3))
+print(math.abs(2.5))
+print(math.abs(0))
