@@ -422,6 +422,8 @@ fun lex_extra(ch, nxt)
         return {msg: "unexpected character '¬'", hint: "write 'not'", extra: 0}
     if ch == "∧"
         return {msg: "unexpected character '∧'", hint: "write 'and'", extra: 0}
+    if ch == "∨"
+        return {msg: "unexpected character '∨'", hint: "write 'or'", extra: 0}
     # @@LEX@@
     return none
 
