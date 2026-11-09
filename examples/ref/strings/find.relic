@@ -1,0 +1,5 @@
+# strings.find: index of the first match, or -1. Lists match a run of items.
+use std/strings
+print(strings.find("hello", "ll"))
+print(strings.find("hello", "z"))
+print(strings.find([1, 2, 3], [2]))
