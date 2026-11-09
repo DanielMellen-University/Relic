@@ -83,6 +83,7 @@ const LexRow kLex[] = {
     {"&", '\0', "unexpected character '&'", "Relic uses 'and', not '&'", 0},
     {"|", '|', "unexpected '||'", "Relic uses 'or', not '||'", 1},
     {"|", '\0', "unexpected character '|'", "Relic uses 'or', not '|'", 0},
+    {";", '\0', "unexpected character ';'", "statements end at a newline; delete the semicolon", 0},
     // @@LEX@@
     {nullptr, 0, nullptr, nullptr, 0},
 };
