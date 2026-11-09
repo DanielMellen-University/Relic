@@ -1,0 +1,4 @@
+# os.cwd is the current folder. The path itself depends on where you run.
+use std/os
+let c = os.cwd()
+print(type(c) == "string" and len(c) > 0)
