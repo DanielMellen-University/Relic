@@ -1,0 +1,5 @@
+# strings.reverse flips the characters. Past ASCII it stays whole characters.
+use std/strings
+print(strings.reverse("relic"))
+print(strings.reverse("ab"))
+print(strings.reverse("e\u{301}"))
