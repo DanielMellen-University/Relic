@@ -1,0 +1,5 @@
+# math.is_whole is true for an int, or a float with nothing after the point.
+use std/math
+print(math.is_whole(2))
+print(math.is_whole(2.0))
+print(math.is_whole(2.5))
