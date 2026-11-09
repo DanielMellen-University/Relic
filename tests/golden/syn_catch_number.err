@@ -1,0 +1,3 @@
+syn_catch_number.relic:3:7: error: expected end of line before the block, got number 5
+    catch 5
+          ^

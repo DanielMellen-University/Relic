@@ -1,0 +1,4 @@
+use std/strings
+print(strings.is_digits("0"), strings.is_digits("00"))
+print(strings.is_digits("\n"), strings.is_digits("9a"), strings.is_alpha("a"), strings.is_alpha("A"))
+print(strings.is_upper(""), strings.is_lower("A1"), strings.is_upper("A1"))

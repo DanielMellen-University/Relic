@@ -1,0 +1,6 @@
+let s = ""
+for c in "abca"
+    if c == "a"
+        next
+    s = s + c
+print(s)

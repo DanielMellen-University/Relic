@@ -1,0 +1,3 @@
+syn_use_as_bare.relic:1:19: error: expected a name after 'as', got end of line
+    use std/strings as
+                      ^

@@ -1,0 +1,3 @@
+rt_keys_none.relic:1:5: error: keys(): argument must be a map, got none
+    keys(none)
+        ^

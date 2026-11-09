@@ -1,0 +1,4 @@
+try
+    fail("boom")
+catch
+    print("caught")

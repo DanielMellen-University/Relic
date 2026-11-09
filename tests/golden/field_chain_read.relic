@@ -1,0 +1,4 @@
+let m = {user: {name: "ada"}}
+print(m.user.name)
+m.user.name = "grace"
+print(m.user.name)

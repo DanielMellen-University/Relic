@@ -1,0 +1,5 @@
+fun f()
+    return
+fun g()
+    let x = 1
+print(f(), g())

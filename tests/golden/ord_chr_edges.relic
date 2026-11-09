@@ -1,0 +1,2 @@
+print(ord("A"), ord("é"), chr(955))
+print(ord(chr(955)), len(chr(955)), ord(chr(0)), len(chr(0)), ord(chr(1114111)))

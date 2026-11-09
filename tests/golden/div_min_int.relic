@@ -1,0 +1,3 @@
+let lo = 0 - 9223372036854775807 - 1
+print(lo / -1, lo / 1, lo / 2, lo / -2)
+print(type(lo / -1), type(6 / 2))

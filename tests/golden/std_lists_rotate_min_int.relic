@@ -1,0 +1,6 @@
+use std/lists
+let lo = 0 - 9223372036854775807 - 1
+print(lists.rotate([1, 2, 3], lo))
+print(lists.rotate([1, 2, 3], 0))
+print(lists.rotate("abcd", -1))
+print(lists.rotate({a: 1, b: 2, c: 3}, 1))

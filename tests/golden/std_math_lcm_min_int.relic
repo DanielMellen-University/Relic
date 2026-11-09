@@ -1,0 +1,21 @@
+use std/math
+let lo = 0 - 9223372036854775807 - 1
+fun show(f)
+    try
+        print(f())
+    catch e
+        print(e.message)
+fun a() = math.lcm(lo, 1)
+fun b() = math.lcm(1, lo)
+fun c() = math.lcm(lo, 0)
+fun d() = math.lcm(0, lo)
+fun e() = math.lcm(lo, lo)
+fun f() = math.lcm(lo, 2)
+fun g() = math.lcm(-4, 6)
+show(a)
+show(b)
+show(c)
+show(d)
+show(e)
+show(f)
+show(g)

@@ -1,0 +1,2 @@
+fun answer() = 42
+print(answer(), type(answer))

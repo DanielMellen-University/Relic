@@ -1,0 +1,5 @@
+use std/strings
+print(strings.truncate("héllo", 3, ""))
+print(strings.truncate("abcd", 4, ""))
+print(strings.truncate("abcd", 0, ""))
+print(strings.truncate("abcd", 2, ""))

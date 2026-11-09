@@ -1,0 +1,7 @@
+use std/json
+print(ord(json.decode("\"\\b\"")), ord(json.decode("\"\\f\"")))
+print(json.decode("\"\\/\""), json.decode("\"\\\\\""))
+print(json.encode(chr(8)))
+print(json.encode(chr(12)))
+print(json.encode("/"))
+print(json.encode("\\"))

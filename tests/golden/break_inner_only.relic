@@ -1,0 +1,11 @@
+let n = 0
+let hits = 0
+while n < 3
+    let m = 0
+    while m < 5
+        if m == 1
+            break
+        hits = hits + 1
+        m = m + 1
+    n = n + 1
+print(n, hits)

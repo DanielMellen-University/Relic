@@ -1,0 +1,3 @@
+rt_hint_fall_off.relic:1:1: error: f() must return string, got none
+    fun f() as string
+    ^

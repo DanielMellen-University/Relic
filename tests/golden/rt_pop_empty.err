@@ -1,0 +1,3 @@
+rt_pop_empty.relic:1:4: error: pop(): list is empty
+    pop([])
+       ^

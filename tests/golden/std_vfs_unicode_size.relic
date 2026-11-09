@@ -1,0 +1,8 @@
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/e.txt", "é")
+vfs.write(fs, "/tmp/z.txt", "")
+print(vfs.size(fs, "/tmp/e.txt"), len("é"))
+print(vfs.size(fs, "/tmp/z.txt"))
+vfs.append(fs, "/tmp/e.txt", "é")
+print(vfs.read(fs, "/tmp/e.txt"), vfs.size(fs, "/tmp/e.txt"))

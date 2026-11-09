@@ -1,0 +1,3 @@
+rt_call_none.relic:2:2: error: cannot call a none
+    f(1)
+     ^

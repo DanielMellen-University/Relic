@@ -1,0 +1,4 @@
+use std/strings
+print(strings.center("ab", 5.0, "-"))
+print(strings.pad_left("7", 3.0, "0"))
+print(strings.pad_right("7", 4.0, "."))

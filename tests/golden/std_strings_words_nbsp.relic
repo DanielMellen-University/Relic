@@ -1,0 +1,4 @@
+use std/strings
+print(strings.words("a\u{a0}b"))
+print(strings.words("a\u{a0} b"))
+print(strings.is_space("\u{a0}"), strings.is_space(" "), strings.is_space(chr(13)))

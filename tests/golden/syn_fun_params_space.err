@@ -1,0 +1,3 @@
+syn_fun_params_space.relic:1:9: error: expected ')' after the parameters, got name 'b'
+    fun f(a b)
+            ^

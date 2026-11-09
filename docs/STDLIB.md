@@ -28,7 +28,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `count(s, sub)` | int | how many times `sub` is in `s`, not overlapping, left to right; an empty `sub` is `strings.count(): part must not be empty` (since 1.0.49) |
 | `find_last(s, sub)` | int | where the last `sub` starts, or `-1`; overlaps count (`find_last("aaa", "aa")` is `1`), an empty `sub` is at `len(s)`; linear time (since 1.0.49) |
-| `starts_with(s, pre)` | bool | strings, or two lists (a run of items); anything else is `strings.starts_with(): text must be a string, got int` (`prefix` for `pre`; since 1.0.52) |
+| `starts_with(s, pre)` | bool | strings, or two lists (a run of items); anything else is `strings.starts_with(): text must be a string, got int` (`prefix` for `pre`; since 1.0.52). A string paired with a list fails naming that side, `strings.starts_with(): prefix must be a string, got list` (`prefix must be a list` the other way; it returned false before) |
 | `ends_with(s, suf)` | bool | the same, `suffix` for `suf` |
 | `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
 | `capitalize(s)` | string | the first character in upper case (ASCII letters only, as `upper`), the rest as they are (since 1.0.50) |
@@ -127,7 +127,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `sqrt(x)`, `pow(x, y)`, `sin(x)`, `cos(x)`, `exp(x)`, `log(x)` | float; outside their domain nan or an infinity, not an error (`sqrt(-1)` is `nan`, `log(0)` is `-inf`); anything but a number is `math.sqrt(): argument must be a number, got string` (`pow` says `base` for `x` and `power` for `y`) |
 | `sign(x)` | int: `-1`, `0` or `1` (`-0.0` is `0`); nan comes back as nan (since 1.0.49) |
 | `gcd(a, b)` | int: the greatest common divisor of two ints, never negative; `gcd(0, 0)` is `0`; `-2^63` works (`gcd(-2^63, 6)` is `2`, since 1.0.52) except where the result would be 2^63, `math.gcd(): the result, 2^63, is out of the int range`; anything but ints is an error naming the argument, `math.gcd(): b must be an int, got float` (since 1.0.50) |
-| `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50) |
+| `lcm(a, b)` | int: the least common multiple of two ints, never negative, `0` when either is `0`; the same error as `gcd` otherwise, `math.lcm(): a must be an int, got string` (since 1.0.50). `lcm` of `-2^63` and any non-zero int is `int overflow` (the result is at least 2^63); it named `math.abs` before |
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
 | `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50); since 1.0.52 without overflow or underflow on the way, so `hypot(1e200, 1e200)` is `1.4142135623731e+200`, not `inf` |

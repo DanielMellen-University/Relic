@@ -1,0 +1,6 @@
+use std/paths
+print(paths.relative("/a/b/c", "/a"))
+print(paths.relative("a/b/c", "a"))
+print(paths.relative("/a/b", "/a/b/c/d"))
+print(paths.relative(".", "."))
+print(paths.relative("/a/b/", "/a/c"))

@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 263 ctest cases: 251 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 550: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 418 ctest cases: 406 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 860: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -48,10 +48,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (309 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (464 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (257 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (257 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (412 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (412 today) |
 
 Three more self-host cases check the interpreter on real use:
 
@@ -114,7 +114,7 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (251 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 251 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are two: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, and `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal. Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (406 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 406 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are two: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, and `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal. Details in [CGEN.md](CGEN.md#tests).
 
 In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 
@@ -166,7 +166,7 @@ Getting SDL2:
 - macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 - Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
 
-The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 566 cases each (the host build's 550 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing. 406 and 422 were the host total and that total plus graphics at 1.0.52 (see the changelog). They are not the current counts.
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 876 cases each (the host build's 860 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing. 406 and 422 were the host total and that total plus graphics at 1.0.52 (see the changelog). They are not the current counts.
 
 ## tablecheck application
 

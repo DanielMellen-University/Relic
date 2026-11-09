@@ -1,0 +1,4 @@
+use std/lists
+let m = {b: 1, a: 2}
+print(lists.copy(m), lists.reverse(m), lists.last(m))
+print(lists.copy(""), lists.reverse(""))
