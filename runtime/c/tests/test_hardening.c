@@ -514,6 +514,35 @@ static void test_call_lifetimes(void) {
     rl_release(f);
 }
 
+static void test_collector_mixed_graph(void) {
+    static const char *const names[] = {"items"};
+    size_t objects = rl_live_objects(), strings = rl_live_strings();
+    rl_scope *parent = rl_scope_new(NULL, 1), *scope = rl_scope_new(parent, 1);
+    rl_value f = rl_fun_new("closure", NULL, 0, scope);
+    rl_value module = rl_module_scoped("cycle", scope, 1, names);
+    rl_value map = rl_map_new(), list = rl_list_new(1), out;
+    parent->slots[0] = rl_str_c("parent data");
+    CHECK(rl_set_field(&cx, map, "fun", f) == RL_OK);
+    CHECK(rl_set_field(&cx, map, "module", module) == RL_OK);
+    rl_list_push(L(list), map);
+    scope->slots[0] = rl_retain(list);
+    rl_scope_release(parent);
+    rl_scope_release(scope);
+    rl_release(f);
+    rl_release(module);
+    rl_release(map);
+    CHECK(rl_gc_collect() == 0);
+    CHECK(rl_live_objects() == objects + 6);
+    CHECK(rl_field(&cx, L(list)->items[0], "module", &module) == RL_OK);
+    CHECK(rl_field(&cx, module, "items", &out) == RL_OK && out.u.o == list.u.o);
+    rl_release(out);
+    rl_release(module);
+    rl_release(list);
+    CHECK(rl_gc_collect() == 6);
+    CHECK(rl_live_objects() == objects && rl_live_strings() == strings);
+    CHECK(rl_gc_collect() == 0);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -532,6 +561,7 @@ int main(void) {
     test_iteration_snapshots();
     test_list_slice_ownership();
     test_call_lifetimes();
+    test_collector_mixed_graph();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
