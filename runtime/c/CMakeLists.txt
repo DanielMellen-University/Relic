@@ -128,7 +128,7 @@ relic_c_target(relic_rt_input_tests)
 add_test(NAME c_runtime_input
   COMMAND ${CMAKE_COMMAND}
     -DEXE=$<TARGET_FILE:relic_rt_input_tests>
-    -DTMP=${CMAKE_CURRENT_BINARY_DIR}/input_fixtures
+    -DIN=${CMAKE_CURRENT_SOURCE_DIR}/tests/input
     -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_input.cmake)
 set_tests_properties(c_runtime_input PROPERTIES ENVIRONMENT "RELIC_LEAK_CHECK=1")
 
