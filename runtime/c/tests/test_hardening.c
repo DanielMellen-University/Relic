@@ -289,6 +289,45 @@ static void test_utf8_fragments_and_empty_strings(void) {
     rl_release(empty);
 }
 
+static void append_in_place(rl_value *slot, rl_value suffix) {
+    rl_value out;
+    CHECK(rl_add_to(&cx, slot, suffix, &out) == RL_OK && out.u.o == slot->u.o);
+    rl_release(*slot);
+    *slot = out;
+}
+
+static void test_append_utf8_cache(void) {
+    char raw[512];
+    size_t i;
+    rl_value text, suffix;
+    for (i = 0; i < sizeof raw; i += 2) { raw[i] = (char)0xC3; raw[i + 1] = (char)0xA9; }
+    text = rl_str_new(raw, sizeof raw);
+    CHECK(rl_str_offset(S(text), 200) == 400 && S(text)->marks != NULL);
+    suffix = rl_str_c("\xE2\x82\xAC");
+    append_in_place(&text, suffix);
+    CHECK(S(text)->marks == NULL && rl_str_chars(S(text)) == 257);
+    CHECK(rl_str_offset(S(text), 256) == 512);
+    CHECK(rl_str_chars(S(suffix)) == 1);
+    append_in_place(&text, suffix);
+    CHECK(rl_str_chars(S(text)) == 258 && rl_str_offset(S(text), 257) == 515);
+    rl_release(suffix);
+    rl_release(text);
+
+    text = rl_str_new("\xF0\x9F", 2);
+    CHECK(rl_str_chars(S(text)) == 2);
+    suffix = rl_str_new("\x98\x80", 2);
+    CHECK(rl_str_chars(S(suffix)) == 2);
+    append_in_place(&text, suffix);
+    CHECK(rl_str_chars(S(text)) == 1 && rl_str_offset(S(text), 1) == 4);
+    bytes_are(text, "\xF0\x9F\x98\x80", 4);
+    rl_release(suffix);
+    suffix = rl_str_c("");
+    append_in_place(&text, suffix);
+    CHECK(rl_str_chars(S(text)) == 1 && S(text)->len == 4);
+    rl_release(suffix);
+    rl_release(text);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -301,6 +340,7 @@ int main(void) {
     test_division_modulo_limits();
     test_unicode_boundaries();
     test_utf8_fragments_and_empty_strings();
+    test_append_utf8_cache();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
