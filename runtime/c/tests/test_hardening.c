@@ -693,6 +693,34 @@ static void test_host_find_boundaries(void) {
     rl_release(args[1]);
 }
 
+static void test_large_error_messages(void) {
+    char message[701];
+    rl_value caught, field, map = rl_map_new(), key;
+    size_t i;
+    for (i = 0; i < sizeof message - 1; ++i) message[i] = (char)('a' + i % 26);
+    message[sizeof message - 1] = 0;
+    CHECK(rl_fail(&cx, "%s", message) == RL_ERR);
+    CHECK(cx.err_msg->len == sizeof message - 1);
+    CHECK(memcmp(cx.err_msg->data, message, sizeof message - 1) == 0);
+    CHECK(rl_catch(&cx, &caught));
+    CHECK(rl_field(&cx, caught, "message", &field) == RL_OK);
+    rl_release(caught);
+    bytes_are(field, message, sizeof message - 1);
+    rl_release(field);
+    message[350] = 0;
+    key = rl_str_new(message, sizeof message - 1);
+    CHECK(rl_index(&cx, map, key, &field) == RL_ERR);
+    CHECK(field.k == RL_NONE && cx.err_arg == 2);
+    CHECK(cx.err_msg->len == strlen("map has no key '") + sizeof message);
+    CHECK(memcmp(cx.err_msg->data, "map has no key '", strlen("map has no key '")) == 0);
+    CHECK(memcmp(cx.err_msg->data + strlen("map has no key '"), message, sizeof message - 1) == 0);
+    CHECK(cx.err_msg->data[cx.err_msg->len - 1] == '\'');
+    rl_release(key);
+    rl_release(map);
+    CHECK(rl_catch(&cx, &caught));
+    rl_release(caught);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -716,6 +744,7 @@ int main(void) {
     test_binary_file_lifecycle();
     test_host_sort_boundaries();
     test_host_find_boundaries();
+    test_large_error_messages();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
