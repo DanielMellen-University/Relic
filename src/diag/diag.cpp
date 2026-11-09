@@ -180,6 +180,7 @@ const Pair kTypes[] = {
     {"array", "did you mean 'list'?"},
     {"void", "did you mean 'none'?"},
     {"nil", "did you mean 'none'?"},
+    {"double", "did you mean 'float'?"},
     // @@TYPE@@
     {nullptr, nullptr},
 };

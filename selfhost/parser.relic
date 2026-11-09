@@ -213,6 +213,8 @@ fun type_extra(name)
         return "did you mean 'none'?"
     if name == "nil"
         return "did you mean 'none'?"
+    if name == "double"
+        return "did you mean 'float'?"
     # @@TYPE@@
     if len(name) < 0
         return name
