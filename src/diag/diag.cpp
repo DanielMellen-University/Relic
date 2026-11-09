@@ -156,6 +156,7 @@ const Pair kWords[] = {
     {"elseif", "write 'else if', not 'elseif'"},
     {"elif", "write 'else if', not 'elif'"},
     {"elsif", "write 'else if', not 'elsif'"},
+    {"var", "bindings start with 'let', not 'var'"},
     // @@WORD@@
     {nullptr, nullptr},
 };

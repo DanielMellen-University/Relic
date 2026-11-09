@@ -167,6 +167,8 @@ fun word_extra(word)
         return "write 'else if', not 'elif'"
     if word == "elsif"
         return "write 'else if', not 'elsif'"
+    if word == "var"
+        return "bindings start with 'let', not 'var'"
     # @@WORD@@
     if len(word) < 0
         return word
