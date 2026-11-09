@@ -1,0 +1,14 @@
+# A few unit conversions. Temperatures use the usual formula; lengths stay exact.
+#   relic examples/learn/units.relic
+
+fun c_to_f(c)
+    return c * 9 / 5 + 32
+
+fun inches_to_feet(n)
+    return [int(n / 12), n % 12]
+
+print("0 C = {c_to_f(0)} F")
+print("100 C = {c_to_f(100)} F")
+print("38 in = {inches_to_feet(38)[0]} ft {inches_to_feet(38)[1]} in")
+print("3 km = {3 * 1000} m")
+print("2 h = {2 * 60} min")
