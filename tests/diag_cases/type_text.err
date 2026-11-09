@@ -1,0 +1,4 @@
+type_text.relic:1:10: error: unknown type 'text'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as text = 1
+             ^^^^
+hint: did you mean 'string'?

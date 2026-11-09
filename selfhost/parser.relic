@@ -217,6 +217,8 @@ fun type_extra(name)
         return "did you mean 'float'?"
     if name == "i64"
         return "did you mean 'int'?"
+    if name == "text"
+        return "did you mean 'string'?"
     # @@TYPE@@
     if len(name) < 0
         return name
