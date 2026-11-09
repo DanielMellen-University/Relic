@@ -1,0 +1,3 @@
+rt_args_arity.relic:1:5: error: args() takes 0 arguments, got 1
+    args(1)
+        ^
