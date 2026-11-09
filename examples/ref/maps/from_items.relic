@@ -1,0 +1,3 @@
+# maps.from_items is the reverse of items. A later pair with the same key wins.
+use std/maps
+print(maps.from_items([["a", 1], ["b", 2], ["a", 3]]))
