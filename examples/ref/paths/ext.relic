@@ -1,0 +1,6 @@
+# paths.ext keeps the dot. A leading dot belongs to the name.
+use std/paths
+print(paths.ext("a/b.txt"))
+print(paths.ext("a.tar.gz"))
+print(paths.ext(".hidden"))
+print(paths.ext("Makefile"))
