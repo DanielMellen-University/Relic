@@ -1,0 +1,3 @@
+rt_neg_bool.relic:1:7: error: cannot negate a bool
+    print(-true)
+          ^
