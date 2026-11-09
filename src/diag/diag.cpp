@@ -163,6 +163,7 @@ const Pair kWords[] = {
     {"bool", "write 'let name = ... as bool'"},
     {"float", "write 'let name = ... as float'"},
     {"import", "modules are loaded with 'use', not 'import'"},
+    {"print", "call it as print(...); the parentheses are required"},
     // @@WORD@@
     {nullptr, nullptr},
 };

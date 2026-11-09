@@ -181,6 +181,8 @@ fun word_extra(word)
         return "write 'let name = ... as float'"
     if word == "import"
         return "modules are loaded with 'use', not 'import'"
+    if word == "print"
+        return "call it as print(...); the parentheses are required"
     # @@WORD@@
     if len(word) < 0
         return word

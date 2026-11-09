@@ -1,0 +1,4 @@
+word_print.relic:1:7: error: expected end of line, got name 'x'
+    print x
+          ^
+hint: call it as print(...); the parentheses are required
