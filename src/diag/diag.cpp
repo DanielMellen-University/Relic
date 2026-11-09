@@ -166,6 +166,7 @@ const Pair kWords[] = {
     {"print", "call it as print(...); the parentheses are required"},
     {"len", "call it as len(...); the parentheses are required"},
     {"class", "Relic has no classes; use a map or a module"},
+    {"switch", "branch with if and else if"},
     // @@WORD@@
     {nullptr, nullptr},
 };

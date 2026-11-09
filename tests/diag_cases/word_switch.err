@@ -1,0 +1,4 @@
+word_switch.relic:1:8: error: expected end of line, got name 'x'
+    switch x
+           ^
+hint: branch with if and else if
