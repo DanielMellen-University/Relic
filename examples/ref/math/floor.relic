@@ -1,0 +1,5 @@
+# math.floor is the greatest int that is still <= x.
+use std/math
+print(math.floor(2.9))
+print(math.floor(-2.1))
+print(math.floor(3))
