@@ -1,0 +1,3 @@
+syn_let_bare.relic:1:4: error: expected a name after 'let', got end of line
+    let
+       ^
