@@ -1,0 +1,4 @@
+# files.write stores text at a path, relative to where relic was started.
+use std/files
+files.write("note.txt", "hello\n")
+print(files.read("note.txt"))
