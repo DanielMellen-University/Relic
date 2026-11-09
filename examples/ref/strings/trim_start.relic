@@ -1,0 +1,3 @@
+# strings.trim_start drops space at the start only.
+use std/strings
+print(strings.trim_start("  hi  "))
