@@ -1,0 +1,4 @@
+# math.radians turns degrees into radians, for sin and cos.
+use std/math
+print(math.radians(0))
+print(math.radians(180))
