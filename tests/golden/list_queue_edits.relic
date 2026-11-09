@@ -1,0 +1,5 @@
+let xs = [1, 2, 3]
+print(pop(xs), remove(xs, 0))
+insert(xs, 0, 9)
+insert(xs, len(xs), 8)
+print(xs)
