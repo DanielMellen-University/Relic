@@ -1,0 +1,12 @@
+# Group words that are anagrams of each other.
+#   relic examples/learn/anagrams.relic
+use std/lists
+use std/strings
+
+fun key(w)
+    return strings.join(lists.sort(strings.split(w, "")), "")
+
+let words = ["eat", "tea", "tan", "ate", "nat", "bat"]
+let groups = lists.group_by(words, key)
+for k in groups
+    print(groups[k])
