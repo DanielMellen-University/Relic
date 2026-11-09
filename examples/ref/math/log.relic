@@ -1,0 +1,4 @@
+# math.log is the natural log.
+use std/math
+print(math.log(1))
+print(type(math.log(math.e)) == "float")
