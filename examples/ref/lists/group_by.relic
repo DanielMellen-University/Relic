@@ -1,0 +1,4 @@
+# lists.group_by builds a map from key(x) to the items with that key.
+use std/lists
+fun first(w) = w[0]
+print(lists.group_by(["ant", "bee", "asp", "cow"], first))
