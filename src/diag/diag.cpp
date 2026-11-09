@@ -135,6 +135,7 @@ const ExpectRow kExpect[] = {
     {"an expression", (int)relic::Tok::Plus, "", (int)relic::Tok::Plus, "", "Relic has no '++'", "write the new value out, as in n = n + 1", 1, 1},
     {"end of line before the block", (int)relic::Tok::Colon, "", -1, "", "", "Relic headers do not end with a colon; indent the next line 4 spaces", 0, 1},
     {"end of line before the block", (int)relic::Tok::Assign, "", -1, "", "", "compare with '=='; a single '=' assigns", 0, 1},
+    {"'=' after the name", (int)relic::Tok::Colon, "", -1, "", "", "use '=', not ':='", 0, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };

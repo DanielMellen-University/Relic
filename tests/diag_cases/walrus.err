@@ -1,0 +1,4 @@
+walrus.relic:1:7: error: expected '=' after the name, got ':'
+    let x := 1
+          ^
+hint: use '=', not ':='
