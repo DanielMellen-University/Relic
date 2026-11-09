@@ -115,6 +115,13 @@ target_include_directories(relic_rt_tests PRIVATE ${RELIC_ROOT}/src/builtins)
 relic_c_target(relic_rt_tests)
 add_test(NAME c_runtime COMMAND relic_rt_tests WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
+add_executable(relic_rt_hardening_tests tests/test_hardening.c)
+target_link_libraries(relic_rt_hardening_tests PRIVATE relic_rt)
+relic_c_target(relic_rt_hardening_tests)
+add_test(NAME c_runtime_hardening COMMAND relic_rt_hardening_tests
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(c_runtime_hardening PROPERTIES ENVIRONMENT "RELIC_LEAK_CHECK=1")
+
 add_executable(relic_rt_demo tests/demo.c)
 target_link_libraries(relic_rt_demo PRIVATE relic_rt)
 relic_c_target(relic_rt_demo)

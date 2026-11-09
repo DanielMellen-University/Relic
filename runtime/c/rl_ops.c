@@ -431,7 +431,10 @@ int rl_range(rl_ctx *cx, rl_value av, rl_value bv, rl_value *out) {
     *out = rl_none();
     if (whole(cx, av, "range start", &a)) { cx->err_arg = 1; return RL_ERR; }
     if (whole(cx, bv, "range end", &b)) { cx->err_arg = 2; return RL_ERR; }
-    if (b - a > 10000000) return rl_fail(cx, "range is too large");
+    /* Subtract unsigned endpoints only for ascending ranges. The distance
+     * can span the entire signed range without overflowing. */
+    if (b > a && (unsigned long long)b - (unsigned long long)a > 10000000ULL)
+        return rl_fail(cx, "range is too large");
     l = rl_list_new(b > a ? (size_t)(b - a) : 0);
     for (i = a; i < b; ++i) rl_list_push(L(l), rl_int(i));
     *out = l;
