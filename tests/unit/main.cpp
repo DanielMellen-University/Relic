@@ -8,6 +8,8 @@
 // The built-in 8x12 text font (std/graphics text), shared with runtime/c.
 #include "builtins/font8x12.inc"
 
+#include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -54,6 +56,27 @@ static void test_font() {
     const unsigned char* u = kFont8x12['_' - 32];
     CHECK(u[10] == 0x7e);
     for (int row = 0; row < 10; row++) CHECK(u[row] == 0);
+}
+
+// A hint is its own line after the caret, and only when one was given.
+static void test_hint_line() {
+    relic::diag::Note n;
+    n.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format("a.relic", 3, 5, "unexpected '&&'", n) ==
+          "a.relic:3:5: error: unexpected '&&'\nhint: Relic uses 'and', not '&&'\n");
+    CHECK(relic::diag::format("a.relic", 3, 5, "x") == "a.relic:3:5: error: x\n");
+    n.hint = "fix it";
+    CHECK(relic::diag::format("a.relic", 1, 1, "bad", n, "warning") ==
+          "a.relic:1:1: warning: bad\nhint: fix it\n");
+    std::string path = "hint_line_src.relic";
+    {
+        std::ofstream f(path);
+        f << "let a = 1 && 2\n";
+    }
+    n.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format(path, 1, 11, "unexpected '&&'", n) ==
+          path + ":1:11: error: unexpected '&&'\n    let a = 1 && 2\n              ^\nhint: Relic uses 'and', not '&&'\n");
+    std::remove(path.c_str());
 }
 
 static void test_core() {
@@ -423,6 +446,7 @@ int main() {
     test_repl_details();
     test_interp();
     test_builtins();
+    test_hint_line();
     test_core();
     test_font();
     test_basic_tokens();

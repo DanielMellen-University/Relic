@@ -48,9 +48,16 @@ std::string snippet(const std::string& path, int line, int col) {
     return "    " + text + "\n    " + pad + "^\n";
 }
 
+std::string format(const std::string& path, int line, int col, const std::string& msg, const Note& note,
+                   const char* kind) {
+    std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
+                      "\n" + snippet(path, line, col);
+    if (!note.hint.empty()) out += "hint: " + note.hint + "\n";
+    return out;
+}
+
 std::string format(const std::string& path, int line, int col, const std::string& msg, const char* kind) {
-    return path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg + "\n" +
-           snippet(path, line, col);
+    return format(path, line, col, msg, Note{}, kind);
 }
 
 }  // namespace relic::diag
