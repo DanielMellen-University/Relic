@@ -158,7 +158,7 @@ private:
             }
             case Tok::Break: advance(); end_of_line(); return make(Node::Break, t);
             case Tok::Next: advance(); end_of_line(); return make(Node::Next, t);
-            case Tok::Else: fail(t, "'else' without a matching 'if'");
+            case Tok::Else: fail(t, "'else' without a matching 'if'", "an else follows the block of an if");
             case Tok::Indent: fail(t, "unexpected indent");
             default: return expr_stmt();
         }

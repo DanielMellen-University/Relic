@@ -200,7 +200,7 @@ fun statement(p)
             return node("Break", t, "")
         return node("Next", t, "")
     if k == "ELSE"
-        fail(p, t, "'else' without a matching 'if'")
+        fail_span(p, t, t.col, "'else' without a matching 'if'", "an else follows the block of an if")
     if k == "INDENT"
         fail(p, t, "unexpected indent")
     return expr_stmt(p)
