@@ -581,6 +581,55 @@ static void test_deep_and_wide_equality(void) {
     CHECK(rl_live_objects() == before);
 }
 
+static void test_binary_file_lifecycle(void) {
+    char data[17001];
+    size_t i;
+    rl_value dir = rl_str_c("rt_hardening_files"), path = rl_str_c("rt_hardening_files/data.bin");
+    rl_value target = rl_str_c("rt_hardening_files/target.bin"), args[3], out;
+    for (i = 0; i < sizeof data; ++i) data[i] = (char)(i % 256);
+    CHECK(call("host_make_dir", 1, &dir, &out) == RL_OK);
+    args[0] = path; args[1] = rl_str_new(data, sizeof data); args[2] = rl_bool(0);
+    CHECK(call("host_write_file", 3, args, &out) == RL_OK);
+    rl_release(args[1]);
+    args[1] = rl_int(42);
+    error_is(call("host_write_file", 3, args, &out), "host_write_file(): text must be a string, got int");
+    CHECK(call("host_read_file", 1, &path, &out) == RL_OK);
+    bytes_are(out, data, sizeof data);
+    rl_release(out);
+    CHECK(call("host_file_size", 1, &path, &out) == RL_OK && out.u.i == (long long)sizeof data);
+    args[1] = rl_str_new("\0tail", 5); args[2] = rl_bool(1);
+    CHECK(call("host_write_file", 3, args, &out) == RL_OK);
+    rl_release(args[1]);
+    CHECK(call("host_read_file", 1, &path, &out) == RL_OK);
+    CHECK(S(out)->len == sizeof data + 5);
+    CHECK(memcmp(S(out)->data, data, sizeof data) == 0);
+    CHECK(memcmp(S(out)->data + sizeof data, "\0tail", 5) == 0);
+    rl_release(out);
+    error_is(call("host_remove", 1, &dir, &out), "host_remove(): cannot remove rt_hardening_files");
+    args[0] = target; args[1] = rl_str_c("old target"); args[2] = rl_bool(0);
+    CHECK(call("host_write_file", 3, args, &out) == RL_OK);
+    rl_release(args[1]);
+    args[0] = path; args[1] = target;
+    CHECK(call("host_rename", 2, args, &out) == RL_OK);
+    CHECK(call("host_file_exists", 1, &path, &out) == RL_OK && !out.u.b);
+    CHECK(call("host_list_dir", 1, &dir, &out) == RL_OK && L(out)->n == 1);
+    bytes_are(L(out)->items[0], "target.bin", 10);
+    rl_release(out);
+    args[0] = target; args[1] = rl_str_c(""); args[2] = rl_bool(0);
+    CHECK(call("host_write_file", 3, args, &out) == RL_OK);
+    rl_release(args[1]);
+    CHECK(call("host_read_file", 1, &target, &out) == RL_OK);
+    bytes_are(out, "", 0);
+    rl_release(out);
+    CHECK(call("host_remove", 1, &target, &out) == RL_OK);
+    CHECK(call("host_list_dir", 1, &dir, &out) == RL_OK && L(out)->n == 0);
+    rl_release(out);
+    CHECK(call("host_remove", 1, &dir, &out) == RL_OK);
+    rl_release(target);
+    rl_release(path);
+    rl_release(dir);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -601,6 +650,7 @@ int main(void) {
     test_call_lifetimes();
     test_collector_mixed_graph();
     test_deep_and_wide_equality();
+    test_binary_file_lifecycle();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
