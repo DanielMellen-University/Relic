@@ -84,11 +84,33 @@ static void test_number_spans(void) {
     CHECK(r.k == RL_FLOAT && r.u.f == 0.0);
 }
 
+static void test_binary_std_error(void) {
+    static const char message[] = "host_read_file(): missing\0suffix";
+    static const char expected[] = "files.read(): missing\0suffix";
+    rl_value f = rl_fun_std(rl_fun_new("read", NULL, 1, NULL), "files");
+    rl_value text = rl_str_new(message, sizeof message - 1), caught, field;
+    CHECK(rl_fail_str(&cx, S(text)) == RL_ERR);
+    rl_release(text);
+    rl_at3(&cx, "std/files.relic", 1, 7, 8, 7, 8, 7, 8);
+    rl_std_boundary(&cx, f);
+    CHECK(cx.err_msg->len == sizeof expected - 1);
+    CHECK(memcmp(cx.err_msg->data, expected, sizeof expected - 1) == 0);
+    CHECK(cx.err_line == 0 && cx.err_std == 0);
+    rl_at(&cx, "caller.relic", 2, 3);
+    CHECK(rl_catch(&cx, &caught));
+    CHECK(rl_field(&cx, caught, "message", &field) == RL_OK);
+    CHECK(S(field)->len == sizeof expected - 1);
+    rl_release(field);
+    rl_release(caught);
+    rl_release(f);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
     test_error_message_alias();
     test_number_spans();
+    test_binary_std_error();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);

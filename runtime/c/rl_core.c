@@ -983,13 +983,14 @@ void rl_std_boundary(rl_ctx *cx, rl_value fv) {
     if (!f->std_module || !cx->err_std || !cx->err_line) return;
     msg = cx->err_msg->data;
     if (strncmp(msg, "host_", 5) == 0 && strstr(msg, "(): ")) {
+        const char *detail = strstr(msg, "(): ") + 4;
         rl_value m;
         buf b = {0, 0, 0};
         b_cstr(&b, f->std_module);
         b_cstr(&b, ".");
         b_add(&b, f->name->data, f->name->len);
         b_cstr(&b, "(): ");
-        b_cstr(&b, strstr(msg, "(): ") + 4);
+        b_add(&b, detail, cx->err_msg->len - (size_t)(detail - msg));
         m = b_done(&b);
         rl_fail_str(cx, (rl_str *)m.u.o);   /* also clears the position */
         rl_release(m);
