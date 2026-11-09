@@ -1,0 +1,4 @@
+# math.hypot is the distance from the origin to (x, y).
+use std/math
+print(math.hypot(3, 4))
+print(math.hypot(0, 0))
