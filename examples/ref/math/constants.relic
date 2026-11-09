@@ -1,0 +1,5 @@
+# math.pi and math.e are the usual float constants.
+use std/math
+print(math.pi)
+print(math.e)
+print(math.cos(math.pi))
