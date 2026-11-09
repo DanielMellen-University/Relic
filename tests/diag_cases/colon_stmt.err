@@ -1,0 +1,4 @@
+colon_stmt.relic:1:3: error: expected end of line, got ':'
+    a : b
+      ^
+hint: Relic statements do not end with a colon
