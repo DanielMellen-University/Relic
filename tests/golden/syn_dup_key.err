@@ -1,3 +1,4 @@
 syn_dup_key.relic:1:16: error: duplicate map key 'a'
     let m = {a: 1, a: 2}
                    ^
+hint: each map key is written once

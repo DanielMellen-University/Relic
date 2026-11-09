@@ -543,7 +543,8 @@ private:
                     fail_expected("a map key (a name or a string)");
                 advance();
                 // a set of the keys so far: comparing with each one made a long literal quadratic
-                if (!keys.insert(key.text).second) fail(key, "duplicate map key '" + key.text + "'");
+                if (!keys.insert(key.text).second)
+                    fail(key, "duplicate map key '" + key.text + "'", "each map key is written once");
                 expect(Tok::Colon, "':' after the map key");
                 auto pair = make(Node::Pair, key, key.text);
                 pair->kids.push_back(expression());

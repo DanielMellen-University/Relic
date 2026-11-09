@@ -564,7 +564,7 @@ fun map_literal(p)
             advance(p)
             # a map of the keys so far: comparing with each one made a long literal quadratic
             if key.text in seen
-                fail(p, key, "duplicate map key '{key.text}'")
+                fail_span(p, key, key.col, "duplicate map key '{key.text}'", "each map key is written once")
             seen[key.text] = true
             expect(p, "COLON", "':' after the map key")
             let pair = add(node("Pair", key, key.text), expression(p))
