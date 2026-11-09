@@ -189,6 +189,8 @@ fun word_extra(word)
         return "Relic has no classes; use a map or a module"
     if word == "switch"
         return "branch with if and else if"
+    if word == "lambda"
+        return "write 'fun name() = ...'"
     # @@WORD@@
     if len(word) < 0
         return word

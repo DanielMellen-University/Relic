@@ -1,0 +1,4 @@
+word_lambda.relic:1:8: error: expected end of line, got name 'x'
+    lambda x
+           ^
+hint: write 'fun name() = ...'
