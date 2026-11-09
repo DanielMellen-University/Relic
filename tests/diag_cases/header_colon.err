@@ -1,0 +1,4 @@
+header_colon.relic:1:5: error: expected end of line before the block, got ':'
+    if a:
+        ^
+hint: Relic headers do not end with a colon; indent the next line 4 spaces
