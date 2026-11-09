@@ -1,0 +1,3 @@
+syn_return_as_bare.relic:1:11: error: expected a type name after 'as', got end of line
+    fun f() as
+              ^
