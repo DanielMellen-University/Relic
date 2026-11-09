@@ -137,6 +137,7 @@ const ExpectRow kExpect[] = {
     {"end of line before the block", (int)relic::Tok::Assign, "", -1, "", "", "compare with '=='; a single '=' assigns", 0, 1},
     {"'=' after the name", (int)relic::Tok::Colon, "", -1, "", "", "use '=', not ':='", 0, 1},
     {"'in' after the loop name", (int)relic::Tok::Name, "of", -1, "", "", "loops are written 'for name in list'", 0, 1},
+    {"'in' after the loop name", (int)relic::Tok::Colon, "", -1, "", "", "loops are written 'for name in list', not a colon", 0, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };
