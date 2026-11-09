@@ -43,6 +43,15 @@ int main(int argc, char **argv) {
         out = read_line();
         CHECK(out.k == RL_STR && S(out)->len == 5 && memcmp(S(out)->data, "last\r", 5) == 0);
         rl_release(out);
+    } else if (strcmp(argv[1], "cr") == 0) {
+        out = read_line();
+        CHECK(out.k == RL_STR && S(out)->len == sizeof "embedded\rcarriage" - 1
+              && memcmp(S(out)->data, "embedded\rcarriage", sizeof "embedded\rcarriage" - 1) == 0);
+        rl_release(out);
+        out = read_line();
+        CHECK(out.k == RL_STR && S(out)->len == sizeof "trailing\r" - 1
+              && memcmp(S(out)->data, "trailing\r", sizeof "trailing\r" - 1) == 0);
+        rl_release(out);
     } else {
         CHECK(strcmp(argv[1], "empty") == 0);
     }
