@@ -1,0 +1,5 @@
+# paths.join uses /. An absolute second path wins.
+use std/paths
+print(paths.join("a", "b"))
+print(paths.join("a/", "/b"))
+print(paths.join("a", ""))
