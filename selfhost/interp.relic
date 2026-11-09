@@ -74,6 +74,8 @@ fun suggest(name, names)
 # Parenthetical for an undefined name, without the parentheses. "" when the
 # name is not a known mistake. Keep in step with kNames in src/diag/diag.cpp.
 fun name_note(name)
+    if name == "null"
+        return "none is the empty value, not 'null'"
     # @@NAME@@
     if len(name) < 0
         return name

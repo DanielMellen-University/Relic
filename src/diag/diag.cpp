@@ -187,6 +187,7 @@ const Pair kTypes[] = {
     {nullptr, nullptr},
 };
 const Pair kNames[] = {
+    {"null", "none is the empty value, not 'null'"},
     // @@NAME@@
     {nullptr, nullptr},
 };

@@ -320,6 +320,7 @@ static const char *suggest(const char *k, size_t len, const char *best, size_t *
 
 /* Parenthetical for an undefined name, or NULL. Keep in step with kNames. */
 static const char *name_note(const char *name) {
+    if (strcmp(name, "null") == 0) return "none is the empty value, not 'null'";
     /* @@NAME@@ */
     (void)name;
     return NULL;
