@@ -1,65 +1,164 @@
-# Validation and summary only; the CLI owns file access and exit codes.
+# Validation and summary. The CLI owns file access and exit codes.
+# Quoted fields follow RFC 4180: a field may be wrapped in double quotes,
+# a quote inside it is written twice, and a quoted field may contain the
+# delimiter or a LF/CRLF line break. Columns count code points from 1.
 use std/strings
 
-fun _bad(line, message)
-    fail("line {line}: {message}")
+fun _bad(line, column, message)
+    fail("line {line}, column {column}: {message}")
 
-fun _fields(line as string, delimiter as string, number as int) as list
-    for c in line
-        if c == "\""
-            _bad(number, "quoted fields are unsupported; export unquoted CSV/TSV without embedded delimiters or newlines")
-        if (ord(c) < 32 or ord(c) == 127) and c != delimiter
-            _bad(number, "control character {ord(c)} is unsupported; remove it or select --delimiter tsv for tabs")
-    return strings.split(line, delimiter)
+fun _reject_control(line, column, c)
+    if c == chr(13)
+        _bad(line, column, "bare carriage return; use LF or CRLF line endings")
+    if c == "\t"
+        _bad(line, column, "control character 9 is unsupported; remove it or select --delimiter tsv for tabs")
+    _bad(line, column, "control character {ord(c)} is unsupported; remove it or select --delimiter tsv for tabs")
+
+# One physical record. fields are {value, line, column} for the first
+# code point of each field (the opening quote, when there is one).
+# end_line/end_column is the line break, or the position just past the
+# last code point when the record has no trailing break.
+fun _end_record(rows, fields, value, field_line, field_column, end_line, end_column)
+    append(fields, {value: value, line: field_line, column: field_column})
+    append(rows, {fields: fields, end_line: end_line, end_column: end_column})
+
+fun _rows(text as string, delimiter as string) as list
+    if strings.starts_with(text, chr(65279))
+        _bad(1, 1, "byte order mark is unsupported; save the file as UTF-8 without BOM")
+    let cr = chr(13)
+    let rows = []
+    let fields = []
+    let value = ""
+    let mode = "start"
+    let line = 1
+    let column = 1
+    let field_line = 1
+    let field_column = 1
+    let i = 0
+    let n = len(text)
+    while i < n
+        let c = text[i]
+        if mode == "quoted"
+            if c == "\""
+                if i + 1 < n and text[i + 1] == "\""
+                    value = value + "\""
+                    i = i + 2
+                    column = column + 2
+                else
+                    mode = "closed"
+                    i = i + 1
+                    column = column + 1
+            else if c == "\n" or (c == cr and i + 1 < n and text[i + 1] == "\n")
+                if c == cr
+                    i = i + 1
+                value = value + "\n"
+                i = i + 1
+                line = line + 1
+                column = 1
+            else if (ord(c) < 32 and c != "\t") or ord(c) == 127
+                _reject_control(line, column, c)
+            else
+                value = value + c
+                i = i + 1
+                column = column + 1
+        else if c == "\n" or (c == cr and i + 1 < n and text[i + 1] == "\n")
+            let end_column = column
+            let end_line = line
+            if c == cr
+                i = i + 1
+            i = i + 1
+            _end_record(rows, fields, value, field_line, field_column, end_line, end_column)
+            fields = []
+            value = ""
+            mode = "start"
+            line = line + 1
+            column = 1
+            field_line = line
+            field_column = column
+        else if c == delimiter
+            append(fields, {value: value, line: field_line, column: field_column})
+            value = ""
+            mode = "start"
+            i = i + 1
+            column = column + 1
+            field_line = line
+            field_column = column
+        else if c == cr or ord(c) < 32 or ord(c) == 127
+            _reject_control(line, column, c)
+        else if mode == "closed"
+            _bad(line, column, "unexpected character after a closing quote; put a delimiter or newline here")
+        else if c == "\""
+            if mode == "plain"
+                _bad(line, column, "quote inside an unquoted field; wrap the whole field in quotes and double any quote inside it")
+            mode = "quoted"
+            i = i + 1
+            column = column + 1
+        else
+            value = value + c
+            mode = "plain"
+            i = i + 1
+            column = column + 1
+    if mode == "quoted"
+        _bad(field_line, field_column, "unterminated quoted field; close it with a double quote")
+    if mode != "start" or len(fields) > 0
+        _end_record(rows, fields, value, field_line, field_column, line, column)
+    return rows
 
 fun summarize(text as string, delimiter as string, key as string) as map
     if delimiter != "," and delimiter != "\t"
         fail("delimiter must be comma or tab")
-    let lines = strings.lines(text)
-    if len(lines) == 0
-        _bad(1, "missing header; provide a nonempty first line of column names")
-    if strings.starts_with(lines[0], chr(65279))
-        _bad(1, "byte order mark is unsupported; save the file as UTF-8 without BOM")
-    let names = _fields(lines[0], delimiter, 1)
+    let rows = _rows(text, delimiter)
+    if len(rows) == 0
+        _bad(1, 1, "missing header; provide a nonempty first line of column names")
+    let header = rows[0].fields
+    let names = []
     let columns = []
     let positions = {}
-    for i in 0..len(names)
-        let name = names[i]
+    for i in 0..len(header)
+        let field = header[i]
+        let name = field.value
+        if "\n" in name or "\t" in name
+            _bad(field.line, field.column, "column {i + 1} contains a line break or tab; keep each header name on one line")
         if strings.trim(name) == ""
-            _bad(1, "column {i + 1} has an empty name; give every column a name")
+            _bad(field.line, field.column, "column {i + 1} has an empty name; give every column a name")
         if strings.trim(name) != name
-            _bad(1, "column {i + 1} has surrounding whitespace; trim the header name")
+            _bad(field.line, field.column, "column {i + 1} has surrounding whitespace; trim the header name")
         if name in positions
-            _bad(1, "duplicate header '{name}'; rename one column")
+            _bad(field.line, field.column, "duplicate header '{name}'; rename one column")
         positions[name] = i
+        append(names, name)
         append(columns, {name: name, present: 0, empty: 0, seen: {}})
     let key_index = -1
     if key != ""
         if not (key in positions)
-            _bad(1, "key column '{key}' is absent; choose one of: " + strings.join(names, ", "))
+            _bad(1, 1, "key column '{key}' is absent; choose one of: " + strings.join(names, ", "))
         key_index = positions[key]
     let key_lines = {}
-    for i in 1..len(lines)
-        let number = i + 1
-        let fields = _fields(lines[i], delimiter, number)
-        if len(fields) != len(names)
-            _bad(number, "expected {len(names)} fields, got {len(fields)}; check the delimiter and supply empty trailing fields")
+    for r in 1..len(rows)
+        let row = rows[r]
+        let rec = row.fields
+        if len(rec) != len(names)
+            if len(rec) > len(names)
+                let extra = rec[len(names)]
+                _bad(extra.line, extra.column, "expected {len(names)} fields, got {len(rec)}; check the delimiter and supply empty trailing fields")
+            _bad(row.end_line, row.end_column, "expected {len(names)} fields, got {len(rec)}; check the delimiter and supply empty trailing fields")
         if key_index >= 0
-            let value = fields[key_index]
-            if strings.trim(value) == ""
-                _bad(number, "key '{key}' is blank; supply a nonblank unique value")
-            if value in key_lines
-                _bad(number, "duplicate key '{key}' value '{value}' (first seen on line {key_lines[value]}); make keys unique")
-            key_lines[value] = number
-        for j in 0..len(fields)
+            let key_field = rec[key_index]
+            let key_value = key_field.value
+            if strings.trim(key_value) == ""
+                _bad(key_field.line, key_field.column, "key '{key}' is blank; supply a nonblank unique value")
+            if key_value in key_lines
+                _bad(key_field.line, key_field.column, "duplicate key '{key}' value '{key_value}' (first seen on line {key_lines[key_value]}); make keys unique")
+            key_lines[key_value] = key_field.line
+        for j in 0..len(rec)
             let column = columns[j]
-            let value = fields[j]
+            let value = rec[j].value
             if value == ""
                 column.empty = column.empty + 1
             else
                 column.present = column.present + 1
                 column.seen[value] = true
-    return {rows: len(lines) - 1, columns: columns}
+    return {rows: len(rows) - 1, columns: columns}
 
 fun report(summary as map)
     print("rows: {summary.rows}")

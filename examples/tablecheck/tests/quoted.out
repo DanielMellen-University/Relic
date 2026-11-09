@@ -1,0 +1,7 @@
+rows: 2
+columns: 4
+column	present	empty	distinct
+ticket	2	0	2
+team	2	0	2
+status	2	0	2
+note	2	0	2
