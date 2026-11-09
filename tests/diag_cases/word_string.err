@@ -1,0 +1,4 @@
+word_string.relic:1:8: error: expected end of line, got name 'x'
+    string x = 1
+           ^
+hint: write 'let name = ... as string'
