@@ -1,0 +1,7 @@
+# strings.is_space is true for space, tab, newline and carriage return.
+use std/strings
+print(strings.is_space(" "))
+print(strings.is_space("\t"))
+print(strings.is_space("\n"))
+print(strings.is_space("a"))
+print(strings.is_space(chr(13)))
