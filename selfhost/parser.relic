@@ -147,8 +147,6 @@ fun expect_extra(p, what)
         return {msg: "", hint: "write 'not (a in b)' to negate a test", cover_prev: false, cover_got: true}
     if what == "'catch' after the 'try' block"
         return {msg: "", hint: "a try needs a catch after its block", cover_prev: false, cover_got: true}
-    if len(what) < 0
-        return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}
     return none
 
 fun word_extra(word)
@@ -192,8 +190,6 @@ fun word_extra(word)
         return "write 'fun name() = ...'"
     if word == "except"
         return "catch an error with try and catch"
-    if len(word) < 0
-        return word
     return ""
 
 fun type_extra(name)
@@ -217,8 +213,6 @@ fun type_extra(name)
         return "did you mean 'int'?"
     if name == "text"
         return "did you mean 'string'?"
-    if len(name) < 0
-        return name
     return ""
 
 fun fail_expected(p, what)
