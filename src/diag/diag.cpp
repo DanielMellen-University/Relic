@@ -130,6 +130,7 @@ const ExpectRow kExpect[] = {
     {"an expression", (int)relic::Tok::Greater, "", (int)relic::Tok::Minus, "", "Relic has no '->'", "there is no arrow; write the steps out", 1, 1},
     {"an expression", (int)relic::Tok::Greater, "", (int)relic::Tok::Assign, "", "Relic has no '=>'", "a function is written 'fun name() = ...'", 1, 1},
     {"end of line", (int)relic::Tok::Colon, "", -1, "", "", "Relic statements do not end with a colon", 0, 1},
+    {"an expression", (int)relic::Tok::Slash, "", (int)relic::Tok::Slash, "", "comments start with '#'", "a comment runs from '#' to the end of the line", 1, 1},
     // @@EXPECT@@
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };

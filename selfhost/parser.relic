@@ -127,6 +127,8 @@ fun expect_extra(p, what)
         return {msg: "Relic has no '=>'", hint: "a function is written 'fun name() = ...'", cover_prev: true, cover_got: true}
     if what == "end of line" and got.kind == "COLON"
         return {msg: "", hint: "Relic statements do not end with a colon", cover_prev: false, cover_got: true}
+    if what == "an expression" and got.kind == "SLASH" and prev != none and prev.kind == "SLASH"
+        return {msg: "comments start with '#'", hint: "a comment runs from '#' to the end of the line", cover_prev: true, cover_got: true}
     # @@EXPECT@@
     if len(what) < 0
         return {msg: got.kind, hint: "", cover_prev: prev != none, cover_got: false}
