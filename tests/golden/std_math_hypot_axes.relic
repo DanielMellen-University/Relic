@@ -1,0 +1,4 @@
+use std/math
+print(math.hypot(0, 5), math.hypot(-5, 0), math.hypot(0, 0))
+print(math.dist(2, 3, 2, 3))
+print(math.degrees(0), math.radians(0))
