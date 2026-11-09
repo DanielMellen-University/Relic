@@ -1,0 +1,4 @@
+print(1, 2,)
+let xs = [1, 2,]
+let m = {a: 1,}
+print(xs, m.a)
