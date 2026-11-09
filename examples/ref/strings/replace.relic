@@ -1,0 +1,4 @@
+# strings.replace swaps every non-overlapping match, left to right.
+use std/strings
+print(strings.replace("aaa", "aa", "b"))
+print(strings.replace("red green red", "red", "blue"))
