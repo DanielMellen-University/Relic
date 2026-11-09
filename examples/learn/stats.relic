@@ -1,0 +1,20 @@
+# Count, sum, mean, median, min and max of one list.
+#   relic examples/learn/stats.relic
+use std/lists
+
+fun median(xs)
+    let s = lists.sort(xs)
+    let n = len(s)
+    let mid = int(n / 2)
+    if n % 2 == 1
+        return s[mid]
+    return (s[mid - 1] + s[mid]) / 2
+
+let xs = [4, 1, 7, 1, 9, 3]
+print(xs)
+print("count {len(xs)}")
+print("sum {lists.sum(xs)}")
+print("mean {lists.mean(xs)}")
+print("median {median(xs)}")
+print("min {lists.min(xs)}")
+print("max {lists.max(xs)}")
