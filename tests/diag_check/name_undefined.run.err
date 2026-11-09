@@ -1,0 +1,3 @@
+name_undefined.relic:1:7: error: 'undefined' is not defined (an unset value is 'none')
+    print(undefined)
+          ^

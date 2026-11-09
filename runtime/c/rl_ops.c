@@ -322,6 +322,7 @@ static const char *suggest(const char *k, size_t len, const char *best, size_t *
 static const char *name_note(const char *name) {
     if (strcmp(name, "null") == 0) return "none is the empty value, not 'null'";
     if (strcmp(name, "None") == 0) return "the empty value is written 'none'";
+    if (strcmp(name, "undefined") == 0) return "an unset value is 'none'";
     /* @@NAME@@ */
     (void)name;
     return NULL;

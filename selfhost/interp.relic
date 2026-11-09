@@ -78,6 +78,8 @@ fun name_note(name)
         return "none is the empty value, not 'null'"
     if name == "None"
         return "the empty value is written 'none'"
+    if name == "undefined"
+        return "an unset value is 'none'"
     # @@NAME@@
     if len(name) < 0
         return name
