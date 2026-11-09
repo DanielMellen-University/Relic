@@ -1,0 +1,5 @@
+# os.prompt reads a line. The prompt text is shown only on a terminal,
+# so a piped run prints the same answer with or without it.
+use std/os
+let name = os.prompt("name? ")
+print(name)
