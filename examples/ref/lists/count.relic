@@ -1,0 +1,4 @@
+# lists.count is how many items are == the one you ask about.
+use std/lists
+print(lists.count(["a", "b", "a"], "a"))
+print(lists.count([1, 1.0, 2], 1))
