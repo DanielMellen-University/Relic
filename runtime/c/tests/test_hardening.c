@@ -419,6 +419,31 @@ static void test_map_collisions_and_binary_keys(void) {
     }
 }
 
+static void test_iteration_snapshots(void) {
+    rl_value map = rl_map_new(), list = rl_list_new(0), key = rl_str_c("original");
+    rl_value map_keys, copy, concat, old, out;
+    rl_map_set(M(map), S(key), rl_int(1));
+    rl_release(key);
+    rl_list_push(L(list), map);
+    CHECK(rl_loop_items(&cx, list, &copy) == RL_OK);
+    CHECK(copy.u.o != list.u.o && L(copy)->items[0].u.o == map.u.o);
+    CHECK(rl_loop_items(&cx, map, &map_keys) == RL_OK);
+    CHECK(rl_map_remove(M(map), "original", 8, &old));
+    CHECK(rl_set_field(&cx, map, "changed", rl_bool(1)) == RL_OK);
+    CHECK(rl_field(&cx, L(copy)->items[0], "changed", &out) == RL_OK && out.u.b);
+    CHECK(rl_add(&cx, list, copy, &concat) == RL_OK);
+    CHECK(concat.u.o != list.u.o && concat.u.o != copy.u.o);
+    CHECK(L(concat)->n == 2 && L(concat)->items[0].u.o == map.u.o
+          && L(concat)->items[1].u.o == map.u.o);
+    rl_release(list);
+    rl_release(copy);
+    rl_release(map);
+    bytes_are(L(map_keys)->items[0], "original", 8);
+    CHECK(rl_field(&cx, L(concat)->items[1], "changed", &out) == RL_OK && out.u.b);
+    rl_release(map_keys);
+    rl_release(concat);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -434,6 +459,7 @@ int main(void) {
     test_append_utf8_cache();
     test_list_reference_transfers();
     test_map_collisions_and_binary_keys();
+    test_iteration_snapshots();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
