@@ -1,0 +1,5 @@
+# time.since is seconds since a clock() reading. It is never negative.
+use std/time
+let t = time.clock()
+let d = time.since(t)
+print(type(d) == "float" and d >= 0)
