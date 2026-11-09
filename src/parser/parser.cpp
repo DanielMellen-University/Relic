@@ -235,7 +235,8 @@ private:
         if (!at(Tok::RParen)) {
             do {
                 const Token& p = expect(Tok::Name, "a parameter name");
-                if (!names.insert(p.text).second) fail(p, "duplicate parameter '" + p.text + "'");
+                if (!names.insert(p.text).second)
+                    fail(p, "duplicate parameter '" + p.text + "'", "each parameter name is written once");
                 params->kids.push_back(make(Node::Name, p, p.text));
                 if (auto hint = type_hint()) params->kids.back()->kids.push_back(std::move(hint));
             } while (match(Tok::Comma));

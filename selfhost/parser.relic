@@ -277,7 +277,7 @@ fun fun_stmt(p)
         while more and p.err == none
             let t = expect(p, "NAME", "a parameter name")
             if t.text in names
-                fail(p, t, "duplicate parameter '{t.text}'")
+                fail_span(p, t, t.col, "duplicate parameter '{t.text}'", "each parameter name is written once")
             names[t.text] = true
             let prm = node("Name", t, t.text)
             let hint = type_hint(p)
