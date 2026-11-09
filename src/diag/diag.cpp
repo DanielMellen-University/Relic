@@ -155,6 +155,7 @@ const Pair kWords[] = {
     {"fn", "functions are written with 'fun', not 'fn'"},
     {"elseif", "write 'else if', not 'elseif'"},
     {"elif", "write 'else if', not 'elif'"},
+    {"elsif", "write 'else if', not 'elsif'"},
     // @@WORD@@
     {nullptr, nullptr},
 };
