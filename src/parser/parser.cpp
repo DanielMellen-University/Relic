@@ -397,7 +397,8 @@ private:
             left = binary(std::move(left), op, range());
             grow(*left, h);
             if (is_compare(peek().kind))
-                fail(peek(), "comparisons cannot be chained; use 'and'");
+                fail(peek(), "comparisons cannot be chained; use 'and'", "",
+                     peek().col + text_cols(peek().text) - 1);
         }
         return left;
     }

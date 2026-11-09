@@ -429,7 +429,8 @@ fun compare(p)
         left = binary(left, op, range(p))
         grow(p, left, h)
         if peek(p).kind in compare_ops
-            fail(p, peek(p), "comparisons cannot be chained; use 'and'")
+            let op = peek(p)
+            fail_span(p, op, op.col + text_cols(op.text) - 1, "comparisons cannot be chained; use 'and'", "")
     return left
 
 fun range(p)
