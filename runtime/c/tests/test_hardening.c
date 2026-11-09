@@ -669,6 +669,30 @@ static void test_host_sort_boundaries(void) {
     rl_release(list);
 }
 
+static void test_host_find_boundaries(void) {
+    static const struct { const char *text, *part; long long at; } cases[] = {
+        {"ababababac", "ababac", 4},
+        {"aaaaab", "aaac", -1},
+        {"\xC3\xA9" "a\xC3\xA9", "\xC3", -1},
+        {"\xC3\xA9" "a\xC3", "\xC3", 2},
+        {"\xE2\x82\xAC" "abc", "abc", 1},
+        {"", "x", -1}, {"x", "longer", -1}
+    };
+    size_t i;
+    rl_value args[2], out;
+    for (i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
+        args[0] = rl_str_c(cases[i].text); args[1] = rl_str_c(cases[i].part);
+        CHECK(call("host_find", 2, args, &out) == RL_OK);
+        CHECK(out.k == RL_INT && out.u.i == cases[i].at);
+        rl_release(args[0]);
+        rl_release(args[1]);
+    }
+    args[0] = rl_str_new("a\0b\0c", 5); args[1] = rl_str_new("\0c", 2);
+    CHECK(call("host_find", 2, args, &out) == RL_OK && out.u.i == 3);
+    rl_release(args[0]);
+    rl_release(args[1]);
+}
+
 int main(void) {
     rl_ctx_init(&cx, 0, NULL);
     test_range_limits();
@@ -691,6 +715,7 @@ int main(void) {
     test_deep_and_wide_equality();
     test_binary_file_lifecycle();
     test_host_sort_boundaries();
+    test_host_find_boundaries();
     CHECK(!cx.has_err && cx.depth == 0);
     rl_ctx_free(&cx);
     CHECK(rl_gc_collect() == 0);
