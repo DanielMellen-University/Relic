@@ -1,0 +1,4 @@
+# lists.sum_by adds f(x) for each item, without building the middle list.
+use std/lists
+fun size(s) = len(s)
+print(lists.sum_by(["ab", "c", "def"], size))
