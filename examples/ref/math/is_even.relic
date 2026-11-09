@@ -1,0 +1,5 @@
+# math.is_even is for ints, negative ones too.
+use std/math
+print(math.is_even(4))
+print(math.is_even(-3))
+print(math.is_even(0))
