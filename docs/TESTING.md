@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 262 ctest cases: 251 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 549: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 263 ctest cases: 251 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 550: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -166,7 +166,18 @@ Getting SDL2:
 - macOS: `brew install sdl2 sdl2_image sdl2_ttf`, then configure with `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 - Windows (MSVC): `vcpkg install sdl2 sdl2-image sdl2-ttf --triplet x64-windows`, then configure with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`. The toolchain copies the SDL2 DLLs next to each program.
 
-The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 565 cases each (the host build's 549 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing. 406 and 422 were the host total and that total plus graphics at 1.0.52 (see the changelog). They are not the current counts.
+The CI job `sdl` runs a build with `-DRELIC_SDL=ON -DRELIC_C_SDL=ON` on Ubuntu 24.04 (apt), macOS (Homebrew) and Windows (vcpkg, MSVC): 566 cases each (the host build's 550 plus the 16 graphics ones), headless with `SDL_VIDEODRIVER=dummy`. It fails if any of the 16 graphics tests is missing. 406 and 422 were the host total and that total plus graphics at 1.0.52 (see the changelog). They are not the current counts.
+
+## tablecheck application
+
+[`examples/tablecheck/README.md`](../examples/tablecheck/README.md) describes the
+standalone CSV/TSV validator. `tablecheck_goldens` is one ctest case in a
+top-level C-runtime build, or in its standalone consumer build. It checks exact
+stdout, stderr and exit status for valid input, input and argument errors,
+compile-time syntax errors and runtime type errors, with the leak check enabled.
+Its fixtures and goldens stay outside `tests/golden`, so the language-corpus
+counts below are unchanged. This application check does not verify the human
+README-only FizzBuzz acceptance gate.
 
 ## relic_add_program
 

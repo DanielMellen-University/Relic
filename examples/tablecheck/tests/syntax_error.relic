@@ -1,0 +1,2 @@
+# Deliberate mistake: Relic blocks require a condition and an indented body.
+if

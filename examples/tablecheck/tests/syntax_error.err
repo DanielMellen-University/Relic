@@ -1,0 +1,3 @@
+tests/syntax_error.relic:2:3: error: expected an expression, got end of line
+    if
+      ^
