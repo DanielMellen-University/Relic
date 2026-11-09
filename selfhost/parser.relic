@@ -201,6 +201,8 @@ fun word_extra(word)
 fun type_extra(name)
     if name == "integer"
         return "did you mean 'int'?"
+    if name == "str"
+        return "did you mean 'string'?"
     # @@TYPE@@
     if len(name) < 0
         return name

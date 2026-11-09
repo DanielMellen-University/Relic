@@ -1,0 +1,4 @@
+type_str.relic:1:10: error: unknown type 'str'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as str = 1
+             ^^^
+hint: did you mean 'string'?
