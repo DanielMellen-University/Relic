@@ -1,0 +1,5 @@
+# strings.contains is true when find would return an index.
+use std/strings
+print(strings.contains("hello", "ell"))
+print(strings.contains("hello", "xyz"))
+print(strings.contains([1, 2, 3], [2, 3]))
