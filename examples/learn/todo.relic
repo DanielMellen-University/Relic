@@ -1,0 +1,41 @@
+# A tiny todo list. The commands below are the script; edit them and run again.
+#   add TEXT    append a task
+#   done N      mark task N done (tasks count from 1)
+#   list        print every task
+#   relic examples/learn/todo.relic
+use std/strings
+use std/lists
+
+let script = [
+    "add buy milk",
+    "add walk the dog",
+    "add read a chapter",
+    "list",
+    "done 2",
+    "list"
+]
+let items = []
+
+fun add(text)
+    append(items, {text: text, done: false})
+
+fun mark(n)
+    items[n - 1].done = true
+
+fun show()
+    let i = 1
+    for it in items
+        let box = "[ ]"
+        if it.done
+            box = "[x]"
+        print("{i} {box} {it.text}")
+        i = i + 1
+
+for line in script
+    let parts = strings.words(line)
+    if parts[0] == "add"
+        add(strings.join(lists.drop(parts, 1), " "))
+    else if parts[0] == "done"
+        mark(num(parts[1]))
+    else if parts[0] == "list"
+        show()
