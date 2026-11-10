@@ -1,0 +1,9 @@
+# A bar chart of how often each word shows up.
+#   relic examples/learn/histogram.relic
+use std/lists
+use std/strings
+
+fun same(w) = w
+let counts = lists.count_by(strings.words("yes no yes yes no maybe yes"), same)
+for k in counts
+    print(strings.pad_right(k, 6, " ") + " " + strings.repeat("#", counts[k]))

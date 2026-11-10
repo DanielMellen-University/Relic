@@ -1,0 +1,4 @@
+# strings.upper changes ASCII letters only.
+use std/strings
+print(strings.upper("Hello"))
+print(strings.upper("cafe"))

@@ -1,0 +1,5 @@
+# paths.parts is the names in order. An absolute path starts with /.
+use std/paths
+print(paths.parts("a/./b/../c"))
+print(paths.parts("/a/b"))
+print(paths.parts("."))

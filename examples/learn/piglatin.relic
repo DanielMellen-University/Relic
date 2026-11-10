@@ -1,0 +1,24 @@
+# Pig Latin: a word that starts with a vowel gets "way", otherwise the
+# leading consonants move to the end and "ay" follows.
+#   relic examples/learn/piglatin.relic
+use std/strings
+
+fun vowel(c)
+    return c == "a" or c == "e" or c == "i" or c == "o" or c == "u"
+
+fun convert(word)
+    if vowel(word[0])
+        return word + "way"
+    let i = 0
+    while i < len(word) and not vowel(word[i])
+        i = i + 1
+    return slice(word, i, len(word)) + slice(word, 0, i) + "ay"
+
+fun sentence(text)
+    let out = []
+    for w in strings.words(text)
+        append(out, convert(w))
+    return strings.join(out, " ")
+
+print(sentence("hello world"))
+print(sentence("apple string"))

@@ -1,0 +1,4 @@
+# lists.min_by returns the item whose key is smallest. Ties keep the first.
+use std/lists
+fun size(s) = len(s)
+print(lists.min_by(["bb", "a", "ccc", "d"], size))

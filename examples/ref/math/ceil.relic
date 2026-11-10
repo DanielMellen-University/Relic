@@ -1,0 +1,5 @@
+# math.ceil is the least int that is still >= x.
+use std/math
+print(math.ceil(2.1))
+print(math.ceil(-2.1))
+print(math.ceil(3))

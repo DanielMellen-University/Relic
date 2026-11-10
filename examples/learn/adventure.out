@@ -1,0 +1,28 @@
+> look
+You are on a cold porch.
+You see a key.
+> go north
+You go north.
+You are in a dim hall.
+The east door is locked.
+> go east
+The east door is locked.
+> go south
+You go south.
+You are on a cold porch.
+You see a key.
+> take
+You take the key.
+> go north
+You go north.
+You are in a dim hall.
+The east door is locked.
+> unlock east
+You unlock the east door.
+> go east
+You go east.
+You are in a study. A note reads: welcome.
+> bag
+["key"]
+> quit
+Goodbye.

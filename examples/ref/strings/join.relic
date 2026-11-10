@@ -1,0 +1,4 @@
+# strings.join runs each item through str and puts the separator between.
+use std/strings
+print(strings.join(["a", "b", "c"], ", "))
+print(strings.join([1, 2, 3], "-"))

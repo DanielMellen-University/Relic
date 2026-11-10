@@ -1,0 +1,4 @@
+# time.sleep waits the given milliseconds. Zero returns at once.
+use std/time
+time.sleep(0)
+print("awake")

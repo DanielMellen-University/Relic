@@ -1,0 +1,4 @@
+# strings.center puts fill on both sides. A spare copy goes on the right.
+use std/strings
+print(strings.center("hi", 6, "."))
+print(strings.center("odd", 6, "."))

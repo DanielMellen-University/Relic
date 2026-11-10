@@ -1,0 +1,4 @@
+# lists.filter keeps the items for which keep(x) is true.
+use std/lists
+fun even(n) = n % 2 == 0
+print(lists.filter([1, 2, 3, 4, 5], even))

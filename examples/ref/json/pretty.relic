@@ -1,0 +1,3 @@
+# json.pretty is encode with a 2-space indent.
+use std/json
+print(json.pretty({name: "Ada", scores: [1, 2]}))

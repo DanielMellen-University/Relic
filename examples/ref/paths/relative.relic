@@ -1,0 +1,5 @@
+# paths.relative is the path from one folder to another.
+use std/paths
+print(paths.relative("/a/b", "/a/c/d"))
+print(paths.relative("/a/b", "/a/b"))
+print(paths.relative("a/b", "a/c"))

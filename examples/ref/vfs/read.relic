@@ -1,0 +1,4 @@
+# vfs.read returns the text of a file.
+use std/vfs
+let fs = vfs.new()
+print(vfs.read(fs, "/home/welcome.txt"))

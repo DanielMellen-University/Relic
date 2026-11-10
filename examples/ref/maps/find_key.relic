@@ -1,0 +1,4 @@
+# maps.find_key is the first key whose value == v, or none.
+use std/maps
+print(maps.find_key({a: 1, b: 2, c: 1}, 1))
+print(maps.find_key({a: 1}, 9))

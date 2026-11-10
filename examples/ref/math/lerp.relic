@@ -1,0 +1,5 @@
+# math.lerp(a, b, t) is a + (b - a) * t. It is not clamped.
+use std/math
+print(math.lerp(0, 10, 0))
+print(math.lerp(0, 10, 1))
+print(math.lerp(0, 10, 0.5))

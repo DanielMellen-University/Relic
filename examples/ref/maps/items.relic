@@ -1,0 +1,3 @@
+# maps.items lists [key, value] pairs in insertion order.
+use std/maps
+print(maps.items({a: 1, b: 2}))

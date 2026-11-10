@@ -1,0 +1,5 @@
+# strings.is_alpha is true when every character is an ASCII letter.
+use std/strings
+print(strings.is_alpha("Relic"))
+print(strings.is_alpha("R2"))
+print(strings.is_alpha(""))

@@ -1,0 +1,4 @@
+# strings.trim drops space at both ends.
+use std/strings
+print(strings.trim("  hi  "))
+print(strings.trim("\n\tok\n"))

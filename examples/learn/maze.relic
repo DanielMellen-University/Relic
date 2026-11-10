@@ -1,0 +1,74 @@
+# Breadth-first search through a small maze. S is the start, E the exit,
+# # a wall. The path is marked with *.
+#   relic examples/learn/maze.relic
+
+let lines = [
+    "S.#.",
+    ".#..",
+    "...E"
+]
+
+fun key(r, c)
+    return "{r},{c}"
+
+fun solve()
+    let rows = len(lines)
+    let cols = len(lines[0])
+    let grid = []
+    let start = [0, 0]
+    let goal = [0, 0]
+    for r in 0..rows
+        let row = []
+        for c in 0..cols
+            append(row, lines[r][c])
+            if lines[r][c] == "S"
+                start = [r, c]
+            if lines[r][c] == "E"
+                goal = [r, c]
+        append(grid, row)
+    let q = [start]
+    let seen = {}
+    seen[key(start[0], start[1])] = true
+    let prev = {}
+    let found = false
+    let head = 0
+    while head < len(q)
+        let cur = q[head]
+        head = head + 1
+        if cur[0] == goal[0] and cur[1] == goal[1]
+            found = true
+            break
+        for step in [[-1, 0], [1, 0], [0, -1], [0, 1]]
+            let nr = cur[0] + step[0]
+            let nc = cur[1] + step[1]
+            if nr < 0 or nc < 0 or nr >= rows or nc >= cols
+                next
+            if grid[nr][nc] == "#"
+                next
+            let k = key(nr, nc)
+            if k in seen
+                next
+            seen[k] = true
+            prev[k] = cur
+            append(q, [nr, nc])
+    if not found
+        print("no path")
+        return
+    let r = goal[0]
+    let c = goal[1]
+    let steps = 0
+    while r != start[0] or c != start[1]
+        if grid[r][c] != "E"
+            grid[r][c] = "*"
+        let spot = prev[key(r, c)]
+        r = spot[0]
+        c = spot[1]
+        steps = steps + 1
+    for row in grid
+        let text = ""
+        for ch in row
+            text = text + ch
+        print(text)
+    print("steps {steps}")
+
+solve()

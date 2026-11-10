@@ -1,0 +1,4 @@
+# strings.remove_prefix drops a prefix once, or leaves the text alone.
+use std/strings
+print(strings.remove_prefix("unhappy", "un"))
+print(strings.remove_prefix("happy", "un"))

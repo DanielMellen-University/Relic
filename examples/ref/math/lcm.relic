@@ -1,0 +1,4 @@
+# math.lcm is never negative, and 0 when either argument is 0.
+use std/math
+print(math.lcm(4, 6))
+print(math.lcm(0, 5))

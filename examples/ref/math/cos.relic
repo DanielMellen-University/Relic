@@ -1,0 +1,4 @@
+# math.cos takes radians.
+use std/math
+print(math.cos(0))
+print(math.cos(math.pi))

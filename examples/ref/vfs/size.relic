@@ -1,0 +1,6 @@
+# vfs.size is the length of the file text, in bytes.
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/ab.txt", "ab")
+print(vfs.size(fs, "/tmp/ab.txt"))
+print(vfs.size(fs, "/home/welcome.txt"))

@@ -1,0 +1,7 @@
+# files.remove_tree deletes a folder and what is inside. Missing is a no-op.
+use std/files
+files.make_dir("box")
+files.write("box/a.txt", "a")
+files.remove_tree("box")
+files.remove_tree("missing")
+print(files.exists("box"))

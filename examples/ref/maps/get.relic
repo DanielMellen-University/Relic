@@ -1,0 +1,5 @@
+# maps.get returns the fallback when the key is missing.
+use std/maps
+let m = {a: 1}
+print(maps.get(m, "a", 0))
+print(maps.get(m, "z", 0))

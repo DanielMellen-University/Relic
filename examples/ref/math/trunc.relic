@@ -1,0 +1,5 @@
+# math.trunc drops the fraction, toward 0. floor of a negative goes the other way.
+use std/math
+print(math.trunc(-2.7))
+print(math.floor(-2.7))
+print(math.trunc(2.7))

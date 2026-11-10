@@ -1,0 +1,4 @@
+# json.encode writes one line. none is null, and key order is kept.
+use std/json
+print(json.encode({a: 1, b: "x"}))
+print(json.encode([true, false, none]))

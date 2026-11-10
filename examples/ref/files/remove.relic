@@ -1,0 +1,5 @@
+# files.remove deletes a file or an empty folder.
+use std/files
+files.write("gone.txt", "x")
+files.remove("gone.txt")
+print(files.exists("gone.txt"))

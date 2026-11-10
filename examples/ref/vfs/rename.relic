@@ -1,0 +1,7 @@
+# vfs.rename moves a file or folder.
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/old.txt", "hi")
+vfs.rename(fs, "/tmp/old.txt", "/tmp/new.txt")
+print(vfs.read(fs, "/tmp/new.txt"))
+print(vfs.exists(fs, "/tmp/old.txt"))

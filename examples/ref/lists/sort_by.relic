@@ -1,0 +1,4 @@
+# lists.sort_by is stable. less(a, b) says whether a belongs before b.
+use std/lists
+fun shorter(a, b) = len(a) < len(b)
+print(lists.sort_by(["bbb", "a", "cc", "d"], shorter))

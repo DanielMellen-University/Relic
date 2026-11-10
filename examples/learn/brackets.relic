@@ -1,0 +1,32 @@
+# True when (), [] and {} are balanced and properly nested.
+#   relic examples/learn/brackets.relic
+
+fun balanced(s)
+    let st = []
+    let pair = {}
+    pair[")"] = "("
+    pair["]"] = "["
+    pair["}"] = "{{"
+    for c in s
+        if c == "(" or c == "[" or c == "{{"
+            append(st, c)
+        else if c in pair
+            if len(st) == 0 or st[len(st) - 1] != pair[c]
+                return false
+            pop(st)
+    return len(st) == 0
+
+fun show(s)
+    let answer = "no"
+    if balanced(s)
+        answer = "yes"
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print("{label}  {answer}")
+
+show("([]{{}})")
+show("([)]")
+show("")
+show("((]")
+show("{{[()]}}")

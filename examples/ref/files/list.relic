@@ -1,0 +1,6 @@
+# files.list returns the names in a folder, sorted.
+use std/files
+files.make_dir("box")
+files.write("box/b.txt", "b")
+files.write("box/a.txt", "a")
+print(files.list("box"))

@@ -1,0 +1,3 @@
+# os.args is the words after the file name. This run passes none.
+use std/os
+print(os.args())

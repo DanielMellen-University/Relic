@@ -1,0 +1,6 @@
+# json.decode reads JSON back into Relic values. encode then decode round-trips.
+use std/json
+let text = "[1, 2, true, null]"
+let v = json.decode(text)
+print(v)
+print(json.decode(json.encode(v)) == v)

@@ -1,0 +1,6 @@
+# vfs.is_dir is false for a file and for a missing path.
+use std/vfs
+let fs = vfs.new()
+print(vfs.is_dir(fs, "/home"))
+print(vfs.is_dir(fs, "/home/welcome.txt"))
+print(vfs.is_dir(fs, "/nope"))

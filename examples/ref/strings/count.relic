@@ -1,0 +1,5 @@
+# strings.count counts non-overlapping matches, left to right.
+use std/strings
+print(strings.count("aaa", "aa"))
+print(strings.count("ababa", "aba"))
+print(strings.count("hello", "l"))

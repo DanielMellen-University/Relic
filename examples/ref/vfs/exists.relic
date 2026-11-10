@@ -1,0 +1,7 @@
+# vfs.exists is true for a file or a folder, false when the path is missing.
+use std/vfs
+let fs = vfs.new()
+print(vfs.exists(fs, "/home/welcome.txt"))
+print(vfs.exists(fs, "/tmp"))
+print(vfs.exists(fs, "/nope"))
+print(vfs.exists(fs, "/home/welcome.txt/x"))

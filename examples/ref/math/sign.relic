@@ -1,0 +1,5 @@
+# math.sign is -1, 0 or 1.
+use std/math
+print(math.sign(-4))
+print(math.sign(0))
+print(math.sign(0.5))

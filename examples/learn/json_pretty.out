@@ -1,0 +1,12 @@
+{"name":"Ada","year":2026,"tags":["lang","demo"],"ok":true,"extra":null}
+{
+  "name": "Ada",
+  "year": 2026,
+  "tags": [
+    "lang",
+    "demo"
+  ],
+  "ok": true,
+  "extra": null
+}
+true

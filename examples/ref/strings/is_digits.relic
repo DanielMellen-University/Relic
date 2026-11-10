@@ -1,0 +1,6 @@
+# strings.is_digits is true when every character is 0 to 9.
+use std/strings
+print(strings.is_digits("2048"))
+print(strings.is_digits(""))
+print(strings.is_digits("12a"))
+print(strings.is_digits("-3"))

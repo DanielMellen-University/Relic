@@ -1,0 +1,4 @@
+# lists.windows is every run of n items. Too short a list gives [].
+use std/lists
+print(lists.windows([1, 2, 3, 4], 2))
+print(lists.windows([1], 2))

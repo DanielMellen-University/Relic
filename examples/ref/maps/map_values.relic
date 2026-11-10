@@ -1,0 +1,4 @@
+# maps.map_values keeps the keys and replaces each value with f(value).
+use std/maps
+fun double(n) = n * 2
+print(maps.map_values({a: 1, b: 2}, double))

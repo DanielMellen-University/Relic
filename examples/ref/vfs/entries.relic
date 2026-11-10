@@ -1,0 +1,6 @@
+# vfs.entries is [name, is_folder] in the same order as list.
+use std/vfs
+let fs = vfs.new()
+vfs.make_dir(fs, "/tmp/sub")
+vfs.write(fs, "/tmp/a.txt", "a")
+print(vfs.entries(fs, "/tmp"))

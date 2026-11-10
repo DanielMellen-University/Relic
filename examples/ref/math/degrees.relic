@@ -1,0 +1,4 @@
+# math.degrees turns radians back into degrees.
+use std/math
+print(math.degrees(0))
+print(math.degrees(math.pi))

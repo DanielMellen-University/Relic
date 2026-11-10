@@ -1,0 +1,37 @@
+# Hangman with the guesses written out, so the transcript does not change.
+#   relic examples/learn/hangman.relic
+
+fun mask(word, guesses)
+    let out = ""
+    for c in word
+        let hit = false
+        for g in guesses
+            if g == c
+                hit = true
+        if hit
+            out = out + c
+        else
+            out = out + "-"
+    return out
+
+fun won(word, guesses)
+    for c in word
+        let hit = false
+        for g in guesses
+            if g == c
+                hit = true
+        if not hit
+            return false
+    return true
+
+let word = "relic"
+let guesses = []
+for g in ["a", "r", "e", "z", "l", "i", "c"]
+    append(guesses, g)
+    let mark = "miss"
+    if g in word
+        mark = "hit"
+    print("{g} {mark}  {mask(word, guesses)}")
+    if won(word, guesses)
+        print("solved in {len(guesses)} guesses")
+        break

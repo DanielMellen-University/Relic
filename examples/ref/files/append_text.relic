@@ -1,0 +1,5 @@
+# files.append_text adds to the file instead of replacing it.
+use std/files
+files.write("note.txt", "one\n")
+files.append_text("note.txt", "two\n")
+print(files.read("note.txt"))

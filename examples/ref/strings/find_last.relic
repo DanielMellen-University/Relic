@@ -1,0 +1,5 @@
+# strings.find_last is where the last match starts. Overlaps count.
+use std/strings
+print(strings.find_last("aaa", "aa"))
+print(strings.find_last("hello", "l"))
+print(strings.find_last("hello", "z"))

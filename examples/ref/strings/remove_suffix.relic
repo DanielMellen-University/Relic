@@ -1,0 +1,4 @@
+# strings.remove_suffix drops a suffix once, or leaves the text alone.
+use std/strings
+print(strings.remove_suffix("file.txt", ".txt"))
+print(strings.remove_suffix("file.txt", ".md"))

@@ -1,0 +1,27 @@
+# The Luhn checksum, the one printed on payment-card numbers.
+# 79927398713 is a well known valid example. The other is one digit off.
+#   relic examples/learn/luhn.relic
+
+fun luhn(s)
+    let sum = 0
+    let i = len(s) - 1
+    let alt = false
+    while i >= 0
+        let d = num(s[i])
+        if alt
+            d = d * 2
+            if d > 9
+                d = d - 9
+        sum = sum + d
+        alt = not alt
+        i = i - 1
+    return sum % 10 == 0
+
+fun show(s)
+    let answer = "no"
+    if luhn(s)
+        answer = "yes"
+    print("{s}  valid {answer}")
+
+show("79927398713")
+show("79927398710")

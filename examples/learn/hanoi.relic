@@ -1,0 +1,11 @@
+# Towers of Hanoi for 3 disks. Move the stack from A to C.
+#   relic examples/learn/hanoi.relic
+
+fun move(n, src, dst, aux)
+    if n == 0
+        return
+    move(n - 1, src, aux, dst)
+    print("{src} -> {dst}")
+    move(n - 1, aux, dst, src)
+
+move(3, "A", "C", "B")

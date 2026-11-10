@@ -1,0 +1,5 @@
+# lists.contains is true when index_of would find the item.
+use std/lists
+print(lists.contains(["a", "b"], "b"))
+print(lists.contains([1, 2], 1.0))
+print(lists.contains([1], 2))

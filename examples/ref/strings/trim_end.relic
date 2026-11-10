@@ -1,0 +1,3 @@
+# strings.trim_end drops space at the end only.
+use std/strings
+print(strings.trim_end("  hi  "))

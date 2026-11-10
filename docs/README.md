@@ -7,9 +7,9 @@
 1. [Project README](../README.md): build it, and the five-minute tour
 2. [GUIDE.md](GUIDE.md): the language step by step, with examples you can run
 3. [LANGUAGE.md](LANGUAGE.md): every rule, for looking things up
-4. [STDLIB.md](STDLIB.md): every `std/` module and function
+4. [STDLIB.md](STDLIB.md): every `std/` module and function, and [stdlib/](stdlib/README.md) for one module at a time
 5. [CLI.md](CLI.md): the `relic` command, `relic check`, the REPL
-6. [Examples](../examples/README.md): small programs, including graphics
+6. [Examples](../examples/README.md): small programs, including graphics, and [EXAMPLES.md](EXAMPLES.md) for the learn and reference programs
 
 **Working on Relic itself:**
 
@@ -29,6 +29,8 @@
 | [GUIDE.md](GUIDE.md) | users | a walk through the language |
 | [LANGUAGE.md](LANGUAGE.md) | users | syntax, types, scope, operators, modules, errors, built-ins, limits |
 | [STDLIB.md](STDLIB.md) | users | each std module, with return values and errors; graphics events and headless testing |
+| [stdlib/](stdlib/README.md) | users | the same modules, one page each, with examples the test suite runs |
+| [EXAMPLES.md](EXAMPLES.md) | users | the learn programs and the one-call reference examples |
 | [CLI.md](CLI.md) | users | commands, exit codes, `relic check`, REPL, environment variables |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | contributors | folders, build targets, pipeline, VM, memory, self-host and its limits, running a program inside another, the compiler to C |
 | [TESTING.md](TESTING.md) | contributors | how each kind of test works, how to run it, and the acceptance record |

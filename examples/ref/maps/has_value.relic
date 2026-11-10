@@ -1,0 +1,5 @@
+# maps.has_value is true when some value == v. 1 and 1.0 match.
+use std/maps
+print(maps.has_value({a: 1, b: 2}, 2))
+print(maps.has_value({a: 1}, 1.0))
+print(maps.has_value({a: 1}, 3))

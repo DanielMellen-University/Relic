@@ -1,0 +1,4 @@
+# maps.filter keeps the entries for which keep(key, value) is true.
+use std/maps
+fun big(k, v) = v > 1
+print(maps.filter({a: 1, b: 3, c: 2}, big))

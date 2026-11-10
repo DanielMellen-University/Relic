@@ -1,0 +1,3 @@
+# lists.chunk cuts the list into pieces of n. The last piece may be short.
+use std/lists
+print(lists.chunk([1, 2, 3, 4, 5], 2))

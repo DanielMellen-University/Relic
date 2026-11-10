@@ -1,0 +1,8 @@
+# graphics.copy and graphics.clipboard work with no window open.
+# available, has_fonts and has_png are bools in every build; the value follows SDL.
+use std/graphics
+graphics.copy("relic")
+print(graphics.clipboard())
+print(type(graphics.available()))
+print(type(graphics.has_fonts()))
+print(type(graphics.has_png()))

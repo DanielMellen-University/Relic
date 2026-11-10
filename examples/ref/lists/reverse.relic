@@ -1,0 +1,4 @@
+# lists.reverse returns a new list in the other order.
+use std/lists
+print(lists.reverse([1, 2, 3]))
+print(lists.reverse("ab"))

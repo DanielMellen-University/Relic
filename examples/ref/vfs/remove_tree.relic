@@ -1,0 +1,8 @@
+# vfs.remove_tree deletes a folder and what is in it. A missing path is a no-op.
+use std/vfs
+let fs = vfs.new()
+vfs.make_dir(fs, "/tmp/box")
+vfs.write(fs, "/tmp/box/a.txt", "a")
+vfs.remove_tree(fs, "/tmp/box")
+vfs.remove_tree(fs, "/tmp/missing")
+print(vfs.exists(fs, "/tmp/box"))

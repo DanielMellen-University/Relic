@@ -1,0 +1,4 @@
+# lists.drop skips the first n items.
+use std/lists
+print(lists.drop([1, 2, 3, 4], 2))
+print(lists.drop([1], 5))

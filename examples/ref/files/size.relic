@@ -1,0 +1,4 @@
+# files.size is the length in bytes.
+use std/files
+files.write("ab.txt", "ab")
+print(files.size("ab.txt"))

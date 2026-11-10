@@ -1,0 +1,4 @@
+# math.sin takes radians.
+use std/math
+print(math.sin(0))
+print(math.sin(0) == 0)

@@ -1,0 +1,5 @@
+# math.round takes halves up, so round(-2.5) is -2.
+use std/math
+print(math.round(2.5))
+print(math.round(-2.5))
+print(math.round(2.4))

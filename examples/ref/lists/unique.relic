@@ -1,0 +1,4 @@
+# lists.unique drops repeats and keeps the first of each, in order.
+use std/lists
+print(lists.unique([1, 2, 1, 3, 2]))
+print(lists.unique(["b", "a", "b"]))

@@ -1,0 +1,6 @@
+# strings.is_upper wants at least one ASCII letter, and none lower case.
+use std/strings
+print(strings.is_upper("RELIC"))
+print(strings.is_upper("A1"))
+print(strings.is_upper("Relic"))
+print(strings.is_upper("1"))

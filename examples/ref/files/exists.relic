@@ -1,0 +1,5 @@
+# files.exists is true for a file or a folder, and never fails.
+use std/files
+files.write("note.txt", "x")
+print(files.exists("note.txt"))
+print(files.exists("missing.txt"))

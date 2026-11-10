@@ -1,0 +1,6 @@
+# lists.all stops at the first item the test rejects. An empty list is true.
+use std/lists
+fun even(n) = n % 2 == 0
+print(lists.all([2, 4, 6], even))
+print(lists.all([2, 3], even))
+print(lists.all([], even))

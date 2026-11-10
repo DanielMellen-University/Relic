@@ -1,0 +1,28 @@
+# A ledger in cents, so the balance does not pick up float error.
+# Amounts are printed as dollars.
+#   relic examples/learn/budget.relic
+
+fun money(cents)
+    let sign = ""
+    let n = cents
+    if n < 0
+        sign = "-"
+        n = 0 - n
+    let dollars = int(n / 100)
+    let rest = n % 100
+    let frac = str(rest)
+    if rest < 10
+        frac = "0" + frac
+    return "{sign}{dollars}.{frac}"
+
+let rows = [
+    {memo: "opening", cents: 250000},
+    {memo: "rent", cents: -120000},
+    {memo: "food", cents: -34050},
+    {memo: "refund", cents: 1250}
+]
+let balance = 0
+for row in rows
+    balance = balance + row.cents
+    print("{row.memo}  {money(row.cents)}")
+print("balance  {money(balance)}")

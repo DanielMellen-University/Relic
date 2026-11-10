@@ -1,0 +1,11 @@
+# Print 1 through 20, with Fizz, Buzz and FizzBuzz.
+#   relic examples/learn/fizzbuzz.relic
+for n in 1..21
+    if n % 15 == 0
+        print("FizzBuzz")
+    else if n % 3 == 0
+        print("Fizz")
+    else if n % 5 == 0
+        print("Buzz")
+    else
+        print(n)

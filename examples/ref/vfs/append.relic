@@ -1,0 +1,6 @@
+# vfs.append adds text, and creates the file if it was missing.
+use std/vfs
+let fs = vfs.new()
+vfs.append(fs, "/tmp/log.txt", "a")
+vfs.append(fs, "/tmp/log.txt", "b")
+print(vfs.read(fs, "/tmp/log.txt"))

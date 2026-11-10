@@ -1,0 +1,5 @@
+# math.clamp pulls x into the range lo..hi.
+use std/math
+print(math.clamp(-5, 0, 10))
+print(math.clamp(5, 0, 10))
+print(math.clamp(15, 0, 10))

@@ -1,0 +1,4 @@
+# files.lines is strings.lines of the file: no empty last line.
+use std/files
+files.write("note.txt", "one\ntwo\n")
+print(files.lines("note.txt"))

@@ -1,0 +1,4 @@
+# lists.count_by maps each key to how many items produced it.
+use std/lists
+fun first(w) = w[0]
+print(lists.count_by(["ant", "bee", "asp", "cow"], first))

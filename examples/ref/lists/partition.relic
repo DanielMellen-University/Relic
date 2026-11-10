@@ -1,0 +1,4 @@
+# lists.partition returns [yes, no], each side in the original order.
+use std/lists
+fun even(n) = n % 2 == 0
+print(lists.partition([1, 2, 3, 4, 5], even))

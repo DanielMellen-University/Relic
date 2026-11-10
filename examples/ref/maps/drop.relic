@@ -1,0 +1,6 @@
+# maps.drop removes a key in place and says whether it was there.
+use std/maps
+let m = {a: 1, b: 2}
+print(maps.drop(m, "a"))
+print(maps.drop(m, "z"))
+print(m)

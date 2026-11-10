@@ -1,0 +1,4 @@
+# lists.rotate moves the first n items to the end. A negative n goes the other way.
+use std/lists
+print(lists.rotate([1, 2, 3, 4], 1))
+print(lists.rotate([1, 2, 3, 4], -1))

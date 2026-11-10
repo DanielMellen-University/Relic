@@ -1,0 +1,4 @@
+# paths.normalize collapses . and .. and turns backslash into /.
+use std/paths
+print(paths.normalize("a/./b/../c"))
+print(paths.normalize("a\\b"))
