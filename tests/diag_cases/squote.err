@@ -1,0 +1,4 @@
+squote.relic:1:9: error: single quotes are not strings
+    let a = 'hi'
+            ^
+hint: strings use straight double quotes

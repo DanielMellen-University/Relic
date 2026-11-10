@@ -1,0 +1,3 @@
+name_none.relic:1:7: warning: 'None' is not defined (the empty value is written 'none')
+    print(None)
+          ^

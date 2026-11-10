@@ -1,3 +1,4 @@
 syn_else_without_if.relic:2:1: error: 'else' without a matching 'if'
     else
     ^
+hint: an else follows the block of an if

@@ -657,6 +657,16 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "totl", 2, names, slots), "'totl' is not defined (did you mean 'total'?)");
     ERR(rl_fail_undefined(&cx, "coutn", 2, names, slots), "'coutn' is not defined");
     ERR(rl_fail_undefined(&cx, "prnt", 0, NULL, NULL), "'prnt' is not defined (did you mean 'print'?)");
+    ERR(rl_fail_undefined(&cx, "null", 0, NULL, NULL), "'null' is not defined (none is the empty value, not 'null')");
+    ERR(rl_fail_undefined(&cx, "None", 0, NULL, NULL), "'None' is not defined (the empty value is written 'none')");
+    ERR(rl_fail_undefined(&cx, "undefined", 0, NULL, NULL), "'undefined' is not defined (an unset value is 'none')");
+    ERR(rl_fail_undefined(&cx, "True", 0, NULL, NULL), "'True' is not defined (the boolean is written 'true')");
+    ERR(rl_fail_undefined(&cx, "False", 0, NULL, NULL), "'False' is not defined (the boolean is written 'false')");
+    ERR(rl_fail_undefined(&cx, "length", 0, NULL, NULL), "'length' is not defined (the length of a value is len(value))");
+    ERR(rl_fail_undefined(&cx, "echo", 0, NULL, NULL), "'echo' is not defined (printing is print(...))");
+    ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
+    ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
+    ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

@@ -1,0 +1,4 @@
+type_double.relic:1:10: error: unknown type 'double'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as double = 1
+             ^^^^^^
+hint: did you mean 'float'?

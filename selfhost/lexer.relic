@@ -1,7 +1,8 @@
 # selfhost/lexer.relic: the Relic lexer, written in Relic (M9, stage 1).
 # Mirrors src/lexer/lexer.cpp token for token, including error messages and
 # positions. lex(src) gives back {tokens: [...], err: none} or, on the first
-# error, {tokens: [...], err: {line, col, msg}}.
+# error, {tokens: [...], err: {line, col, end, msg, hint}}.
+# end equals col and hint is "" unless a span or a hint line is set.
 # Each token is a map {kind, text, line, col}; kind uses the --tokens names.
 
 let keywords = {"let": "LET", "fun": "FUN", "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "in": "IN", "break": "BREAK", "next": "NEXT", "return": "RETURN", "and": "AND", "or": "OR", "not": "NOT", "true": "TRUE", "false": "FALSE", "none": "NONE", "use": "USE", "try": "TRY", "catch": "CATCH", "as": "AS"}
@@ -96,8 +97,12 @@ fun emit(st, kind, text, l, c)
     append(st.out, {kind: kind, text: text, line: l, col: c})
 
 fun fail(st, l, c, msg)
+    fail_span(st, l, c, c, msg, "")
+
+# end is the last column of the span (c underlines one column). hint may be "".
+fun fail_span(st, l, c, end, msg, hint)
     if st.err == none
-        st.err = {line: l, col: c, msg: msg}
+        st.err = {line: l, col: c, end: end, msg: msg, hint: hint}
 
 fun last(xs) = xs[len(xs) - 1]
 
@@ -160,10 +165,10 @@ fun layout(st)
             return true
         if width > top
             if width != top + indent_width
-                fail(st, st.line, st.col, "indent must be exactly 4 spaces deeper than the line above")
+                fail_span(st, st.line, st.col, st.col, "indent must be exactly 4 spaces deeper than the line above", "this line is indented {width} spaces; indent exactly 4 more than the line above")
                 return false
             if len(st.out) == 0
-                fail(st, st.line, st.col, "unexpected indent")
+                fail_span(st, st.line, st.col, st.col, "unexpected indent", "the first line of a file is not indented")
                 return false
             append(st.indents, width)
             emit(st, "INDENT", "", st.line, st.col)
@@ -172,7 +177,7 @@ fun layout(st)
             pop(st.indents)
             emit(st, "DEDENT", "", st.line, st.col)
         if width != last(st.indents)
-            fail(st, st.line, st.col, "dedent does not line up with any outer block")
+            fail_span(st, st.line, st.col, st.col, "dedent does not line up with any outer block", "line this up with the header of the block it closes")
             return false
         return true
 
@@ -207,7 +212,7 @@ fun number(st, l, c)
                 advance(st)
             _skip_set(st, _digit_set)
     if is_alpha(peek(st, 0)) or peek(st, 0) == "_"
-        fail(st, st.line, st.col, "letter right after a number")
+        fail_span(st, st.line, st.col, st.col, "letter right after a number", "put a space or an operator between the number and the name")
         return
     emit(st, "NUMBER", text_of(st, start), l, c)
 
@@ -261,7 +266,7 @@ fun string_body(st, l, c, first)
                     let hex = "0123456789ABCDEF"
                     fail(st, el, ec, "unknown escape: a backslash then U+00{hex[int(code / 16)]}{hex[code % 16]} (a control character; delete it)")
                 else
-                    fail(st, el, ec, "unknown escape '\\{e}'")
+                    fail_span(st, el, ec, ec, "unknown escape '\\{e}'", "known escapes are \\n \\t \\\" \\\\ and \\u with hex digits")
                 return
             next
         if ch == "{{"
@@ -359,7 +364,67 @@ fun token(st)
         if st.err == none
             emit(st, "RBRACE", "}}", l, c)
     else
-        fail(st, l, c, unexpected(ch))
+        let extra = lex_extra(ch, peek(st, 0))
+        if extra != none
+            fail_span(st, l, c, c + extra.extra, extra.msg, extra.hint)
+        else
+            fail(st, l, c, unexpected(ch))
+
+# A character that is not a token, when it is a common mistake. none otherwise.
+# extra is how many columns past the first the span covers. Keep in step with
+# kLex in src/diag/diag.cpp.
+fun lex_extra(ch, nxt)
+    if ch == "&" and nxt == "&"
+        return {msg: "unexpected '&&'", hint: "Relic uses 'and', not '&&'", extra: 1}
+    if ch == "&"
+        return {msg: "unexpected character '&'", hint: "Relic uses 'and', not '&'", extra: 0}
+    if ch == "|" and nxt == "|"
+        return {msg: "unexpected '||'", hint: "Relic uses 'or', not '||'", extra: 1}
+    if ch == "|"
+        return {msg: "unexpected character '|'", hint: "Relic uses 'or', not '|'", extra: 0}
+    if ch == ";"
+        return {msg: "unexpected character ';'", hint: "statements end at a newline; delete the semicolon", extra: 0}
+    if ch == "'"
+        return {msg: "single quotes are not strings", hint: "strings use straight double quotes", extra: 0}
+    if ch == "`"
+        return {msg: "backticks are not strings", hint: "strings use straight double quotes, not backticks", extra: 0}
+    if ch == "~"
+        return {msg: "unexpected character '~'", hint: "write 'not' to negate a boolean", extra: 0}
+    if ch == "?"
+        return {msg: "unexpected character '?'", hint: "Relic has no ternary operator; use if and else", extra: 0}
+    if ch == "@"
+        return {msg: "unexpected character '@'", hint: "Relic does not use '@'", extra: 0}
+    if ch == "^"
+        return {msg: "unexpected character '^'", hint: "Relic has no xor operator", extra: 0}
+    if ch == "\\"
+        return {msg: "a backslash is not an operator", hint: "escapes belong inside a string", extra: 0}
+    if ch == "–"
+        return {msg: "unexpected character '–'", hint: "this dash is not a minus sign; use '-'", extra: 0}
+    if ch == "—"
+        return {msg: "unexpected character '—'", hint: "this dash is not a minus sign; use '-'", extra: 0}
+    if ch == "−"
+        return {msg: "unexpected character '−'", hint: "this minus sign is not '-'; use '-'", extra: 0}
+    if ch == "×"
+        return {msg: "unexpected character '×'", hint: "multiplication is '*'", extra: 0}
+    if ch == "÷"
+        return {msg: "unexpected character '÷'", hint: "division is '/'", extra: 0}
+    if ch == "≠"
+        return {msg: "unexpected character '≠'", hint: "write '!=' to test inequality", extra: 0}
+    if ch == "≤"
+        return {msg: "unexpected character '≤'", hint: "write '<='", extra: 0}
+    if ch == "≥"
+        return {msg: "unexpected character '≥'", hint: "write '>='", extra: 0}
+    if ch == "…"
+        return {msg: "unexpected character '…'", hint: "a range is written '..'", extra: 0}
+    if ch == "→"
+        return {msg: "unexpected character '→'", hint: "Relic has no arrow character", extra: 0}
+    if ch == "¬"
+        return {msg: "unexpected character '¬'", hint: "write 'not'", extra: 0}
+    if ch == "∧"
+        return {msg: "unexpected character '∧'", hint: "write 'and'", extra: 0}
+    if ch == "∨"
+        return {msg: "unexpected character '∨'", hint: "write 'or'", extra: 0}
+    return none
 
 # The message for a character that starts no token (same words as src/lexer/lexer.cpp).
 # A character that looks like something else, or like nothing, says what it is
@@ -416,7 +481,12 @@ fun lex(src)
         fail(st, t.line, t.col, "unterminated string")
     if st.err == none and len(st.brackets) > 0
         let b = last(st.brackets)
-        fail(st, b.line, b.col, "unclosed '{b.ch}'")
+        let closer = ")"
+        if b.ch == "["
+            closer = "]"
+        else if b.ch == "{{"
+            closer = "}}"
+        fail_span(st, b.line, b.col, b.col, "unclosed '{b.ch}'", "close it with '{closer}'")
     if st.err == none
         if len(st.out) > 0 and last(st.out).kind != "NEWLINE" and last(st.out).kind != "DEDENT"
             emit(st, "NEWLINE", "", st.line, st.col)

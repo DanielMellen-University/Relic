@@ -1,5 +1,7 @@
 #include "parser/parser.hpp"
 
+#include "diag/diag.hpp"
+
 #include <algorithm>
 #include <string>
 #include <unordered_set>
@@ -71,7 +73,8 @@ private:
     void grow(const Ast& n, int h) {
         h_ = std::max(h, h_) + 1;
         if (h_ > kMaxDepth)
-            throw ParseError(n.line, n.col, "expression is too deeply nested (limit " + std::to_string(kMaxDepth) + ")");
+            throw ParseError(n.line, n.col,
+                              "expression is too deeply nested (limit " + std::to_string(kMaxDepth) + ")");
     }
     struct Nest {
         Parser& p;
@@ -97,11 +100,35 @@ private:
         advance();
         return true;
     }
-    [[noreturn]] void fail(const Token& t, const std::string& msg) {
-        throw ParseError(t.line, t.col, msg);
+    [[noreturn]] void fail(const Token& t, const std::string& msg, std::string hint = {}, int end_col = 0) {
+        throw ParseError(t.line, t.col, msg, end_col, std::move(hint));
+    }
+    static int text_cols(const std::string& s) {
+        int n = 0;
+        for (unsigned char c : s)
+            if ((c & 0xC0) != 0x80) ++n;
+        return n < 1 ? 1 : n;
     }
     [[noreturn]] void fail_expected(const std::string& what) {
-        fail(peek(), "expected " + what + ", got " + describe(peek()));
+        const Token& got = peek();
+        const bool has_prev = pos_ > 0;
+        const Token* prev = has_prev ? &toks_[pos_ - 1] : nullptr;
+        std::string msg = "expected " + what + ", got " + describe(got);
+        diag::ExpectHit hit;
+        if (diag::expect_mistake(what, static_cast<int>(got.kind), got.text, has_prev,
+                                 prev ? static_cast<int>(prev->kind) : -1, prev ? prev->text : "", hit)) {
+            if (hit.msg) msg = hit.msg;
+            int col = got.col;
+            int end = got.col;
+            if (hit.cover_got) end = got.col + text_cols(got.text) - 1;
+            if (hit.cover_prev && prev && prev->line == got.line) col = prev->col;
+            if (end < col) end = col;
+            throw ParseError(got.line, col, msg, end, hit.hint ? hit.hint : "");
+        }
+        if (what == "end of line" && prev && prev->kind == Tok::Name) {
+            if (const char* h = diag::word_mistake(prev->text)) fail(got, msg, h, got.col + text_cols(got.text) - 1);
+        }
+        fail(got, msg);
     }
     const Token& expect(Tok k, const std::string& what) {
         if (!at(k)) fail_expected(what);
@@ -121,7 +148,7 @@ private:
             case Tok::For: return for_stmt();
             case Tok::Use: return use_stmt();
             case Tok::Try: return try_stmt();
-            case Tok::Catch: fail(t, "'catch' without a matching 'try'");
+            case Tok::Catch: fail(t, "'catch' without a matching 'try'", "a catch follows the block of a try");
             case Tok::Return: {
                 advance();
                 auto n = make(Node::Return, t);
@@ -131,7 +158,7 @@ private:
             }
             case Tok::Break: advance(); end_of_line(); return make(Node::Break, t);
             case Tok::Next: advance(); end_of_line(); return make(Node::Next, t);
-            case Tok::Else: fail(t, "'else' without a matching 'if'");
+            case Tok::Else: fail(t, "'else' without a matching 'if'", "an else follows the block of an if");
             case Tok::Indent: fail(t, "unexpected indent");
             default: return expr_stmt();
         }
@@ -142,7 +169,12 @@ private:
         const Token& start = peek();
         if (!at(Tok::Newline)) fail_expected("end of line before the block");
         advance();
-        if (!at(Tok::Indent)) fail_expected("an indented block");
+        if (!at(Tok::Indent)) {
+            // End of file has no line to indent. A following token does.
+            const Token& got = peek();
+            fail(got, "expected an indented block, got " + describe(got),
+                 got.kind == Tok::Eof ? "" : "indent that line by exactly 4 spaces");
+        }
         advance();
         auto b = make(Node::Block, start);
         while (!at(Tok::Dedent) && !at(Tok::Eof)) b->kids.push_back(statement());
@@ -206,7 +238,8 @@ private:
         if (!at(Tok::RParen)) {
             do {
                 const Token& p = expect(Tok::Name, "a parameter name");
-                if (!names.insert(p.text).second) fail(p, "duplicate parameter '" + p.text + "'");
+                if (!names.insert(p.text).second)
+                    fail(p, "duplicate parameter '" + p.text + "'", "each parameter name is written once");
                 params->kids.push_back(make(Node::Name, p, p.text));
                 if (auto hint = type_hint()) params->kids.back()->kids.push_back(std::move(hint));
             } while (match(Tok::Comma));
@@ -235,7 +268,12 @@ private:
                                       "list", "map", "function", "module"};
         for (const char* k : known)
             if (t.text == k) return make(Node::Type, t, t.text);
-        fail(t, "unknown type '" + t.text + "'; use any, none, bool, int, float, number, string, list, map, function or module");
+        const char* hint = nullptr;
+        std::string type_msg = "unknown type '" + t.text +
+                               "'; use any, none, bool, int, float, number, string, list, map, function or module";
+        if (diag::type_mistake(t.text, hint))
+            fail(t, type_msg, hint, t.col + text_cols(t.text) - 1);
+        fail(t, type_msg);
     }
 
     AstPtr if_stmt() {
@@ -365,7 +403,8 @@ private:
             left = binary(std::move(left), op, range());
             grow(*left, h);
             if (is_compare(peek().kind))
-                fail(peek(), "comparisons cannot be chained; use 'and'");
+                fail(peek(), "comparisons cannot be chained; use 'and'", "",
+                     peek().col + text_cols(peek().text) - 1);
         }
         return left;
     }
@@ -507,7 +546,8 @@ private:
                     fail_expected("a map key (a name or a string)");
                 advance();
                 // a set of the keys so far: comparing with each one made a long literal quadratic
-                if (!keys.insert(key.text).second) fail(key, "duplicate map key '" + key.text + "'");
+                if (!keys.insert(key.text).second)
+                    fail(key, "duplicate map key '" + key.text + "'", "each map key is written once");
                 expect(Tok::Colon, "':' after the map key");
                 auto pair = make(Node::Pair, key, key.text);
                 pair->kids.push_back(expression());

@@ -293,14 +293,19 @@ fun check_tree(tree)
                 append(all, l)
             for b in keys(ck.builtins)
                 append(all, b)
-            it.msg = it.msg + interp.suggest(it.read.node.text, all)
+            let sug = interp.suggest(it.read.node.text, all)
+            if sug == ""
+                let note = interp.name_note(it.read.node.text)
+                if note != ""
+                    sug = " ({note})"
+            it.msg = it.msg + sug
     return items
 
 fun before(a, b) = a.line < b.line or (a.line == b.line and a.col < b.col)
 
 fun warn(path, lines, it)
     eprint("{path}:{it.line}:{it.col}: warning: {it.msg}")
-    let s = errfmt.snippet_in(lines, it.line, it.col)
+    let s = errfmt.snippet_in(lines, it.line, it.col, it.col)
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
 

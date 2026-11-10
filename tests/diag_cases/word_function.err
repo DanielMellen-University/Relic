@@ -1,0 +1,4 @@
+word_function.relic:1:10: error: expected end of line, got name 'foo'
+    function foo
+             ^^^
+hint: functions are written with 'fun', not 'function'

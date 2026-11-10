@@ -1,0 +1,4 @@
+word_var.relic:1:5: error: expected end of line, got name 'x'
+    var x = 1
+        ^
+hint: bindings start with 'let', not 'var'

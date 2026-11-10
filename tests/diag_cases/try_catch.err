@@ -1,0 +1,2 @@
+try_catch.relic:3:1: error: expected 'catch' after the 'try' block, got end of file
+hint: a try needs a catch after its block

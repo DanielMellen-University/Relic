@@ -26,3 +26,20 @@ expect("a folder" 3 "^relicc: cannot open \\.\n$" . -o x.c)
 if(NOT EXISTS ${TMP}/ok.c)
   message(FATAL_ERROR "ok.c was not written")
 endif()
+
+# Compile-error diagnostics in tests/diag_cases: relicc's stderr matches the
+# .err file byte for byte (the same text the host prints).
+file(GLOB diag_cases ${SRC}/tests/diag_cases/*.relic)
+foreach(f ${diag_cases})
+  get_filename_component(dir ${f} DIRECTORY)
+  get_filename_component(name ${f} NAME)
+  get_filename_component(stem ${f} NAME_WE)
+  file(READ ${dir}/${stem}.err expected)
+  string(REPLACE "\r\n" "\n" expected "${expected}")
+  execute_process(COMMAND ${RELICC} ${name} -o ${TMP}/diag_${stem}.c WORKING_DIRECTORY ${dir}
+    OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE got)
+  string(REPLACE "\r\n" "\n" err "${err}")
+  if(NOT got STREQUAL "1" OR NOT out STREQUAL "" OR NOT err STREQUAL expected)
+    message(FATAL_ERROR "diag ${stem}: exit ${got}\n--- stderr\n${err}--- expected\n${expected}")
+  endif()
+endforeach()

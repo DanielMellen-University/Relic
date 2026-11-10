@@ -1,0 +1,3 @@
+name_true.relic:1:7: error: 'True' is not defined (the boolean is written 'true')
+    print(True)
+          ^

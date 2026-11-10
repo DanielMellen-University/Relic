@@ -1,0 +1,4 @@
+tilde.relic:1:9: error: unexpected character '~'
+    let a = ~b
+            ^
+hint: write 'not' to negate a boolean

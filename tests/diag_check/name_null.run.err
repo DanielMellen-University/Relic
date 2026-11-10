@@ -1,0 +1,3 @@
+name_null.relic:1:7: error: 'null' is not defined (none is the empty value, not 'null')
+    print(null)
+          ^

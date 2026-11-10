@@ -37,6 +37,16 @@ bool has_text(Tok k) {
 
 bool is_string(Tok k) { return k == Tok::String || k == Tok::StringPart || k == Tok::StringEnd; }
 
+// Lex and parse errors carry an optional span and hint. An empty hint and a
+// one-column span print the same text as before.
+template <typename E>
+std::string format_noted(const std::string& path, const E& e) {
+    diag::Note n;
+    n.end_col = e.end_col;
+    n.hint = e.hint;
+    return diag::format(path, e.line, e.col, e.what(), n);
+}
+
 }  // namespace
 
 RunResult dump_tokens(const std::string& path, const std::string& source) {
@@ -50,7 +60,7 @@ RunResult dump_tokens(const std::string& path, const std::string& source) {
     } catch (const LexError& e) {
         r.exit_code = 1;
         r.out.clear();
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     }
     return r;
 }
@@ -61,10 +71,10 @@ RunResult dump_tree(const std::string& path, const std::string& source) {
         r.out = dump_ast(*parse(lex(source)));
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     }
     return r;
 }
@@ -85,10 +95,10 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         if (echo && !last.is<NoneV>()) out_ << repr(last) << "\n";
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
         r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
@@ -110,10 +120,10 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
         vm_run(*tree, out, path);
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
         r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
@@ -127,10 +137,10 @@ RunResult check_source(const std::string& path, const std::string& source) {
         if (vm_check(*parse(lex(source)), path, r.err) > 0) r.exit_code = 1;
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     }
     return r;
 }
@@ -141,10 +151,10 @@ RunResult dump_bytecode(const std::string& path, const std::string& source) {
         r.out = vm_disassemble(*parse(lex(source)));
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = diag::format(path, e.line, e.col, e.what());
+        r.err = format_noted(path, e);
     }
     return r;
 }

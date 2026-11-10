@@ -1,0 +1,4 @@
+endash.relic:1:11: error: unexpected character '–'
+    let a = 1 – 2
+              ^
+hint: this dash is not a minus sign; use '-'

@@ -1,0 +1,4 @@
+word_elif.relic:1:6: error: expected end of line, got name 'foo'
+    elif foo
+         ^^^
+hint: write 'else if', not 'elif'

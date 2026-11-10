@@ -3,7 +3,7 @@
 #   cmake -DRELIC=path/to/relic -DSRC=source/dir -P tools/compare_interp.cmake
 # Skipped, with the reason:
 #   repl_*         typed into the REPL, not run as files
-file(GLOB files ${SRC}/tests/golden/*.relic)
+file(GLOB files ${SRC}/tests/golden/*.relic ${SRC}/tests/diag_cases/*.relic ${SRC}/tests/diag_check/*.relic)
 set(bad 0)
 set(total 0)
 foreach(f ${files})

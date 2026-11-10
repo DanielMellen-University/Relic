@@ -1,0 +1,4 @@
+type_i64.relic:1:10: error: unknown type 'i64'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as i64 = 1
+             ^^^
+hint: did you mean 'int'?

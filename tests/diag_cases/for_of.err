@@ -1,0 +1,4 @@
+for_of.relic:1:7: error: expected 'in' after the loop name, got name 'of'
+    for i of xs
+          ^^
+hint: loops are written 'for name in list'

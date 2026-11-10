@@ -1,0 +1,4 @@
+fat_arrow.relic:1:3: error: Relic has no '=>'
+    a => b
+      ^^
+hint: a function is written 'fun name() = ...'

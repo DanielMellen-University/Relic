@@ -1,0 +1,4 @@
+indent_three.relic:2:4: error: indent must be exactly 4 spaces deeper than the line above
+       print(1)
+       ^
+hint: this line is indented 3 spaces; indent exactly 4 more than the line above

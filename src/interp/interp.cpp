@@ -1,6 +1,7 @@
 #include "interp/interp.hpp"
 #include "interp/ops.hpp"
 #include "interp/stack.hpp"
+#include "diag/diag.hpp"
 
 #include <algorithm>
 #include <cerrno>
@@ -679,7 +680,10 @@ Value Interpreter::eval(const Ast& n, const std::shared_ptr<Env>& env) {
                 std::vector<std::string> names;
                 for (Env* e = env.get(); e; e = e->parent.get())
                     for (const auto& kv : e->vars) names.push_back(kv.first);
-                fail(n, "'" + n.text + "' is not defined" + op_suggest(n.text, names));
+                std::string sug = op_suggest(n.text, names);
+                if (sug.empty())
+                    if (const char* note = diag::name_mistake(n.text)) sug = std::string(" (") + note + ")";
+                fail(n, "'" + n.text + "' is not defined" + sug);
             }
             return *v;
         }

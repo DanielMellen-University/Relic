@@ -1,0 +1,4 @@
+block_comment.relic:1:3: error: Relic comments start with '#', not '/*'
+    1 /* 2
+      ^^
+hint: delete the '/*'

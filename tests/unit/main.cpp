@@ -8,6 +8,10 @@
 // The built-in 8x12 text font (std/graphics text), shared with runtime/c.
 #include "builtins/font8x12.inc"
 
+#include <algorithm>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -54,6 +58,167 @@ static void test_font() {
     const unsigned char* u = kFont8x12['_' - 32];
     CHECK(u[10] == 0x7e);
     for (int row = 0; row < 10; row++) CHECK(u[row] == 0);
+}
+
+// A hint is its own line after the caret, and only when one was given.
+static void test_hint_line() {
+    relic::diag::Note n;
+    n.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format("a.relic", 3, 5, "unexpected '&&'", n) ==
+          "a.relic:3:5: error: unexpected '&&'\nhint: Relic uses 'and', not '&&'\n");
+    CHECK(relic::diag::format("a.relic", 3, 5, "x") == "a.relic:3:5: error: x\n");
+    n.hint = "fix it";
+    CHECK(relic::diag::format("a.relic", 1, 1, "bad", n, "warning") ==
+          "a.relic:1:1: warning: bad\nhint: fix it\n");
+    std::string path = "hint_line_src.relic";
+    {
+        std::ofstream f(path);
+        f << "let a = 1 && 2\n";
+    }
+    n.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format(path, 1, 11, "unexpected '&&'", n) ==
+          path + ":1:11: error: unexpected '&&'\n    let a = 1 && 2\n              ^\nhint: Relic uses 'and', not '&&'\n");
+    std::remove(path.c_str());
+}
+
+// A span underlines every column from the start through end_col.
+static void test_span() {
+    std::string path = "span_src.relic";
+    {
+        std::ofstream f(path);
+        f << "let a = 1 && 2\n";
+    }
+    relic::diag::Note one;
+    one.end_col = 11;
+    CHECK(relic::diag::format(path, 1, 11, "bad", one) == relic::diag::format(path, 1, 11, "bad"));
+    relic::diag::Note both;
+    both.end_col = 12;
+    both.hint = "Relic uses 'and', not '&&'";
+    CHECK(relic::diag::format(path, 1, 11, "unexpected '&&'", both) ==
+          path + ":1:11: error: unexpected '&&'\n    let a = 1 && 2\n              ^^\nhint: Relic uses 'and', not '&&'\n");
+    relic::diag::Note back;
+    back.end_col = 3;
+    CHECK(relic::diag::format(path, 1, 11, "bad", back) == relic::diag::format(path, 1, 11, "bad"));
+    std::remove(path.c_str());
+
+    // A multi-byte character is one column, so the carets follow characters.
+    path = "span_utf8.relic";
+    {
+        std::ofstream f(path);
+        f << "caf\xc3\xa9 X\n";
+    }
+    relic::diag::Note utf;
+    utf.end_col = 4;  // 'f' and 'é'
+    CHECK(relic::diag::format(path, 1, 3, "span", utf) ==
+          path + ":1:3: error: span\n    caf\xc3\xa9 X\n      ^^\n");
+    std::remove(path.c_str());
+
+    // A tab is one column in the pad, and the span starts after it.
+    path = "span_tab.relic";
+    {
+        std::ofstream f(path, std::ios::binary);
+        f << "\txx\n";
+    }
+    relic::diag::Note tab;
+    tab.end_col = 3;
+    CHECK(relic::diag::format(path, 1, 2, "span", tab) ==
+          path + ":1:2: error: span\n    \txx\n    \t^^\n");
+    std::remove(path.c_str());
+
+    // A long line is windowed, and the span moves with the column.
+    path = "span_long.relic";
+    {
+        std::ofstream f(path);
+        f << std::string(200, 'a') << "\n";
+    }
+    relic::diag::Note wide;
+    wide.end_col = 155;
+    std::string got = relic::diag::format(path, 1, 150, "span", wide);
+    auto caret = got.find('\n');
+    caret = got.find('\n', caret + 1);
+    std::string marks = got.substr(caret + 1);
+    CHECK(marks.find("^^^^^^") != std::string::npos);
+    CHECK(marks.find("^^^^^^^") == std::string::npos);
+    CHECK(got.find(std::string(80, 'a')) != std::string::npos);
+    std::remove(path.c_str());
+}
+
+static std::string slurp(const std::string& path) {
+    std::ifstream in(path);
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    return ss.str();
+}
+
+static std::string tests_root() {
+    std::string p = __FILE__;
+    auto at = p.rfind("/tests/unit/");
+    return p.substr(0, at);
+}
+
+// Host run of an existing golden still matches its .err file: a span that
+// is one column and an empty hint do not change the text. These are lex,
+// parse, and runtime failures, so they go through run, not check (check
+// would call an undefined name a warning).
+static void test_noted_matches_golden() {
+    const char* files[] = {"tests/golden/err_bang.relic", "tests/golden/err_long_line.relic",
+                           "tests/golden/err_utf8_column.relic", "tests/golden/syn_chained_compare.relic",
+                           "tests/golden/syn_unknown_type.relic"};
+    std::string root = tests_root();
+    for (const char* rel : files) {
+        std::string abs = root + "/" + rel;
+        auto r = relic::run_source_vm(abs, slurp(abs));
+        std::string got = r.err;
+        std::string base = std::string(rel).substr(std::string(rel).rfind('/') + 1);
+        for (size_t at = 0; (at = got.find(abs)) != std::string::npos; ) got.replace(at, abs.size(), base);
+        std::string want_path = abs;
+        want_path.replace(want_path.rfind('.'), std::string::npos, ".err");
+        std::string want = slurp(want_path);
+        if (got != want) {
+            std::cerr << "diagnostic mismatch for " << rel << "\n--- got\n" << got << "--- want\n" << want;
+            ++failures;
+        }
+    }
+}
+
+static std::string with_base(std::string got, const std::string& abs, const std::string& base) {
+    for (size_t at = 0; (at = got.find(abs)) != std::string::npos; ) got.replace(at, abs.size(), base);
+    return got;
+}
+
+static void expect_diag(const std::string& abs, const std::string& err_path, bool check) {
+    std::string base = abs.substr(abs.rfind('/') + 1);
+    auto r = check ? relic::check_source(abs, slurp(abs)) : relic::run_source_vm(abs, slurp(abs));
+    std::string got = with_base(r.err, abs, base);
+    std::string want = slurp(err_path);
+    if (got != want) {
+        std::cerr << "diagnostic mismatch for " << base << "\n--- got\n" << got << "--- want\n" << want;
+        ++failures;
+    }
+}
+
+// tests/diag_cases are lex and parse failures (run and relicc).
+// tests/diag_check are static-check warnings, with an optional .run.err for
+// the same mistake when the program is run.
+static void test_diag_dirs() {
+    namespace fs = std::filesystem;
+    std::string root = tests_root();
+    auto run_dir = [&](const std::string& dir, bool check) {
+        if (!fs::exists(dir)) return;
+        std::vector<fs::path> files;
+        for (const auto& ent : fs::directory_iterator(dir))
+            if (ent.path().extension() == ".relic") files.push_back(ent.path());
+        std::sort(files.begin(), files.end());
+        for (const auto& p : files) {
+            expect_diag(p.string(), (p.parent_path() / (p.stem().string() + ".err")).string(), check);
+            if (check) {
+                auto run_err = p.parent_path() / (p.stem().string() + ".run.err");
+                if (fs::exists(run_err)) expect_diag(p.string(), run_err.string(), false);
+            }
+        }
+    };
+    run_dir(root + "/tests/diag_cases", false);
+    run_dir(root + "/tests/diag_check", true);
 }
 
 static void test_core() {
@@ -423,6 +588,10 @@ int main() {
     test_repl_details();
     test_interp();
     test_builtins();
+    test_hint_line();
+    test_span();
+    test_noted_matches_golden();
+    test_diag_dirs();
     test_core();
     test_font();
     test_basic_tokens();

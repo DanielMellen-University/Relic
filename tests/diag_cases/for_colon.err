@@ -1,0 +1,4 @@
+for_colon.relic:1:7: error: expected 'in' after the loop name, got ':'
+    for i : xs
+          ^
+hint: loops are written 'for name in list', not a colon

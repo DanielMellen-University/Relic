@@ -321,14 +321,32 @@ static const char *suggest(const char *k, size_t len, const char *best, size_t *
     return best;
 }
 
+/* Parenthetical for an undefined name, or NULL. Keep in step with kNames. */
+static const char *name_note(const char *name) {
+    if (strcmp(name, "null") == 0) return "none is the empty value, not 'null'";
+    if (strcmp(name, "None") == 0) return "the empty value is written 'none'";
+    if (strcmp(name, "undefined") == 0) return "an unset value is 'none'";
+    if (strcmp(name, "True") == 0) return "the boolean is written 'true'";
+    if (strcmp(name, "False") == 0) return "the boolean is written 'false'";
+    if (strcmp(name, "length") == 0) return "the length of a value is len(value)";
+    if (strcmp(name, "echo") == 0) return "printing is print(...)";
+    if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
+    if (strcmp(name, "foreach") == 0) return "loops are written 'for name in list'";
+    if (strcmp(name, "nil") == 0) return "the empty value is 'none', not 'nil'";
+    return NULL;
+}
+
 int rl_fail_undefined(rl_ctx *cx, const char *name, int n, const char *const *names, const rl_value *const *slots) {
     size_t len = strlen(name), best_d = (size_t)-1, i, nb = rl_builtin_count();
     const char *best = NULL;
+    const char *note;
     int j;
     for (j = 0; j < n; ++j)
         if (!slots[j] || slots[j]->k != RL_UNSET) best = suggest(name, len, best, &best_d, names[j]);
     for (i = 0; i < nb; ++i) best = suggest(name, len, best, &best_d, rl_builtin_at(i)->name);
     if (best) return rl_fail(cx, "'%s' is not defined (did you mean '%s'?)", name, best);
+    note = name_note(name);
+    if (note) return rl_fail(cx, "'%s' is not defined (%s)", name, note);
     return rl_fail(cx, "'%s' is not defined", name);
 }
 

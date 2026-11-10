@@ -65,8 +65,12 @@ fun match(p, kind)
     return true
 
 fun fail(p, t, msg)
+    fail_span(p, t, t.col, msg, "")
+
+# end is the last underlined column. hint may be "".
+fun fail_span(p, t, end, msg, hint)
     if p.err == none
-        p.err = {line: t.line, col: t.col, msg: msg}
+        p.err = {line: t.line, col: t.col, end: end, msg: msg, hint: hint}
 
 fun describe(t)
     let k = t.kind
@@ -86,8 +90,158 @@ fun describe(t)
         return "name '{t.text}'"
     return "'{t.text}'"
 
+# Columns in a token's text. ASCII is the common case; a continuation byte
+# does not add a column.
+fun text_cols(s)
+    let n = 0
+    for ch in s
+        n = n + 1
+    if n < 1
+        return 1
+    return n
+
+# Common parse mistakes. none when the usual "expected ..., got ..." is enough.
+# Keep in step with kExpect and kWords in src/diag/diag.cpp.
+fun expect_extra(p, what)
+    let got = peek(p)
+    let prev = none
+    if p.pos > 0
+        prev = p.toks[p.pos - 1]
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PLUS"
+        return {msg: "Relic has no '+='", hint: "write it out, as in x = x + n", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "MINUS"
+        return {msg: "Relic has no '-='", hint: "write it out, as in x = x - n", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "STAR"
+        return {msg: "Relic has no '*='", hint: "write it out, as in x = x * n", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "SLASH"
+        return {msg: "Relic has no '/='", hint: "write it out, as in x = x / n", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PERCENT"
+        return {msg: "Relic has no '%='", hint: "write it out, as in x = x % n", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "EQ_EQ"
+        return {msg: "Relic has no '==='", hint: "compare with '=='; '=' assigns", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "BANG_EQ"
+        return {msg: "Relic has no '!=='", hint: "compare with '!='", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "GREATER" and prev != none and prev.kind == "MINUS"
+        return {msg: "Relic has no '->'", hint: "there is no arrow; write the steps out", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "GREATER" and prev != none and prev.kind == "ASSIGN"
+        return {msg: "Relic has no '=>'", hint: "a function is written 'fun name() = ...'", cover_prev: true, cover_got: true}
+    if what == "end of line" and got.kind == "COLON"
+        return {msg: "", hint: "Relic statements do not end with a colon", cover_prev: false, cover_got: true}
+    if what == "an expression" and got.kind == "SLASH" and prev != none and prev.kind == "SLASH"
+        return {msg: "comments start with '#'", hint: "a comment runs from '#' to the end of the line", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "STAR" and prev != none and prev.kind == "SLASH"
+        return {msg: "Relic comments start with '#', not '/*'", hint: "delete the '/*'", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "PLUS" and prev != none and prev.kind == "PLUS"
+        return {msg: "Relic has no '++'", hint: "write the new value out, as in n = n + 1", cover_prev: true, cover_got: true}
+    if what == "end of line before the block" and got.kind == "COLON"
+        return {msg: "", hint: "Relic headers do not end with a colon; indent the next line 4 spaces", cover_prev: false, cover_got: true}
+    if what == "end of line before the block" and got.kind == "ASSIGN"
+        return {msg: "", hint: "compare with '=='; a single '=' assigns", cover_prev: false, cover_got: true}
+    if what == "'=' after the name" and got.kind == "COLON"
+        return {msg: "", hint: "use '=', not ':='", cover_prev: false, cover_got: true}
+    if what == "'in' after the loop name" and got.kind == "NAME" and got.text == "of"
+        return {msg: "", hint: "loops are written 'for name in list'", cover_prev: false, cover_got: true}
+    if what == "'in' after the loop name" and got.kind == "COLON"
+        return {msg: "", hint: "loops are written 'for name in list', not a colon", cover_prev: false, cover_got: true}
+    if what == "end of line" and got.kind == "NOT"
+        return {msg: "", hint: "write 'not (a in b)' to negate a test", cover_prev: false, cover_got: true}
+    if what == "'catch' after the 'try' block"
+        return {msg: "", hint: "a try needs a catch after its block", cover_prev: false, cover_got: true}
+    return none
+
+fun word_extra(word)
+    if word == "func"
+        return "functions are written with 'fun', not 'func'"
+    if word == "function"
+        return "functions are written with 'fun', not 'function'"
+    if word == "def"
+        return "functions are written with 'fun', not 'def'"
+    if word == "fn"
+        return "functions are written with 'fun', not 'fn'"
+    if word == "elseif"
+        return "write 'else if', not 'elseif'"
+    if word == "elif"
+        return "write 'else if', not 'elif'"
+    if word == "elsif"
+        return "write 'else if', not 'elsif'"
+    if word == "var"
+        return "bindings start with 'let', not 'var'"
+    if word == "const"
+        return "bindings start with 'let'; Relic has no const"
+    if word == "int"
+        return "write 'let name as int = ...', not a C declaration"
+    if word == "string"
+        return "write 'let name as string = ...'"
+    if word == "bool"
+        return "write 'let name as bool = ...'"
+    if word == "float"
+        return "write 'let name as float = ...'"
+    if word == "import"
+        return "modules are loaded with 'use', not 'import'"
+    if word == "print"
+        return "call it as print(...); the parentheses are required"
+    if word == "len"
+        return "call it as len(...); the parentheses are required"
+    if word == "class"
+        return "Relic has no classes; use a map or a module"
+    if word == "switch"
+        return "branch with if and else if"
+    if word == "lambda"
+        return "write 'fun name() = ...'"
+    if word == "except"
+        return "catch an error with try and catch"
+    return ""
+
+fun type_extra(name)
+    if name == "integer"
+        return "did you mean 'int'?"
+    if name == "str"
+        return "did you mean 'string'?"
+    if name == "boolean"
+        return "did you mean 'bool'?"
+    if name == "dict"
+        return "did you mean 'map'?"
+    if name == "array"
+        return "did you mean 'list'?"
+    if name == "void"
+        return "did you mean 'none'?"
+    if name == "nil"
+        return "did you mean 'none'?"
+    if name == "double"
+        return "did you mean 'float'?"
+    if name == "i64"
+        return "did you mean 'int'?"
+    if name == "text"
+        return "did you mean 'string'?"
+    return ""
+
 fun fail_expected(p, what)
-    fail(p, peek(p), "expected " + what + ", got " + describe(peek(p)))
+    let got = peek(p)
+    let msg = "expected " + what + ", got " + describe(got)
+    let extra = expect_extra(p, what)
+    if extra != none
+        if extra.msg != ""
+            msg = extra.msg
+        let col = got.col
+        let end = got.col
+        if extra.cover_got
+            end = got.col + text_cols(got.text) - 1
+        if extra.cover_prev and p.pos > 0
+            let prev = p.toks[p.pos - 1]
+            if prev.line == got.line
+                col = prev.col
+        if end < col
+            end = col
+        fail_span(p, {kind: got.kind, text: got.text, line: got.line, col: col}, end, msg, extra.hint)
+        return
+    if what == "end of line" and p.pos > 0
+        let prev = p.toks[p.pos - 1]
+        if prev.kind == "NAME"
+            let word = word_extra(prev.text)
+            if word != ""
+                fail_span(p, got, got.col + text_cols(got.text) - 1, msg, word)
+                return
+    fail(p, got, msg)
 
 fun expect(p, kind, what)
     if not at(p, kind)
@@ -122,7 +276,7 @@ fun statement(p)
     if k == "TRY"
         return try_stmt(p)
     if k == "CATCH"
-        fail(p, t, "'catch' without a matching 'try'")
+        fail_span(p, t, t.col, "'catch' without a matching 'try'", "a catch follows the block of a try")
     if k == "RETURN"
         advance(p)
         let n = node("Return", t, "")
@@ -137,7 +291,7 @@ fun statement(p)
             return node("Break", t, "")
         return node("Next", t, "")
     if k == "ELSE"
-        fail(p, t, "'else' without a matching 'if'")
+        fail_span(p, t, t.col, "'else' without a matching 'if'", "an else follows the block of an if")
     if k == "INDENT"
         fail(p, t, "unexpected indent")
     return expr_stmt(p)
@@ -149,7 +303,11 @@ fun block(p)
         fail_expected(p, "end of line before the block")
     advance(p)
     if not at(p, "INDENT")
-        fail_expected(p, "an indented block")
+        let got = peek(p)
+        let hint = ""
+        if got.kind != "EOF"
+            hint = "indent that line by exactly 4 spaces"
+        fail_span(p, got, got.col, "expected an indented block, got " + describe(got), hint)
     advance(p)
     let b = node("Block", start, "")
     while not at(p, "DEDENT") and not at(p, "EOF") and p.err == none
@@ -213,7 +371,7 @@ fun fun_stmt(p)
         while more and p.err == none
             let t = expect(p, "NAME", "a parameter name")
             if t.text in names
-                fail(p, t, "duplicate parameter '{t.text}'")
+                fail_span(p, t, t.col, "duplicate parameter '{t.text}'", "each parameter name is written once")
             names[t.text] = true
             let prm = node("Name", t, t.text)
             let hint = type_hint(p)
@@ -246,7 +404,12 @@ fun type_hint(p)
         return none
     advance(p)
     if not (t.text in known_types)
-        fail(p, t, "unknown type '{t.text}'; use any, none, bool, int, float, number, string, list, map, function or module")
+        let type_msg = "unknown type '{t.text}'; use any, none, bool, int, float, number, string, list, map, function or module"
+        let hinted = type_extra(t.text)
+        if hinted != ""
+            fail_span(p, t, t.col + text_cols(t.text) - 1, type_msg, hinted)
+        else
+            fail(p, t, type_msg)
         return none
     return node("Type", t, t.text)
 
@@ -361,7 +524,8 @@ fun compare(p)
         left = binary(left, op, range(p))
         grow(p, left, h)
         if peek(p).kind in compare_ops
-            fail(p, peek(p), "comparisons cannot be chained; use 'and'")
+            let op = peek(p)
+            fail_span(p, op, op.col + text_cols(op.text) - 1, "comparisons cannot be chained; use 'and'", "")
     return left
 
 fun range(p)
@@ -494,7 +658,7 @@ fun map_literal(p)
             advance(p)
             # a map of the keys so far: comparing with each one made a long literal quadratic
             if key.text in seen
-                fail(p, key, "duplicate map key '{key.text}'")
+                fail_span(p, key, key.col, "duplicate map key '{key.text}'", "each map key is written once")
             seen[key.text] = true
             expect(p, "COLON", "':' after the map key")
             let pair = add(node("Pair", key, key.text), expression(p))

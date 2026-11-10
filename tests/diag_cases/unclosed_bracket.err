@@ -1,0 +1,4 @@
+unclosed_bracket.relic:1:9: error: unclosed '['
+    let a = [1
+            ^
+hint: close it with ']'

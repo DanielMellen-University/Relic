@@ -1,5 +1,7 @@
 #include "lexer/lexer.hpp"
 
+#include "diag/diag.hpp"
+
 #include <cstdio>
 #include <cctype>
 
@@ -109,9 +111,13 @@ public:
             token();
         }
         if (!interp_.empty()) error(interp_.back().line, interp_.back().col, "unterminated string");
-        if (!brackets_.empty())
+        if (!brackets_.empty()) {
+            char open = brackets_.back().ch;
+            const char* closer = open == '(' ? ")" : open == '[' ? "]" : "}";
             error(brackets_.back().line, brackets_.back().col,
-                  std::string("unclosed '") + brackets_.back().ch + "'");
+                  std::string("unclosed '") + open + "'", 0,
+                  std::string("close it with '") + closer + "'");
+        }
         if (!out_.empty() && out_.back().kind != Tok::Newline && out_.back().kind != Tok::Dedent)
             emit(Tok::Newline, "", line_, col_);
         while (indents_.size() > 1) { indents_.pop_back(); emit(Tok::Dedent, "", line_, col_); }
@@ -131,7 +137,9 @@ private:
     std::vector<Interp> interp_;
     std::vector<Token> out_;
 
-    [[noreturn]] void error(int l, int c, const std::string& m) { throw LexError(l, c, m); }
+    [[noreturn]] void error(int l, int c, const std::string& m, int end = 0, std::string hint = {}) {
+        throw LexError(l, c, m, end, std::move(hint));
+    }
     bool eof() const { return pos_ >= src_.size(); }
     char peek(size_t ahead = 0) const {
         return pos_ + ahead < src_.size() ? src_[pos_ + ahead] : '\0';
@@ -166,8 +174,11 @@ private:
             if (width == indents_.back()) return true;
             if (width > indents_.back()) {
                 if (width != indents_.back() + kIndentWidth)
-                    error(line_, col_, "indent must be exactly 4 spaces deeper than the line above");
-                if (out_.empty()) error(line_, col_, "unexpected indent");
+                    error(line_, col_, "indent must be exactly 4 spaces deeper than the line above", 0,
+                      "this line is indented " + std::to_string(width) +
+                          " spaces; indent exactly 4 more than the line above");
+                if (out_.empty()) error(line_, col_, "unexpected indent", 0,
+                              "the first line of a file is not indented");
                 indents_.push_back(width);
                 emit(Tok::Indent, "", line_, col_);
                 return true;
@@ -177,7 +188,8 @@ private:
                 emit(Tok::Dedent, "", line_, col_);
             }
             if (width != indents_.back())
-                error(line_, col_, "dedent does not line up with any outer block");
+                error(line_, col_, "dedent does not line up with any outer block", 0,
+                      "line this up with the header of the block it closes");
             return true;
         }
     }
@@ -233,6 +245,8 @@ private:
             default: {
                 std::string whole(1, ch);  // the whole UTF-8 character, not just its first byte
                 while (!eof() && (static_cast<unsigned char>(peek()) & 0xC0) == 0x80) whole += advance();
+                if (const diag::LexHit* hit = diag::lex_mistake(whole, peek()))
+                    error(l, c, hit->msg, c + hit->extra, hit->hint);
                 error(l, c, unexpected(whole));
             }
         }
@@ -298,7 +312,8 @@ private:
             }
         }
         if (std::isalpha(static_cast<unsigned char>(peek())) || peek() == '_')
-            error(line_, col_, "letter right after a number");
+            error(line_, col_, "letter right after a number", 0,
+                      "put a space or an operator between the number and the name");
         emit(Tok::Number, src_.substr(start, pos_ - start), l, c);
     }
 
@@ -358,7 +373,8 @@ private:
                             std::snprintf(code, sizeof code, "U+%04X", static_cast<unsigned>(b));
                             error(el, ec, std::string("unknown escape: a backslash then ") + code + " (a control character; delete it)");
                         }
-                        error(el, ec, "unknown escape '\\" + whole + "'");
+                        error(el, ec, "unknown escape '\\" + whole + "'", 0,
+                            "known escapes are \x5cn \x5ct \x5c\x22 \x5c\x5c and \x5cu with hex digits");
                     }
                 }
                 continue;

@@ -1,0 +1,3 @@
+name_false.relic:1:7: error: 'False' is not defined (the boolean is written 'false')
+    print(False)
+          ^

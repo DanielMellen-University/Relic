@@ -1,0 +1,4 @@
+word_fn.relic:1:4: error: expected end of line, got name 'foo'
+    fn foo
+       ^^^
+hint: functions are written with 'fun', not 'fn'

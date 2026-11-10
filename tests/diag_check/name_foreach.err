@@ -1,0 +1,3 @@
+name_foreach.relic:1:7: warning: 'foreach' is not defined (loops are written 'for name in list')
+    print(foreach)
+          ^

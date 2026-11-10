@@ -48,14 +48,15 @@ fun _window(text, col)
         i = i + 1
     return [slice(text, first, i), col - first]
 
-fun snippet(path, line, col)
+fun snippet(path, line, col, end)
     if line < 1 or col < 1 or not files.exists(path)
         return ""
-    return snippet_in(strings.split(files.read(path), "\n"), line, col)
+    return snippet_in(strings.split(files.read(path), "\n"), line, col, end)
 
 # The same from the file's lines, split once by a caller with many messages for
 # one file (check.relic read and split the whole file again for each warning).
-fun snippet_in(lines, line, col)
+# end is the last column to underline; a value below col underlines col only.
+fun snippet_in(lines, line, col, end)
     if line < 1 or col < 1 or line > len(lines)
         return ""
     let text = lines[line - 1]
@@ -63,9 +64,15 @@ fun snippet_in(lines, line, col)
         text = slice(text, 0, len(text) - 1)
     if strings.trim(text) == ""
         return ""
+    let saved = col
     let w = _window(text, col)
     text = w[0]
     col = w[1]
+    if end < saved
+        end = saved
+    end = end - (saved - col)
+    if end < col
+        end = col
     let pad = ""
     let n = 0
     for c in text
@@ -76,10 +83,31 @@ fun snippet_in(lines, line, col)
         else
             pad = pad + " "
         n = n + 1
-    return "    {text}\n    {pad}^\n"
+    let marks = ""
+    let want = end - col + 1
+    if want < 1
+        want = 1
+    if want > 200
+        want = 200
+    while len(marks) < want
+        marks = marks + "^"
+    return "    {text}\n    {pad}{marks}\n"
+
+fun _end_of(err)
+    if "end" in err and err.end != none and err.end >= err.col
+        return err.end
+    return err.col
+
+fun _hint_of(err)
+    if "hint" in err and err.hint != none
+        return err.hint
+    return ""
 
 fun show(path, err)
     eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
-    let s = snippet(path, err.line, err.col)
+    let s = snippet(path, err.line, err.col, _end_of(err))
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
+    let hint = _hint_of(err)
+    if hint != ""
+        eprint("hint: {hint}")

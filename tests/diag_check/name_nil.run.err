@@ -1,0 +1,3 @@
+name_nil.relic:1:7: error: 'nil' is not defined (the empty value is 'none', not 'nil')
+    print(nil)
+          ^

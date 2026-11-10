@@ -1,0 +1,4 @@
+ellipsis.relic:1:11: error: unexpected character '…'
+    let a = 1 … 2
+              ^
+hint: a range is written '..'

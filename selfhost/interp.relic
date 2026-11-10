@@ -71,6 +71,31 @@ fun suggest(name, names)
         return ""
     return " (did you mean '{best}'?)"
 
+# Parenthetical for an undefined name, without the parentheses. "" when the
+# name is not a known mistake. Keep in step with kNames in src/diag/diag.cpp.
+fun name_note(name)
+    if name == "null"
+        return "none is the empty value, not 'null'"
+    if name == "None"
+        return "the empty value is written 'none'"
+    if name == "undefined"
+        return "an unset value is 'none'"
+    if name == "True"
+        return "the boolean is written 'true'"
+    if name == "False"
+        return "the boolean is written 'false'"
+    if name == "length"
+        return "the length of a value is len(value)"
+    if name == "echo"
+        return "printing is print(...)"
+    if name == "continue"
+        return "the loop keyword is 'next', not 'continue'"
+    if name == "foreach"
+        return "loops are written 'for name in list'"
+    if name == "nil"
+        return "the empty value is 'none', not 'nil'"
+    return ""
+
 fun edit_distance(a, b)
     let row = []
     for j in 0..len(b) + 1
@@ -414,7 +439,12 @@ fun not_defined(rt, n, env)
         for name in keys(s.vars)
             append(names, name)
         s = s.parent
-    return fail(rt, n, "'{n.text}' is not defined" + suggest(n.text, names))
+    let sug = suggest(n.text, names)
+    if sug == ""
+        let note = name_note(n.text)
+        if note != ""
+            sug = " ({note})"
+    return fail(rt, n, "'{n.text}' is not defined" + sug)
 
 fun unary_of(rt, n, v)
     if n.text == "-"

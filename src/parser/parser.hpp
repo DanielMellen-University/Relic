@@ -11,7 +11,10 @@ namespace relic {
 struct ParseError : std::runtime_error {
     int line;
     int col;
-    ParseError(int l, int c, const std::string& msg) : std::runtime_error(msg), line(l), col(c) {}
+    int end_col;
+    std::string hint;
+    ParseError(int l, int c, const std::string& msg, int end = 0, std::string hint_text = {})
+        : std::runtime_error(msg), line(l), col(c), end_col(end > c ? end : c), hint(std::move(hint_text)) {}
 };
 
 // Builds a Program tree from lexer tokens. Throws ParseError on bad syntax.
