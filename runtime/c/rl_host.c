@@ -111,6 +111,11 @@ BI(h_read_file) {
         n += got;
         if (got == 0) break;
     }
+    if (ferror(f)) {
+        fclose(f);
+        free(data);
+        return rl_fail(cx, "cannot open %s", S(a[0])->data);
+    }
     fclose(f);
     *out = rl_str_new(data, n);
     free(data);
@@ -119,6 +124,7 @@ BI(h_read_file) {
 
 BI(h_write_file) {
     FILE *f;
+    int failed;
     int app = a[2].k == RL_BOOL && a[2].u.b;
     UNUSED;
     if (rl_arg_str(cx, a[0], "path")) return RL_ERR;
@@ -127,8 +133,11 @@ BI(h_write_file) {
     if (rl_arg_str(cx, a[1], "text")) return RL_ERR;
     f = open_file(S(a[0])->data, app ? "ab" : "wb");
     if (!f) return rl_fail(cx, "cannot write %s", S(a[0])->data);
-    fwrite(S(a[1])->data, 1, S(a[1])->len, f);
-    fclose(f);
+    failed = fwrite(S(a[1])->data, 1, S(a[1])->len, f) != S(a[1])->len;
+    /* A buffered write can succeed here and fail only when fclose flushes.
+     * Always close the stream, including after a short write. */
+    if (fclose(f) != 0) failed = 1;
+    if (failed) return rl_fail(cx, "cannot write %s", S(a[0])->data);
     *out = rl_none();
     return RL_OK;
 }
@@ -675,8 +684,11 @@ BI(h_call) {
     const rl_builtin_def *d = NULL;
     UNUSED;
     if (rl_arg_str(cx, a[0], "name")) return RL_ERR;
-    for (i = 0; i < total; ++i)
-        if (strcmp(rl_builtin_at(i)->name, S(a[0])->data) == 0) d = rl_builtin_at(i);
+    for (i = 0; i < total; ++i) {
+        const rl_builtin_def *candidate = rl_builtin_at(i);
+        if (strlen(candidate->name) == S(a[0])->len &&
+            memcmp(candidate->name, S(a[0])->data, S(a[0])->len) == 0) d = candidate;
+    }
     if (strncmp(S(a[0])->data, "host_", 5) != 0 || !d) return rl_fail(cx, "no host built-in %s", S(a[0])->data);
     if (a[1].k != RL_LIST) return rl_fail(cx, "first argument must be a list, got %s", rl_type_name(a[1]));
     if (d->arity >= 0 && (size_t)d->arity != L(a[1])->n)

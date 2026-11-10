@@ -348,7 +348,9 @@ int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out) {
         long long i;
         size_t at = 0;
         if (whole(cx, idx, "string index", &i)) return at_index(cx);
-        at = i < 0 ? s->len : rl_str_offset(s, (size_t)i);
+        /* Reject before narrowing to size_t: a large index can wrap to a
+         * valid character offset on a 32-bit target. */
+        at = i < 0 || (unsigned long long)i >= s->len ? s->len : rl_str_offset(s, (size_t)i);
         if (at >= s->len) {
             size_t dummy;
             slot(cx, idx, rl_str_chars(s), "string index", &dummy);
@@ -434,7 +436,10 @@ int rl_range(rl_ctx *cx, rl_value av, rl_value bv, rl_value *out) {
     *out = rl_none();
     if (whole(cx, av, "range start", &a)) { cx->err_arg = 1; return RL_ERR; }
     if (whole(cx, bv, "range end", &b)) { cx->err_arg = 2; return RL_ERR; }
-    if (b - a > 10000000) return rl_fail(cx, "range is too large");
+    /* Subtract unsigned endpoints only for ascending ranges. The distance
+     * can span the entire signed range without overflowing. */
+    if (b > a && (unsigned long long)b - (unsigned long long)a > 10000000ULL)
+        return rl_fail(cx, "range is too large");
     l = rl_list_new(b > a ? (size_t)(b - a) : 0);
     for (i = a; i < b; ++i) rl_list_push(L(l), rl_int(i));
     *out = l;
@@ -496,7 +501,7 @@ static int same_word(const char *s, size_t n, const char *w) {
     return 1;
 }
 
-int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
+static int parse_num_text(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     size_t i, j;
     int neg;
     char *end;
@@ -546,4 +551,22 @@ int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
     return RL_OK;
 bad:
     return rl_fail_wrap(cx, "not a number: \"", s, len, "\"");
+}
+
+int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out) {
+    char small[128];
+    char *text = small;
+    int status;
+    /* The public API accepts a byte span. C number readers need a trailing
+     * NUL, including when the span is only a prefix of a larger buffer. */
+    if (len >= sizeof small) {
+        if (len == (size_t)-1) abort();
+        text = (char *)malloc(len + 1);
+        if (!text) abort();
+    }
+    if (len) memcpy(text, s, len);
+    text[len] = 0;
+    status = parse_num_text(cx, text, len, out);
+    if (text != small) free(text);
+    return status;
 }

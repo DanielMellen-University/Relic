@@ -754,8 +754,9 @@ done:
 /* errors                                                               */
 
 int rl_fail_str(rl_ctx *cx, rl_str *msg) {
-    if (cx->err_msg) release_obj(&cx->err_msg->h);
+    /* msg may be the context's current message, with no other owner. */
     ++msg->h.rc;
+    if (cx->err_msg) release_obj(&cx->err_msg->h);
     cx->err_msg = msg;
     cx->has_err = 1;
     cx->err_line = cx->err_col = 0;
@@ -846,10 +847,11 @@ int rl_catch(rl_ctx *cx, rl_value *out) {
 
 /* Port of diag::snippet in src/diag/diag.cpp. */
 static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
-    const char *p = src, *end, *stop = src + len;
+    const char *p = src, *end, *stop;
     size_t n, from = 0, i;
     int k;
     if (!src || line < 1 || col < 1) return;
+    stop = src + len;
     for (k = 1; k < line; ++k) {   /* by length, not to a NUL: a line can hold NUL bytes */
         p = (const char *)memchr(p, '\n', (size_t)(stop - p));
         if (!p) return;
@@ -982,13 +984,14 @@ void rl_std_boundary(rl_ctx *cx, rl_value fv) {
     if (!f->std_module || !cx->err_std || !cx->err_line) return;
     msg = cx->err_msg->data;
     if (strncmp(msg, "host_", 5) == 0 && strstr(msg, "(): ")) {
+        const char *detail = strstr(msg, "(): ") + 4;
         rl_value m;
         buf b = {0, 0, 0};
         b_cstr(&b, f->std_module);
         b_cstr(&b, ".");
         b_add(&b, f->name->data, f->name->len);
         b_cstr(&b, "(): ");
-        b_cstr(&b, strstr(msg, "(): ") + 4);
+        b_add(&b, detail, cx->err_msg->len - (size_t)(detail - msg));
         m = b_done(&b);
         rl_fail_str(cx, (rl_str *)m.u.o);   /* also clears the position */
         rl_release(m);

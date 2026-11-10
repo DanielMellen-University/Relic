@@ -224,6 +224,7 @@ int rl_range_start(rl_ctx *cx, rl_value a);
 int rl_cond(rl_ctx *cx, rl_value v, const char *what, int *truth);  /* "'if' condition" */
 int rl_loop_items(rl_ctx *cx, rl_value src, rl_value *out);         /* a list to walk */
 int rl_check_type(rl_ctx *cx, const char *type, rl_value v, const char *what);
+/* Reads exactly len bytes; s need not have a trailing NUL. */
 int rl_parse_num(rl_ctx *cx, const char *s, size_t len, rl_value *out);
 void rl_interp(int n, const rl_value *parts, rl_value *out);   /* "{a} and {b}": show each part and join */
 
