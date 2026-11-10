@@ -1,0 +1,4 @@
+ticket,team,status,note
+INC-1042,platform,open,"waiting on ""vendor"", then QA"
+INC-1043,support,closed,"line one
+line two"

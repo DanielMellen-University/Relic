@@ -5,7 +5,7 @@ use table
 
 fun usage()
     print("usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE")
-    print("Validate unquoted delimited text and summarize column completeness.")
+    print("Validate CSV or TSV, including RFC 4180 quoted fields, and summarize columns.")
     print("Default: csv. --key requires nonblank, unique values. --help shows this help.")
     print("Exit: 0 valid/help, 2 usage error, 3 input/read error. No summary on error.")
 

@@ -1,4 +1,4 @@
 usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE
-Validate unquoted delimited text and summarize column completeness.
+Validate CSV or TSV, including RFC 4180 quoted fields, and summarize columns.
 Default: csv. --key requires nonblank, unique values. --help shows this help.
 Exit: 0 valid/help, 2 usage error, 3 input/read error. No summary on error.
