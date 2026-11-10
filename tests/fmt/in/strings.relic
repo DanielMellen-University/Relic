@@ -1,0 +1,7 @@
+let name = "Ada"
+let s = "a\nb\t\"c"
+let t = "hi { name }"
+let u = "a{1+2}b"
+let v = "{{not code}}"
+let w = "{ {a: 1} }"
+print(s, t, u, v, w)

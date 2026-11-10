@@ -71,6 +71,7 @@ if(RELIC_BUILD_HOST)
     src/lexer/lexer.cpp
     src/ast/ast.cpp
     src/parser/parser.cpp
+    src/fmt/fmt.cpp
     src/interp/value.cpp
     src/interp/gc.cpp
     src/interp/interp.cpp
@@ -237,6 +238,12 @@ if(RELIC_BUILD_HOST)
   add_test(NAME cli
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DTMP=${CMAKE_CURRENT_BINARY_DIR}/cli_test
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_cli.cmake)
+
+  # relic fmt: goldens, idempotence, and the same output from every .relic file.
+  add_test(NAME fmt
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/fmt_test
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_fmt.cmake)
 
   add_test(NAME vm_matches_tree_walker
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
