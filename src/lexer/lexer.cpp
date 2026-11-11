@@ -231,9 +231,10 @@ private:
             case '}':
                 if (!interp_.empty()) {
                     if (interp_.back().depth == 0) {
+                        auto origin = interp_.back();
                         interp_.pop_back();
                         emit(Tok::InterpEnd, "}", l, c);
-                        return string_body(line_, col_, false);
+                        return string_body(line_, col_, false, origin.line, origin.col);
                     }
                     --interp_.back().depth;
                     emit(Tok::RBrace, "}", l, c);
@@ -345,10 +346,11 @@ private:
 
     // Reads string text up to the closing quote or the next interpolation.
     // first: true when this segment starts right after the opening quote.
-    void string_body(int l, int c, bool first) {
+    void string_body(int l, int c, bool first, int origin_l = 0, int origin_c = 0) {
+        if (first) { origin_l = l; origin_c = c; }
         std::string text;
         while (true) {
-            if (eof() || peek() == '\n') error(l, c, "unterminated string");
+            if (eof() || peek() == '\n') error(origin_l, origin_c, "unterminated string");
             char ch = advance();
             if (ch == '"') {
                 emit(first ? Tok::String : Tok::StringEnd, text, l, c);
@@ -356,7 +358,7 @@ private:
             }
             if (ch == '\\') {
                 int el = line_, ec = col_ - 1;
-                if (eof()) error(l, c, "unterminated string");
+                if (eof()) error(origin_l, origin_c, "unterminated string");
                 char e = advance();
                 switch (e) {
                     case 'n': text += '\n'; break;
@@ -383,7 +385,7 @@ private:
                 if (peek() == '{') { advance(); text += '{'; continue; }
                 emit(Tok::StringPart, text, l, c);
                 emit(Tok::InterpStart, "{", line_, col_ - 1);
-                interp_.push_back({0, l, c});
+                interp_.push_back({0, origin_l, origin_c});
                 return;
             }
             if (ch == '}' && peek() == '}') { advance(); text += '}'; continue; }

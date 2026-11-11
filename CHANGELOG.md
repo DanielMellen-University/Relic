@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Unterminated interpolated strings point at the opening quote, including after multiple interpolations or a nested string. Segment positions in token dumps stay the same.
+
 - The optional C++ host builds with GCC 11: `Map` is defined after the `Value` stored in its hash table.
 
 - `relic fmt --write` keeps the original file when the write, flush, close, or replace fails: a short write that failed at flush used to empty the file and exit 0, and a failed rename used to delete the original before retrying. The temp file is unique per process and call, and the replacement is atomic on POSIX and uses MoveFileEx on Windows. The fmt test now runs fault-injection regressions for a write, close, and rename failure (tests/fmt/failio.c).

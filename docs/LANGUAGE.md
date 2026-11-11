@@ -196,6 +196,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 ```
 
 - The first line is always `file:line:col: error: message`, so tools can match it. The file is the one the error happened in, which may be a module.
+- An unterminated string points at its opening quote, including after an interpolation.
 - Under it come the source line and a caret under the column. Long lines are cut around the caret. The REPL leaves these two lines out.
 - Unknown names and missing map keys get a "did you mean" hint when a name one or two typos away exists.
 - Output printed before the error is kept.
