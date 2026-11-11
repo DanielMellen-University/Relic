@@ -12,7 +12,7 @@ fun _reject_control(line, column, c)
         _bad(line, column, "bare carriage return; use LF or CRLF line endings")
     if c == "\t"
         _bad(line, column, "control character 9 is unsupported; remove it or select --delimiter tsv for tabs")
-    _bad(line, column, "control character {ord(c)} is unsupported; remove it or select --delimiter tsv for tabs")
+    _bad(line, column, "control character {ord(c)} is unsupported; remove it")
 
 # One physical record. fields are {value, line, column} for the first
 # code point of each field (the opening quote, when there is one).
@@ -140,7 +140,7 @@ fun summarize(text as string, delimiter as string, key as string) as map
         if len(rec) != len(names)
             if len(rec) > len(names)
                 let extra = rec[len(names)]
-                _bad(extra.line, extra.column, "expected {len(names)} fields, got {len(rec)}; check the delimiter and supply empty trailing fields")
+                _bad(extra.line, extra.column, "expected {len(names)} fields, got {len(rec)}; check the delimiter and remove the extra fields")
             _bad(row.end_line, row.end_column, "expected {len(names)} fields, got {len(rec)}; check the delimiter and supply empty trailing fields")
         if key_index >= 0
             let key_field = rec[key_index]

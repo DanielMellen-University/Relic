@@ -245,6 +245,13 @@ if(RELIC_BUILD_HOST)
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/fmt_test
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_fmt.cmake)
 
+  # The formatter never writes into the source tree: parallel doc_counts and
+  # a formatter killed mid-run both leave it untouched.
+  add_test(NAME fmt_isolation
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/fmt_isolation_test
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_fmt_isolation.cmake)
+
   add_test(NAME vm_matches_tree_walker
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_vm.cmake)

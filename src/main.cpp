@@ -1,6 +1,7 @@
 #include "core.hpp"
 #include "fmt/fmt.hpp"
 
+#include <atomic>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -10,6 +11,7 @@
 
 #ifdef _WIN32
 #include <io.h>
+#include <windows.h>
 static bool stdin_is_terminal() { return _isatty(_fileno(stdin)) != 0; }
 static bool stdout_is_terminal() { return _isatty(_fileno(stdout)) != 0; }
 #else
@@ -30,28 +32,63 @@ static void usage() {
                  "       relic                       (no file: starts the REPL)\n";
 }
 
-// Writes text to path via a sibling temp file so a crash does not leave a half file.
+// A sibling temp name that is unique per process and per call, so two
+// concurrent formats never share one. The ".fmt-tmp" part stays so the
+// fault-injection tests can find the temp stream.
+static std::string unique_tmp_path(const std::string& path) {
+    static std::atomic<unsigned long> counter{0};
+    unsigned long n = counter.fetch_add(1);
+#ifdef _WIN32
+    unsigned long pid = static_cast<unsigned long>(GetCurrentProcessId());
+#else
+    unsigned long pid = static_cast<unsigned long>(getpid());
+#endif
+    return path + ".fmt-tmp." + std::to_string(pid) + "." + std::to_string(n);
+}
+
+// Replaces path with tmp. On POSIX rename already replaces the destination;
+// on Windows it does not, so use MoveFileEx. Never deletes the destination.
+static bool replace_file(const std::string& tmp, const std::string& path) {
+#ifdef _WIN32
+    return MoveFileExA(tmp.c_str(), path.c_str(),
+                       MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+#else
+    std::error_code ec;
+    std::filesystem::rename(tmp, path, ec);
+    return !ec;
+#endif
+}
+
+// Writes text to path via a sibling temp file so a crash does not leave a
+// half file. Every write, flush, close, or replace failure leaves the
+// original bytes untouched and returns false; the temp is removed.
 static bool write_file(const std::string& path, const std::string& text) {
-    std::string tmp = path + ".fmt-tmp";
+    std::string tmp = unique_tmp_path(path);
     {
         std::ofstream out(tmp, std::ios::binary | std::ios::trunc);
         if (!out) return false;
         out << text;
+        // The stream buffers: a short write can report success here and
+        // only fail when the buffer is flushed, so check the flush and
+        // the close too. The destructor flush is unchecked, so never
+        // rely on it.
+        out.flush();
         if (!out) {
             std::error_code ec;
             std::filesystem::remove(tmp, ec);
             return false;
         }
-    }
-    std::error_code ec;
-    std::filesystem::rename(tmp, path, ec);
-    if (ec) {
-        std::filesystem::remove(path, ec);
-        std::filesystem::rename(tmp, path, ec);
-        if (ec) {
+        out.close();
+        if (out.fail()) {
+            std::error_code ec;
             std::filesystem::remove(tmp, ec);
             return false;
         }
+    }
+    if (!replace_file(tmp, path)) {
+        std::error_code ec;
+        std::filesystem::remove(tmp, ec);
+        return false;
     }
     return true;
 }
