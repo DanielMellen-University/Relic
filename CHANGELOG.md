@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `relic fmt --write` keeps the original file when the write, flush, close, or replace fails: a short write that failed at flush used to empty the file and exit 0, and a failed rename used to delete the original before retrying. The temp file is unique per process and call, and the replacement is atomic on POSIX and uses MoveFileEx on Windows. The fmt test now runs fault-injection regressions for a write, close, and rename failure (tests/fmt/failio.c).
+- The fmt test no longer writes `.fmt-corpus.relic` beside sources: the formatted copy runs in a mirror of the source tree under the test dir, so a parallel doc_counts run cannot see a formatter temp file. A fmt_isolation test runs doc_counts in a loop while fmt runs, and kills fmt mid-run, and checks the source tree stays untouched.
 - `relic fmt` prints a file in canonical form. `--write` updates it in place. `--check` exits 1 when a file would change. Comments are kept. A file that does not parse is left alone. See [FMT.md](docs/FMT.md).
 - `strings.starts_with` and `ends_with` fail when one side is a string and the other is a list: `strings.starts_with(): prefix must be a string, got list` (it was `false`; the 1.0.53 note left this for later). Same-kind calls are unchanged. Golden `std_strings_affix_mixed`.
 - `math.lcm` of `-2^63` and any non-zero int is `int overflow`, the same overflow other results past the int range report. It named `math.abs` before. `lcm` with `0` is still `0`. Golden `std_math_lcm_min_int`.
