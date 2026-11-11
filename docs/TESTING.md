@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 448 ctest cases: 406 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 890: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 451 ctest cases: 407 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 896: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -29,6 +29,7 @@ Each test is a set of files in `tests/golden/` with the same name:
 | `name.in` | optional standard input for the program (since 1.0.31); without it the program gets empty input, never the terminal |
 
 - Each `tests/golden/*.relic` file is its own ctest case (`golden_name`), run by `tools/run_golden.cmake` from inside `tests/golden/`. Helper modules live in `tests/golden/modules/` and are not run on their own.
+- `map_value_types` checks maps holding every ordinary value kind; building it also exercises the host value header on GCC 11.
 - Paths in `.err` files are written relative to `tests/golden/`.
 - Files named `repl_*.relic` are typed into `relic` on stdin. Their stdout must match `.out` and their stderr `.err` (each empty if the file is missing).
 - A program that reads standard input (`os.read_line()`) gets `name.in` on stdin, in `golden_name`, `cgen_name` and in the VM and `selfhost_interp` comparisons. `.gitattributes` marks `*.in` as binary (`-text`), so CRLF and odd bytes in them are kept as written, on Windows too.
@@ -48,10 +49,10 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (464 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (465 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
-| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (412 today) |
-| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (412 today) |
+| `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (413 today) |
+| `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (413 today) |
 
 Three more self-host cases check the interpreter on real use:
 
@@ -108,13 +109,15 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 | Test | Checks |
 |---|---|
 | `c_runtime` | unit tests for values, operators, messages, built-ins, files, the cycle collector, the high-DPI rounding (`src/builtins/gfx_scale.h`), the small public calls (type names, `repr`, fields, range starts, the number reader), and that nothing leaks |
+| `c_runtime_hardening` | runtime allocation and value safety checks |
+| `c_runtime_input` | standard input, prompts and line endings |
 | `c_demo` | the hand-compiled `tests/demo.c` prints exactly `tests/golden/c_demo.out` |
 
 `golden_c_demo` runs the same program on the C++ host, so a change to either side shows up. `selfhost_interp` compares it too (since 1.0.21; it recurses 800 calls deep).
 
 ## Compiled golden tests
 
-Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (406 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 406 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers that `use` an example program and expect the same bytes as its `.out`. Details in [CGEN.md](CGEN.md#tests).
+Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (407 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 407 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers that `use` an example program and expect the same bytes as its `.out`. Details in [CGEN.md](CGEN.md#tests).
 
 In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 
