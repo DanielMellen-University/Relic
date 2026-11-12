@@ -8,6 +8,7 @@
 // close through an internal alias the preload cannot see.)
 //
 //   FAIL_FMT_WRITE fails fwrite/write/writev on the .fmt-tmp stream.
+//   FAIL_FMT_FLUSH fails fflush on the .fmt-tmp stream.
 //   FAIL_FMT_RENAME fails rename when the destination contains "victim.relic".
 //   FAIL_FMT_CLOSE fails close on the .fmt-tmp file descriptor.
 //
@@ -60,12 +61,18 @@ FILE *fopen(const char *path, const char *mode) {
 ssize_t write(int fd, const void *buf, size_t n) {
     ssize_t (*real)(int, const void *, size_t) = dlsym(RTLD_NEXT, "write");
     if (getenv("FAIL_FMT_WRITE") && fd == tmp_fd) { errno = ENOSPC; return -1; }
+    if (getenv("FAIL_FMT_FLUSH") && fd == tmp_fd) { errno = ENOSPC; return -1; }
     return real(fd, buf, n);
 }
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t (*real)(const void *, size_t, size_t, FILE *) = dlsym(RTLD_NEXT, "fwrite");
     if (getenv("FAIL_FMT_WRITE") && stream == tmp_file) { errno = ENOSPC; return 0; }
     return real(ptr, size, nmemb, stream);
+}
+int fflush(FILE *stream) {
+    int (*real)(FILE *) = dlsym(RTLD_NEXT, "fflush");
+    if (getenv("FAIL_FMT_FLUSH") && stream == tmp_file) { errno = ENOSPC; return EOF; }
+    return real(stream);
 }
 ssize_t writev(int fd, const struct iovec *iov, int cnt) {
     ssize_t (*real)(int, const void *, size_t) = dlsym(RTLD_NEXT, "writev");

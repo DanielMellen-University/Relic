@@ -259,6 +259,7 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" AND fmt_cc)
     endif()
   endfunction()
   fmt_fault("write" "FAIL_FMT_WRITE=1")
+  fmt_fault("flush" "FAIL_FMT_FLUSH=1")
   fmt_fault("rename" "FAIL_FMT_RENAME=1")
   fmt_fault("close" "FAIL_FMT_CLOSE=1")
   # Control: with no fault the same write lands.
