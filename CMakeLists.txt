@@ -260,6 +260,16 @@ if(RELIC_BUILD_HOST)
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_unreadable_input.cmake)
   set_tests_properties(selfhost_ast_unreadable PROPERTIES SKIP_REGULAR_EXPRESSION "unreadable-skip:")
 
+  set(check_input_tool)
+  if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
+    set(check_input_tool -DTOOL=$<TARGET_FILE:cgen_selfhost_check>)
+  endif()
+  add_test(NAME selfhost_check_unreadable
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DDRIVER=check ${check_input_tool} -DTMP=${CMAKE_CURRENT_BINARY_DIR}/unreadable_check
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_unreadable_input.cmake)
+  set_tests_properties(selfhost_check_unreadable PROPERTIES SKIP_REGULAR_EXPRESSION "unreadable-skip:")
+
   # The command line as CLI.md describes it.
   add_test(NAME cli
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DTMP=${CMAKE_CURRENT_BINARY_DIR}/cli_test

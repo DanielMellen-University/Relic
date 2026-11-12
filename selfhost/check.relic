@@ -311,7 +311,12 @@ fun warn(path, lines, it)
 
 # Checks one file; gives the exit code the host gives for it (0, 1).
 fun check_file(path)
-    let src = files.read(path)
+    let src = none
+    try
+        src = files.read(path)
+    catch err
+        eprint("relic: cannot open {path}")
+        return 2
     let lexed = lexer.lex(src)
     let err = lexed.err
     let tree = none
