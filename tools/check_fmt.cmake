@@ -153,6 +153,12 @@ string(REPLACE "\r\n" "\n" out "${out}")
 if(NOT code EQUAL 1 OR NOT out STREQUAL "${TMP}/dirty_b.relic\n${TMP}/dirty_a.relic\n" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt --check path order: exit ${code}\n${out}${err}")
 endif()
+execute_process(COMMAND ${RELIC} fmt --check ${TMP}/missing.relic ${TMP}/dirty_a.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+if(NOT code EQUAL 2 OR NOT out STREQUAL "${TMP}/dirty_a.relic\n" OR
+   NOT err STREQUAL "relic: cannot open ${TMP}/missing.relic\n")
+  message(FATAL_ERROR "fmt --check missing and dirty: exit ${code}\n${out}${err}")
+endif()
 file(WRITE ${TMP}/write_dirty.relic "${messy}")
 file(WRITE ${TMP}/write_clean.relic "${neat}")
 execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_dirty.relic ${TMP}/write_clean.relic
