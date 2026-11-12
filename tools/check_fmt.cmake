@@ -124,6 +124,17 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR
    NOT wrote_dirty STREQUAL neat OR NOT wrote_clean STREQUAL neat)
   message(FATAL_ERROR "fmt --write multiple files: exit ${code}\n--- stdout\n${out}--- stderr\n${err}--- dirty\n${wrote_dirty}--- clean\n${wrote_clean}")
 endif()
+file(WRITE ${TMP}/write_bad.relic "let x =\n")
+file(WRITE ${TMP}/write_after_bad.relic "${messy}")
+execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_bad.relic ${TMP}/write_after_bad.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+string(REPLACE "\r\n" "\n" err "${err}")
+file(READ ${TMP}/write_bad.relic kept_bad)
+file(READ ${TMP}/write_after_bad.relic wrote_after_bad)
+if(NOT code EQUAL 1 OR NOT out STREQUAL "" OR NOT err MATCHES "expected an expression, got end of line" OR
+   NOT kept_bad STREQUAL "let x =\n" OR NOT wrote_after_bad STREQUAL neat)
+  message(FATAL_ERROR "fmt --write after syntax error: exit ${code}\n--- stdout\n${out}--- stderr\n${err}--- bad\n${kept_bad}--- later\n${wrote_after_bad}")
+endif()
 
 # --- every .relic file in the tree ---
 # The formatted copy lives in a mirror of the source tree under TMP, never
