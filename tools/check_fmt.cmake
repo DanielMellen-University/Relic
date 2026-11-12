@@ -106,6 +106,14 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR NOT crlf_wr
   message(FATAL_ERROR "fmt --write CRLF: exit ${code}\n${out}${err}--- file\n${crlf_wrote}")
 endif()
 
+# Formatting adds the canonical final newline when the input has none.
+file(WRITE ${TMP}/no_final_newline.relic "print( 1 )")
+execute_process(COMMAND ${RELIC} fmt ${TMP}/no_final_newline.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+if(NOT code EQUAL 0 OR NOT out STREQUAL "print(1)\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt missing final newline: exit ${code}\n${out}${err}")
+endif()
+
 # With several inputs, --check prints only the paths that would change.
 file(WRITE ${TMP}/dirty.relic "${messy}")
 file(WRITE ${TMP}/clean.relic "${neat}")
