@@ -348,8 +348,10 @@ fun main(argv)
             code = 2
         else
             let r = check_file(path)
-            if r != 0 and code == 0
-                code = r
+            if r == 2
+                code = 2
+            if r == 1 and code == 0
+                code = 1
     return code
 
 let status = main(args())

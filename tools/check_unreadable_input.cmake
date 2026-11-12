@@ -62,6 +62,33 @@ function(expect_input_error label want_err)
   endif()
 endfunction()
 
+if(DRIVER STREQUAL "check")
+  set(bad_file "${TMP}/check error.relic")
+  file(WRITE "${bad_file}" "print(undefined_name)\n")
+  function(expect_check_error_priority label)
+    execute_process(COMMAND ${RELIC} check "${bad_file}" "${input}" WORKING_DIRECTORY "${TMP}"
+      INPUT_FILE "${SRC}/tools/empty.in" TIMEOUT 20
+      OUTPUT_VARIABLE want_out ERROR_VARIABLE want_err RESULT_VARIABLE want_code)
+    execute_process(COMMAND ${ARGN} WORKING_DIRECTORY "${TMP}"
+      INPUT_FILE "${SRC}/tools/empty.in" TIMEOUT 20
+      OUTPUT_VARIABLE got_out ERROR_VARIABLE got_err RESULT_VARIABLE got_code)
+    string(REPLACE "\r\n" "\n" want_err "${want_err}")
+    string(REPLACE "\r\n" "\n" got_err "${got_err}")
+    if(NOT want_code STREQUAL "2" OR NOT got_code STREQUAL "2" OR
+       NOT got_out STREQUAL want_out OR NOT got_err STREQUAL want_err)
+      string(APPEND failures "${label}: expected host check exit 2 and identical output; got exit ${got_code}\n--- stdout\n${got_out}--- stderr\n${got_err}--- host stdout\n${want_out}--- host stderr\n${want_err}")
+      set(failures "${failures}" PARENT_SCOPE)
+    endif()
+  endfunction()
+  if(RELIC)
+    expect_check_error_priority("host VM multi-file" ${RELIC} "${SRC}/selfhost/check.relic" "${bad_file}" "${input}")
+    expect_check_error_priority("host tree multi-file" ${RELIC} --tree "${SRC}/selfhost/check.relic" "${bad_file}" "${input}")
+  endif()
+  if(TOOL)
+    expect_check_error_priority("compiled multi-file" ${TOOL} "${bad_file}" "${input}")
+  endif()
+endif()
+
 set(output_args)
 if(DRIVER STREQUAL "cgen")
   set(output_args -o "${TMP}/output.c")
