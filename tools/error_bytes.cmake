@@ -1,5 +1,7 @@
 # Compare stderr as bytes: execute_process's string outputs discard NUL.
 # Semicolon-separated hex bytes keep replacements on byte boundaries.
+# file(READ ... HEX) works on CMake 3.16. Converting a string to hex in
+# memory needs 3.18, so a path prefix is written out and read back as hex.
 function(error_bytes hex out)
   string(REGEX REPLACE "(..)" "\\1;" data "${hex}")
   string(REPLACE "0d;0a;" "0a;" data "${data}")
@@ -10,11 +12,15 @@ function(check_error_bytes hex path dir label)
   error_bytes("${hex}" got)
   file(TO_CMAKE_PATH "${dir}" dir_fwd)
   file(TO_NATIVE_PATH "${dir}" dir_native)
+  string(RANDOM LENGTH 12 ALPHABET 0123456789abcdef prefix_id)
+  set(prefix_file "${CMAKE_CURRENT_BINARY_DIR}/${label}.${prefix_id}.prefix")
   foreach(prefix "${dir}/" "${dir_fwd}/" "${dir_native}\\")
-    string(HEX "${prefix}" prefix_hex)
+    file(WRITE "${prefix_file}" "${prefix}")
+    file(READ "${prefix_file}" prefix_hex HEX)
     error_bytes("${prefix_hex}" prefix_bytes)
     string(REPLACE "${prefix_bytes}" "" got "${got}")
   endforeach()
+  file(REMOVE "${prefix_file}")
   file(READ "${path}" expected_hex HEX)
   error_bytes("${expected_hex}" expected)
   if(NOT got STREQUAL expected)
