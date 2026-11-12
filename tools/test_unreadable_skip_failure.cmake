@@ -68,12 +68,37 @@ file(WRITE "${marker_project}/fail.cmake"
 execute_process(COMMAND "${CMAKE_COMMAND}" -S "${marker_project}" -B "${marker_build}"
   OUTPUT_VARIABLE configure_out ERROR_VARIABLE configure_err RESULT_VARIABLE configure_code)
 if(NOT configure_code STREQUAL "0")
-  message(FATAL_ERROR "could not configure marker classification check\n${configure_out}${configure_err}")
+  string(REPLACE "unreadable-skip:" "unreadable-skip (failure):" configure_failure "${configure_out}${configure_err}")
+  message(FATAL_ERROR "could not configure marker classification check\n${configure_failure}")
 endif()
 execute_process(COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${marker_build}" --output-on-failure
   OUTPUT_VARIABLE marker_out ERROR_VARIABLE marker_err RESULT_VARIABLE marker_code)
 if(marker_code STREQUAL "0" OR NOT "${marker_out}${marker_err}" MATCHES "Failed" OR
    "${marker_out}${marker_err}" MATCHES "Skipped")
-  message(FATAL_ERROR "CTest did not classify a marked forced failure as Failed\n${marker_out}${marker_err}")
+  string(REPLACE "unreadable-skip:" "unreadable-skip (failure):" marker_failure "${marker_out}${marker_err}")
+  message(FATAL_ERROR "CTest did not classify a marked forced failure as Failed\n${marker_failure}")
+endif()
+
+# A failing tool can itself print the skip marker. The helper must sanitize
+# that stderr before its FATAL_ERROR, or CTest classifies this test as skipped.
+if(NOT WIN32)
+  find_program(test_program test)
+  if(test_program)
+    set(injected_tmp "${TMP}/injected_marker")
+    set(injected_tool "${TMP}/injected_marker_tool.cmake")
+    file(WRITE "${injected_tool}" "message(FATAL_ERROR \"unreadable-skip: injected\")\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}"
+      "-DRELIC=${RELIC}" "-DSRC=${SRC}" "-DDRIVER=run" "-DTOOL=${CMAKE_COMMAND}"
+      "-DTOOL_ARGS=-P;${injected_tool}" "-DFORCE_PERMISSION_CHECK=1" "-DTMP=${injected_tmp}"
+      -P "${SRC}/tools/check_unreadable_input.cmake"
+      OUTPUT_VARIABLE injected_out ERROR_VARIABLE injected_err RESULT_VARIABLE injected_code)
+    string(FIND "${injected_out}${injected_err}" "unreadable-skip:" injected_marker)
+    string(FIND "${injected_out}${injected_err}" "unreadable-skip (failure): injected" injected_sanitized_marker)
+    if(injected_code STREQUAL "0" OR
+       NOT injected_marker EQUAL -1 OR injected_sanitized_marker EQUAL -1)
+      string(REPLACE "unreadable-skip:" "unreadable-skip (failure):" injected_failure "${injected_out}${injected_err}")
+      message(FATAL_ERROR "tool stderr marker was not reported as a sanitized failure\n${injected_failure}")
+    endif()
+  endif()
 endif()
 message("unreadable fixtures are restored after passes and failures")
