@@ -42,6 +42,7 @@ for pr in [["/a", "b"], ["a", "/b"], ["../a", "b"]]
 # dotfile and on a name with two dots
 print(paths.relative("/a/b", "/a/b"), paths.relative("/a", "/a/b/c"), paths.relative("a/b", "a"))
 print(paths.with_ext(".bashrc", ".txt"), paths.with_ext("x.tar.gz", ".zip"), paths.with_ext("dir.d/file", ".md"))
+print(paths.with_ext("file.", ".md"), paths.with_ext("file.", ""))
 # base after a trailing slash is empty; stem keeps a dotfile's whole name and
 # takes only the last ext off
 print([paths.base("a/b/")], [paths.base("/")], paths.stem(".bashrc"), paths.stem("a.tar.gz"), paths.base("c.txt"))
