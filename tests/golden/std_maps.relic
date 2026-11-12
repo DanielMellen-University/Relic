@@ -71,3 +71,8 @@ for f in [non_bool, throws]
         maps.filter({a: 1}, f)
     catch e
         print(e.message)
+fun throws_value(v) = 1 / 0
+try
+    maps.map_values({a: 1}, throws_value)
+catch e
+    print(e.message)
