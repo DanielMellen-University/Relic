@@ -68,6 +68,8 @@ expect("missing file after --tree" 2 "^$" "^relic: cannot open nofile.relic\n$" 
 expect("args" 0 "^\\[\"--x\", \"y\"\\]\n$" "^$" args.relic --x y)
 expect("args, --tree" 0 "^\\[\"--x\"\\]\n$" "^$" --tree args.relic --x)
 expect("args, --vm" 0 "^\\[\"1\"\\]\n$" "^$" --vm args.relic 1)
+expect_exact("args with spaces and flags" 0 "[\"two words\", \"--x\"]\n" "" args.relic "two words" --x)
+expect_exact("args with spaces and flags, --tree" 0 "[\"two words\", \"--x\"]\n" "" --tree args.relic "two words" --x)
 
 # Exit codes of a run: error 1, os.exit(n) as given, output before either is kept.
 expect("runtime error" 1 "^before\n$" "division by zero" boom.relic)
