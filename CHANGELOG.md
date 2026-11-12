@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `selfhost/run.relic` reports unreadable input as `relic: cannot open FILE` and exits 2, matching a missing file, instead of reporting an error inside the runner and exiting 1.
+
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.
 
 - Compiled programs print the complete uncaught error message even when it contains a NUL byte. Error goldens now compare raw stderr bytes so this cannot hide in CMake string output.

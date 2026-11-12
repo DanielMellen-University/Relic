@@ -48,3 +48,16 @@ Additional boundary probes found these defects:
 
 These rows are observations, not new language rules. Each behavior change needs
 its own regression and the corresponding language or CLI documentation.
+
+## Unreadable command-line input
+
+Follow-up to the frozen `e768961` baseline. Permission probes found that the
+self-hosted command drivers and `relicc` reported unreadable input as errors
+inside their own source, with exit 1. The regression fixture uses chmod 000 on
+a path with spaces and restores its permissions before checking results. It
+skips with a reason where Unix permissions cannot deny reads, including root
+and Windows.
+
+| Tool fixed | Verified result | Regression |
+|---|---|---|
+| `selfhost/run.relic` | exit 2, empty stdout, `relic: cannot open FILE`; host VM and tree-walker | `selfhost_run_unreadable`, failed before the fix and passed after it |
