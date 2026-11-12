@@ -84,7 +84,7 @@ Three more self-host cases check the interpreter on real use:
 
 `selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
 
-The unreadable-input regression uses `tools/check_unreadable_input.cmake`. It restores the fixture's permissions before checking results. It reports a ctest skip with a reason on Windows, as root, when the Unix permission tools are missing, or when chmod cannot deny reads on the filesystem.
+The unreadable-input regression uses `tools/check_unreadable_input.cmake`. It restores fixture permissions before checking results. It reports a ctest skip with a reason on Windows, as root, when the Unix permission tools are missing, or when chmod cannot deny reads on the filesystem. The skip-failure regression checks that failure output containing the skip marker is sanitized, so CTest reports the failure instead of a skip.
 
 The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.md](ARCHITECTURE.md#self-host).
 
