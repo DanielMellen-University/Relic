@@ -97,6 +97,15 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt --check clean: exit ${code}\n${out}${err}")
 endif()
 
+# --write normalizes CRLF source to canonical LF output.
+file(WRITE ${TMP}/crlf.relic "print( 1 )\r\n")
+execute_process(COMMAND ${RELIC} fmt --write ${TMP}/crlf.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+file(READ ${TMP}/crlf.relic crlf_wrote)
+if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR NOT crlf_wrote STREQUAL "print(1)\n")
+  message(FATAL_ERROR "fmt --write CRLF: exit ${code}\n${out}${err}--- file\n${crlf_wrote}")
+endif()
+
 # With several inputs, --check prints only the paths that would change.
 file(WRITE ${TMP}/dirty.relic "${messy}")
 file(WRITE ${TMP}/clean.relic "${neat}")
