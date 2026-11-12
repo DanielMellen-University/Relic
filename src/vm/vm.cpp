@@ -821,8 +821,11 @@ private:
         ss << f.rdbuf();
         auto prog = std::make_unique<Program>();
         prog->file = file;
+        add_value(*prog, use_path.substr(use_path.find_last_of('/') + 1));
+        Program* p = prog.get();
+        mods_[key] = std::move(prog);  // a failed parse stays loaded too, as on the tree-walker
         try {
-            prog->tree = parse(lex(ss.str()));
+            p->tree = parse(lex(ss.str()));
         } catch (const LexError& e) {
             RuntimeError r(e.line, e.col, e.what());
             r.file = file;
@@ -832,10 +835,7 @@ private:
             r.file = file;
             throw r;
         }
-        Compiler(*prog).compile_main(*prog->tree);
-        add_value(*prog, use_path.substr(use_path.find_last_of('/') + 1));
-        Program* p = prog.get();
-        mods_[key] = std::move(prog);  // before running, so cycles find it
+        Compiler(*p).compile_main(*p->tree);
         try {
             run(*p->protos[0], nullptr);
         } catch (RuntimeError& e) {

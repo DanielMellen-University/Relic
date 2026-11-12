@@ -1,12 +1,16 @@
+cmake_policy(SET CMP0053 NEW)
+include(${CMAKE_CURRENT_LIST_DIR}/error_bytes.cmake)
 # Golden test runner. Usage:
 #   cmake -DRELIC=path/to/relic -DTEST=tests/golden/name.relic -P tools/run_golden.cmake
 # Optional name.args holds flags to pass first.
 # Optional name.in is fed to the program on stdin (a file without it gets no input).
 # Files named repl_*.relic are fed to `relic` on stdin instead; stdout is
-# compared with .out and stderr with .err (both optional, empty if missing).
+# compared with .out and stderr bytes with .err (both optional, empty if missing).
 # Compares stdout with name.out, or stderr with name.err (and exit code 1) for error tests.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
+string(RANDOM LENGTH 12 ALPHABET 0123456789abcdef error_id)
+set(stderr_file "${CMAKE_CURRENT_BINARY_DIR}/${name}.${error_id}.stderr")
 # Optional name.args: extra flags placed before the file, e.g. --tokens
 set(args "")
 if(EXISTS ${dir}/${name}.args)
@@ -27,7 +31,7 @@ if(is_repl)
     INPUT_FILE ${TEST}
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE out
-    ERROR_VARIABLE err
+    ERROR_FILE "${stderr_file}"
     RESULT_VARIABLE code)
 else()
   execute_process(
@@ -35,28 +39,32 @@ else()
     INPUT_FILE ${stdin_file}
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE out
-    ERROR_VARIABLE err
+    ERROR_FILE "${stderr_file}"
     RESULT_VARIABLE code)
 endif()
+file(READ "${stderr_file}" err)
+file(READ "${stderr_file}" err_hex HEX)
+file(REMOVE "${stderr_file}")
 string(REPLACE "\r\n" "\n" out "${out}")
 string(REPLACE "\r\n" "\n" err "${err}")
 
 if(is_repl)
   set(want_out "")
-  set(want_err "")
   if(EXISTS ${dir}/${name}.out)
     file(READ ${dir}/${name}.out want_out)
   endif()
-  if(EXISTS ${dir}/${name}.err)
-    file(READ ${dir}/${name}.err want_err)
-  endif()
   string(REPLACE "\r\n" "\n" want_out "${want_out}")
-  string(REPLACE "\r\n" "\n" want_err "${want_err}")
   if(NOT out STREQUAL want_out)
     message(FATAL_ERROR "${name}: stdout mismatch\n--- want\n${want_out}--- got\n${out}")
   endif()
-  if(NOT err STREQUAL want_err)
-    message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want_err}--- got\n${err}")
+  # Same byte comparison as error goldens. A string read of .err drops NUL.
+  if(EXISTS ${dir}/${name}.err)
+    check_error_bytes("${err_hex}" "${dir}/${name}.err" "${dir}" "${name}")
+  else()
+    error_bytes("${err_hex}" got_err)
+    if(NOT got_err STREQUAL "")
+      message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n--- got\n${err}")
+    endif()
   endif()
   return()
 endif()
@@ -72,9 +80,7 @@ if(EXISTS ${dir}/${name}.err)
   if(NOT code EQUAL 1)
     message(FATAL_ERROR "${name}: expected an error and exit 1, got exit ${code}")
   endif()
-  if(NOT err STREQUAL want)
-    message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want}--- got\n${err}")
-  endif()
+  check_error_bytes("${err_hex}" "${dir}/${name}.err" "${dir}" "${name}")
 else()
   set(want "")
   if(EXISTS ${dir}/${name}.out)

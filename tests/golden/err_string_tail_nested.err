@@ -1,0 +1,3 @@
+err_string_tail_nested.relic:1:7: error: unterminated string
+    print("x {"inner {2}"} tail
+          ^

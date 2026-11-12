@@ -104,9 +104,27 @@ endif()
 # of a neighbour (including ../) resolves exactly as in the source tree.
 set(mirror ${TMP}/corpus-tree)
 file(REMOVE_RECURSE ${mirror})
+# An in-tree build directory contains this mirror. Copying a directory named
+# only "build" leaves build-host (and any other build*) to be copied into
+# itself until the path overflows. build* excludes those names. The live
+# build directory is excluded too when it sits inside the source tree under
+# some other name. Source entries are not named build*.
+get_filename_component(src_abs "${SRC}" ABSOLUTE)
+get_filename_component(build_abs "${CMAKE_BINARY_DIR}" ABSOLUTE)
+file(RELATIVE_PATH build_rel "${src_abs}" "${build_abs}")
+set(build_inside 0)
+set(build_name_exclude)
+if(NOT build_rel STREQUAL "" AND NOT build_rel STREQUAL "." AND NOT build_rel MATCHES "^\\.\\.")
+  set(build_inside 1)
+  get_filename_component(build_name "${build_abs}" NAME)
+  if(NOT build_name MATCHES "^build")
+    set(build_name_exclude PATTERN "${build_name}" EXCLUDE)
+  endif()
+endif()
 file(COPY ${SRC}/ DESTINATION ${mirror}
   PATTERN ".git" EXCLUDE
-  PATTERN "build" EXCLUDE
+  PATTERN "build*" EXCLUDE
+  ${build_name_exclude}
   PATTERN "*.fmt-tmp*" EXCLUDE
   PATTERN ".fmt-corpus.relic" EXCLUDE)
 file(GLOB_RECURSE corpus LIST_DIRECTORIES false ${SRC}/*.relic)
@@ -117,6 +135,12 @@ foreach(src ${corpus})
   file(RELATIVE_PATH rel ${SRC} ${src})
   if(rel MATCHES "(^|/)build")
     continue()
+  endif()
+  if(build_inside)
+    string(FIND "${rel}/" "${build_rel}/" build_at)
+    if(build_at EQUAL 0)
+      continue()
+    endif()
   endif()
   fmt_of(${src} once err code)
   execute_process(COMMAND ${RELIC} --ast ${src}

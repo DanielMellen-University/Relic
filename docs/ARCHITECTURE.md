@@ -114,6 +114,8 @@ Fastest of 7 runs, Release, VM, before and after the speed pass (commit 76cfc43)
 
 ## Values
 
+`Map` is defined after `Value` in the host header because its hash table stores complete values. This also lets GCC 11 build the optional host.
+
 One `Value` type: none, bool, int, float, string, list, map, function, built-in, module.
 
 A `List` keeps its items in a vector that can start `head_` slots in: removing or inserting in the front half moves the items before the index instead of those after it, and the free slots are given back once they are over half (1.0.42). A `Map` (`src/interp/value.hpp`) is a hash table of the values and a list of the keys in insertion order. `remove` leaves a hole in that list, found through a key-to-position index the map builds at its first remove, and the list is compacted once holes are over half of it, so a remove is O(1) on average (1.0.41; before, it searched and shifted the whole list).

@@ -1,3 +1,5 @@
+cmake_policy(SET CMP0053 NEW)
+include(${CMAKE_CURRENT_LIST_DIR}/error_bytes.cmake)
 # Runs one golden program compiled to C by selfhost/cgen.relic. Usage:
 #   cmake -DEXE=path/to/cgen_name -DTEST=tests/golden/name.relic -P tools/run_cgen.cmake
 # Same checks as run_golden.cmake: stdout against name.out, or stderr against
@@ -6,6 +8,8 @@
 # "cgen-skip: ..." and the test is reported as skipped.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
+string(RANDOM LENGTH 12 ALPHABET 0123456789abcdef error_id)
+set(stderr_file "${CMAKE_CURRENT_BINARY_DIR}/${name}.${error_id}.stderr")
 # name.in is the program's stdin; without it stdin is empty.
 set(stdin_file ${dir}/${name}.in)
 if(NOT EXISTS ${stdin_file})
@@ -16,8 +20,11 @@ execute_process(
   INPUT_FILE ${stdin_file}
   WORKING_DIRECTORY ${dir}
   OUTPUT_VARIABLE out
-  ERROR_VARIABLE err
+  ERROR_FILE "${stderr_file}"
   RESULT_VARIABLE code)
+file(READ "${stderr_file}" err)
+file(READ "${stderr_file}" err_hex HEX)
+file(REMOVE "${stderr_file}")
 string(REPLACE "\r\n" "\n" out "${out}")
 string(REPLACE "\r\n" "\n" err "${err}")
 if(out MATCHES "^cgen-skip: ")
@@ -38,9 +45,7 @@ if(EXISTS ${dir}/${name}.err)
   if(NOT code EQUAL 1)
     message(FATAL_ERROR "${name}: expected an error and exit 1, got exit ${code}")
   endif()
-  if(NOT err STREQUAL want)
-    message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want}--- got\n${err}")
-  endif()
+  check_error_bytes("${err_hex}" "${dir}/${name}.err" "${dir}" "${name}")
 else()
   set(want "")
   if(EXISTS ${dir}/${name}.out)

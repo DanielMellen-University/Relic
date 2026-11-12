@@ -181,6 +181,7 @@ catch err
 could not read it: num(): not a number: "12x"
 ```
 
+- A module whose syntax error was caught stays loaded with no names. A later `use` returns that same module without parsing it again.
 - Every runtime error can be caught: from your code, from built-ins, from `use`, and "too much recursion". Syntax errors in the main file cannot, since nothing runs.
 - `catch err` binds a map `{message, line, col}`. `catch` with no name is allowed. A `try` needs a `catch`.
 - `fail("message")` raises an error. The message must be a string.
@@ -196,6 +197,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 ```
 
 - The first line is always `file:line:col: error: message`, so tools can match it. The file is the one the error happened in, which may be a module.
+- An unterminated string points at its opening quote, including after an interpolation.
 - Under it come the source line and a caret under the column. Long lines are cut around the caret. The REPL leaves these two lines out.
 - Unknown names and missing map keys get a "did you mean" hint when a name one or two typos away exists.
 - Output printed before the error is kept.
@@ -212,6 +214,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 ## Strings
 
 - Double quotes only. Escapes: `\n`, `\t`, `\"`, `\\`, and `\u{hex}` for a code point (1 to 6 hex digits, no surrogates).
+- Brackets inside an interpolation must match inside that expression; they cannot close a bracket outside the string.
 - `{expr}` inserts a value. `{{` and `}}` write literal braces. A lone `{` starts an interpolation, so escape it when you mean a brace.
 - Strings are UTF-8 and count characters (code points): `len("héllo")` is `5`, `s[1]` is `"é"`, and `slice` and `for c in s` go by character. Error columns count characters too.
 - A byte that is not valid UTF-8 counts as one character, so binary files still load.

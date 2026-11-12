@@ -133,6 +133,8 @@ catch_1:
 end_try_1:
 ```
 
+Error messages are written by length, including any NUL bytes; reporting an uncaught error does not truncate its message.
+
 At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: the same `file:line:col: error: message` line, source line and caret as the host. With `source` NULL it reads the file named in the error, as the host does.
 
 ## Built-ins and host primitives

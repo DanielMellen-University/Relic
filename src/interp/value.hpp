@@ -14,6 +14,7 @@ namespace relic {
 
 struct Value;
 struct Env;
+struct Map;
 
 // A list's items, with the vector calls the interpreter uses. Removing near
 // the front moves the items before the removed one up a slot instead of the
@@ -56,41 +57,6 @@ struct List : GcObj {
 private:
     std::vector<Value> items_;
     size_t head_ = 0;  // slots in front of the first item
-};
-
-// Map that keeps insertion order, so printing and `for k in map` are stable.
-// The order is a list of keys in which a removed key leaves a hole, and a
-// key-to-position index (built at the first remove) finds the hole to make, so
-// remove is O(1) on average instead of a search and a shift of the list. When
-// holes are over half of the list it is compacted.
-struct Map : GcObj {
-    Map() = default;
-    Map(const Map&) = default;
-    Map(Map&&) = default;
-    Map& operator=(const Map&) = default;
-    Map& operator=(Map&&) = default;
-    ~Map() override;
-    std::unordered_map<std::string, Value> items;
-    bool has(const std::string& k) const;
-    void set(const std::string& k, Value v);
-    // Removes k if it is there (true) and keeps the order of the rest.
-    bool remove(const std::string& k);
-    size_t size() const { return items.size(); }
-    // f(key) for each key in order.
-    template <class F> void each_key(F f) const {
-        for (size_t i = 0; i < order_.size(); ++i)
-            if (gone_.empty() || !gone_[i]) f(order_[i]);
-    }
-    std::vector<std::string> key_list() const;
-    void trace(std::vector<GcObj*>& out) const override;
-    void clear_refs() override;
-
-private:
-    std::vector<std::string> order_;              // keys in insertion order, with holes
-    std::vector<char> gone_;                      // 1 for a hole; empty until the first remove
-    std::unordered_map<std::string, size_t> pos_;  // key -> place in order_, once gone_ is in use
-    size_t holes_ = 0;
-    void compact();
 };
 
 struct Function : GcObj {
@@ -165,6 +131,41 @@ struct Value {
     template <class T> bool is() const { return std::holds_alternative<T>(v); }
     template <class T> const T& as() const { return std::get<T>(v); }
 };
+// Map that keeps insertion order, so printing and `for k in map` are stable.
+// The order is a list of keys in which a removed key leaves a hole, and a
+// key-to-position index (built at the first remove) finds the hole to make, so
+// remove is O(1) on average instead of a search and a shift of the list. When
+// holes are over half of the list it is compacted.
+struct Map : GcObj {
+    Map() = default;
+    Map(const Map&) = default;
+    Map(Map&&) = default;
+    Map& operator=(const Map&) = default;
+    Map& operator=(Map&&) = default;
+    ~Map() override;
+    std::unordered_map<std::string, Value> items;
+    bool has(const std::string& k) const;
+    void set(const std::string& k, Value v);
+    // Removes k if it is there (true) and keeps the order of the rest.
+    bool remove(const std::string& k);
+    size_t size() const { return items.size(); }
+    // f(key) for each key in order.
+    template <class F> void each_key(F f) const {
+        for (size_t i = 0; i < order_.size(); ++i)
+            if (gone_.empty() || !gone_[i]) f(order_[i]);
+    }
+    std::vector<std::string> key_list() const;
+    void trace(std::vector<GcObj*>& out) const override;
+    void clear_refs() override;
+
+private:
+    std::vector<std::string> order_;              // keys in insertion order, with holes
+    std::vector<char> gone_;                      // 1 for a hole; empty until the first remove
+    std::unordered_map<std::string, size_t> pos_;  // key -> place in order_, once gone_ is in use
+    size_t holes_ = 0;
+    void compact();
+};
+
 template <class... A> Value& List::emplace_back(A&&... a) { return items_.emplace_back(std::forward<A>(a)...); }
 inline void List::push_back(const Value& v) { items_.push_back(v); }
 inline void List::push_back(Value&& v) { items_.push_back(std::move(v)); }

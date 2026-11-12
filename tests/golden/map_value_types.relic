@@ -1,0 +1,5 @@
+fun identity(x) = x
+let values = {"none": none, "bool": true, "int": 7, "float": 2.5, "string": "é", "list": [1], "map": {"x": 1}, "function": identity}
+print(len(values))
+for key in values
+    print(key, type(values[key]))

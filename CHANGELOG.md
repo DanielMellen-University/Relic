@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.
+
+- Compiled programs print the complete uncaught error message even when it contains a NUL byte. Error goldens now compare raw stderr bytes so this cannot hide in CMake string output.
+
+- The VM keeps a module loaded after a caught syntax error. A later `use` returns the same empty module, matching the tree-walker, self-hosted interpreter and compiled program.
+
+- Unterminated interpolated strings point at the opening quote, including after multiple interpolations or a nested string. Segment positions in token dumps stay the same.
+
+- The optional C++ host builds with GCC 11: `Map` is defined after the `Value` stored in its hash table.
+
 - `relic fmt --write` keeps the original file when the write, flush, close, or replace fails: a short write that failed at flush used to empty the file and exit 0, and a failed rename used to delete the original before retrying. The temp file is unique per process and call, and the replacement is atomic on POSIX and uses MoveFileEx on Windows. The fmt test now runs fault-injection regressions for a write, close, and rename failure (tests/fmt/failio.c).
 - The fmt test no longer writes `.fmt-corpus.relic` beside sources: the formatted copy runs in a mirror of the source tree under the test dir, so a parallel doc_counts run cannot see a formatter temp file. A fmt_isolation test runs doc_counts in a loop while fmt runs, and kills fmt mid-run, and checks the source tree stays untouched.
 - Tablecheck tells rows with too many fields to remove the extra fields, not to supply empty trailing fields: that repair text only fits rows with too few fields. A control character other than a tab no longer suggests `--delimiter tsv`, which only fits a tab in CSV; formfeed, DEL, and the other control characters say to remove the character.

@@ -188,7 +188,7 @@ fun open(st, ch, l, c)
     append(st.brackets, {ch: ch, line: l, col: c})
 
 fun close(st, want, got, l, c)
-    if len(st.brackets) == 0 or last(st.brackets).ch != want
+    if (len(st.interp) > 0 and last(st.interp).depth == 0) or len(st.brackets) == 0 or last(st.brackets).ch != want
         fail(st, l, c, "unmatched '{got}'")
         return
     pop(st.brackets)
@@ -226,11 +226,11 @@ fun name(st, l, c)
         emit(st, "NAME", word, l, c)
 
 # String text up to the closing quote or the next {. first: right after the quote.
-fun string_body(st, l, c, first)
+fun string_body(st, l, c, first, origin_l, origin_c)
     let parts = []
     while true
         if eof(st) or peek(st, 0) == "\n"
-            fail(st, l, c, "unterminated string")
+            fail(st, origin_l, origin_c, "unterminated string")
             return
         let ch = advance(st)
         if ch == "\""
@@ -243,7 +243,7 @@ fun string_body(st, l, c, first)
             let el = st.line
             let ec = st.col - 1
             if eof(st)
-                fail(st, l, c, "unterminated string")
+                fail(st, origin_l, origin_c, "unterminated string")
                 return
             let e = advance(st)
             if e == "n"
@@ -276,7 +276,7 @@ fun string_body(st, l, c, first)
                 next
             emit(st, "STRING_PART", _cat(parts, 0, len(parts)), l, c)
             emit(st, "INTERP_START", "{{", st.line, st.col - 1)
-            append(st.interp, {depth: 0, line: l, col: c})
+            append(st.interp, {depth: 0, line: origin_l, col: origin_c})
             return
         if ch == "}}" and peek(st, 0) == "}}"
             advance(st)
@@ -311,7 +311,7 @@ fun token(st)
         return name(st, l, c)
     if ch == "\""
         advance(st)
-        return string_body(st, l, c, true)
+        return string_body(st, l, c, true, l, c)
     advance(st)
     if ch in singles
         emit(st, singles[ch], ch, l, c)
@@ -336,11 +336,7 @@ fun token(st)
         open(st, "[", l, c)
         emit(st, "LBRACKET", "[", l, c)
     else if ch == "{{"
-        if len(st.interp) > 0
-            let top = last(st.interp)
-            top.depth = top.depth + 1
-        else
-            open(st, "{{", l, c)
+        open(st, "{{", l, c)
         emit(st, "LBRACE", "{{", l, c)
     else if ch == ")"
         close(st, "(", ")", l, c)
@@ -356,9 +352,10 @@ fun token(st)
             if top.depth == 0
                 pop(st.interp)
                 emit(st, "INTERP_END", "}}", l, c)
-                return string_body(st, st.line, st.col, false)
-            top.depth = top.depth - 1
-            emit(st, "RBRACE", "}}", l, c)
+                return string_body(st, st.line, st.col, false, top.line, top.col)
+            close(st, "{{", "}}", l, c)
+            if st.err == none
+                emit(st, "RBRACE", "}}", l, c)
             return
         close(st, "{{", "}}", l, c)
         if st.err == none
