@@ -1,0 +1,4 @@
+try
+    if true
+        let nested = {value: [1, (2 + 3)]}
+        print(nested.value)
