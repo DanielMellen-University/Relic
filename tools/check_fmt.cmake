@@ -114,6 +114,16 @@ string(REPLACE "\r\n" "\n" out "${out}")
 if(NOT code EQUAL 1 OR NOT out STREQUAL "${TMP}/dirty_b.relic\n${TMP}/dirty_a.relic\n" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt --check path order: exit ${code}\n${out}${err}")
 endif()
+file(WRITE ${TMP}/write_dirty.relic "${messy}")
+file(WRITE ${TMP}/write_clean.relic "${neat}")
+execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_dirty.relic ${TMP}/write_clean.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+file(READ ${TMP}/write_dirty.relic wrote_dirty)
+file(READ ${TMP}/write_clean.relic wrote_clean)
+if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR
+   NOT wrote_dirty STREQUAL neat OR NOT wrote_clean STREQUAL neat)
+  message(FATAL_ERROR "fmt --write multiple files: exit ${code}\n--- stdout\n${out}--- stderr\n${err}--- dirty\n${wrote_dirty}--- clean\n${wrote_clean}")
+endif()
 
 # --- every .relic file in the tree ---
 # The formatted copy lives in a mirror of the source tree under TMP, never
