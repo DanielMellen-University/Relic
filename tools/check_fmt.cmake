@@ -106,6 +106,14 @@ string(REPLACE "\r\n" "\n" out "${out}")
 if(NOT code EQUAL 1 OR NOT out STREQUAL "${TMP}/dirty.relic\n" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt --check mixed files: exit ${code}\n${out}${err}")
 endif()
+file(WRITE ${TMP}/dirty_a.relic "${messy}")
+file(WRITE ${TMP}/dirty_b.relic "${messy}")
+execute_process(COMMAND ${RELIC} fmt --check ${TMP}/dirty_b.relic ${TMP}/dirty_a.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+string(REPLACE "\r\n" "\n" out "${out}")
+if(NOT code EQUAL 1 OR NOT out STREQUAL "${TMP}/dirty_b.relic\n${TMP}/dirty_a.relic\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt --check path order: exit ${code}\n${out}${err}")
+endif()
 
 # --- every .relic file in the tree ---
 # The formatted copy lives in a mirror of the source tree under TMP, never
