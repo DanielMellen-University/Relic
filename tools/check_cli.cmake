@@ -45,6 +45,8 @@ set(usage "^usage: relic ")
 
 expect("version" 0 "^relic [0-9]+\\.[0-9]+\\.[0-9]+\n$" "^$" --version)
 expect("help" 0 "^$" "${usage}" --help)
+expect("help with extra words" 2 "^$" "${usage}" --help extra)
+expect("version with extra words" 2 "^$" "${usage}" --version extra)
 expect("unknown flag" 2 "^$" "${usage}" --bogus)
 expect("--vm without a file" 2 "^$" "${usage}" --vm)
 expect("--tree without a file" 2 "^$" "${usage}" --tree)
