@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The VM keeps a module loaded after a caught syntax error. A later `use` returns the same empty module, matching the tree-walker, self-hosted interpreter and compiled program.
+
 - Unterminated interpolated strings point at the opening quote, including after multiple interpolations or a nested string. Segment positions in token dumps stay the same.
 
 - The optional C++ host builds with GCC 11: `Map` is defined after the `Value` stored in its hash table.

@@ -1,0 +1,9 @@
+try
+    use modules/bad_syntax
+catch err
+    print("first:", err.message)
+try
+    use modules/bad_syntax
+    print("loaded on retry")
+catch err
+    print("second:", err.message)

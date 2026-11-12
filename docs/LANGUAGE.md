@@ -181,6 +181,7 @@ catch err
 could not read it: num(): not a number: "12x"
 ```
 
+- A module whose syntax error was caught stays loaded with no names. A later `use` returns that same module without parsing it again.
 - Every runtime error can be caught: from your code, from built-ins, from `use`, and "too much recursion". Syntax errors in the main file cannot, since nothing runs.
 - `catch err` binds a map `{message, line, col}`. `catch` with no name is allowed. A `try` needs a `catch`.
 - `fail("message")` raises an error. The message must be a string.
