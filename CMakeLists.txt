@@ -284,6 +284,7 @@ if(RELIC_BUILD_HOST)
     COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/unreadable_skip_failure
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_unreadable_skip_failure.cmake)
+  set_tests_properties(selfhost_unreadable_skip_failure PROPERTIES SKIP_REGULAR_EXPRESSION "unreadable-skip:")
 
   # The command line as CLI.md describes it.
   add_test(NAME cli

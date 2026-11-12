@@ -79,7 +79,7 @@ Three more self-host cases check the interpreter on real use:
 | `selfhost_tokens_unreadable` | `selfhost/tokens.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
 | `selfhost_ast_unreadable` | `selfhost/ast.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
 | `selfhost_check_unreadable` | `selfhost/check.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
-| `selfhost_unreadable_skip_failure` | `tools/check_unreadable_input.cmake` with a simulated imported-fixture skip | a recorded main-input failure is reported instead of being hidden by the ctest skip marker |
+| `selfhost_unreadable_skip_failure` | `tools/check_unreadable_input.cmake` with a simulated imported-fixture skip | a recorded main-input failure is reported instead of being hidden by the ctest skip marker; skips when unreadable-file checks are unavailable |
 | `selfhost_cgen_unreadable` | `selfhost/cgen.relic` on the host VM and tree-walker, plus compiled `relicc` when available | unreadable main input or imported module gives exit 3, empty stdout and exactly `relicc: cannot open FILE`; also checks `--stub` for the main input |
 
 `selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
