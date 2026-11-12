@@ -97,6 +97,16 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt --check clean: exit ${code}\n${out}${err}")
 endif()
 
+# With several inputs, --check prints only the paths that would change.
+file(WRITE ${TMP}/dirty.relic "${messy}")
+file(WRITE ${TMP}/clean.relic "${neat}")
+execute_process(COMMAND ${RELIC} fmt --check ${TMP}/dirty.relic ${TMP}/clean.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+string(REPLACE "\r\n" "\n" out "${out}")
+if(NOT code EQUAL 1 OR NOT out STREQUAL "${TMP}/dirty.relic\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt --check mixed files: exit ${code}\n${out}${err}")
+endif()
+
 # --- every .relic file in the tree ---
 # The formatted copy lives in a mirror of the source tree under TMP, never
 # beside the original: a parallel doc_counts or selfhost glob must never see
