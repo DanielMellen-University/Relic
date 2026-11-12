@@ -27,6 +27,18 @@ if(NOT EXISTS ${TMP}/ok.c)
   message(FATAL_ERROR "ok.c was not written")
 endif()
 
+# --root may contain spaces; source paths inside it are emitted as relative names.
+set(root_space "${TMP}/source root with spaces")
+file(MAKE_DIRECTORY "${root_space}/sub")
+file(WRITE "${root_space}/sub/main.relic" "print(1)\n")
+execute_process(COMMAND ${RELICC} "${root_space}/sub/main.relic" -o ${TMP}/root_space.c --root "${root_space}"
+  RESULT_VARIABLE got OUTPUT_VARIABLE out ERROR_VARIABLE err)
+file(READ ${TMP}/root_space.c generated)
+if(NOT got STREQUAL "0" OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR
+   NOT generated MATCHES "sub/main.relic" OR generated MATCHES "source root with spaces")
+  message(FATAL_ERROR "--root with spaces: exit ${got}\n${out}${err}")
+endif()
+
 # --stub emits a standalone C program for a syntax error, suitable for a build
 # that compiles every input even when relicc refuses one.
 file(WRITE ${TMP}/stub_bad.relic "let x as integer = 1\n")
