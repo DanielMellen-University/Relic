@@ -1195,9 +1195,16 @@ fun module_uses(cg, o)
         append(o, "        MOD[" + i + "] = rl_module_scoped(" + c_string(m.name).lit + ", MS[" + i + "], " + str(len(m.names)) + ", NM" + i + ");")
         if m.err != none
             let k = konst(cg, m.err.msg)
-            let p = str(m.err.line) + ", " + str(m.err.col)
+            let line = str(m.err.line)
+            let col = str(m.err.col)
+            let end = col
+            if "end" in m.err and m.err.end != none and m.err.end >= m.err.col
+                end = str(m.err.end)
+            let hint = "NULL"
+            if "hint" in m.err and m.err.hint != none and m.err.hint != ""
+                hint = c_string(m.err.hint).lit
             append(o, "        rl_fail_str(cx, (rl_str *)K[" + str(k) + "].u.o);")
-            append(o, "        rl_at3(cx, RLC_FILES[" + i + "], RLC_STD[" + i + "], " + p + ", " + p + ", " + p + ");")
+            append(o, "        rl_at_note(cx, RLC_FILES[" + i + "], RLC_STD[" + i + "], " + line + ", " + col + ", " + end + ", " + hint + ");")
             append(o, "        return RL_ERR;")
         else
             append(o, "        if (rlc_mod_" + i + "(cx, MS[" + i + "])) return RL_ERR;")

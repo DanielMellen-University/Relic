@@ -470,10 +470,14 @@ Value Interpreter::load_module(const Ast& use) {
     } catch (const LexError& e) {
         RuntimeError r(e.line, e.col, e.what());
         r.file = file;
+        r.end_col = e.end_col;
+        r.hint = e.hint;
         throw r;
     } catch (const ParseError& e) {
         RuntimeError r(e.line, e.col, e.what());
         r.file = file;
+        r.end_col = e.end_col;
+        r.hint = e.hint;
         throw r;
     }
     const Ast& prog = *module_trees_.back();

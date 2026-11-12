@@ -31,6 +31,16 @@ function(expect label code out_re err_re)
   endif()
 endfunction()
 
+function(expect_exact label code want_out want_err)
+  execute_process(COMMAND ${RELIC} ${ARGN} WORKING_DIRECTORY ${TMP}
+    OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE got)
+  string(REPLACE "\r\n" "\n" out "${out}")
+  string(REPLACE "\r\n" "\n" err "${err}")
+  if(NOT got STREQUAL code OR NOT out STREQUAL want_out OR NOT err STREQUAL want_err)
+    message(FATAL_ERROR "${label}: exit ${got}, wanted ${code}\n--- stdout\n${out}--- wanted stdout\n${want_out}--- stderr\n${err}--- wanted stderr\n${want_err}")
+  endif()
+endfunction()
+
 set(usage "^usage: relic ")
 
 expect("version" 0 "^relic [0-9]+\\.[0-9]+\\.[0-9]+\n$" "^$" --version)
@@ -53,6 +63,20 @@ expect("args, --vm" 0 "^\\[\"1\"\\]\n$" "^$" --vm args.relic 1)
 expect("runtime error" 1 "^before\n$" "division by zero" boom.relic)
 expect("runtime error, --tree" 1 "^before\n$" "division by zero" --tree boom.relic)
 expect("os.exit" 3 "^before\n$" "^$" exit3.relic)
+
+# Module lex/parse errors retain their source span and hint on both engines.
+file(WRITE ${TMP}/module_main.relic "use module_lex_bad\n")
+file(WRITE ${TMP}/module_lex_bad.relic "print(1 && 2)\n")
+set(module_lex_error "module_lex_bad.relic:1:9: error: unexpected '&&'\n    print(1 && 2)\n            ^^\nhint: Relic uses 'and', not '&&'\n")
+expect_exact("module lexer note" 1 "" "${module_lex_error}" module_main.relic)
+expect_exact("module lexer note, --tree" 1 "" "${module_lex_error}" --tree module_main.relic)
+expect_exact("module lexer note, self-host" 1 "" "${module_lex_error}" ${SRC}/selfhost/run.relic module_main.relic)
+file(WRITE ${TMP}/module_parse_bad.relic "let x as integer = 1\n")
+file(WRITE ${TMP}/module_main.relic "use module_parse_bad\n")
+set(module_parse_error "module_parse_bad.relic:1:10: error: unknown type 'integer'; use any, none, bool, int, float, number, string, list, map, function or module\n    let x as integer = 1\n             ^^^^^^^\nhint: did you mean 'int'?\n")
+expect_exact("module parser note" 1 "" "${module_parse_error}" module_main.relic)
+expect_exact("module parser note, --tree" 1 "" "${module_parse_error}" --tree module_main.relic)
+expect_exact("module parser note, self-host" 1 "" "${module_parse_error}" ${SRC}/selfhost/run.relic module_main.relic)
 
 # relic check
 expect("check clean" 0 "^$" "^$" check clean.relic)

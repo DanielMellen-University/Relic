@@ -760,6 +760,8 @@ int rl_fail_str(rl_ctx *cx, rl_str *msg) {
     cx->err_msg = msg;
     cx->has_err = 1;
     cx->err_line = cx->err_col = 0;
+    cx->err_end_col = 0;
+    cx->err_hint = NULL;
     cx->err_arg = 0;
     cx->err_file = NULL;
     cx->err_std = 0;
@@ -818,6 +820,16 @@ void rl_at3(rl_ctx *cx, const char *file, int in_std, int l, int c, int l1, int 
     else rl_at(cx, file, l, c);
 }
 
+void rl_at_note(rl_ctx *cx, const char *file, int in_std, int line, int col, int end_col, const char *hint) {
+    if (!cx->has_err || cx->err_line) return;
+    cx->err_file = file;
+    cx->err_std = in_std;
+    cx->err_line = line;
+    cx->err_col = col;
+    cx->err_end_col = end_col;
+    cx->err_hint = hint;
+}
+
 void rl_interp(int n, const rl_value *parts, rl_value *out) {
     buf b = {0, 0, 0};
     int i;
@@ -840,16 +852,18 @@ int rl_catch(rl_ctx *cx, rl_value *out) {
     cx->err_msg = NULL;
     cx->has_err = 0;
     cx->err_line = cx->err_col = 0;
+    cx->err_end_col = 0;
+    cx->err_hint = NULL;
     cx->err_file = NULL;
     *out = m;
     return 1;
 }
 
 /* Port of diag::snippet in src/diag/diag.cpp. */
-static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
+static void snippet(FILE *to, const char *src, size_t len, int line, int col, int end_col) {
     const char *p = src, *end, *stop;
     size_t n, from = 0, i;
-    int k;
+    int k, marks;
     if (!src || line < 1 || col < 1) return;
     stop = src + len;
     for (k = 1; k < line; ++k) {   /* by length, not to a NUL: a line can hold NUL bytes */
@@ -879,6 +893,7 @@ static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
         p += from;
         n = to_ - from;
         col -= (int)cut;
+        end_col -= (int)cut;
     }
     fputs("    ", to);
     fwrite(p, 1, n, to);
@@ -892,7 +907,10 @@ static void snippet(FILE *to, const char *src, size_t len, int line, int col) {
             ++chars;
         }
     }
-    fputs("^\n", to);
+    marks = end_col >= col ? end_col - col + 1 : 1;
+    if (marks > 200) marks = 200;
+    while (marks-- > 0) fputc('^', to);
+    fputc('\n', to);
 }
 
 /* With no source text, the file is read now, as the host does. */
@@ -922,7 +940,8 @@ void rl_report(rl_ctx *cx, FILE *to, const char *source) {
     fwrite(cx->err_msg->data, 1, cx->err_msg->len, to);
     fputc('\n', to);
     if (!source && cx->err_file) source = owned = read_whole(cx->err_file, &len);
-    snippet(to, source, len, cx->err_line, cx->err_col);
+    snippet(to, source, len, cx->err_line, cx->err_col, cx->err_end_col);
+    if (cx->err_hint && cx->err_hint[0]) fprintf(to, "hint: %s\n", cx->err_hint);
     free(owned);
 }
 
@@ -1000,6 +1019,8 @@ void rl_std_boundary(rl_ctx *cx, rl_value fv) {
         return;
     }
     cx->err_line = cx->err_col = 0;
+    cx->err_end_col = 0;
+    cx->err_hint = NULL;
     cx->err_arg = 0;
     cx->err_file = NULL;
     cx->err_std = 0;
@@ -1010,6 +1031,8 @@ void rl_ctx_init(rl_ctx *cx, int argc, char **argv) {
     cx->has_err = 0;
     cx->err_msg = NULL;
     cx->err_line = cx->err_col = 0;
+    cx->err_end_col = 0;
+    cx->err_hint = NULL;
     cx->err_arg = 0;
     cx->err_file = NULL;
     cx->err_std = 0;

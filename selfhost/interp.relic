@@ -1123,7 +1123,7 @@ fun use_module(rt, st, n, en)
             rt.file = file
             append(st, [k_block, parsed.tree, mod.scope, 0])
             return none
-    rt.err = {line: err.line, col: err.col, msg: err.msg, file: file}
+    rt.err = {line: err.line, col: err.col, end: err.end, hint: err.hint, msg: err.msg, file: file}
 
 fun bind_module(n, en, m)
     if len(n.kids) > 0

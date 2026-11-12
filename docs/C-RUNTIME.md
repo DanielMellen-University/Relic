@@ -135,7 +135,7 @@ end_try_1:
 
 Error messages are written by length, including any NUL bytes; reporting an uncaught error does not truncate its message.
 
-At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: the same `file:line:col: error: message` line, source line and caret as the host. With `source` NULL it reads the file named in the error, as the host does.
+At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: the same `file:line:col: error: message` line, source line and caret as the host. When an error carries a span or hint, it prints the full underline and `hint:` line too. With `source` NULL it reads the file named in the error, as the host does.
 
 ## Built-ins and host primitives
 
@@ -198,6 +198,7 @@ Added in C2 and C3 for `selfhost/cgen.relic`:
 |---|---|
 | `rl_unset()` | a value of kind `RL_UNSET`: a slot whose `let` has not run yet. New scope slots start unset. It never reaches Relic code |
 | `rl_at3(cx, file, in_std, l, c, l1, c1, l2, c2)` | sets the error position to the node (`l`, `c`), or to its first or second operand when the failing call said the error is about that one. Calls say so in `cx->err_arg` (0 node, 1 first, 2 second): index and key errors point at the index, a bad range start or end at that end, as on the host. `rl_fail` resets it. `in_std` says the code is in a `std/` module; it is kept in `cx->err_std` with the position |
+| `rl_at_note(cx, file, in_std, line, col, end_col, hint)` | sets a diagnostic position with an inclusive underline end and optional hint. Generated module lex and parse failures use it to keep the host's module diagnostic |
 | `rl_module_scoped(name, scope, n, names)` | a module value over a compiled module's top-level scope (see Objects) |
 | `rl_fun_std(f, stem)` | marks a function as defined in the std module `stem` (`"files"`); returns `f` |
 | `rl_std_boundary(cx, f)` | called by code outside `std/` after a call to `f` failed. If `f` is a std function and the error happened inside `std/`, a `host_*` message gets the std name (`host_list_dir(): x` becomes `files.list(): x`) and the position is cleared, so the caller marks its call site, as the host does |

@@ -47,6 +47,13 @@ std::string format_noted(const std::string& path, const E& e) {
     return diag::format(path, e.line, e.col, e.what(), n);
 }
 
+std::string format_runtime(const std::string& path, const RuntimeError& e) {
+    diag::Note note;
+    note.end_col = e.end_col;
+    note.hint = e.hint;
+    return diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message(), note);
+}
+
 }  // namespace
 
 RunResult dump_tokens(const std::string& path, const std::string& source) {
@@ -101,7 +108,7 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
+        r.err = format_runtime(path, e);
     }
     return r;
 }
@@ -126,7 +133,7 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
         r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
+        r.err = format_runtime(path, e);
     }
     return r;
 }
