@@ -43,6 +43,7 @@ Additional boundary probes found these defects:
 | Malformed exponent | `1e+` suggests separating a name from a number instead of completing the exponent. |
 | Malformed UTF-8 | A lone continuation byte inside a string costs no column on the host, but one on the self-hosted path. Snippet padding also skips that byte. |
 | Module parse retry | Fixed: the VM now keeps a module registered after a caught syntax error, as the other three paths already did. |
+| Uncaught NUL message | Fixed: compiled error reporting writes the full message by length; the golden runners compare raw stderr bytes too. |
 | Module syntax notes | Lex and parse errors loaded with `use` lose their hint and underline span. |
 
 These rows are observations, not new language rules. Each behavior change needs

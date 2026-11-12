@@ -917,8 +917,10 @@ void rl_report(rl_ctx *cx, FILE *to, const char *source) {
     char *owned = NULL;
     size_t len = source ? strlen(source) : 0;
     if (!cx->has_err) return;
-    fprintf(to, "%s:%d:%d: error: %s\n", cx->err_file ? cx->err_file : "<program>", cx->err_line,
-            cx->err_col, cx->err_msg->data);
+    fprintf(to, "%s:%d:%d: error: ", cx->err_file ? cx->err_file : "<program>", cx->err_line,
+            cx->err_col);
+    fwrite(cx->err_msg->data, 1, cx->err_msg->len, to);
+    fputc('\n', to);
     if (!source && cx->err_file) source = owned = read_whole(cx->err_file, &len);
     snippet(to, source, len, cx->err_line, cx->err_col);
     free(owned);
