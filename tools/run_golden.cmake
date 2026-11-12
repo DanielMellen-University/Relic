@@ -5,7 +5,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/error_bytes.cmake)
 # Optional name.args holds flags to pass first.
 # Optional name.in is fed to the program on stdin (a file without it gets no input).
 # Files named repl_*.relic are fed to `relic` on stdin instead; stdout is
-# compared with .out and stderr with .err (both optional, empty if missing).
+# compared with .out and stderr bytes with .err (both optional, empty if missing).
 # Compares stdout with name.out, or stderr with name.err (and exit code 1) for error tests.
 get_filename_component(dir ${TEST} DIRECTORY)
 get_filename_component(name ${TEST} NAME_WE)
@@ -50,20 +50,21 @@ string(REPLACE "\r\n" "\n" err "${err}")
 
 if(is_repl)
   set(want_out "")
-  set(want_err "")
   if(EXISTS ${dir}/${name}.out)
     file(READ ${dir}/${name}.out want_out)
   endif()
-  if(EXISTS ${dir}/${name}.err)
-    file(READ ${dir}/${name}.err want_err)
-  endif()
   string(REPLACE "\r\n" "\n" want_out "${want_out}")
-  string(REPLACE "\r\n" "\n" want_err "${want_err}")
   if(NOT out STREQUAL want_out)
     message(FATAL_ERROR "${name}: stdout mismatch\n--- want\n${want_out}--- got\n${out}")
   endif()
-  if(NOT err STREQUAL want_err)
-    message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n${want_err}--- got\n${err}")
+  # Same byte comparison as error goldens. A string read of .err drops NUL.
+  if(EXISTS ${dir}/${name}.err)
+    check_error_bytes("${err_hex}" "${dir}/${name}.err" "${dir}" "${name}")
+  else()
+    error_bytes("${err_hex}" got_err)
+    if(NOT got_err STREQUAL "")
+      message(FATAL_ERROR "${name}: stderr mismatch\n--- want\n--- got\n${err}")
+    endif()
   endif()
   return()
 endif()
