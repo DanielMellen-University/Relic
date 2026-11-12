@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.
+
 - Compiled programs print the complete uncaught error message even when it contains a NUL byte. Error goldens now compare raw stderr bytes so this cannot hide in CMake string output.
 
 - The VM keeps a module loaded after a caught syntax error. A later `use` returns the same empty module, matching the tree-walker, self-hosted interpreter and compiled program.

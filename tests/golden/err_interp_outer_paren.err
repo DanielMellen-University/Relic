@@ -1,0 +1,3 @@
+err_interp_outer_paren.relic:1:10: error: unmatched ')'
+    print("{1)}")
+             ^

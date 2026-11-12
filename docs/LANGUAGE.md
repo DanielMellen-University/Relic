@@ -214,6 +214,7 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 ## Strings
 
 - Double quotes only. Escapes: `\n`, `\t`, `\"`, `\\`, and `\u{hex}` for a code point (1 to 6 hex digits, no surrogates).
+- Brackets inside an interpolation must match inside that expression; they cannot close a bracket outside the string.
 - `{expr}` inserts a value. `{{` and `}}` write literal braces. A lone `{` starts an interpolation, so escape it when you mean a brace.
 - Strings are UTF-8 and count characters (code points): `len("héllo")` is `5`, `s[1]` is `"é"`, and `slice` and `for c in s` go by character. Error columns count characters too.
 - A byte that is not valid UTF-8 counts as one character, so binary files still load.

@@ -222,8 +222,7 @@ private:
             case '(': open('(', l, c); emit(Tok::LParen, "(", l, c); return;
             case '[': open('[', l, c); emit(Tok::LBracket, "[", l, c); return;
             case '{':
-                if (!interp_.empty()) ++interp_.back().depth;
-                else open('{', l, c);
+                open('{', l, c);
                 emit(Tok::LBrace, "{", l, c);
                 return;
             case ')': close('(', ')', l, c); emit(Tok::RParen, ")", l, c); return;
@@ -236,7 +235,7 @@ private:
                         emit(Tok::InterpEnd, "}", l, c);
                         return string_body(line_, col_, false, origin.line, origin.col);
                     }
-                    --interp_.back().depth;
+                    close('{', '}', l, c);
                     emit(Tok::RBrace, "}", l, c);
                     return;
                 }
@@ -291,7 +290,8 @@ private:
         brackets_.push_back({ch, l, c});
     }
     void close(char want, char got, int l, int c) {
-        if (brackets_.empty() || brackets_.back().ch != want)
+        if ((!interp_.empty() && interp_.back().depth == 0) ||
+            brackets_.empty() || brackets_.back().ch != want)
             error(l, c, std::string("unmatched '") + got + "'");
         brackets_.pop_back();
         if (!interp_.empty() && interp_.back().depth > 0) --interp_.back().depth;

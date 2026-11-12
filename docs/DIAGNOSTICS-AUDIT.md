@@ -39,7 +39,7 @@ Additional boundary probes found these defects:
 |---|---|
 | GCC 11 host build | `Map` instantiates its hash table before `Value` is complete; the host does not build. Fixed by defining `Map` after `Value`. `map_value_types` covers its value kinds. |
 | Unterminated interpolated string | Fixed: retain the opening quote separately from segment token positions, including nested strings and later interpolations. |
-| Brackets inside interpolation | `print("{(1}")` blames an unterminated string instead of the mismatched `}`; a closer can also consume an outer bracket. |
+| Brackets inside interpolation | Fixed: every nested bracket is checked, and closers cannot cross the interpolation boundary. |
 | Malformed exponent | `1e+` suggests separating a name from a number instead of completing the exponent. |
 | Malformed UTF-8 | A lone continuation byte inside a string costs no column on the host, but one on the self-hosted path. Snippet padding also skips that byte. |
 | Module parse retry | Fixed: the VM now keeps a module registered after a caught syntax error, as the other three paths already did. |
