@@ -64,3 +64,10 @@ try
     maps.map_values({}, "f")
 catch e
     print(e.message)
+fun non_bool(k, v) = 1
+fun throws(k, v) = 1 / 0
+for f in [non_bool, throws]
+    try
+        maps.filter({a: 1}, f)
+    catch e
+        print(e.message)
