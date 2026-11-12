@@ -87,6 +87,10 @@ expect_exact("check warning and missing file" 2 "" "${check_mixed_error}" check 
 expect("check missing" 2 "^$" "^relic: cannot open nofile.relic\n$" check nofile.relic)
 expect("check a folder" 2 "^$" "^relic: cannot open \\.\n$" check .)
 expect("check without files" 2 "^$" "${usage}" check)
+file(WRITE ${TMP}/warnings_a.relic "print(first_unknown)\nprint(second_unknown)\n")
+file(WRITE ${TMP}/warnings_b.relic "print(third_unknown)\nprint(fourth_unknown)\n")
+set(check_order_error "warnings_b.relic:1:7: warning: 'third_unknown' is not defined\n    print(third_unknown)\n          ^\nwarnings_b.relic:2:7: warning: 'fourth_unknown' is not defined\n    print(fourth_unknown)\n          ^\nwarnings_a.relic:1:7: warning: 'first_unknown' is not defined\n    print(first_unknown)\n          ^\nwarnings_a.relic:2:7: warning: 'second_unknown' is not defined\n    print(second_unknown)\n          ^\n")
+expect_exact("check file and finding order" 1 "" "${check_order_error}" check warnings_b.relic warnings_a.relic)
 
 # The REPL on piped input: no prompts, an error does not stop it, exit 0
 set(stdin_file ${TMP}/chunks.relic)
