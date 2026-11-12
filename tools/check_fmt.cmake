@@ -159,6 +159,13 @@ if(NOT code EQUAL 2 OR NOT out STREQUAL "${TMP}/dirty_a.relic\n" OR
    NOT err STREQUAL "relic: cannot open ${TMP}/missing.relic\n")
   message(FATAL_ERROR "fmt --check missing and dirty: exit ${code}\n${out}${err}")
 endif()
+set(spaced_file "${TMP}/file with spaces.relic")
+file(WRITE "${spaced_file}" "${messy}")
+execute_process(COMMAND ${RELIC} fmt --check "${spaced_file}"
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+if(NOT code EQUAL 1 OR NOT out STREQUAL "${spaced_file}\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt --check path with spaces: exit ${code}\n${out}${err}")
+endif()
 file(WRITE ${TMP}/write_dirty.relic "${messy}")
 file(WRITE ${TMP}/write_clean.relic "${neat}")
 execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_dirty.relic ${TMP}/write_clean.relic
