@@ -298,12 +298,12 @@ hello from a consuming project
 HELLO
 ```
 
-Host, in `build-host` so the README tree stayed C-only. Same flags as the README host section:
+Host, in the existing `build` directory in this worktree:
 
 ```
-cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
-cmake --build build-host
-ctest --test-dir build-host --output-on-failure
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
 918 passed, 0 failed, 204.73 s. Among them: `vm_matches_tree_walker`, `bootstrap_matches_host`, `bootstrap_fresh`, `bootstrap_fixed_point`, `cgen_stage1_matches_host`, `cgen_fixed_point`, `doc_counts`, `selfhost_lexer`, `selfhost_parser`, `selfhost_interp`, `selfhost_check`, `selfhost_check_unreadable`, `selfhost_unreadable_skip_failure`. `build/relic --version` printed `relic 1.0.53`. A pipe of `print(1 + 2)` and `:quit` into `build/relic` printed `3` and exited 0. There was no banner, because stdin was not a terminal.
