@@ -1,0 +1,2 @@
+# Self-host lexer parity: keep a quoted NUL and control escapes in token text.
+let controls = "nul:\u{0} tab:\t bell:\u{7}"
