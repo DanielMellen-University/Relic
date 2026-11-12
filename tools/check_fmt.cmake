@@ -114,6 +114,20 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "print(1)\n" OR NOT err STREQUAL "")
   message(FATAL_ERROR "fmt missing final newline: exit ${code}\n${out}${err}")
 endif()
 
+# Empty files stay empty, and comment-only files trim trailing blank lines.
+file(WRITE ${TMP}/empty.relic "")
+execute_process(COMMAND ${RELIC} fmt ${TMP}/empty.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt empty file: exit ${code}\n${out}${err}")
+endif()
+file(WRITE ${TMP}/comment_only.relic "# only\n\n")
+execute_process(COMMAND ${RELIC} fmt ${TMP}/comment_only.relic
+  RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
+if(NOT code EQUAL 0 OR NOT out STREQUAL "# only\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt comment-only file: exit ${code}\n${out}${err}")
+endif()
+
 # With several inputs, --check prints only the paths that would change.
 file(WRITE ${TMP}/dirty.relic "${messy}")
 file(WRITE ${TMP}/clean.relic "${neat}")
