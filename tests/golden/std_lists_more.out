@@ -44,6 +44,7 @@ lists.mean(): the list is empty
 [2, 3, 1] [3, 1, 2] [2, 3, 1] [] ["c", "a", "b"]
 lists.rotate(): count must be an int, got float
 3 0 3
+division by zero
 {p: 2, a: 1, f: 1} {}
 lists.count_by(): key must give a string, got int
 [] [[1, 2]] [] [1, 2, 3] [3, 1, 2]
