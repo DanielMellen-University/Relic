@@ -64,6 +64,32 @@ expect("a folder, --ast" 2 "^$" "^relic: cannot open \\.\n$" --ast .)
 expect("a folder, --bytecode" 2 "^$" "^relic: cannot open \\.\n$" --bytecode .)
 expect("missing file after --tree" 2 "^$" "^relic: cannot open nofile.relic\n$" --tree nofile.relic)
 
+# Malformed sequences follow the lexer's byte grouping on either side of
+# the snippet window start. Invalid scalar values still form one column.
+string(ASCII 192 128 overlong_utf8)
+string(ASCII 237 160 128 surrogate_utf8)
+string(ASCII 244 144 128 128 out_of_range_utf8)
+string(ASCII 128 isolated_continuation)
+string(REPEAT "a" 170 malformed_utf8_padding)
+foreach(sequence "${overlong_utf8}" "${surrogate_utf8}" "${out_of_range_utf8}" "${isolated_continuation}")
+  foreach(position before after)
+    if(position STREQUAL "before")
+      set(content "${sequence}${malformed_utf8_padding}")
+    else()
+      set(content "${malformed_utf8_padding}${sequence}")
+    endif()
+    file(WRITE ${TMP}/malformed_utf8.relic "print(\"${content}\") @\n")
+    execute_process(COMMAND ${RELIC} --tokens ${TMP}/malformed_utf8.relic
+      OUTPUT_VARIABLE host_out ERROR_VARIABLE host_err RESULT_VARIABLE host_code)
+    execute_process(COMMAND ${RELIC} ${SRC}/selfhost/tokens.relic ${TMP}/malformed_utf8.relic
+      OUTPUT_VARIABLE selfhost_out ERROR_VARIABLE selfhost_err RESULT_VARIABLE selfhost_code)
+    if(NOT host_code STREQUAL "1" OR NOT host_code STREQUAL selfhost_code OR
+       NOT host_out STREQUAL selfhost_out OR NOT host_err STREQUAL selfhost_err)
+      message(FATAL_ERROR "malformed UTF-8 ${position} window: host exit ${host_code}\n${host_err}self-host exit ${selfhost_code}\n${selfhost_err}")
+    endif()
+  endforeach()
+endforeach()
+
 # Anything after the file goes to the program, flags included, on every engine.
 expect("args" 0 "^\\[\"--x\", \"y\"\\]\n$" "^$" args.relic --x y)
 expect("args, --tree" 0 "^\\[\"--x\"\\]\n$" "^$" --tree args.relic --x)

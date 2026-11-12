@@ -131,6 +131,8 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 
 Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (415 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 415 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers that `use` an example program and expect the same bytes as its `.out`. Details in [CGEN.md](CGEN.md#tests).
 
+`cgen_diag_utf8_*` adds 18 runtime diagnostic comparisons across the VM, tree-walker, self-hosted interpreter and compiled C, with malformed bytes at window boundaries and before the caret.
+
 In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 
 | Test | Checks |

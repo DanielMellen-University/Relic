@@ -83,6 +83,27 @@ const std::unordered_map<std::string, Tok> kKeywords = {
 
 constexpr int kIndentWidth = 4;
 
+size_t utf8_length_at(const std::string& text, size_t at) {
+    unsigned char lead = static_cast<unsigned char>(text[at]);
+    // Match the host string iterator used by the self-hosted lexer: group a
+    // structurally shaped UTF-8 sequence even when its scalar value is invalid.
+    size_t length = lead < 0x80 ? 1 : (lead >> 5) == 6 ? 2
+                  : (lead >> 4) == 14 ? 3 : (lead >> 3) == 30 ? 4 : 1;
+    if (length == 1 || at + length > text.size()) return 1;
+    for (size_t i = 1; i < length; ++i)
+        if ((static_cast<unsigned char>(text[at + i]) & 0xC0) != 0x80) return 1;
+    return length;
+}
+
+bool valid_utf8_continuation(const std::string& text, size_t at) {
+    size_t first = at > 3 ? at - 3 : 0;
+    for (size_t start = first; start < at; ++start) {
+        size_t length = utf8_length_at(text, start);
+        if (length > 1 && at < start + length) return true;
+    }
+    return false;
+}
+
 class Lexer {
 public:
     explicit Lexer(const std::string& s) : src_(s) {}
@@ -147,7 +168,7 @@ private:
     char advance() {
         char c = src_[pos_++];
         if (c == '\n') { last_line_end_col_ = col_; ++line_; col_ = 1; }
-        else if ((static_cast<unsigned char>(c) & 0xC0) != 0x80) { ++col_; }  // columns count characters
+        else if (!valid_utf8_continuation(src_, pos_ - 1)) { ++col_; }  // malformed bytes each count as a character
         return c;
     }
     void emit(Tok k, std::string text, int l, int c) { out_.push_back({k, std::move(text), l, c}); }

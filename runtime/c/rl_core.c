@@ -881,15 +881,14 @@ static void snippet(FILE *to, const char *src, size_t len, int line, int col, in
         size_t skip = (size_t)col > 80 ? (size_t)col - 80 : 0;
         size_t cut = 0;
         while (from < n && cut < skip) {   /* columns count characters */
-            unsigned char c = (unsigned char)p[from];
-            size_t clen = (c & 0x80) == 0 ? 1 : (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : 4;
-            if (from + clen > n) clen = n - from;
-            from += clen;
+            from += rl_utf8_char_size(p, n, from);
             ++cut;
         }
-        to_ = from + 160;
-        while (to_ < n && ((unsigned char)p[to_] & 0xC0) == 0x80) ++to_;
-        if (to_ > n) to_ = n;
+        /* Walk complete groups, so an isolated continuation is not attached
+         * to the preceding character at the right edge. */
+        to_ = from;
+        while (to_ < n && to_ < from + 160)
+            to_ += rl_utf8_char_size(p, n, to_);
         p += from;
         n = to_ - from;
         col -= (int)cut;
@@ -900,11 +899,9 @@ static void snippet(FILE *to, const char *src, size_t len, int line, int col, in
     fputs("\n    ", to);
     {   /* the caret lines up by characters: one pad space per character */
         size_t chars = 0;
-        for (i = 0; chars + 1 < (size_t)col && i < n; ++i) {
-            unsigned char c = (unsigned char)p[i];
-            if ((c & 0xC0) == 0x80) continue;
-            fputc(c == '\t' ? '\t' : ' ', to);
-            ++chars;
+        for (i = 0; chars + 1 < (size_t)col && i < n; ++chars) {
+            fputc(p[i] == '\t' ? '\t' : ' ', to);
+            i += rl_utf8_char_size(p, n, i);
         }
     }
     marks = end_col >= col ? end_col - col + 1 : 1;

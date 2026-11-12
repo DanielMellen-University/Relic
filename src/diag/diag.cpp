@@ -6,6 +6,31 @@
 
 namespace relic::diag {
 
+namespace {
+
+size_t utf8_length_at(const std::string& text, size_t at) {
+    unsigned char lead = static_cast<unsigned char>(text[at]);
+    // Match the lexer and string iterator, including structurally shaped
+    // sequences whose scalar value is invalid.
+    size_t length = lead < 0x80 ? 1 : (lead >> 5) == 6 ? 2
+                  : (lead >> 4) == 14 ? 3 : (lead >> 3) == 30 ? 4 : 1;
+    if (length == 1 || at + length > text.size()) return 1;
+    for (size_t i = 1; i < length; ++i)
+        if ((static_cast<unsigned char>(text[at + i]) & 0xC0) != 0x80) return 1;
+    return length;
+}
+
+bool valid_utf8_continuation(const std::string& text, size_t at) {
+    size_t first = at > 3 ? at - 3 : 0;
+    for (size_t start = first; start < at; ++start) {
+        size_t length = utf8_length_at(text, start);
+        if (length > 1 && at < start + length) return true;
+    }
+    return false;
+}
+
+} // namespace
+
 // The source line an error points at, with carets under the columns:
 //     print(cuont)
 //           ^
@@ -30,14 +55,11 @@ std::string snippet(const std::string& path, int line, int col, int end_col = 0)
         size_t from = 0;
         size_t cut = 0;
         while (from < text.size() && cut < skip) {
-            unsigned char c = static_cast<unsigned char>(text[from]);
-            size_t len = (c & 0x80) == 0 ? 1 : (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : 4;
-            if (from + len > text.size()) len = text.size() - from;
-            from += len;
+            from += utf8_length_at(text, from);
             ++cut;
         }
         size_t to = from + 160;
-        while (to < text.size() && (static_cast<unsigned char>(text[to]) & 0xC0) == 0x80) ++to;
+        while (to < text.size() && valid_utf8_continuation(text, to)) ++to;
         text = text.substr(from, to - from);
         col -= static_cast<int>(cut);
         end_col -= static_cast<int>(cut);
@@ -45,11 +67,10 @@ std::string snippet(const std::string& path, int line, int col, int end_col = 0)
     }
     std::string pad;
     // Columns count characters: one pad space per character before the column.
-    for (size_t i = 0, n = 0; n + 1 < static_cast<size_t>(col) && i < text.size(); ++i) {
+    for (size_t i = 0, n = 0; n + 1 < static_cast<size_t>(col) && i < text.size(); ++n) {
         unsigned char c = static_cast<unsigned char>(text[i]);
-        if ((c & 0xC0) == 0x80) continue;
         pad += c == '\t' ? '\t' : ' ';
-        ++n;
+        i += utf8_length_at(text, i);
     }
     int marks = end_col - col + 1;
     if (marks < 1) marks = 1;
