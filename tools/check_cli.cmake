@@ -82,6 +82,8 @@ expect_exact("module parser note, self-host" 1 "" "${module_parse_error}" ${SRC}
 expect("check clean" 0 "^$" "^$" check clean.relic)
 expect("check typo" 1 "^$" "typo.relic:1:7: warning: 'prnt' is not defined \\(did you mean 'print'\\?\\)" check typo.relic)
 expect("check several" 1 "^$" "typo.relic:1:7: warning" check clean.relic typo.relic)
+set(check_mixed_error "relic: cannot open nofile.relic\ntypo.relic:1:7: warning: 'prnt' is not defined (did you mean 'print'?)\n    print(prnt)\n          ^\n")
+expect_exact("check warning and missing file" 2 "" "${check_mixed_error}" check clean.relic nofile.relic typo.relic)
 expect("check missing" 2 "^$" "^relic: cannot open nofile.relic\n$" check nofile.relic)
 expect("check a folder" 2 "^$" "^relic: cannot open \\.\n$" check .)
 expect("check without files" 2 "^$" "${usage}" check)
