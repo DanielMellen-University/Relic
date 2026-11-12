@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- `selfhost/run.relic` reports unreadable input as `relic: cannot open FILE` and exits 2, matching a missing file, instead of reporting an error inside the runner and exiting 1.
+- The self-hosted `run`, `tokens`, `ast` and `check` commands report unreadable input as `relic: cannot open FILE` and exit 2. `cgen.relic` and compiled `relicc` do the same for the main input and imported modules, exiting 3. They name the file instead of reporting an error inside the tool.
 
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.
 

@@ -309,9 +309,14 @@ fun warn(path, lines, it)
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
 
-# Checks one file; gives the exit code the host gives for it (0, 1).
+# Checks one file; gives the exit code the host gives for it (0, 1, or 2).
 fun check_file(path)
-    let src = files.read(path)
+    let src = none
+    try
+        src = files.read(path)
+    catch err
+        eprint("relic: cannot open {path}")
+        return 2
     let lexed = lexer.lex(src)
     let err = lexed.err
     let tree = none
@@ -343,8 +348,10 @@ fun main(argv)
             code = 2
         else
             let r = check_file(path)
-            if r != 0 and code == 0
-                code = r
+            if r == 2
+                code = 2
+            if r == 1 and code == 0
+                code = 1
     return code
 
 let status = main(args())

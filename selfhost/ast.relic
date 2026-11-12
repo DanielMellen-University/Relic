@@ -38,7 +38,13 @@ else if not files.exists(argv[0]) or files.is_dir(argv[0])
     host_exit(2)
 else
     let path = argv[0]
-    let lexed = lexer.lex(files.read(path))
+    let source = none
+    try
+        source = files.read(path)
+    catch err
+        eprint("relic: cannot open {path}")
+        host_exit(2)
+    let lexed = lexer.lex(source)
     let err = lexed.err
     let tree = none
     if err == none

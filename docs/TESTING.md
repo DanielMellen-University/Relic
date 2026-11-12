@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 459 ctest cases: 415 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_runtime_hardening`, `c_runtime_input`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit`, `relicc_cli` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 913: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 459 ctest cases: 415 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_runtime_hardening`, `c_runtime_input`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit`, `relicc_cli` and `doc_counts`. A host build (`-DRELIC_BUILD_HOST=ON`) has 918: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -76,10 +76,15 @@ Three more self-host cases check the interpreter on real use:
 | `tree_stack` | `f(n) = f(n - 1) + 1 + 1 ...` (9,990 terms) called 700 deep, written by `tools/check_tree_stack.cmake` | the VM prints the sum; `--tree`, which recurses on the native stack, stops with `too much recursion (calls and expressions nest too deeply for the stack)` instead of crashing, and `try` catches it (host build only) |
 | `selfhost_cli` | `selfhost/run.relic` with no file, a missing file, a folder, an error and a clean run (`tools/check_selfhost_cli.cmake`) | the exit codes (1 for an uncaught error, 2 for usage or a file that cannot be opened) and the "cannot open" message are the host's |
 | `selfhost_run_unreadable` | `selfhost/run.relic` on the host VM and tree-walker | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE`, including a path with spaces |
+| `selfhost_tokens_unreadable` | `selfhost/tokens.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
+| `selfhost_ast_unreadable` | `selfhost/ast.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
+| `selfhost_check_unreadable` | `selfhost/check.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
+| `selfhost_unreadable_skip_failure` | `tools/check_unreadable_input.cmake` with simulated import skip and forced import failure | main-input failures remain visible, and both fixtures are readable after a pass and either failure; skips when unreadable-file checks are unavailable |
+| `selfhost_cgen_unreadable` | `selfhost/cgen.relic` on the host VM and tree-walker, plus compiled `relicc` when available | unreadable main input or imported module gives exit 3, empty stdout and exactly `relicc: cannot open FILE`; also checks `--stub` for the main input |
 
 `selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
 
-The unreadable-input regression uses `tools/check_unreadable_input.cmake`. It restores the fixture's permissions before checking results. It reports a ctest skip with a reason on Windows, as root, when the Unix permission tools are missing, or when chmod cannot deny reads on the filesystem.
+The unreadable-input regression uses `tools/check_unreadable_input.cmake`. It restores fixture permissions before checking results. It reports a ctest skip with a reason on Windows, as root, when the Unix permission tools are missing, or when chmod cannot deny reads on the filesystem. The skip-failure regression checks that failure output containing the skip marker is sanitized, so CTest reports the failure instead of a skip.
 
 The skips are limits of the Relic-written interpreter, listed in [ARCHITECTURE.md](ARCHITECTURE.md#self-host).
 
@@ -249,10 +254,10 @@ A crash, a leak, a wrong result on supported behavior, a stale `bootstrap/cgen.c
 
 | Check | Result |
 |---|---|
-| README C-only configure, build, `ctest` from a clean tree | passed here: 262, 0 failed, 6.27 s |
+| README C-only configure, build, `ctest` from a clean tree | passed here: 459, 0 failed, 11.48 s |
 | README compile and link of a small program | passed here. See FizzBuzz below |
 | Consuming project `tests/consumer` | passed here: 6, 0 failed. `hello` printed the two expected lines |
-| Host build and `ctest` | passed here: 549, 0 failed, 51.23 s |
+| Host build and `ctest` | passed here: 918, 0 failed, 204.73 s |
 | Bootstrap fresh, fixed point, host match | passed inside those suites |
 | Parity and `doc_counts` | passed inside the host suite |
 | Leak check on compiled goldens and `c_runtime` | passed (`RELIC_LEAK_CHECK` and `c_runtime`; nothing failed) |
@@ -276,7 +281,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-262 passed, 0 failed, 6.27 s. That includes `doc_counts`, `example_compiled`, `bootstrap_fresh`, `bootstrap_fixed_point`, `depth_limit`, `c_runtime`, `c_demo` and the compiled goldens. `./build/example_compiled one two` printed the three greetings, `Ada, Linus, Grace`, and `args: ["one", "two"]`.
+459 passed, 0 failed, 11.48 s. That includes `doc_counts`, `example_compiled`, `bootstrap_fresh`, `bootstrap_fixed_point`, `depth_limit`, `c_runtime`, `c_demo` and the compiled goldens. `./build/example_compiled one two` printed the three greetings, `Ada, Linus, Grace`, and `args: ["one", "two"]`.
 
 Consumer, as CI and [the section above](#relic_add_program) write it:
 
@@ -293,15 +298,15 @@ hello from a consuming project
 HELLO
 ```
 
-Host, in `build-host` so the README tree stayed C-only. Same flags as the README host section:
+Host, in the existing `build` directory in this worktree:
 
 ```
-cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
-cmake --build build-host
-ctest --test-dir build-host --output-on-failure
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRELIC_BUILD_HOST=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-549 passed, 0 failed, 51.23 s. Among them: `vm_matches_tree_walker`, `bootstrap_matches_host`, `bootstrap_fresh`, `bootstrap_fixed_point`, `cgen_stage1_matches_host`, `cgen_fixed_point`, `doc_counts`, `selfhost_lexer`, `selfhost_parser`, `selfhost_interp`, `selfhost_check`. `build-host/relic --version` printed `relic 1.0.53`. A pipe of `print(1 + 2)` and `:quit` into `build-host/relic` printed `3` and exited 0. There was no banner, because stdin was not a terminal.
+918 passed, 0 failed, 204.73 s. Among them: `vm_matches_tree_walker`, `bootstrap_matches_host`, `bootstrap_fresh`, `bootstrap_fixed_point`, `cgen_stage1_matches_host`, `cgen_fixed_point`, `doc_counts`, `selfhost_lexer`, `selfhost_parser`, `selfhost_interp`, `selfhost_check`, `selfhost_check_unreadable`, `selfhost_unreadable_skip_failure`. `build/relic --version` printed `relic 1.0.53`. A pipe of `print(1 + 2)` and `:quit` into `build/relic` printed `3` and exited 0. There was no banner, because stdin was not a terminal.
 
 Graphics, after `libsdl2-dev` 2.30.0, SDL2_image 2.8.2, SDL2_ttf 2.22.0 and `fonts-dejavu-core`. The example README asks for `-DRELIC_SDL=ON`. This build also passed `-DRELIC_C_SDL=ON`, which is the CI graphics build, so the compiled graphics tests ran too.
 

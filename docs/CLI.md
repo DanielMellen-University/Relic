@@ -30,7 +30,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`; a folder counts as not openable) |
 | any | the program called `os.exit(code)` |
 
-The self-hosted runner (`relic selfhost/run.relic FILE`) also reports unreadable input as `relic: cannot open FILE` and exits 2.
+The self-hosted `run`, `tokens`, `ast` and `check` commands also report unreadable input as `relic: cannot open FILE` and exit 2. `relic selfhost/cgen.relic FILE -o OUT.c` and compiled `relicc FILE -o OUT.c` report an unreadable main input or imported module as `relicc: cannot open FILE` and exit 3.
 
 ## Output
 

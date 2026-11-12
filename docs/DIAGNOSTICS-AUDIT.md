@@ -61,3 +61,7 @@ and Windows.
 | Tool fixed | Verified result | Regression |
 |---|---|---|
 | `selfhost/run.relic` | exit 2, empty stdout, `relic: cannot open FILE`; host VM and tree-walker | `selfhost_run_unreadable`, failed before the fix and passed after it |
+| `selfhost/tokens.relic` | exit 2, empty stdout, `relic: cannot open FILE`; host VM, tree-walker and compiled copy | `selfhost_tokens_unreadable`, passed with the compiled copy |
+| `selfhost/ast.relic` | exit 2, empty stdout, `relic: cannot open FILE`; host VM, tree-walker and compiled copy | `selfhost_ast_unreadable`, failed before the fix and passed after it |
+| `selfhost/check.relic` | exit 2, empty stdout, `relic: cannot open FILE`; host VM, tree-walker and compiled copy | `selfhost_check_unreadable`, failed before the fix and passed after it |
+| `selfhost/cgen.relic` and compiled `relicc` | exit 3, empty stdout, `relicc: cannot open FILE`; main input and imported module, including compiled `relicc` | `selfhost_cgen_unreadable`, failed before the fixes and passed after them |
