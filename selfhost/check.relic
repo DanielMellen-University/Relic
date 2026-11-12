@@ -309,7 +309,7 @@ fun warn(path, lines, it)
     if s != ""
         eprint(slice(s, 0, len(s) - 1))
 
-# Checks one file; gives the exit code the host gives for it (0, 1).
+# Checks one file; gives the exit code the host gives for it (0, 1, or 2).
 fun check_file(path)
     let src = none
     try
