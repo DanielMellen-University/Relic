@@ -1109,7 +1109,13 @@ fun add_module(cg, file, name)
     let m = {ix: len(cg.mods), key: key, file: file, name: name, std: in_std(cg, key), tree: none, err: none, names: []}
     append(cg.mods, m)
     cg.mod_ix[key] = m.ix
-    let lexed = lexer.lex(files.read(file))
+    let source = none
+    try
+        source = files.read(file)
+    catch err
+        eprint("relicc: cannot open {file}")
+        host_exit(3)
+    let lexed = lexer.lex(source)
     m.err = lexed.err
     if m.err == none
         let parsed = parser.parse(lexed.tokens)
@@ -1361,7 +1367,13 @@ if usage or src == none or out_path == none
 if not files.exists(src) or files.is_dir(src)
     eprint("relicc: cannot open {src}")
     host_exit(3)
-let lexed = lexer.lex(files.read(src))
+let source = none
+try
+    source = files.read(src)
+catch err
+    eprint("relicc: cannot open {src}")
+    host_exit(3)
+let lexed = lexer.lex(source)
 let err = lexed.err
 let tree = none
 if err == none
