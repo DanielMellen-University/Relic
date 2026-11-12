@@ -442,7 +442,9 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/remove_tree_link_c -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_remove_tree_link.cmake)
   add_test(NAME relicc_cli
     COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
-      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
+      -DCC=${CMAKE_C_COMPILER} -DGENERATOR=${CMAKE_GENERATOR} -DPLATFORM=${CMAKE_GENERATOR_PLATFORM}
+      -DCONFIG=$<CONFIG> -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
   # The 10,000-level limit on expressions and `else if` chains, on every engine.
   set(depth_host)
   if(RELIC_BUILD_HOST)
