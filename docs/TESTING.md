@@ -254,7 +254,7 @@ A crash, a leak, a wrong result on supported behavior, a stale `bootstrap/cgen.c
 
 | Check | Result |
 |---|---|
-| README C-only configure, build, `ctest` from a clean tree | passed here: 262, 0 failed, 6.27 s |
+| README C-only configure, build, `ctest` from a clean tree | passed here: 459, 0 failed, 11.48 s |
 | README compile and link of a small program | passed here. See FizzBuzz below |
 | Consuming project `tests/consumer` | passed here: 6, 0 failed. `hello` printed the two expected lines |
 | Host build and `ctest` | passed here: 918, 0 failed, 204.73 s |
@@ -281,7 +281,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-262 passed, 0 failed, 6.27 s. That includes `doc_counts`, `example_compiled`, `bootstrap_fresh`, `bootstrap_fixed_point`, `depth_limit`, `c_runtime`, `c_demo` and the compiled goldens. `./build/example_compiled one two` printed the three greetings, `Ada, Linus, Grace`, and `args: ["one", "two"]`.
+459 passed, 0 failed, 11.48 s. That includes `doc_counts`, `example_compiled`, `bootstrap_fresh`, `bootstrap_fixed_point`, `depth_limit`, `c_runtime`, `c_demo` and the compiled goldens. `./build/example_compiled one two` printed the three greetings, `Ada, Linus, Grace`, and `args: ["one", "two"]`.
 
 Consumer, as CI and [the section above](#relic_add_program) write it:
 
