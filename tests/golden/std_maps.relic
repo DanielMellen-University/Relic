@@ -12,7 +12,7 @@ print(maps.drop(dm, "a"), dm)
 # from_items (since 1.0.49) undoes items; a later pair wins
 let m2 = {b: 1, a: [2]}
 print(maps.from_items(maps.items(m2)), maps.from_items([]), maps.from_items([["k", 1], ["k", 2]]))
-for bad in [[["a", 1], ["b"]], [[1, 2]], ["ab"], 5]
+for bad in [[["a", 1], ["b"]], [[1, 2]], [["a", 1, 2]], ["ab"], 5]
     try
         maps.from_items(bad)
     catch e
@@ -64,3 +64,10 @@ try
     maps.map_values({}, "f")
 catch e
     print(e.message)
+fun non_bool(k, v) = 1
+fun throws(k, v) = 1 / 0
+for f in [non_bool, throws]
+    try
+        maps.filter({a: 1}, f)
+    catch e
+        print(e.message)

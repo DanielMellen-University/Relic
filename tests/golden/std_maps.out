@@ -7,6 +7,7 @@ true {c: 3, b: 4}
 {b: 1, a: [2]} {} {k: 2}
 maps.from_items(): item 1 must be a [string key, value] pair, got a list of length 1
 maps.from_items(): item 0 must be a [string key, value] pair, got a key of type int
+maps.from_items(): item 0 must be a [string key, value] pair, got a list of length 3
 maps.from_items(): item 0 must be a [string key, value] pair, got string
 maps.from_items(): pairs must be a list, got int
 {x: "a", y: "b"} {} {same: "b"}
@@ -23,3 +24,5 @@ maps.has_value(): m must be a map, got list
 {b: 2, a: 1} {} {} {}
 maps.filter(): keep must be a function, got int
 maps.map_values(): f must be a function, got string
+'if' condition must be true or false, got int
+division by zero
