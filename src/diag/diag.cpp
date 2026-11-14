@@ -119,6 +119,7 @@ struct ExpectRow {
     int cover_got;
 };
 const ExpectRow kExpect[] = {
+    {"')' after the parameters", (int)relic::Tok::Assign, "", -1, "", "Relic has no default parameter values", "pass every argument explicitly, or write a wrapper function", 0, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Plus, "", "Relic has no '+='", "write it out, as in x = x + n", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Minus, "", "Relic has no '-='", "write it out, as in x = x - n", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Star, "", "Relic has no '*='", "write it out, as in x = x * n", 1, 1},
