@@ -1,3 +1,3 @@
 use ../table
 # Deliberate misuse: summarize needs text, not an integer row count.
-table.summarize(42, ",", "")
+table.summarize(42, ",", "", [])

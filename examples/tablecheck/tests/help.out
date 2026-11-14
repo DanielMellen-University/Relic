@@ -1,4 +1,5 @@
-usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE
+usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--require COLUMN]... [--] FILE
 Validate CSV or TSV, including RFC 4180 quoted fields, and summarize columns.
 Default: csv. --key requires nonblank, unique values. --help shows this help.
+--require requires nonblank values; repeat it to check several columns.
 Exit: 0 valid/help, 2 usage error, 3 input/read error. No summary on error.

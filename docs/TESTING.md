@@ -194,6 +194,10 @@ Its fixtures and goldens stay outside `tests/golden`, so the language-corpus
 counts below are unchanged. This application check does not verify the human
 README-only FizzBuzz acceptance gate.
 
+The required-column checks cover repeated `--require` options, multiple columns,
+CSV and TSV, missing headers, blanks after valid rows, quoted empty and multiline
+whitespace values, Unicode positions, and preservation of nonblank values.
+
 ## relic_add_program
 
 `example_compiled` builds `examples/compiled/main.relic` (a module in `lib/` and `std/strings`) with `relic_add_program` and checks its output and args. `tests/consumer/` is a separate CMake project that adds the Relic tree with `add_subdirectory` and builds `hello.relic` the same way:
