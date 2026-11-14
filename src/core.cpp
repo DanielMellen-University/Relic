@@ -21,6 +21,7 @@ std::string quote(const std::string& s) {
     for (char c : s) {
         if (c == '\n') q += "\\n";
         else if (c == '\t') q += "\\t";
+        else if (c == '\0') q += "\\u{0}";
         else if (c == '"') q += "\\\"";
         else if (c == '\\') q += "\\\\";
         else q += c;
@@ -45,6 +46,13 @@ std::string format_noted(const std::string& path, const E& e) {
     n.end_col = e.end_col;
     n.hint = e.hint;
     return diag::format(path, e.line, e.col, e.what(), n);
+}
+
+std::string format_runtime(const std::string& path, const RuntimeError& e) {
+    diag::Note note;
+    note.end_col = e.end_col;
+    note.hint = e.hint;
+    return diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message(), note);
 }
 
 }  // namespace
@@ -101,7 +109,7 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
+        r.err = format_runtime(path, e);
     }
     return r;
 }
@@ -126,7 +134,7 @@ RunResult run_source_vm(const std::string& path, const std::string& source, std:
         r.err = format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = diag::format(e.file.empty() ? path : e.file, e.line, e.col, e.message());
+        r.err = format_runtime(path, e);
     }
     return r;
 }

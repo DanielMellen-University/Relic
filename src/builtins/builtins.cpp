@@ -445,6 +445,10 @@ void Interpreter::install_builtins() {
         if (ms > 0) std::this_thread::sleep_for(std::chrono::microseconds(static_cast<long long>(ms * 1000)));
         return Value();
     });
+    // Source windows measure original bytes, including malformed UTF-8.
+    add("host_byte_len", 1, [str_arg](std::vector<Value>& a) {
+        return Value(static_cast<long long>(str_arg(a[0], "argument").size()));
+    });
     // host_same(a, b): true when a and b are the very same list, map or
     // function, not just equal. The self-hosted interpreter uses it to print
     // lists that hold themselves.

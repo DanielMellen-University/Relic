@@ -41,10 +41,10 @@ Additional boundary probes found these defects:
 | Unterminated interpolated string | Fixed: retain the opening quote separately from segment token positions, including nested strings and later interpolations. |
 | Brackets inside interpolation | Fixed: every nested bracket is checked, and closers cannot cross the interpolation boundary. |
 | Malformed exponent | `1e+` suggests separating a name from a number instead of completing the exponent. |
-| Malformed UTF-8 | A lone continuation byte inside a string costs no column on the host, but one on the self-hosted path. Snippet padding also skips that byte. |
+| Malformed UTF-8 | Fixed: each malformed continuation byte inside a string counts as one column on the host, and snippet padding and long-line windows use the same character boundaries. `cli` compares a long malformed-byte source against the self-hosted lexer. `cgen_diag_utf8_*` compares VM, tree, self-hosted and compiled runtime errors at both window edges and in caret padding. All three snippet implementations count original bytes; `host_byte_len` supplies that count to the self-hosted formatter, including malformed and overlong sequences. |
 | Module parse retry | Fixed: the VM now keeps a module registered after a caught syntax error, as the other three paths already did. |
 | Uncaught NUL message | Fixed: compiled error reporting writes the full message by length; the golden runners compare raw stderr bytes too. |
-| Module syntax notes | Lex and parse errors loaded with `use` lose their hint and underline span. |
+| Module syntax notes | Fixed: lex and parse errors loaded with `use` retain their hint and underline span in both host engines and generated C errors. `cli` and `golden_err_use_parse` pin the output. |
 
 These rows are observations, not new language rules. Each behavior change needs
 its own regression and the corresponding language or CLI documentation.

@@ -37,6 +37,7 @@ Used by the self-hosted interpreter:
 | `host_std_root()` | the folder `use std/...` loads from |
 | `host_names()` | `[name, arity]` for every `host_*` built-in, sorted |
 | `host_call(name, args)` | calls a `host_*` built-in with a list of arguments |
+| `host_byte_len(text)` | original byte length of a string, used for diagnostic windows even with malformed UTF-8 |
 | `host_same(a, b)` | true when two lists or maps are the very same value, not just equal |
 
 `relic` builds without SDL still have every `host_gfx_*` name. Each one then fails with a message saying how to rebuild, and `host_gfx_available()` is `false`.

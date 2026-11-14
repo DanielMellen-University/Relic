@@ -454,9 +454,15 @@ static void test_errors_and_builtins(void) {
     SHOW(call1("type", rl_none()), "none");
     SHOW(call1("type", rl_float(1.5)), "float");
     CHECK(rl_builtin("host_names", &f));
-    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 80);
+    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 81);
     rl_release(r);
     rl_release(f);
+    {   /* Byte windows retain malformed groups, valid UTF-8 and NUL bytes. */
+        static const char bytes[] = "\x80\xc0\x80\xc3\xa9\0";
+        rl_value text = rl_str_new(bytes, sizeof bytes - 1);
+        SHOW(call1("host_byte_len", text), "6");
+        rl_release(text);
+    }
     {   /* host_find counts characters, and skips a match that starts inside one */
         rl_value fa[2];
         fa[0] = rl_str_new("a\xc3\xa9" "b\xc3\xa9", 7);

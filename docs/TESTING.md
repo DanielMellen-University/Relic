@@ -53,7 +53,7 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (473 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (475 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
 | `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (421 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (421 today) |
@@ -65,7 +65,7 @@ Three more self-host cases check the interpreter on real use:
 | `selfhost_args` | `selfhost/run.relic tests/selfhost/args.relic one --two` | the program gets its args |
 | `selfhost_nested` | `selfhost/run.relic selfhost/run.relic tests/selfhost/args.relic deep` | the interpreter runs itself |
 | `selfhost_hooks` | `tests/selfhost/hooks.relic` | `rt.out`, `rt.steps`, `rt.denied`, `rt.load`, and `rt.input` with `interp.resume`, the hooks an IDE uses to run a program inside another; prints `hooks ok` |
-| `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 15 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
+| `selfhost_check` | `selfhost/check.relic FILE` against `relic check FILE` (`tools/compare_check.cmake`) | stdout, stderr and exit code on the 17 cases in `tests/check_cases` (scopes, late names, use before definition, did-you-mean, outside a loop, too-large literals, syntax errors) and every `.relic` file in the tree, plus runs with several files and missing ones |
 | `selfhost_check_nested` | the same on `selfhost/run.relic` (the interpreter written in Relic), for two cases | the interpreter runs `check.relic` right |
 | `cgen_selfhost_check` | the compiled `selfhost/check.relic` (host build with C) | the same comparison as `selfhost_check` |
 | `selfhost_repl` | `selfhost/repl.relic` against the host's REPL (`tools/compare_repl.cmake`) | stdout, stderr and exit code on every REPL script: the four `tests/golden/repl_*.relic` and the 41 cases in `tests/repl_cases/*.in` (values, state, errors, blocks, multi-line headers, `:quit`, input that ends inside a block, CRLF, long lines, a program reading the same stdin, `use`, `os.exit`) |
@@ -130,6 +130,8 @@ Built with the C runtime (`runtime/c/`, on by default). Details in [C-RUNTIME.md
 ## Compiled golden tests
 
 Every golden except `repl_*` and those with a `.args` file also runs compiled to C: `cgen_name` (415 cases). At build time `build/relicc` writes `build/cgen/name.c` (in a host build, `selfhost/cgen.relic` on the host does), CMake builds it against `relic_rt` with the runtime's strict flags, and `tools/run_cgen.cmake` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` (exit 3 if anything is left alive) and checks it the same way as `golden_name`. A program the generator does not cover yet would print `cgen-skip: <reason>` and ctest would report it as skipped. Today all 415 pass. `tests/cgen/*.relic`, if any, are cases for the compiled side only, with `.out` files from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers that `use` an example program and expect the same bytes as its `.out`. Details in [CGEN.md](CGEN.md#tests).
+
+`cgen_diag_utf8_*` adds 18 runtime diagnostic comparisons across the VM, tree-walker, self-hosted interpreter and compiled C, with malformed bytes at window boundaries and before the caret.
 
 In a host build, three more cases compile the Relic-written tools and check them ([CGEN.md](CGEN.md#compiling-itself)):
 

@@ -47,6 +47,7 @@ std::string quote(const std::string& s) {
     for (char c : s) {
         if (c == '\n') q += "\\n";
         else if (c == '\t') q += "\\t";
+        else if (c == '\0') q += "\\u{0}";
         else if (c == '"') q += "\\\"";
         else if (c == '\\') q += "\\\\";
         else q += c;

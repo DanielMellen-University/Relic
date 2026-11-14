@@ -14,6 +14,8 @@ namespace relic {
 struct RuntimeError : std::runtime_error {
     int line;
     int col;
+    int end_col = 0;
+    std::string hint;
     RuntimeError(int l, int c, const std::string& msg)
         : std::runtime_error(msg), line(l), col(c), text(msg) {}
     // what() ends at a NUL byte; a message can hold one (fail("a" + chr(0)), a bad key), so read this

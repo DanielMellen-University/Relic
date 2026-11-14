@@ -7,6 +7,8 @@ fun quote(s)
             q = q + "\\n"
         else if c == "\t"
             q = q + "\\t"
+        else if c == chr(0)
+            q = q + "\\u" + chr(123) + "0" + chr(125)
         else if c == "\""
             q = q + "\\\""
         else if c == "\\"

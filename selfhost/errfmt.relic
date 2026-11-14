@@ -3,15 +3,9 @@
 use std/files
 use std/strings
 
-fun _byte_len(c)
-    let n = ord(c)
-    if n < 128
-        return 1
-    if n < 2048
-        return 2
-    if n < 65536
-        return 3
-    return 4
+# Count the original bytes, not a re-encoding of ord(c): malformed bytes
+# and overlong sequences still keep their original width in the window.
+fun _byte_len(c) = host_byte_len(c)
 
 # Very long lines are cut to a window of 160 bytes around the column, on character edges,
 # the way the host does. Gives [text, col] with the column moved to match.

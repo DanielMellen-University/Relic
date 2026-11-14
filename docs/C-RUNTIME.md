@@ -135,19 +135,19 @@ end_try_1:
 
 Error messages are written by length, including any NUL bytes; reporting an uncaught error does not truncate its message.
 
-At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: the same `file:line:col: error: message` line, source line and caret as the host. With `source` NULL it reads the file named in the error, as the host does.
+At the top, an uncaught error is printed with `rl_report(cx, stderr, source)`: the same `file:line:col: error: message` line, source line and caret as the host. When an error carries a span or hint, it prints the full underline and `hint:` line too. With `source` NULL it reads the file named in the error, as the host does.
 
 ## Built-ins and host primitives
 
 `rl_builtin(name, &out)` gives the shared function object for any built-in, so `print == print` holds. Generated code looks each one up once.
 
 - Language built-ins: `print`, `eprint`, `len`, `append`, `str`, `keys`, `fail`, `gc`, `type`, `slice`, `ord`, `chr`, `num`, `int`, `float`, `pop`, `insert`, `remove`, `args`.
-- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_read_line`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_same`, `host_find`, `host_sort`, `host_std_root`, `host_names`, `host_call`.
+- Host primitives, with the host's names, arity and messages: `host_args`, `host_read_file`, `host_write_file`, `host_file_exists`, `host_list_dir`, `host_is_dir`, `host_make_dir`, `host_remove`, `host_rename`, `host_file_size`, `host_cwd`, `host_env`, `host_read_line`, `host_exit`, `host_clock`, `host_now`, `host_sleep`, `host_floor`, `host_sqrt`, `host_sin`, `host_cos`, `host_exp`, `host_log`, `host_pow`, `host_byte_len`, `host_same`, `host_find`, `host_sort`, `host_std_root`, `host_names`, `host_call`.
 - Graphics stubs and the clipboard: see below.
 
 **Stack.** A compiled program calls itself once per Relic call, up to 800 deep (`too much recursion` after that). A deep `json.encode` of a list nested 790 levels takes about 450 KB with GCC at `-O2`; MSVC frames are larger and Windows gives 1 MB, so on MSVC `relic_rt` and `relic_rt_gfx` pass `/STACK:8388608` to every program that links them (Linux and macOS default to 8 MB). Case `cgen_only_json_deep` (tests/cgen) runs that depth.
 
-`host_names()` lists the same 80 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
+`host_names()` lists the same 81 host built-ins as the C++ host. File paths are UTF-8. POSIX systems use `stat`, `opendir`, `mkdir` and `clock_gettime`; Windows uses the wide-character APIs (`_wfopen`, `FindFirstFileW`, `MoveFileExW`, `QueryPerformanceCounter`).
 
 `num("...")` follows the host step by step (`rl_parse_num`): a sign, then digits that fit give an int; `nan`, `inf` and `infinity` in any case; hex like `0x1F` an int when it fits; anything else must read as a float through `strtod` (decimal, or a hex float like `0x1.8p3`). A float too small rounds to a subnormal or `0.0`, and one too large is not a number.
 
@@ -198,6 +198,7 @@ Added in C2 and C3 for `selfhost/cgen.relic`:
 |---|---|
 | `rl_unset()` | a value of kind `RL_UNSET`: a slot whose `let` has not run yet. New scope slots start unset. It never reaches Relic code |
 | `rl_at3(cx, file, in_std, l, c, l1, c1, l2, c2)` | sets the error position to the node (`l`, `c`), or to its first or second operand when the failing call said the error is about that one. Calls say so in `cx->err_arg` (0 node, 1 first, 2 second): index and key errors point at the index, a bad range start or end at that end, as on the host. `rl_fail` resets it. `in_std` says the code is in a `std/` module; it is kept in `cx->err_std` with the position |
+| `rl_at_note(cx, file, in_std, line, col, end_col, hint)` | sets a diagnostic position with an inclusive underline end and optional hint. Generated module lex and parse failures use it to keep the host's module diagnostic |
 | `rl_module_scoped(name, scope, n, names)` | a module value over a compiled module's top-level scope (see Objects) |
 | `rl_fun_std(f, stem)` | marks a function as defined in the std module `stem` (`"files"`); returns `f` |
 | `rl_std_boundary(cx, f)` | called by code outside `std/` after a call to `f` failed. If `f` is a std function and the error happened inside `std/`, a `host_*` message gets the std name (`host_list_dir(): x` becomes `files.list(): x`) and the position is cleared, so the caller marks its call site, as the host does |

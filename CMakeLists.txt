@@ -442,7 +442,9 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/remove_tree_link_c -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_remove_tree_link.cmake)
   add_test(NAME relicc_cli
     COMMAND ${CMAKE_COMMAND} -DRELICC=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
-      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
+      -DCC=${CMAKE_C_COMPILER} -DGENERATOR=${CMAKE_GENERATOR} -DPLATFORM=${CMAKE_GENERATOR_PLATFORM}
+      -DCONFIG=$<CONFIG> -DTMP=${CMAKE_CURRENT_BINARY_DIR}/relicc_cli
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_relicc_cli.cmake)
   # The 10,000-level limit on expressions and `else if` chains, on every engine.
   set(depth_host)
   if(RELIC_BUILD_HOST)
@@ -458,6 +460,14 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
         -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_tree_stack.cmake)
   endif()
   if(RELIC_BUILD_HOST)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/tools/malformed_utf8_cases.cmake)
+    foreach(name ${utf8_cases})
+      relic_cgen_exe(diag_utf8_${name} "${utf8_dir}/${name}.relic")
+      add_test(NAME cgen_diag_utf8_${name}
+        COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+          -DTEST=${utf8_dir}/${name}.relic -DEXE=$<TARGET_FILE:cgen_diag_utf8_${name}>
+          -DTMP=${utf8_dir}/${name} -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_malformed_utf8.cmake)
+    endforeach()
     add_test(NAME cgen_stage1_matches_host
       COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relicc> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
         -DHOST_C=${CMAKE_CURRENT_BINARY_DIR}/cgen -DOUT=${RELIC_BOOT}/goldens

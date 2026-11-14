@@ -123,6 +123,8 @@ struct rl_ctx {
     int has_err;
     rl_str *err_msg;
     int err_line, err_col;    /* 0 until rl_at sets them */
+    int err_end_col;          /* inclusive; 0 means a single caret */
+    const char *err_hint;     /* optional diagnostic note */
     int err_arg;              /* which operand the error is about: 0 the operation, 1 the first, 2 the second */
     const char *err_file;
     int err_std;              /* the position is in a std module */
@@ -178,6 +180,7 @@ void rl_at(rl_ctx *cx, const char *file, int line, int col); /* first position w
  * first or second operand (cx->err_arg), as the host does for index,
  * range and key errors. */
 void rl_at3(rl_ctx *cx, const char *file, int in_std, int l, int c, int l1, int c1, int l2, int c2);
+void rl_at_note(rl_ctx *cx, const char *file, int in_std, int line, int col, int end_col, const char *hint);
 /* After a call to f from code outside std/ failed: if f is a std function
  * and the error happened inside std/, give it the host's std name
  * ("host_list_dir(): x" becomes "files.list(): x") and clear the position,

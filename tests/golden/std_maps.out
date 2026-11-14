@@ -26,3 +26,4 @@ maps.filter(): keep must be a function, got int
 maps.map_values(): f must be a function, got string
 'if' condition must be true or false, got int
 division by zero
+division by zero
