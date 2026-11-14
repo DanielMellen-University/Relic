@@ -104,7 +104,7 @@ fun _rows(text as string, delimiter as string) as list
         _end_record(rows, fields, value, field_line, field_column, line, column)
     return rows
 
-fun summarize(text as string, delimiter as string, key as string) as map
+fun summarize(text as string, delimiter as string, key as string, required as list) as map
     if delimiter != "," and delimiter != "\t"
         fail("delimiter must be comma or tab")
     let rows = _rows(text, delimiter)
@@ -133,6 +133,11 @@ fun summarize(text as string, delimiter as string, key as string) as map
         if not (key in positions)
             _bad(1, 1, "key column '{key}' is absent; choose one of: " + strings.join(names, ", "))
         key_index = positions[key]
+    let required_indices = []
+    for name in required
+        if not (name in positions)
+            _bad(1, 1, "required column '{name}' is absent; choose one of: " + strings.join(names, ", "))
+        append(required_indices, positions[name])
     let key_lines = {}
     for r in 1..len(rows)
         let row = rows[r]
@@ -150,6 +155,10 @@ fun summarize(text as string, delimiter as string, key as string) as map
             if key_value in key_lines
                 _bad(key_field.line, key_field.column, "duplicate key '{key}' value '{key_value}' (first seen on line {key_lines[key_value]}); make keys unique")
             key_lines[key_value] = key_field.line
+        for index in required_indices
+            let field = rec[index]
+            if strings.trim(field.value) == ""
+                _bad(field.line, field.column, "required column '{names[index]}' is blank; supply a nonblank value")
         for j in 0..len(rec)
             let column = columns[j]
             let value = rec[j].value

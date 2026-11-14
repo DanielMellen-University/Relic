@@ -3,9 +3,9 @@
 Check a CSV or TSV export before importing it into a spreadsheet, ticket
 tracker, or inventory system. `tablecheck` validates the header and the shape
 of every row, accepts RFC 4180 quoted fields, optionally enforces a unique
-key, and reports present, empty, and distinct values for every column. It
-reads the input without changing it. A bad row produces an error with its
-line and column, and no partial summary.
+key or nonblank required columns, and reports present, empty, and distinct
+values for every column. It reads the input without changing it. A bad row
+produces an error with its line and column, and no partial summary.
 
 This is a standalone CLI written in Relic. Relic already supplies whole-file
 reads (`std/files`), strings, lists, maps, arguments (`std/os`), stderr, and
@@ -103,7 +103,7 @@ host executable is needed by that copied binary at runtime. The invalid
 ## Usage and data rules
 
 ```text
-tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE
+tablecheck [--delimiter csv|tsv] [--key COLUMN] [--require COLUMN]... [--] FILE
 tablecheck --help
 ```
 
@@ -136,6 +136,11 @@ tablecheck --help
   values and exact duplicate keys, naming the first line that used a
   duplicate. Keys with surrounding spaces remain distinct. No key check is
   done by default.
+- `--require COLUMN` requires that header and a nonblank value in every row.
+  Repeat it for several columns, for example `--require team --require status`.
+  Repeating the same name is harmless. Empty strings and values containing only
+  spaces, tabs, CR or LF are blank. Duplicates are allowed and values are kept
+  unchanged in the summary. A header-only file passes if the required names exist.
 - A tab outside quotes is allowed only as the TSV delimiter. A tab inside a
   quoted field is kept. Other ASCII controls, DEL, and a leading UTF-8 BOM
   are rejected. UTF-8 text works, but this tool does not validate UTF-8
@@ -203,3 +208,44 @@ Its executable is `build/examples/tablecheck/tablecheck` for a build called
 These automated instructions and agent-run checks do not verify Relic's
 separate acceptance gate: an unfamiliar human writing and running FizzBuzz
 using only the repository README. That gate remains unverified.
+
+## Gaps found while building tablecheck
+
+Adding `--require` exposed the following gaps. Temporary mistake probes on
+`eb04876` gave identical diagnostics on the VM, tree walker, self-hosted
+interpreter and compiled output. The strict-bool mistake `if strings.trim(value)`
+already explained that it received a string; it needed no diagnostic change.
+
+- Default parameters are unavailable, so existing `summarize` callers now pass
+  `[]` explicitly. The vague `expected ')'` diagnostic is fixed by `syn_default_param`.
+
+  ```relic
+  fun summarize(text, required = [])
+      return required
+  ```
+
+- Negated membership in a block header reports only `expected end of line before
+  the block, got 'not'`. It lacks the expression-statement hint; use `not (value in required)`.
+
+  ```relic
+  let required = []
+  let value = "owner"
+  if value not in required
+      append(required, value)
+  ```
+
+- A list method call reports `cannot read a field of a list`, without suggesting
+  the built-in `append(required, "owner")` used in the feature.
+
+  ```relic
+  let required = []
+  required.append("owner")
+  ```
+
+- A module-member typo reports `module 'strings' has no 'trm' (yet)` even after
+  loading finishes. It gives no suggestion for `trim`, unlike unknown names and map keys.
+
+  ```relic
+  use std/strings
+  print(strings.trm("  "))
+  ```

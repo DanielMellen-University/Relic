@@ -1,0 +1,4 @@
+syn_default_param.relic:1:30: error: Relic has no default parameter values
+    fun summarize(text, required = [])
+                                 ^
+hint: pass every argument explicitly, or write a wrapper function
