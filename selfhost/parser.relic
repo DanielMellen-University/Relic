@@ -107,6 +107,8 @@ fun expect_extra(p, what)
     let prev = none
     if p.pos > 0
         prev = p.toks[p.pos - 1]
+    if what == "')' after the parameters" and got.kind == "ASSIGN"
+        return {msg: "Relic has no default parameter values", hint: "pass every argument explicitly, or write a wrapper function", cover_prev: false, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PLUS"
         return {msg: "Relic has no '+='", hint: "write it out, as in x = x + n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "MINUS"
