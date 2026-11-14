@@ -4,9 +4,10 @@ use std/strings
 use table
 
 fun usage()
-    print("usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE")
+    print("usage: tablecheck [--delimiter csv|tsv] [--key COLUMN] [--require COLUMN]... [--] FILE")
     print("Validate CSV or TSV, including RFC 4180 quoted fields, and summarize columns.")
     print("Default: csv. --key requires nonblank, unique values. --help shows this help.")
+    print("--require requires nonblank values; repeat it to check several columns.")
     print("Exit: 0 valid/help, 2 usage error, 3 input/read error. No summary on error.")
 
 fun usage_error(message)
@@ -20,6 +21,7 @@ fun main()
         return
     let delimiter = ","
     let key = ""
+    let required = []
     let have_delimiter = false
     let have_key = false
     let positional = false
@@ -29,7 +31,7 @@ fun main()
         let word = words[i]
         if not positional and word == "--"
             positional = true
-        else if not positional and (word == "--delimiter" or word == "--key")
+        else if not positional and (word == "--delimiter" or word == "--key" or word == "--require")
             if i + 1 >= len(words)
                 usage_error("{word} needs a value")
             i = i + 1
@@ -42,6 +44,11 @@ fun main()
                     delimiter = "\t"
                 else if value != "csv"
                     usage_error("unknown delimiter '{value}' (choose csv or tsv)")
+            else if word == "--require"
+                if strings.trim(value) == ""
+                    usage_error("--require needs a nonblank column name")
+                if not (value in required)
+                    append(required, value)
             else
                 if have_key
                     usage_error("--key was supplied twice")
@@ -65,7 +72,7 @@ fun main()
         os.exit(3)
     let summary = none
     try
-        summary = table.summarize(text, delimiter, key)
+        summary = table.summarize(text, delimiter, key, required)
     catch err
         eprint("tablecheck: {path}: {err.message}")
         os.exit(3)

@@ -3,9 +3,9 @@
 Check a CSV or TSV export before importing it into a spreadsheet, ticket
 tracker, or inventory system. `tablecheck` validates the header and the shape
 of every row, accepts RFC 4180 quoted fields, optionally enforces a unique
-key, and reports present, empty, and distinct values for every column. It
-reads the input without changing it. A bad row produces an error with its
-line and column, and no partial summary.
+key or nonblank required columns, and reports present, empty, and distinct
+values for every column. It reads the input without changing it. A bad row
+produces an error with its line and column, and no partial summary.
 
 This is a standalone CLI written in Relic. Relic already supplies whole-file
 reads (`std/files`), strings, lists, maps, arguments (`std/os`), stderr, and
@@ -103,7 +103,7 @@ host executable is needed by that copied binary at runtime. The invalid
 ## Usage and data rules
 
 ```text
-tablecheck [--delimiter csv|tsv] [--key COLUMN] [--] FILE
+tablecheck [--delimiter csv|tsv] [--key COLUMN] [--require COLUMN]... [--] FILE
 tablecheck --help
 ```
 
@@ -136,6 +136,11 @@ tablecheck --help
   values and exact duplicate keys, naming the first line that used a
   duplicate. Keys with surrounding spaces remain distinct. No key check is
   done by default.
+- `--require COLUMN` requires that header and a nonblank value in every row.
+  Repeat it for several columns, for example `--require team --require status`.
+  Repeating the same name is harmless. Empty strings and values containing only
+  spaces, tabs, CR or LF are blank. Duplicates are allowed and values are kept
+  unchanged in the summary. A header-only file passes if the required names exist.
 - A tab outside quotes is allowed only as the TSV delimiter. A tab inside a
   quoted field is kept. Other ASCII controls, DEL, and a leading UTF-8 BOM
   are rejected. UTF-8 text works, but this tool does not validate UTF-8
