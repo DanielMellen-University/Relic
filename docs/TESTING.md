@@ -192,6 +192,7 @@ standalone CSV/TSV validator. `tablecheck_goldens` is one ctest case in a
 top-level C-runtime build, or in its standalone consumer build. It checks exact
 stdout, stderr and exit status for valid input, input and argument errors,
 compile-time syntax errors and runtime type errors, with the leak check enabled.
+There are 84 exact stdout/stderr/exit checks inside this one ctest case.
 Its fixtures and goldens stay outside `tests/golden`, so the language-corpus
 counts below are unchanged. This application check does not verify the human
 README-only FizzBuzz acceptance gate.

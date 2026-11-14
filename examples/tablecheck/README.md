@@ -208,3 +208,44 @@ Its executable is `build/examples/tablecheck/tablecheck` for a build called
 These automated instructions and agent-run checks do not verify Relic's
 separate acceptance gate: an unfamiliar human writing and running FizzBuzz
 using only the repository README. That gate remains unverified.
+
+## Gaps found while building tablecheck
+
+Adding `--require` exposed the following gaps. Temporary mistake probes on
+`eb04876` gave identical diagnostics on the VM, tree walker, self-hosted
+interpreter and compiled output. The strict-bool mistake `if strings.trim(value)`
+already explained that it received a string; it needed no diagnostic change.
+
+- Default parameters are unavailable, so existing `summarize` callers now pass
+  `[]` explicitly. The vague `expected ')'` diagnostic is fixed by `syn_default_param`.
+
+  ```relic
+  fun summarize(text, required = [])
+      return required
+  ```
+
+- Negated membership in a block header reports only `expected end of line before
+  the block, got 'not'`. It lacks the expression-statement hint; use `not (value in required)`.
+
+  ```relic
+  let required = []
+  let value = "owner"
+  if value not in required
+      append(required, value)
+  ```
+
+- A list method call reports `cannot read a field of a list`, without suggesting
+  the built-in `append(required, "owner")` used in the feature.
+
+  ```relic
+  let required = []
+  required.append("owner")
+  ```
+
+- A module-member typo reports `module 'strings' has no 'trm' (yet)` even after
+  loading finishes. It gives no suggestion for `trim`, unlike unknown names and map keys.
+
+  ```relic
+  use std/strings
+  print(strings.trm("  "))
+  ```
