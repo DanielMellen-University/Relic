@@ -33,13 +33,14 @@ execute_process(COMMAND ${RELIC} fmt no-such-file.relic
 if(NOT code EQUAL 2 OR NOT err STREQUAL "relic: cannot open no-such-file.relic\n")
   message(FATAL_ERROR "fmt missing file: exit ${code}\n${out}${err}")
 endif()
-file(WRITE ${TMP}/bad.relic "let x =\n")
+# file(WRITE) uses text mode on Windows. Normalize this fixture explicitly:
+# --write must later preserve its exact LF bytes when parsing fails.
+file(WRITE ${TMP}/bad.in "let x =\n")
+configure_file(${TMP}/bad.in ${TMP}/bad.relic @ONLY NEWLINE_STYLE LF)
 execute_process(COMMAND ${RELIC} fmt ${TMP}/bad.relic
   RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
 string(REPLACE "\r\n" "\n" err "${err}")
 string(REPLACE "\r\n" "\n" out "${out}")
-# Do not pin the column. file(WRITE) stores CRLF on Windows, and the lexer
-# counts that carriage return, so the caret is one column further than on LF.
 if(NOT code EQUAL 1 OR NOT out STREQUAL "" OR NOT err MATCHES "expected an expression, got end of line")
   message(FATAL_ERROR "fmt syntax error: exit ${code}\n${out}${err}")
 endif()
@@ -98,7 +99,12 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "")
 endif()
 
 # --write normalizes CRLF source to canonical LF output.
-file(WRITE ${TMP}/crlf.relic "print( 1 )\r\n")
+file(WRITE ${TMP}/crlf.in "print( 1 )\n")
+configure_file(${TMP}/crlf.in ${TMP}/crlf.relic @ONLY NEWLINE_STYLE CRLF)
+file(READ ${TMP}/crlf.relic crlf_input HEX)
+if(NOT crlf_input STREQUAL "7072696e7428203120290d0a")
+  message(FATAL_ERROR "fmt CRLF fixture does not contain exactly print( 1 ) followed by CRLF")
+endif()
 execute_process(COMMAND ${RELIC} fmt --write ${TMP}/crlf.relic
   RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
 file(READ ${TMP}/crlf.relic crlf_wrote)
@@ -138,7 +144,8 @@ endif()
 
 # With several inputs, --check prints only the paths that would change.
 file(WRITE ${TMP}/dirty.relic "${messy}")
-file(WRITE ${TMP}/clean.relic "${neat}")
+# Copy the LF golden verbatim; file(WRITE) would introduce CRLF on Windows.
+configure_file(${SRC}/tests/fmt/out/readme_example.fmt ${TMP}/clean.relic COPYONLY)
 execute_process(COMMAND ${RELIC} fmt --check ${TMP}/dirty.relic ${TMP}/clean.relic
   RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
 string(REPLACE "\r\n" "\n" out "${out}")
@@ -167,7 +174,7 @@ if(NOT code EQUAL 1 OR NOT out STREQUAL "${spaced_file}\n" OR NOT err STREQUAL "
   message(FATAL_ERROR "fmt --check path with spaces: exit ${code}\n${out}${err}")
 endif()
 file(WRITE ${TMP}/write_dirty.relic "${messy}")
-file(WRITE ${TMP}/write_clean.relic "${neat}")
+configure_file(${SRC}/tests/fmt/out/readme_example.fmt ${TMP}/write_clean.relic COPYONLY)
 execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_dirty.relic ${TMP}/write_clean.relic
   RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
 file(READ ${TMP}/write_dirty.relic wrote_dirty)
@@ -176,7 +183,7 @@ if(NOT code EQUAL 0 OR NOT out STREQUAL "" OR NOT err STREQUAL "" OR
    NOT wrote_dirty STREQUAL neat OR NOT wrote_clean STREQUAL neat)
   message(FATAL_ERROR "fmt --write multiple files: exit ${code}\n--- stdout\n${out}--- stderr\n${err}--- dirty\n${wrote_dirty}--- clean\n${wrote_clean}")
 endif()
-file(WRITE ${TMP}/write_bad.relic "let x =\n")
+configure_file(${TMP}/bad.relic ${TMP}/write_bad.relic COPYONLY)
 file(WRITE ${TMP}/write_after_bad.relic "${messy}")
 execute_process(COMMAND ${RELIC} fmt --write ${TMP}/write_bad.relic ${TMP}/write_after_bad.relic
   RESULT_VARIABLE code OUTPUT_VARIABLE out ERROR_VARIABLE err)
