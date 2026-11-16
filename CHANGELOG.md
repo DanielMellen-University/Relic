@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Golden tests are compared by `tools/golden_runner.relic`, compiled with the C runtime, instead of the CMake script runners. It checks stdout, stderr bytes (NUL included) and the exit code, turns CRLF into LF, strips the test folder from error paths on Windows and elsewhere, and on a mismatch prints the wanted output, the output it got, and the first character where they differ. `os.run` and `os.program` are the new process calls (`host_run`, `host_program`), in the C runtime and the optional C++ host. `tools/run_golden.cmake` and `tools/run_cgen.cmake` remain only for a host build with `-DRELIC_C_RUNTIME=OFF`. The other comparison scripts in `tools/` are still CMake. Golden `std_os_run`.
+- `ctest`: 940 with the host, 461 without.
+
 - The self-hosted `run`, `tokens`, `ast` and `check` commands report unreadable input as `relic: cannot open FILE` and exit 2. `cgen.relic` and compiled `relicc` do the same for the main input and imported modules, exiting 3. They name the file instead of reporting an error inside the tool.
 
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.

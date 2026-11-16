@@ -48,7 +48,7 @@ endfunction()
 # relic_rt_gfx with the SDL2 module. A program links one of the two
 # (relic_add_program(... GRAPHICS) picks relic_rt_gfx), so only programs that
 # ask for graphics depend on SDL2.
-add_library(relic_rt_base OBJECT rl_core.c rl_ops.c rl_builtins.c rl_host.c)
+add_library(relic_rt_base OBJECT rl_core.c rl_ops.c rl_builtins.c rl_host.c rl_process.c)
 target_include_directories(relic_rt_base PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(relic_rt_base PRIVATE RL_STD_DIR="${RELIC_ROOT}/std/")
 relic_c_target(relic_rt_base)

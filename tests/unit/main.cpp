@@ -11,7 +11,13 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -644,7 +650,56 @@ static void test_fmt() {
     CHECK(bad.err.find("error:") != std::string::npos);
 }
 
-int main() {
+static int host_run_child(int argc, char** argv) {
+#ifdef _WIN32
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+#endif
+    if (argc >= 3 && std::strcmp(argv[2], "echo") == 0) {
+        char buf[4096];
+        size_t n;
+        const char* mark;
+        while ((n = std::fread(buf, 1, sizeof buf, stdin)) > 0) std::fwrite(buf, 1, n, stdout);
+        mark = std::getenv("RELIC_OS_RUN_MARK");
+        std::fprintf(stderr, "%s\n", mark ? mark : "");
+        std::fflush(stdout);
+        std::fflush(stderr);
+        return 7;
+    }
+    if (argc >= 5 && std::strcmp(argv[2], "args") == 0) {
+        std::printf("%s\n%s\n", argv[3], argv[4]);
+        std::fflush(stdout);
+        return 0;
+    }
+    return 9;
+}
+
+static void test_host_run() {
+    const char* src =
+        "use std/os\n"
+        "let me = os.program()\n"
+        "let r = os.run([me, \"--host-run-child\", \"echo\"], \"\", \"a\" + chr(0) + \"b\", {RELIC_OS_RUN_MARK: \"yes\"})\n"
+        "if r.code != 7 or r.out != \"a\" + chr(0) + \"b\" or r.err != \"yes\\n\"\n"
+        "    eprint(\"echo failed\")\n"
+        "    eprint(r.code)\n"
+        "    eprint(r.err)\n"
+        "    os.exit(1)\n"
+        "let q = os.run([me, \"--host-run-child\", \"args\", \"hello world\", \"say \\\"hi\\\"\"], \"\", \"\", {})\n"
+        "if q.code != 0 or q.out != \"hello world\\nsay \\\"hi\\\"\\n\"\n"
+        "    eprint(\"args failed\")\n"
+        "    eprint(q.out)\n"
+        "    os.exit(1)\n"
+        "print(\"host-run-ok\")\n";
+    relic::RunResult r = relic::run_source_vm("host_run.relic", src);
+    if (r.exit_code != 0 || r.out != "host-run-ok\n") {
+        std::cerr << "host_run FAIL exit " << r.exit_code << "\n--- out\n" << r.out << "--- err\n" << r.err;
+        ++failures;
+    }
+}
+
+int main(int argc, char** argv) {
+    if (argc >= 3 && std::string(argv[1]) == "--host-run-child") return host_run_child(argc, argv);
     test_list_layout();
     test_string_values();
     test_parser();
@@ -664,6 +719,7 @@ int main() {
     test_strings();
     test_layout();
     test_fmt();
+    test_host_run();
     if (failures) {
         std::cerr << failures << " failure(s)\n";
         return 1;

@@ -1,0 +1,99 @@
+# host_run, through os.run: start a program, collect its bytes and exit code.
+use std/os
+use std/files
+use std/strings
+
+fun windows()
+    let name = os.env("OS")
+    return name != none and name == "Windows_NT"
+
+fun shell(script, dir, input, env)
+    if windows()
+        let com = os.env("ComSpec")
+        if com == none
+            com = "cmd"
+        return os.run([com, "/c", script], dir, input, env)
+    return os.run(["/bin/sh", "-c", script], dir, input, env)
+
+fun crlf(s)
+    return strings.replace(s, "\u{d}\n", "\n")
+
+# cmd's echo sometimes writes a trailing space. Both forms count.
+fun echo_line(s, word)
+    let t = crlf(s)
+    return t == word + "\n" or t == word + " \n"
+
+let stopped = shell("exit 7", "", "", {})
+print(stopped.code == 7 and stopped.out == "")
+
+let hello_script = "printf '%s\\n' hello"
+if windows()
+    hello_script = "echo hello"
+let hello = shell(hello_script, "", "", {})
+print(hello.code == 0 and echo_line(hello.out, "hello"))
+
+let env_script = "printf '%s\\n' \"$RELIC_OS_RUN_MARK\""
+if windows()
+    env_script = "echo %RELIC_OS_RUN_MARK%"
+let marked = shell(env_script, "", "", {RELIC_OS_RUN_MARK: "yes"})
+print(marked.code == 0 and echo_line(marked.out, "yes"))
+
+let in_script = "read line; printf '%s\\n' \"$line\""
+if windows()
+    in_script = "findstr ."
+let fed = shell(in_script, "", "piped\n", {})
+let fed_text = crlf(fed.out)
+print(fed.code == 0 and (fed_text == "piped\n" or fed_text == "piped"))
+
+let tmp = "std_os_run.tmpdir"
+files.make_dir(tmp)
+let cwd_script = "pwd"
+if windows()
+    cwd_script = "cd"
+let there = none
+try
+    there = shell(cwd_script, tmp, "", {})
+catch e
+    files.remove(tmp)
+    fail(e.message)
+files.remove(tmp)
+let shown = strings.replace(crlf(there.out), "\\", "/")
+print(there.code == 0 and strings.contains(shown, "std_os_run.tmpdir"))
+
+try
+    os.run([], "", "", {})
+catch e
+    print(e.message)
+try
+    os.run(1, "", "", {})
+catch e
+    print(e.message)
+try
+    os.run([1], "", "", {})
+catch e
+    print(e.message)
+try
+    os.run(["x"], 1, "", {})
+catch e
+    print(e.message)
+try
+    os.run(["x"], "", 1, {})
+catch e
+    print(e.message)
+try
+    os.run(["x"], "", "", 1)
+catch e
+    print(e.message)
+try
+    os.run(["x"], "", "", {K: 1})
+catch e
+    print(e.message)
+try
+    os.run(["relic-no-such-program-zzz"], "", "", {})
+catch e
+    print(strings.starts_with(e.message, "os.run(): cannot run relic-no-such-program-zzz"))
+try
+    os.run(["x"], "relic-no-such-folder-zzz", "", {})
+catch e
+    print(strings.starts_with(e.message, "os.run(): cannot use folder relic-no-such-folder-zzz"))
+print("done")

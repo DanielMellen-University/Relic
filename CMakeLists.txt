@@ -77,6 +77,7 @@ if(RELIC_BUILD_HOST)
     src/interp/interp.cpp
     src/interp/stack.cpp
     src/builtins/builtins.cpp
+    src/builtins/process.cpp
     src/vm/vm.cpp
     src/builtins/graphics.cpp
   )
@@ -120,14 +121,18 @@ if(RELIC_BUILD_HOST)
   target_link_libraries(relic_tests PRIVATE relic_core)
   add_test(NAME unit COMMAND relic_tests)
 
-  foreach(t ${GOLDEN_TESTS})
-    get_filename_component(name ${t} NAME_WE)
-    add_test(NAME golden_${name}
-      COMMAND ${CMAKE_COMMAND}
-        -DRELIC=$<TARGET_FILE:relic>
-        -DTEST=${t}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/run_golden.cmake)
-  endforeach()
+  # Without the C runtime there is no compiler to build tools/golden_runner.relic,
+  # so those host builds still compare goldens with the CMake script.
+  if(NOT RELIC_C_RUNTIME)
+    foreach(t ${GOLDEN_TESTS})
+      get_filename_component(name ${t} NAME_WE)
+      add_test(NAME golden_${name}
+        COMMAND ${CMAKE_COMMAND}
+          -DRELIC=$<TARGET_FILE:relic>
+          -DTEST=${t}
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/run_golden.cmake)
+    endforeach()
+  endif()
 
   if(RELIC_SDL)
     # Headless SDL smoke test: input, text and image calls run without a display.
@@ -336,6 +341,9 @@ if(RELIC_C_RUNTIME)
 
   # relic_add_program(name file): a .relic program as an executable target.
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Relic.cmake)
+  if(RELIC_BUILD_HOST OR RELIC_CGEN_TESTS)
+    relic_add_program(golden_runner tools/golden_runner.relic)
+  endif()
   if(RELIC_TOP_LEVEL)
     add_subdirectory(examples/tablecheck)
     relic_add_program(example_compiled examples/compiled/main.relic)
@@ -388,8 +396,17 @@ if(RELIC_C_RUNTIME)
   endif()
 endif()
 
+if(RELIC_BUILD_HOST AND TARGET golden_runner)
+  foreach(t ${GOLDEN_TESTS})
+    get_filename_component(name ${t} NAME_WE)
+    add_test(NAME golden_${name}
+      COMMAND golden_runner $<TARGET_FILE:relic> ${t})
+  endforeach()
+endif()
+
 # Golden programs compiled to C, built against runtime/c with the same strict
-# flags, run and compared with the same .out/.err files. REPL tests and tests
+# flags, run by tools/golden_runner.relic and compared with the same .out/.err
+# files. REPL tests and tests
 # with .args (CLI flags) are left out. Without the host, relicc compiles
 # them; with the host, cgen.relic runs on the host (as before C5) and
 # cgen_stage1_matches_host checks relicc writes the same C for each.
@@ -418,8 +435,7 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
   function(relic_cgen_test name src)
     relic_cgen_exe(${name} ${src})
     add_test(NAME cgen_${name}
-      COMMAND ${CMAKE_COMMAND} -DEXE=$<TARGET_FILE:cgen_${name}> -DTEST=${src}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/run_cgen.cmake)
+      COMMAND golden_runner --cgen $<TARGET_FILE:cgen_${name}> ${src})
     set_tests_properties(cgen_${name} PROPERTIES SKIP_REGULAR_EXPRESSION "cgen-skip: ")
   endfunction()
   foreach(t ${GOLDEN_TESTS})
@@ -505,7 +521,7 @@ endif()
 # (in parallel, one could remove the folder while another was using it).
 # The files goldens below each use their own .tmpdir, but a golden and its
 # cgen twin share it, so they take turns too.
-foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_more_errors golden_std_files_write_edges golden_std_files_type_errors golden_std_strings_more cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_more_errors cgen_std_files_write_edges cgen_std_files_type_errors cgen_std_strings_more selfhost_interp vm_matches_tree_walker)
+foreach(t golden_std_files golden_std_folders cgen_std_files cgen_std_folders golden_std_files_errors golden_std_files_lines_edges golden_std_files_more_errors golden_std_files_write_edges golden_std_files_type_errors golden_std_strings_more golden_std_os_run cgen_std_os_run cgen_std_files_errors cgen_std_files_lines_edges cgen_std_files_more_errors cgen_std_files_write_edges cgen_std_files_type_errors cgen_std_strings_more selfhost_interp vm_matches_tree_walker)
   if(TEST ${t})
     set_tests_properties(${t} PROPERTIES RESOURCE_LOCK golden_disk_files)
   endif()

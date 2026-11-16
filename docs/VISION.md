@@ -24,7 +24,7 @@ Everything Relic relies on that we did not write. Each piece has a planned repla
 | C99 compiler, C library and libm, POSIX or Win32 file calls | the C runtime and, from C2, generated C | stays: this is the floor of the bootstrap Daniel picked | |
 | SDL2, SDL2_image, SDL2_ttf (optional) | graphics, `-DRELIC_SDL=ON` | a Relic drawing layer | phase 5 |
 | CMake | build | **Open:** a Relic build tool | |
-| CMake script mode | golden runner and comparison scripts in `tools/` | **Open:** a runner in Relic | |
+| CMake script mode | comparison scripts in `tools/` (lexers, parsers, interpreter, check, REPL, CLI, bootstrap). The golden runner is `tools/golden_runner.relic` | **Open:** those comparison scripts in Relic | golden runner done; `run_golden.cmake` and `run_cgen.cmake` stay only for a host build with no C runtime |
 | GitHub Actions | CI on Linux, macOS, Windows | not planned | |
 
 The desktop shell (MONOLITH 1 in C++ today) is being rewritten in Relic in M0N0LITH-2.

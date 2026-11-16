@@ -18,6 +18,10 @@ In a module, prefer `os.args()` to the built-in `args()`. They are the same list
 
 `exit(code)` stops the program after flushing output. `code` must be a whole number. The checked examples do not call it, because a call would not return.
 
+`program()` is the path of this executable.
+
+`run(argv, cwd, stdin, env)` starts a program and waits. `argv` is a list of strings (the program, then its arguments), not a shell command. `cwd` is the working folder, or `""` to stay in this one. `stdin` is the bytes fed to the program; `""` is empty input, not the terminal. `env` is a map of extra variables. The result is a map with `code`, `out` and `err`. The checked examples do not call it, because what it runs depends on the machine.
+
 ### Lines of input
 
 `read_line()` returns the next line without its line end (`"\n"` or a carriage return followed by `"\n"`), and `none` once the input has run out. An empty line is `""`, so `none` only means the end. [read_line.relic](../../examples/ref/os/read_line.relic) is fed two lines and prints `alpha`, `beta`, then `true`.

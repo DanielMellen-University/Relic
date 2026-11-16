@@ -16,4 +16,8 @@ int rl_fail_wrap(rl_ctx *cx, const char *before, const char *mid, size_t mid_len
 int rl_arg_num(rl_ctx *cx, rl_value v, const char *what, double *d);
 int rl_arg_whole(rl_ctx *cx, rl_value v, const char *what, long long *r);
 int rl_arg_str(rl_ctx *cx, rl_value v, const char *what);
+
+/* rl_process.c: host_program and host_run. Same messages as src/builtins/process.cpp. */
+int rl_bi_program(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a, rl_value *out);
+int rl_bi_run(rl_ctx *cx, rl_fun *self, int argc, const rl_value *a, rl_value *out);
 #endif

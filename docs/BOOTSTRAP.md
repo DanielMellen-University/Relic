@@ -16,7 +16,7 @@ All 7 steps are done (M1 to M4), and the host has grown well past them: see [ARC
 
 1. **Layout.** Create the folders in [ARCHITECTURE.md](ARCHITECTURE.md) and a `CMakeLists.txt` with the three targets.
 2. **Entry point.** `relic --version` printed `relic 0.0.1` at the time. Add CI that builds on push.
-3. **Golden runner.** Add the runner from [TESTING.md](TESTING.md) and one test.
+3. **Golden runner.** Add the runner from [TESTING.md](TESTING.md) and one test. That runner is now `tools/golden_runner.relic`.
 4. **Tokens.** Lex names, string literals, `(`, `)`, newlines and end of file. INDENT/DEDENT can wait until blocks arrive. Add `--tokens`.
 5. **Parse a call.** Parse `name(expr)` where expr is a string. Add `--ast`.
 6. **Run it.** Interpreter looks up `print` in builtins and writes the string plus a newline.

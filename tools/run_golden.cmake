@@ -1,6 +1,8 @@
 cmake_policy(SET CMP0053 NEW)
 include(${CMAKE_CURRENT_LIST_DIR}/error_bytes.cmake)
-# Golden test runner. Usage:
+# Fallback golden runner, used only by a host build with -DRELIC_C_RUNTIME=OFF
+# (no relicc, so tools/golden_runner.relic cannot be compiled). The default
+# and host builds compare goldens with golden_runner instead. Usage:
 #   cmake -DRELIC=path/to/relic -DTEST=tests/golden/name.relic -P tools/run_golden.cmake
 # Optional name.args holds flags to pass first.
 # Optional name.in is fed to the program on stdin (a file without it gets no input).
