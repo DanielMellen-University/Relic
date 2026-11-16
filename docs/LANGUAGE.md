@@ -155,7 +155,7 @@ print(mathx.square(4))
 - `use` binds the name in the current scope only. A `use` inside a function is not visible outside it.
 - A module runs once. Every later `use` of the same file, from anywhere, gives the same module.
 - Every top-level `let` and `fun` in the module is reachable as `mod.name`, except names starting with `_`, which are private to the file (`'_cache' is private to module 'mathx'`). Map keys starting with `_` are ordinary keys.
-- Module names are read live. Two modules can use each other: the second `use` in a cycle gets the module that is still loading. Calls across the cycle inside functions always work. Reading a name at the top level before the other file defines it is an error (`module 'x' has no 'y' (yet)`).
+- Module names are read live. Two modules can use each other: the second `use` in a cycle gets the module that is still loading. Calls across the cycle inside functions always work. Reading a name at the top level before the other file defines it is an error (`module 'x' has no 'y' (yet)`). Once that module has finished loading, a missing name does not say "(yet)". A member one or two edits away is suggested (`module 'strings' has no 'trm' (did you mean 'trim'?)`).
 - A module can use the main file back. It gets the main file's own scope, and the main file does not run twice.
 - Modules see the built-ins, but not the main file's globals.
 - `mod.x = ...` from outside is an error. Give the module a function that does it.
@@ -201,7 +201,8 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 - The first line is always `file:line:col: error: message`, so tools can match it. The file is the one the error happened in, which may be a module.
 - An unterminated string points at its opening quote, including after an interpolation.
 - Under it come the source line and a caret under the column. Long lines are cut around the caret. The REPL leaves these two lines out.
-- Unknown names and missing map keys get a "did you mean" hint when a name one or two typos away exists.
+- Unknown names, missing map keys, and missing members of a module that has finished loading get a "did you mean" hint when a name one or two typos away exists.
+- A call written like a method (`items.append(x)`, `text.trim()`, `row.keys()`) is an error. When the name is a built-in, or a function in `std/lists`, `std/strings`, or `std/maps`, that takes that value first, the message shows the call: `cannot read a field of a list (write append(items, x))`, `cannot read a field of a string (write strings.trim(text))`, `map has no key 'keys' (write keys(row))`. Any other name stays the plain field or key error.
 - Output printed before the error is kept.
 
 ## Numbers

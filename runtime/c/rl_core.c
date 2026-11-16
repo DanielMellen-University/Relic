@@ -661,6 +661,7 @@ rl_value rl_module_new(const char *name) {
     m->scope = NULL;
     m->nnames = 0;
     m->snames = NULL;
+    m->ready = 0;
     return rl_obj_value(&m->h);
 }
 
@@ -674,7 +675,12 @@ rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const cha
     ++scope->h.rc;
     m->nnames = n;
     m->snames = names;
+    m->ready = 0;
     return rl_obj_value(&m->h);
+}
+
+void rl_module_mark_ready(rl_value module) {
+    if (module.k == RL_MODULE) ((rl_module *)module.u.o)->ready = 1;
 }
 
 /* ------------------------------------------------------------------ */

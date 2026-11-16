@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Calling a list, string, or map like a method names the real function when one takes that value first: `required.append("owner")` is `cannot read a field of a list (write append(required, "owner"))`, `text.trim()` is `cannot read a field of a string (write strings.trim(text))`, and `row.keys()` is `map has no key 'keys' (write keys(row))`. A name that is not a built-in or a function in `std/lists`, `std/strings`, or `std/maps` is unchanged. Goldens `err_method_append`, `err_method_string`, `err_method_map`, `method_hints`.
+
+- A missing member of a module that has finished loading no longer says "(yet)". `strings.trm` after `use std/strings` is `module 'strings' has no 'trm' (did you mean 'trim'?)`. "(yet)" remains while the module is still loading, or stopped before it finished. Golden `err_module_suggest`. `err_use_field` no longer says "(yet)".
+
 - The self-hosted `run`, `tokens`, `ast` and `check` commands report unreadable input as `relic: cannot open FILE` and exit 2. `cgen.relic` and compiled `relicc` do the same for the main input and imported modules, exiting 3. They name the file instead of reporting an error inside the tool.
 
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.

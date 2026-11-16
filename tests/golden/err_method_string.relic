@@ -1,0 +1,3 @@
+# A string method call points at the std function that takes the string first.
+let text = "  "
+text.trim()

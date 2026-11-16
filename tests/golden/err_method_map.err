@@ -1,0 +1,3 @@
+err_method_map.relic:3:4: error: map has no key 'keys' (write keys(row))
+    row.keys()
+       ^

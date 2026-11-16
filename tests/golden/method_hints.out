@@ -1,0 +1,29 @@
+append cannot read a field of a list (write append(xs, "owner"))
+pop cannot read a field of a list (write pop(xs))
+insert cannot read a field of a list (write insert(xs, 0, 9))
+remove cannot read a field of a list (write remove(xs, 0))
+slice cannot read a field of a list (write slice(xs, 0, 1))
+len cannot read a field of a list (write len(xs))
+sort cannot read a field of a list (write lists.sort(xs))
+join cannot read a field of a list (write strings.join(xs, ","))
+size cannot read a field of a list
+bare cannot read a field of a list
+side cannot read a field of a list (write append(xs, boom()))
+trim cannot read a field of a string (write strings.trim(text))
+upper cannot read a field of a string (write strings.upper(text))
+ord cannot read a field of a string (write ord(text))
+find cannot read a field of a string (write strings.find(text, "h"))
+keys map has no key 'keys' (write keys(row))
+values map has no key 'values' (write maps.values(row))
+widht map has no key 'widht' (did you mean 'width'?)
+kept 7
+index cannot read a field of a list (write append(nested[0], 3))
+plus cannot read a field of a list (write len(xs + [4]))
+trm module 'strings' has no 'trm' (did you mean 'trim'?)
+zzzz module 'strings' has no 'zzzz'
+mathx loaded
+squre module 'mathx' has no 'squre' (did you mean 'square'?)
+half loading
+half half broke
+yet module 'half' has no 'b' (yet)
+yetnope module 'half' has no 'nope' (yet)

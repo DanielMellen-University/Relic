@@ -716,6 +716,36 @@ static void test_codegen_support(void) {
         rl_release(list_fn);
         rl_release(f);
     }
+
+    /* A finished module drops "(yet)" and suggests a close member. */
+    {
+        static const char *const nm[2] = {"pi", "later"};
+        rl_scope *sc = rl_scope_new(NULL, 2);
+        rl_value m = rl_module_scoped("geo", sc, 2, nm);
+        sc->slots[0] = rl_float(3.5);
+        sc->slots[1] = rl_int(1);
+        rl_module_mark_ready(m);
+        ERR(rl_field(&cx, m, "latre", &r), "module 'geo' has no 'latre' (did you mean 'later'?)");
+        ERR(rl_field(&cx, m, "nope", &r), "module 'geo' has no 'nope'");
+        rl_scope_release(sc);
+        rl_release(m);
+    }
+    /* Method-style calls name the built-in or std function. */
+    {
+        rl_value list = rl_list_new(0), text = S("  "), row = rl_map_new(), out;
+        ERR(rl_method(&cx, list, "append", "required, \"owner\"", &out),
+            "cannot read a field of a list (write append(required, \"owner\"))");
+        ERR(rl_method(&cx, list, "size", "xs", &out), "cannot read a field of a list");
+        ERR(rl_method(&cx, text, "trim", "s", &out),
+            "cannot read a field of a string (write strings.trim(s))");
+        ERR(rl_method(&cx, row, "keys", "m", &out), "map has no key 'keys' (write keys(m))");
+        CHECK(rl_set_field(&cx, row, "keys", rl_int(7)) == RL_OK);
+        CHECK(rl_method(&cx, row, "keys", "m", &out) == RL_OK && out.k == RL_INT && out.u.i == 7);
+        rl_release(out);
+        rl_release(list);
+        rl_release(text);
+        rl_release(row);
+    }
 }
 
 /* The high-DPI math (src/builtins/gfx_scale.h). Headless SDL always has a

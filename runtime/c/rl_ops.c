@@ -406,6 +406,181 @@ int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v) {
     return rl_fail(cx, "cannot set an index on %s", rl_a_type(obj));
 }
 
+/* Keep in step with method_spell in src/interp/interp.cpp and selfhost/interp.relic. */
+static const struct { const char *type; const char *name; const char *spell; } kMethods[] = {
+    {"list", "append", "append"},
+    {"list", "pop", "pop"},
+    {"list", "insert", "insert"},
+    {"list", "remove", "remove"},
+    {"list", "slice", "slice"},
+    {"list", "len", "len"},
+    {"list", "map", "lists.map"},
+    {"list", "filter", "lists.filter"},
+    {"list", "reduce", "lists.reduce"},
+    {"list", "sum", "lists.sum"},
+    {"list", "index_of", "lists.index_of"},
+    {"list", "contains", "lists.contains"},
+    {"list", "unique", "lists.unique"},
+    {"list", "any", "lists.any"},
+    {"list", "all", "lists.all"},
+    {"list", "flatten", "lists.flatten"},
+    {"list", "zip", "lists.zip"},
+    {"list", "count", "lists.count"},
+    {"list", "chunk", "lists.chunk"},
+    {"list", "find", "lists.find"},
+    {"list", "find_index", "lists.find_index"},
+    {"list", "take", "lists.take"},
+    {"list", "drop", "lists.drop"},
+    {"list", "partition", "lists.partition"},
+    {"list", "product", "lists.product"},
+    {"list", "group_by", "lists.group_by"},
+    {"list", "count_by", "lists.count_by"},
+    {"list", "min", "lists.min"},
+    {"list", "max", "lists.max"},
+    {"list", "min_by", "lists.min_by"},
+    {"list", "max_by", "lists.max_by"},
+    {"list", "last", "lists.last"},
+    {"list", "windows", "lists.windows"},
+    {"list", "mean", "lists.mean"},
+    {"list", "rotate", "lists.rotate"},
+    {"list", "sum_by", "lists.sum_by"},
+    {"list", "reverse", "lists.reverse"},
+    {"list", "copy", "lists.copy"},
+    {"list", "sort_by", "lists.sort_by"},
+    {"list", "sort", "lists.sort"},
+    {"list", "join", "strings.join"},
+    {"list", "from_items", "maps.from_items"},
+    {"map", "keys", "keys"},
+    {"map", "remove", "remove"},
+    {"map", "len", "len"},
+    {"map", "values", "maps.values"},
+    {"map", "items", "maps.items"},
+    {"map", "get", "maps.get"},
+    {"map", "merge", "maps.merge"},
+    {"map", "drop", "maps.drop"},
+    {"map", "invert", "maps.invert"},
+    {"map", "map_values", "maps.map_values"},
+    {"map", "filter", "maps.filter"},
+    {"map", "pick", "maps.pick"},
+    {"map", "find_key", "maps.find_key"},
+    {"map", "has_value", "maps.has_value"},
+    {"string", "slice", "slice"},
+    {"string", "len", "len"},
+    {"string", "ord", "ord"},
+    {"string", "find", "strings.find"},
+    {"string", "contains", "strings.contains"},
+    {"string", "starts_with", "strings.starts_with"},
+    {"string", "ends_with", "strings.ends_with"},
+    {"string", "upper", "strings.upper"},
+    {"string", "lower", "strings.lower"},
+    {"string", "is_space", "strings.is_space"},
+    {"string", "is_digits", "strings.is_digits"},
+    {"string", "is_alpha", "strings.is_alpha"},
+    {"string", "remove_prefix", "strings.remove_prefix"},
+    {"string", "remove_suffix", "strings.remove_suffix"},
+    {"string", "words", "strings.words"},
+    {"string", "trim", "strings.trim"},
+    {"string", "trim_start", "strings.trim_start"},
+    {"string", "trim_end", "strings.trim_end"},
+    {"string", "split", "strings.split"},
+    {"string", "replace", "strings.replace"},
+    {"string", "count", "strings.count"},
+    {"string", "find_last", "strings.find_last"},
+    {"string", "reverse", "strings.reverse"},
+    {"string", "lines", "strings.lines"},
+    {"string", "repeat", "strings.repeat"},
+    {"string", "pad_left", "strings.pad_left"},
+    {"string", "pad_right", "strings.pad_right"},
+    {"string", "center", "strings.center"},
+    {"string", "capitalize", "strings.capitalize"},
+    {"string", "truncate", "strings.truncate"},
+    {"string", "is_upper", "strings.is_upper"},
+    {"string", "is_lower", "strings.is_lower"},
+    {"string", "map", "lists.map"},
+    {"string", "filter", "lists.filter"},
+    {"string", "reduce", "lists.reduce"},
+    {"string", "sum", "lists.sum"},
+    {"string", "index_of", "lists.index_of"},
+    {"string", "unique", "lists.unique"},
+    {"string", "any", "lists.any"},
+    {"string", "all", "lists.all"},
+    {"string", "flatten", "lists.flatten"},
+    {"string", "zip", "lists.zip"},
+    {"string", "chunk", "lists.chunk"},
+    {"string", "find_index", "lists.find_index"},
+    {"string", "take", "lists.take"},
+    {"string", "drop", "lists.drop"},
+    {"string", "partition", "lists.partition"},
+    {"string", "product", "lists.product"},
+    {"string", "group_by", "lists.group_by"},
+    {"string", "count_by", "lists.count_by"},
+    {"string", "min", "lists.min"},
+    {"string", "max", "lists.max"},
+    {"string", "min_by", "lists.min_by"},
+    {"string", "max_by", "lists.max_by"},
+    {"string", "last", "lists.last"},
+    {"string", "windows", "lists.windows"},
+    {"string", "mean", "lists.mean"},
+    {"string", "rotate", "lists.rotate"},
+    {"string", "sum_by", "lists.sum_by"},
+    {"string", "copy", "lists.copy"},
+    {"string", "sort_by", "lists.sort_by"},
+    {"string", "sort", "lists.sort"},
+};
+static const char *method_spell(const char *type, const char *name) {
+    size_t i, n = sizeof kMethods / sizeof kMethods[0];
+    for (i = 0; i < n; ++i)
+        if (strcmp(kMethods[i].type, type) == 0 && strcmp(kMethods[i].name, name) == 0)
+            return kMethods[i].spell;
+    return NULL;
+}
+
+static int module_missing(rl_ctx *cx, rl_module *m, const char *name) {
+    size_t len, best_d, i;
+    const char *best;
+    if (!m->ready) return rl_fail(cx, "module '%s' has no '%s' (yet)", m->name->data, name);
+    len = strlen(name);
+    best_d = (size_t)-1;
+    best = NULL;
+    if (m->scope) {
+        for (i = 0; i < m->nnames && i < m->scope->n; ++i) {
+            const char *c = m->snames[i];
+            if (!c || c[0] == '_' || m->scope->slots[i].k == RL_UNSET) continue;
+            best = suggest(name, len, best, &best_d, c);
+        }
+    } else if (m->names) {
+        for (i = 0; i < m->names->used; ++i) {
+            const rl_str *c = m->names->keys[i];
+            if (!c || c->len == 0 || c->data[0] == '_') continue;
+            best = suggest(name, len, best, &best_d, c->data);
+        }
+    }
+    if (best) return rl_fail(cx, "module '%s' has no '%s' (did you mean '%s'?)", m->name->data, name, best);
+    return rl_fail(cx, "module '%s' has no '%s'", m->name->data, name);
+}
+
+int rl_method(rl_ctx *cx, rl_value obj, const char *name, const char *inside, rl_value *out) {
+    const char *type = NULL;
+    const char *spell;
+    int missing_map = 0;
+    *out = rl_none();
+    if (!inside) inside = "";
+    if (obj.k == RL_LIST) type = "list";
+    else if (obj.k == RL_STR) type = "string";
+    else if (obj.k == RL_MAP) {
+        if (rl_map_get(M(obj), name, strlen(name))) return rl_field(cx, obj, name, out);
+        type = "map";
+        missing_map = 1;
+    }
+    spell = type ? method_spell(type, name) : NULL;
+    if (spell) {
+        if (missing_map)
+            return rl_fail(cx, "map has no key '%s' (write %s(%s))", name, spell, inside);
+        return rl_fail(cx, "cannot read a field of %s (write %s(%s))", rl_a_type(obj), spell, inside);
+    }
+    return rl_field(cx, obj, name, out);
+}
+
 int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out) {
     size_t len = strlen(name);
     rl_value *v;
@@ -421,7 +596,7 @@ int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out) {
         } else if (m->names) {
             v = rl_map_get(m->names, name, len);
         }
-        if (!v) return rl_fail(cx, "module '%s' has no '%s' (yet)", m->name->data, name);
+        if (!v) return module_missing(cx, m, name);
         *out = rl_retain(*v);
         return RL_OK;
     }

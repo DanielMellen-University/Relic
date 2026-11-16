@@ -1,0 +1,3 @@
+# A member typo on a module that has finished loading suggests the close name.
+use std/strings
+print(strings.trm("  "))

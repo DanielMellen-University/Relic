@@ -234,16 +234,20 @@ already explained that it received a string; it needed no diagnostic change.
       append(required, value)
   ```
 
-- A list method call reports `cannot read a field of a list`, without suggesting
-  the built-in `append(required, "owner")` used in the feature.
+- A list method call is fixed. It was `cannot read a field of a list`, with no
+  hint. It is now `cannot read a field of a list (write append(required, "owner"))`.
+  Map and string calls get the same kind of hint when a real function takes that
+  value first (`keys(row)`, `strings.trim(text)`).
 
   ```relic
   let required = []
   required.append("owner")
   ```
 
-- A module-member typo reports `module 'strings' has no 'trm' (yet)` even after
-  loading finishes. It gives no suggestion for `trim`, unlike unknown names and map keys.
+- A module-member typo is fixed. After `use std/strings`, `strings.trm("  ")` was
+  `module 'strings' has no 'trm' (yet)` with no suggestion. It is now
+  `module 'strings' has no 'trm' (did you mean 'trim'?)`. `(yet)` stays only
+  while the module is still loading, or stopped before it finished.
 
   ```relic
   use std/strings
