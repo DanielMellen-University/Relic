@@ -785,6 +785,7 @@ public:
             main_ = std::move(prog);
         }
         run(*p->protos[0], nullptr);
+        if (p->value) p->value->loading = false;
     }
 
 private:
@@ -805,7 +806,16 @@ private:
         auto m = std::make_shared<Module>();
         m->name = name;
         m->file = p.file;
+        m->loading = true;
         m->lookup = [raw](const std::string& n) { return raw->lookup(n); };
+        m->defined = [raw]() {
+            std::vector<std::string> out;
+            for (size_t i = 0; i < raw->global_names.size(); ++i) {
+                const std::string& n = raw->global_names[i];
+                if (raw->defined[i] && !n.empty() && n[0] != '_') out.push_back(n);
+            }
+            return out;
+        };
         p.value = m;
     }
 
@@ -846,6 +856,7 @@ private:
             if (e.file.empty()) e.file = file;
             throw;
         }
+        p->value->loading = false;
         return Value(p->value);
     }
 

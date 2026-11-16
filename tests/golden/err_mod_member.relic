@@ -1,0 +1,3 @@
+# A finished module suggests a close member and does not say "(yet)".
+use std/strings
+print(strings.trm("  "))

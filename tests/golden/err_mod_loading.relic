@@ -1,0 +1,4 @@
+# While this file is still loading, a close member keeps "(yet)".
+fun square(x) = x * x
+use err_mod_loading as again
+print(again.squre(2))

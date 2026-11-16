@@ -1,0 +1,3 @@
+# A list field that is a std/lists function names that function.
+let xs = [1, 2]
+print(xs.sum())

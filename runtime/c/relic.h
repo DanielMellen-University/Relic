@@ -115,6 +115,7 @@ typedef struct rl_module {
     rl_scope *scope;          /* ... a compiled module's top-level scope */
     size_t nnames;            /* and the names of its slots */
     const char *const *snames;
+    int loading;              /* 1 until the module body finishes */
 } rl_module;
 
 /* Per-program state: output, the current error, call depth, args. */
@@ -167,8 +168,12 @@ void rl_scope_release(rl_scope *s);
 rl_value rl_fun_new(const char *name, rl_code code, int arity, rl_scope *env);
 rl_value rl_module_new(const char *name);
 /* A module over a compiled scope: slot i is the name names[i] (static
- * strings); a slot still unset is not there "(yet)". Retains scope. */
+ * strings); a slot still unset is not there "(yet)" while the module is
+ * still loading. Retains scope. A new module is loading until
+ * rl_module_loaded. */
 rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const char *const *names);
+/* The module body finished. A missing name no longer says "(yet)". */
+void rl_module_loaded(rl_value module);
 /* Marks a function value as defined in std module `stem`; returns f. */
 rl_value rl_fun_std(rl_value f, const char *stem);
 

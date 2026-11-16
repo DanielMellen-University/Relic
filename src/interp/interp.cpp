@@ -22,6 +22,126 @@
 
 namespace relic {
 
+std::string std_root();
+
+namespace {
+
+bool name_char(unsigned char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+}
+
+// Public functions of one std module, read from the real file.
+// A public function is a line that starts with "fun ", then a name that does
+// not start with "_", then optional spaces, then "(". The parameter text is
+// what sits between that "(" and its matching ")" on the same line, with
+// spaces trimmed from both ends. Keep in step with rl_ops.c and interp.relic.
+struct StdFuns {
+    bool loaded = false;
+    std::unordered_map<std::string, std::string> params;
+};
+
+StdFuns g_std_lists, g_std_maps, g_std_strings;
+
+void load_std_funs(StdFuns& out, const char* file) {
+    if (out.loaded) return;
+    out.loaded = true;
+    std::ifstream in(std_root() + file, std::ios::binary);
+    if (!in) return;
+    std::string line;
+    while (std::getline(in, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (line.size() < 5 || line.compare(0, 4, "fun ") != 0) continue;
+        size_t i = 4;
+        size_t start = i;
+        while (i < line.size() && name_char(static_cast<unsigned char>(line[i]))) ++i;
+        if (i == start || line[start] == '_') continue;
+        std::string name = line.substr(start, i - start);
+        while (i < line.size() && line[i] == ' ') ++i;
+        if (i >= line.size() || line[i] != '(') continue;
+        int depth = 1;
+        size_t ps = ++i;
+        for (; i < line.size() && depth > 0; ++i) {
+            if (line[i] == '(') ++depth;
+            else if (line[i] == ')') --depth;
+        }
+        if (depth != 0) continue;
+        size_t pe = i - 1;
+        while (ps < pe && line[ps] == ' ') ++ps;
+        while (pe > ps && line[pe - 1] == ' ') --pe;
+        if (!out.params.count(name)) out.params[name] = line.substr(ps, pe - ps);
+    }
+}
+
+StdFuns& std_funs(const std::string& kind) {
+    if (kind == "map") {
+        load_std_funs(g_std_maps, "maps.relic");
+        return g_std_maps;
+    }
+    if (kind == "string") {
+        load_std_funs(g_std_strings, "strings.relic");
+        return g_std_strings;
+    }
+    load_std_funs(g_std_lists, "lists.relic");
+    return g_std_lists;
+}
+
+const char* std_stem(const std::string& kind) {
+    if (kind == "map") return "maps";
+    if (kind == "string") return "strings";
+    return "lists";
+}
+
+int kind_bit(const std::string& kind) {
+    if (kind == "list") return kRecvList;
+    if (kind == "map") return kRecvMap;
+    if (kind == "string") return kRecvStr;
+    return 0;
+}
+
+// " (write append(list, ...))" or " (write strings.trim(s); use std/strings)",
+// or "" when the name is not a built-in or std function for this kind.
+// Built-in names and arities come from the table filled at registration.
+// Std names and parameter lists come from the std source.
+std::string method_hint(const std::string& kind, const std::string& name) {
+    int bit = kind_bit(kind);
+    if (!bit) return "";
+    int arity = 0;
+    int on = builtin_method(name, &arity);
+    if (on & bit) {
+        std::string form = name + "(" + kind;
+        if (arity != 1) form += ", ...";
+        return " (write " + form + "))";
+    }
+    StdFuns& funs = std_funs(kind);
+    auto it = funs.params.find(name);
+    if (it == funs.params.end()) return "";
+    const char* stem = std_stem(kind);
+    return std::string(" (write ") + stem + "." + name + "(" + it->second + "); use std/" + stem + ")";
+}
+
+std::vector<std::string> module_names(const Module& m) {
+    if (m.defined) return m.defined();
+    std::vector<std::string> out;
+    if (!m.scope) return out;
+    for (const auto& kv : m.scope->vars)
+        if (!kv.first.empty() && kv.first[0] != '_') out.push_back(kv.first);
+    return out;
+}
+
+std::string module_missing(const Module& m, const std::string& field) {
+    std::string msg = "module '" + m.name + "' has no '" + field + "'";
+    if (m.loading) msg += " (yet)";
+    return msg + op_suggest(field, module_names(m));
+}
+
+std::string missing_key(const std::string& key, const std::vector<std::string>& keys) {
+    std::string hint = method_hint("map", key);
+    if (hint.empty()) hint = op_suggest(key, keys);
+    return "map has no key '" + key + "'" + hint;
+}
+
+}  // namespace
+
 Env* Env::find_env(const std::string& name) {
     for (Env* e = this; e; e = e->parent.get())
         if (e->vars.count(name)) return e;
@@ -208,18 +328,23 @@ Value op_field(const Ast& n, const Value& obj) {
                     fail(n, "'" + n.text + "' is private to module '" + m.name + "'");
                 if (m.lookup) {
                     const Value* v = m.lookup(n.text);
-                    if (!v) fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                    if (!v) fail(n, module_missing(m, n.text));
                     return *v;
                 }
                 auto it = m.scope->vars.find(n.text);
                 if (it == m.scope->vars.end())
-                    fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                    fail(n, module_missing(m, n.text));
                 return it->second;
             }
-            if (!obj.is<std::shared_ptr<Map>>())
-                fail(n, std::string("cannot read a field of ") + a_type(obj));
+            if (!obj.is<std::shared_ptr<Map>>()) {
+                std::string kind;
+                if (obj.is<std::shared_ptr<List>>()) kind = "list";
+                else if (obj.is<std::string>()) kind = "string";
+                std::string hint = kind.empty() ? std::string() : method_hint(kind, n.text);
+                fail(n, std::string("cannot read a field of ") + a_type(obj) + hint);
+            }
             const Map& m = *obj.as<std::shared_ptr<Map>>();
-            if (!m.has(n.text)) fail(n, "map has no key '" + n.text + "'" + op_suggest(n.text, map_keys(m)));
+            if (!m.has(n.text)) fail(n, missing_key(n.text, map_keys(m)));
             return m.items.at(n.text);
 }
 
@@ -239,7 +364,7 @@ Value op_index(const Ast& n, const Value& obj, const Value& idx) {
                 if (!idx.is<std::string>()) fail(*n.kids[1], std::string("map keys must be strings, got ") + type_name(idx));
                 const Map& m = *obj.as<std::shared_ptr<Map>>();
                 const std::string& k = idx.as<std::string>();
-                if (!m.has(k)) fail(*n.kids[1], "map has no key '" + k + "'" + op_suggest(k, map_keys(m)));
+                if (!m.has(k)) fail(*n.kids[1], missing_key(k, map_keys(m)));
                 return m.items.at(k);
             }
             fail(n, std::string("cannot index ") + a_type(obj));
@@ -443,7 +568,8 @@ void Interpreter::set_main_file(const std::string& path) {
     // Register the main file, so a module that uses it back gets this same
     // scope instead of running the file a second time.
     std::string name = fs::path(path).stem().string();
-    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_, {}});
+    auto mod = std::make_shared<Module>(Module{name, path, globals_, {}, {}, true});
+    modules_[key_of(path)] = mod;
 }
 
 Value Interpreter::load_module(const Ast& use) {
@@ -459,7 +585,7 @@ Value Interpreter::load_module(const Ast& use) {
     ss << in.rdbuf();
 
     std::string name = use.text.substr(use.text.find_last_of('/') + 1);
-    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_), {}});
+    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_), {}, {}, true});
     modules_[key] = mod;  // before running, so cycles find it
 
     std::string saved = current_file_;
@@ -492,7 +618,14 @@ Value Interpreter::load_module(const Ast& use) {
         if (e.file.empty()) e.file = file;
         throw;
     }
+    mod->loading = false;
     return Value(mod);
+}
+
+void Interpreter::note_main_loaded() {
+    if (current_file_.empty() || current_file_ == "<repl>") return;
+    auto it = modules_.find(key_of(current_file_));
+    if (it != modules_.end()) it->second->loading = false;
 }
 
 void Interpreter::run(const Ast& program, Value* last) {
@@ -509,6 +642,7 @@ void Interpreter::run(const Ast& program, Value* last) {
         const Ast& s = *program.kids[i];
         if (last && i + 1 == program.kids.size() && s.kind == Node::ExprStmt) {
             *last = eval(*s.kids[0], globals_);
+            note_main_loaded();
             return;
         }
         Flow f = exec(s, globals_);
@@ -516,6 +650,7 @@ void Interpreter::run(const Ast& program, Value* last) {
         if (f == Flow::Break) fail(*flow_node_, "'break' outside a loop");
         if (f == Flow::Next) fail(*flow_node_, "'next' outside a loop");
     }
+    note_main_loaded();
 }
 
 Interpreter::Flow Interpreter::exec_block(const Ast& block, std::shared_ptr<Env> env) {

@@ -623,22 +623,27 @@ BI(h_sort) {
 #ifndef RL_STD_DIR
 #define RL_STD_DIR ""
 #endif
-BI(h_std_root) {
+size_t rl_std_root(char *buf, size_t cap) {
     const char *env = getenv("RELIC_STD");
     const char *r = env && *env ? env : RL_STD_DIR;
     size_t n = strlen(r);
+    int add = n && r[n - 1] != '/' && r[n - 1] != '\\';
+    if (n + (add ? 1 : 0) + 1 > cap) {
+        if (cap) buf[0] = 0;
+        return 0;
+    }
+    memcpy(buf, r, n);
+    if (add) buf[n++] = '/';
+    buf[n] = 0;
+    return n;
+}
+BI(h_std_root) {
+    char buf[4096];
+    size_t n;
     UNUSED;
     (void)cx; (void)a;
-    if (n && r[n - 1] != '/' && r[n - 1] != '\\') {
-        char *t = (char *)malloc(n + 2);
-        if (!t) abort();
-        memcpy(t, r, n);
-        t[n] = '/';
-        *out = rl_str_new(t, n + 1);
-        free(t);
-    } else {
-        *out = rl_str_new(r, n);
-    }
+    n = rl_std_root(buf, sizeof buf);
+    *out = rl_str_new(buf, n);
     return RL_OK;
 }
 

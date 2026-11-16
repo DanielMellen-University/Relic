@@ -1,8 +1,24 @@
 // Built-in functions for Relic 1.0: print, len, append, str, keys, type.
 #include "interp/interp.hpp"
+#include "interp/ops.hpp"
 #include "builtins/graphics.hpp"
 
 namespace relic { std::string std_root(); }
+
+namespace {
+// Built-ins registered with a receiver mask, so a field read can name them.
+// Filled from the real add() calls below, not from a separate name list.
+std::unordered_map<std::string, std::pair<int, int>> g_method;
+}  // namespace
+
+namespace relic {
+int builtin_method(const std::string& name, int* arity) {
+    auto it = g_method.find(name);
+    if (it == g_method.end()) return 0;
+    if (arity) *arity = it->second.first;
+    return it->second.second;
+}
+}  // namespace relic
 
 #include <chrono>
 #include <cerrno>
@@ -16,6 +32,7 @@ namespace relic { std::string std_root(); }
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <unordered_map>
 #include <sstream>
 #include <cstdio>
 #ifdef _WIN32
@@ -103,8 +120,9 @@ static Value parse_num(const std::string& s) {
 }
 
 void Interpreter::install_builtins() {
-    auto add = [&](const std::string& name, int arity, std::function<Value(std::vector<Value>&)> fn) {
-        builtins_->vars[name] = Value(std::make_shared<Builtin>(Builtin{name, arity, std::move(fn)}));
+    auto add = [&](const std::string& name, int arity, std::function<Value(std::vector<Value>&)> fn, int receivers = 0) {
+        builtins_->vars[name] = Value(std::make_shared<Builtin>(Builtin{name, arity, std::move(fn), receivers}));
+        if (receivers) g_method[name] = {arity, receivers};
     };
 
     // print(a, b, ...) writes the values separated by spaces, then a newline.
@@ -122,14 +140,14 @@ void Interpreter::install_builtins() {
         if (v.is<std::shared_ptr<Map>>())
             return Value(static_cast<long long>(v.as<std::shared_ptr<Map>>()->size()));
         throw std::string("cannot get the length of ") + a_type(v);
-    });
+    }, kRecvList | kRecvMap | kRecvStr);
 
     add("append", 2, [](std::vector<Value>& a) {
         if (!a[0].is<std::shared_ptr<List>>())
             throw std::string("first argument must be a list, got ") + type_name(a[0]);
         a[0].as<std::shared_ptr<List>>()->push_back(a[1]);
         return Value();
-    });
+    }, kRecvList);
 
     add("str", 1, [](std::vector<Value>& a) { return Value(show(a[0])); });
 
@@ -139,7 +157,7 @@ void Interpreter::install_builtins() {
         auto l = std::make_shared<List>();
         a[0].as<std::shared_ptr<Map>>()->each_key([&](const std::string& k) { l->emplace_back(k); });
         return Value(l);
-    });
+    }, kRecvMap);
 
     // fail(message): raises an error that `try` / `catch` can catch.
     add("fail", 1, [](std::vector<Value>& a) -> Value {
@@ -195,7 +213,7 @@ void Interpreter::install_builtins() {
             return Value(r);
         }
         throw std::string("cannot slice ") + a_type(a[0]);
-    });
+    }, kRecvList | kRecvStr);
     add("ord", 1, [str_arg](std::vector<Value>& a) {
         const std::string& s = str_arg(a[0], "argument");
         if (s.empty() || utf8_char_size(s, 0) != s.size()) throw std::string("needs a one-character string");
@@ -240,14 +258,14 @@ void Interpreter::install_builtins() {
         Value v = l.back();
         l.pop_back();
         return v;
-    });
+    }, kRecvList);
     add("insert", 3, [list_arg, whole_arg](std::vector<Value>& a) {
         List& l = list_arg(a[0]);
         long long i = whole_arg(a[1], "index");
         if (i < 0 || static_cast<size_t>(i) > l.size()) throw std::string("index ") + std::to_string(i) + " is out of range";
         l.insert(l.begin() + i, a[2]);
         return Value();
-    });
+    }, kRecvList);
     // remove(list, index) gives back the item; remove(map, key) drops the key.
     add("remove", 2, [whole_arg](std::vector<Value>& a) {
         if (a[0].is<std::shared_ptr<List>>()) {
@@ -268,7 +286,7 @@ void Interpreter::install_builtins() {
             return v;
         }
         throw std::string("cannot remove from ") + a_type(a[0]);
-    });
+    }, kRecvList | kRecvMap);
 
     // Host-only pieces: files, clocks, float math. Named host_* so the
     // borrowed surface is easy to find and replace later.

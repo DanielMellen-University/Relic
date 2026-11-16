@@ -1,0 +1,3 @@
+err_mod_member.relic:3:14: error: module 'strings' has no 'trm' (did you mean 'trim'?)
+    print(strings.trm("  "))
+                 ^

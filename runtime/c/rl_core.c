@@ -661,6 +661,7 @@ rl_value rl_module_new(const char *name) {
     m->scope = NULL;
     m->nnames = 0;
     m->snames = NULL;
+    m->loading = 1;
     return rl_obj_value(&m->h);
 }
 
@@ -674,7 +675,12 @@ rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const cha
     ++scope->h.rc;
     m->nnames = n;
     m->snames = names;
+    m->loading = 1;
     return rl_obj_value(&m->h);
+}
+
+void rl_module_loaded(rl_value module) {
+    if (module.k == RL_MODULE) ((rl_module *)module.u.o)->loading = 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1043,6 +1049,7 @@ void rl_ctx_free(rl_ctx *cx) {
     cx->err_msg = NULL;
     cx->has_err = 0;
     rl_builtins_release();
+    rl_method_hints_release();
     free(g_dying);
     g_dying = NULL;
     g_dying_n = g_dying_cap = 0;

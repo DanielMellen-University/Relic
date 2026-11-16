@@ -268,6 +268,30 @@ static const rl_builtin_def g_core[] = {
     {"args", 0, b_args}, {"host_args", 0, b_args},
     {NULL, 0, NULL}};
 
+/* Which of list (1), map (2) and string (4) a built-in takes as its first
+ * value. A name that is not in the built-in table is ignored, so this cannot
+ * suggest a function the runtime does not have. Keep in step with the
+ * receiver mask in src/builtins/builtins.cpp and selfhost/interp.relic. */
+static const struct { const char *name; int on; } g_recv[] = {
+    {"len", 7}, {"append", 1}, {"keys", 2}, {"slice", 5}, {"pop", 1}, {"insert", 1}, {"remove", 3},
+    {NULL, 0}};
+
+int rl_builtin_receivers(const char *name, int *arity) {
+    size_t i;
+    rl_value fn;
+    int a, on;
+    for (i = 0; g_recv[i].name; ++i) {
+        if (strcmp(g_recv[i].name, name) != 0) continue;
+        if (!rl_builtin(name, &fn)) return 0;
+        a = ((rl_fun *)fn.u.o)->arity;
+        on = g_recv[i].on;
+        rl_release(fn);
+        if (arity) *arity = a;
+        return on;
+    }
+    return 0;
+}
+
 /* Built-ins are made once and shared, so `print == print` holds. */
 typedef struct { const rl_builtin_def *def; rl_value fun; } cached;
 static cached *g_cache = NULL;

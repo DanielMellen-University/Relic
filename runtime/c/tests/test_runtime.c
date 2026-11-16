@@ -689,6 +689,10 @@ static void test_codegen_support(void) {
         sc->slots[0] = rl_float(3.5);
         CHECK(rl_field(&cx, m, "pi", &r) == RL_OK && r.u.f == 3.5);
         ERR(rl_field(&cx, m, "later", &r), "module 'geo' has no 'later' (yet)");
+        ERR(rl_field(&cx, m, "po", &r), "module 'geo' has no 'po' (yet) (did you mean 'pi'?)");
+        rl_module_loaded(m);
+        ERR(rl_field(&cx, m, "later", &r), "module 'geo' has no 'later'");
+        ERR(rl_field(&cx, m, "po", &r), "module 'geo' has no 'po' (did you mean 'pi'?)");
         ERR(rl_field(&cx, m, "_x", &r), "'_x' is private to module 'geo'");
         SHOW(rl_retain(m), "<module geo>");
         rl_scope_release(sc);
@@ -766,6 +770,14 @@ static void test_small_api(void) {
     ERR(rl_set_field(&cx, rl_int(5), "k", rl_int(1)), "cannot set a field on an int");
     ERR(rl_set_field(&cx, l, "k", rl_int(1)), "cannot set a field on a list");
     ERR(rl_set_field(&cx, T("s"), "k", rl_int(1)), "cannot set a field on a string");
+    ERR(rl_field(&cx, l, "append", &r), "cannot read a field of a list (write append(list, ...))");
+    ERR(rl_field(&cx, l, "len", &r), "cannot read a field of a list (write len(list))");
+    ERR(rl_field(&cx, l, "sum", &r), "cannot read a field of a list (write lists.sum(xs); use std/lists)");
+    ERR(rl_field(&cx, l, "size", &r), "cannot read a field of a list");
+    ERR(rl_field(&cx, T("  "), "trim", &r), "cannot read a field of a string (write strings.trim(s); use std/strings)");
+    ERR(rl_field(&cx, T("ab"), "append", &r), "cannot read a field of a string");
+    ERR(rl_field(&cx, m, "keys", &r), "map has no key 'keys' (write keys(map))");
+    ERR(rl_field(&cx, m, "drop", &r), "map has no key 'drop' (write maps.drop(m, k); use std/maps)");
     {
         rl_value mod = rl_module_new("m");
         ERR(rl_set_field(&cx, mod, "k", rl_int(1)),

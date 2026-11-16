@@ -234,16 +234,22 @@ already explained that it received a string; it needed no diagnostic change.
       append(required, value)
   ```
 
-- A list method call reports `cannot read a field of a list`, without suggesting
-  the built-in `append(required, "owner")` used in the feature.
+- A list method call used to report only `cannot read a field of a list`. It now
+  names the built-in when the field is one: `required.append("owner")` says to
+  write `append(list, ...)`. The same hint covers a map or string field that
+  matches a real built-in or a public function in `std/lists`, `std/maps` or
+  `std/strings` (`s.trim()` names `strings.trim(s)` and `use std/strings`).
+  Golden `err_method_append`.
 
   ```relic
   let required = []
   required.append("owner")
   ```
 
-- A module-member typo reports `module 'strings' has no 'trm' (yet)` even after
-  loading finishes. It gives no suggestion for `trim`, unlike unknown names and map keys.
+- A module-member typo used to report `module 'strings' has no 'trm' (yet)`
+  after loading had finished, with no suggestion. It now says
+  `module 'strings' has no 'trm' (did you mean 'trim'?)`. `(yet)` remains only
+  while the module is still loading. Golden `err_mod_member`.
 
   ```relic
   use std/strings

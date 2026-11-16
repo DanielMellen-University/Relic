@@ -1,0 +1,3 @@
+# A string field that is a built-in names that built-in.
+let s = "ab"
+print(s.len)

@@ -78,6 +78,10 @@ struct Builtin {
     int arity;  // -1 for any number of arguments
     // Throws std::string on a bad argument; the caller adds the location.
     std::function<Value(std::vector<Value>&)> fn;
+    // Which of list, map and string this built-in takes as its first value
+    // (kRecvList and the rest in ops.hpp). 0 means it is not a method-shaped
+    // operation on one of those. Set where the built-in is registered.
+    int receivers = 0;
 };
 
 // A loaded file. Fields are read live from the module's top-level scope, so
@@ -88,6 +92,10 @@ struct Module {
     std::shared_ptr<Env> scope;  // tree-walker modules
     // VM modules: finds a top-level name, or null if it is not defined yet.
     std::function<const Value*(const std::string&)> lookup;
+    // VM modules: the public names defined so far (tree-walker reads scope).
+    std::function<std::vector<std::string>()> defined;
+    // True until the module body finishes. A name read before then is "(yet)".
+    bool loading = true;
 };
 
 struct NoneV {};

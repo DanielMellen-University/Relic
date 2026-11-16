@@ -139,11 +139,14 @@ fun find(env, name)
 fun new_runtime()
     let rt = {err: none, ret: none, flow_node: none, depth: 0, next_id: 0, globals: none, builtins: none, file: "", modules: {}, args: [], out: none, steps: -1, stopped: false, denied: {}, load: none, input: none, waiting: none, paused: none}
     let builtins = new_env(none)
-    for b in [["print", -1], ["len", 1], ["append", 2], ["str", 1], ["keys", 1], ["type", 1], ["fail", 1], ["int", 1], ["float", 1], ["slice", 3], ["ord", 1], ["chr", 1], ["num", 1], ["pop", 1], ["insert", 3], ["remove", 2], ["args", 0], ["eprint", -1], ["gc", 0]]
-        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
+    # The third item is the kinds this built-in takes first (list, map, string).
+    # A field of that kind whose name is the built-in points at the call.
+    # Keep in step with the receiver mask in builtins.cpp and rl_builtins.c.
+    for b in [["print", -1, []], ["len", 1, ["list", "map", "string"]], ["append", 2, ["list"]], ["str", 1, []], ["keys", 1, ["map"]], ["type", 1, []], ["fail", 1, []], ["int", 1, []], ["float", 1, []], ["slice", 3, ["list", "string"]], ["ord", 1, []], ["chr", 1, []], ["num", 1, []], ["pop", 1, ["list"]], ["insert", 3, ["list"]], ["remove", 2, ["list", "map"]], ["args", 0, []], ["eprint", -1, []], ["gc", 0, []]]
+        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1], on: b[2]}, "builtin")
     # host_* built-ins (files, clocks, math, graphics) are passed through to the host.
     for b in host_names()
-        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1]}, "builtin")
+        builtins.vars[b[0]] = tagged({name: b[0], arity: b[1], on: []}, "builtin")
     rt.globals = new_env(builtins)
     rt.builtins = builtins
     return rt
@@ -158,10 +161,12 @@ fun set_main(rt, path)
     name = slice(name, cut + 1, len(name))
     if len(name) > 6 and slice(name, len(name) - 6, len(name)) == ".relic"
         name = slice(name, 0, len(name) - 6)
-    rt.modules[norm_path(path)] = new_module(name, rt.globals)
+    let m = new_module(name, rt.globals)
+    rt.modules[norm_path(path)] = m
+    rt.main = m
 
 fun new_module(name, scope)
-    return tagged({name: name, scope: scope}, "module")
+    return tagged({name: name, scope: scope, loading: true}, "module")
 
 fun last_slash(s)
     let cut = -1
@@ -399,6 +404,15 @@ fun slot(rt, at, idx, size, what)
 
 fun run(rt, program)
     machine(rt, [[k_block, program, rt.globals, 0]], [])
+    finish_main(rt)
+
+# The main file's module has finished loading, so a missing name is not "(yet)".
+# A pause (rt.waiting) or an error leaves it loading.
+fun finish_main(rt)
+    if rt.err != none or rt.waiting != none
+        return
+    if "main" in rt and rt.main != none
+        rt.main.loading = false
 
 # Goes on with a run paused at host_read_line (rt.waiting is not none), with
 # line as what was read.
@@ -410,6 +424,7 @@ fun resume(rt, line)
     rt.waiting = none
     append(rt.input, line)
     machine(rt, p.st, p.vals)
+    finish_main(rt)
 
 # The error for a return, break or next that reached the edge of a function
 # body or of a file (file_edge true: a return is an error there too).
@@ -457,17 +472,120 @@ fun unary_of(rt, n, v)
         return fail(rt, n, "'not' needs true or false, got " + type_of(v))
     return not v
 
+# Public functions of std/lists, std/maps and std/strings, from the real files.
+# A public function is a line that starts with "fun ", then a name that does
+# not start with "_", then optional spaces, then "(". The parameter text is
+# what sits between that "(" and its matching ")" on the same line, with
+# spaces trimmed off both ends. Keep in step with interp.cpp and rl_ops.c.
+let method_std = none
+
+fun std_fun_line(line)
+    if len(line) > 0 and line[len(line) - 1] == chr(13)
+        line = slice(line, 0, len(line) - 1)
+    if len(line) < 5 or slice(line, 0, 4) != "fun "
+        return none
+    let i = 4
+    let name = ""
+    while i < len(line) and lexer.is_word(line[i])
+        name = name + line[i]
+        i = i + 1
+    if name == "" or name[0] == "_"
+        return none
+    while i < len(line) and line[i] == " "
+        i = i + 1
+    if i >= len(line) or line[i] != "("
+        return none
+    let depth = 1
+    let start = i + 1
+    i = i + 1
+    while i < len(line) and depth > 0
+        if line[i] == "("
+            depth = depth + 1
+        else if line[i] == ")"
+            depth = depth - 1
+        i = i + 1
+    if depth != 0
+        return none
+    let params = slice(line, start, i - 1)
+    while len(params) > 0 and params[0] == " "
+        params = slice(params, 1, len(params))
+    while len(params) > 0 and params[len(params) - 1] == " "
+        params = slice(params, 0, len(params) - 1)
+    return {name: name, params: params}
+
+fun method_forms()
+    if method_std != none
+        return method_std
+    method_std = {}
+    let root = host_std_root()
+    for stem in ["lists", "maps", "strings"]
+        let funs = {}
+        let path = root + stem + ".relic"
+        if files.exists(path)
+            for line in strings.split(files.read(path), "\n")
+                let got = std_fun_line(line)
+                if got != none and not (got.name in funs)
+                    funs[got.name] = got.params
+        method_std[stem] = funs
+    return method_std
+
+# " (write append(list, ...))" or " (write strings.trim(s); use std/strings)",
+# or "". Built-in names come from the table in new_runtime. Std names and
+# parameter lists come from the std source.
+fun method_hint(rt, kind, name)
+    if kind != "list" and kind != "map" and kind != "string"
+        return ""
+    if name in rt.builtins.vars
+        let b = rt.builtins.vars[name]
+        if kind in b.on
+            let form = name + "(" + kind
+            if b.arity != 1
+                form = form + ", ..."
+            return " (write " + form + "))"
+    let stem = "lists"
+    if kind == "map"
+        stem = "maps"
+    else if kind == "string"
+        stem = "strings"
+    let funs = method_forms()
+    if not (name in funs[stem])
+        return ""
+    return " (write " + stem + "." + name + "(" + funs[stem][name] + "); use std/" + stem + ")"
+
+fun module_names(m)
+    let names = []
+    for name in keys(m.scope.vars)
+        if name != "" and name[0] != "_"
+            append(names, name)
+    return names
+
+fun module_missing(m, field)
+    let msg = "module '{m.name}' has no '{field}'"
+    if m.loading
+        msg = msg + " (yet)"
+    return msg + suggest(field, module_names(m))
+
+fun missing_key(rt, key, obj)
+    let hint = method_hint(rt, "map", key)
+    if hint == ""
+        hint = suggest(key, keys(obj))
+    return "map has no key '{key}'" + hint
+
 fun field_of(rt, n, obj)
     if type_of(obj) == "module"
         if len(n.text) > 0 and n.text[0] == "_"
             return fail(rt, n, "'{n.text}' is private to module '{obj.name}'")
         if not (n.text in obj.scope.vars)
-            return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
+            return fail(rt, n, module_missing(obj, n.text))
         return obj.scope.vars[n.text]
-    if type_of(obj) != "map"
-        return fail(rt, n, "cannot read a field of " + a_type(obj))
+    let kind = type_of(obj)
+    if kind != "map"
+        let hint = ""
+        if kind == "list" or kind == "string"
+            hint = method_hint(rt, kind, n.text)
+        return fail(rt, n, "cannot read a field of " + a_type(obj) + hint)
     if not (n.text in obj)
-        return fail(rt, n, "map has no key '{n.text}'" + suggest(n.text, keys(obj)))
+        return fail(rt, n, missing_key(rt, n.text, obj))
     return obj[n.text]
 
 fun index_of(rt, n, obj, idx)
@@ -486,7 +604,7 @@ fun index_of(rt, n, obj, idx)
         if type(idx) != "string"
             return fail(rt, n.kids[1], "map keys must be strings, got " + type_of(idx))
         if not (idx in obj)
-            return fail(rt, n.kids[1], "map has no key '{idx}'" + suggest(idx, keys(obj)))
+            return fail(rt, n.kids[1], missing_key(rt, idx, obj))
         return obj[idx]
     return fail(rt, n, "cannot index " + a_type(obj))
 
@@ -971,6 +1089,7 @@ fun machine(rt, st, vals)
             pop(st)
         else
             # k_module: the module's body ended
+            fr[1].loading = false
             pop(st)
             rt.file = fr[2]
             bind_module(fr[3], fr[4], fr[1])

@@ -67,6 +67,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Module>> modules_;  // by resolved path
     std::vector<std::unique_ptr<Ast>> module_trees_;
     Value load_module(const Ast& use);
+    void note_main_loaded();
     Value ret_;
     const Ast* flow_node_ = nullptr;  // the break/next/return that caused the flow
     int depth_ = 0;

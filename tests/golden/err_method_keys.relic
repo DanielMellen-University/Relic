@@ -1,0 +1,3 @@
+# A missing map key that is a map built-in names that built-in.
+let m = {a: 1}
+print(m.keys)

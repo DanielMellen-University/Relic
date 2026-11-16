@@ -1,0 +1,3 @@
+# A string field that is a std/strings function names that function.
+let s = "  "
+print(s.trim())

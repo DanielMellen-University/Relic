@@ -259,6 +259,10 @@ static int slot(rl_ctx *cx, rl_value idx, size_t size, const char *what, size_t 
     return RL_OK;
 }
 
+/* " (write name(kind))" or " (write stem.name(params); use std/stem)", or 0.
+ * Defined below, next to the built-in and std tables it reads. */
+static int method_suffix(const char *kind, int bit, const char *name, char *out, size_t cap);
+
 /* " (did you mean 'x'?)" for a close key, like op_suggest on the host. */
 static size_t edit_distance(const char *a, size_t n, const char *b, size_t m) {
     size_t *row = (size_t *)malloc((m + 1) * sizeof *row), i, j, r;
@@ -283,6 +287,10 @@ static size_t edit_distance(const char *a, size_t n, const char *b, size_t m) {
 
 static int no_key(rl_ctx *cx, rl_map *m, const char *k, size_t len) {
     size_t i, limit = len >= 5 ? 2 : 1, best_d = limit + 1;
+    char extra[512];
+    /* An exact built-in or std/maps name is the method form, not a typo of a key. */
+    if (strlen(k) == len && method_suffix("map", 2, k, extra, sizeof extra))
+        return rl_fail(cx, "map has no key '%s'%s", k, extra);
     const rl_str *pick = NULL;
     for (i = 0; i < m->used; ++i) {
         const rl_str *c = m->keys[i];
@@ -406,6 +414,161 @@ int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v) {
     return rl_fail(cx, "cannot set an index on %s", rl_a_type(obj));
 }
 
+/* Public functions of std/lists, std/maps and std/strings, read from the
+ * files. Same rule as the host: a line starting "fun ", a name that does
+ * not start with "_", then "(", and the parameter text up to the matching
+ * ")" on that line. Keep in step with interp.cpp and interp.relic. */
+static int name_char(unsigned char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+}
+typedef struct { char *name; char *params; } stdfun;
+typedef struct { const char *stem; const char *file; int on; stdfun *funs; size_t n; int loaded; } stdmod;
+static stdmod g_std[3] = {
+    {"lists", "lists.relic", 1, NULL, 0, 0},
+    {"maps", "maps.relic", 2, NULL, 0, 0},
+    {"strings", "strings.relic", 4, NULL, 0, 0},
+};
+
+static void add_std_fun(stdmod *m, const char *name, size_t nlen, const char *params, size_t plen) {
+    stdfun *f;
+    size_t i;
+    char *nm, *pm;
+    for (i = 0; i < m->n; ++i)
+        if (strlen(m->funs[i].name) == nlen && memcmp(m->funs[i].name, name, nlen) == 0) return;
+    nm = (char *)malloc(nlen + 1);
+    pm = (char *)malloc(plen + 1);
+    if (!nm || !pm) abort();
+    memcpy(nm, name, nlen);
+    nm[nlen] = 0;
+    memcpy(pm, params, plen);
+    pm[plen] = 0;
+    m->funs = (stdfun *)realloc(m->funs, (m->n + 1) * sizeof *m->funs);
+    if (!m->funs) abort();
+    f = &m->funs[m->n++];
+    f->name = nm;
+    f->params = pm;
+}
+
+static void parse_std(stdmod *m, const char *text, size_t len) {
+    size_t i = 0;
+    while (i < len) {
+        size_t line = i, end, j, ns, ne, ps, pe, depth;
+        while (i < len && text[i] != '\n') ++i;
+        end = i;
+        if (end > line && text[end - 1] == '\r') --end;
+        if (i < len && text[i] == '\n') ++i;
+        if (end < line + 5 || memcmp(text + line, "fun ", 4) != 0) continue;
+        j = line + 4;
+        ns = j;
+        while (j < end && name_char((unsigned char)text[j])) ++j;
+        ne = j;
+        if (ne == ns || text[ns] == '_') continue;
+        while (j < end && text[j] == ' ') ++j;
+        if (j >= end || text[j] != '(') continue;
+        depth = 1;
+        ps = ++j;
+        for (; j < end && depth; ++j) {
+            if (text[j] == '(') ++depth;
+            else if (text[j] == ')') --depth;
+        }
+        if (depth) continue;
+        pe = j - 1;
+        while (ps < pe && text[ps] == ' ') ++ps;
+        while (pe > ps && text[pe - 1] == ' ') --pe;
+        add_std_fun(m, text + ns, ne - ns, text + ps, pe - ps);
+    }
+}
+
+static void load_std(stdmod *m) {
+    char root[4096], *path, *text;
+    FILE *f;
+    long sz;
+    size_t n, rn;
+    if (m->loaded) return;
+    m->loaded = 1;
+    if (!rl_std_root(root, sizeof root)) return;
+    rn = strlen(root);
+    path = (char *)malloc(rn + strlen(m->file) + 1);
+    if (!path) abort();
+    memcpy(path, root, rn);
+    memcpy(path + rn, m->file, strlen(m->file) + 1);
+    f = fopen(path, "rb");
+    free(path);
+    if (!f) return;
+    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return; }
+    sz = ftell(f);
+    if (sz < 0 || fseek(f, 0, SEEK_SET) != 0) { fclose(f); return; }
+    text = (char *)malloc((size_t)sz + 1);
+    if (!text) abort();
+    n = fread(text, 1, (size_t)sz, f);
+    fclose(f);
+    parse_std(m, text, n);
+    free(text);
+}
+
+void rl_method_hints_release(void) {
+    size_t s, i;
+    for (s = 0; s < 3; ++s) {
+        for (i = 0; i < g_std[s].n; ++i) {
+            free(g_std[s].funs[i].name);
+            free(g_std[s].funs[i].params);
+        }
+        free(g_std[s].funs);
+        g_std[s].funs = NULL;
+        g_std[s].n = 0;
+        g_std[s].loaded = 0;
+    }
+}
+
+static int method_suffix(const char *kind, int bit, const char *name, char *out, size_t cap) {
+    int arity = 0, on = rl_builtin_receivers(name, &arity);
+    size_t s, i;
+    out[0] = 0;
+    if (!bit) return 0;
+    if (on & bit) {
+        if (arity == 1) snprintf(out, cap, " (write %s(%s))", name, kind);
+        else snprintf(out, cap, " (write %s(%s, ...))", name, kind);
+        return 1;
+    }
+    for (s = 0; s < 3; ++s) {
+        if (g_std[s].on != bit) continue;
+        load_std(&g_std[s]);
+        for (i = 0; i < g_std[s].n; ++i) {
+            if (strcmp(g_std[s].funs[i].name, name) != 0) continue;
+            snprintf(out, cap, " (write %s.%s(%s); use std/%s)",
+                     g_std[s].stem, name, g_std[s].funs[i].params, g_std[s].stem);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int module_missing(rl_ctx *cx, rl_module *m, const char *name) {
+    size_t len = strlen(name), best_d = (size_t)-1, i;
+    const char *best = NULL;
+    if (m->scope) {
+        for (i = 0; i < m->nnames && i < m->scope->n; ++i) {
+            const char *c = m->snames[i];
+            if (!c || !c[0] || c[0] == '_') continue;
+            if (m->scope->slots[i].k == RL_UNSET) continue;
+            best = suggest(name, len, best, &best_d, c);
+        }
+    } else if (m->names) {
+        for (i = 0; i < m->names->used; ++i) {
+            const rl_str *c = m->names->keys[i];
+            if (!c || c->len == 0 || c->data[0] == '_' || strlen(c->data) != c->len) continue;
+            best = suggest(name, len, best, &best_d, c->data);
+        }
+    }
+    if (m->loading && best)
+        return rl_fail(cx, "module '%s' has no '%s' (yet) (did you mean '%s'?)", m->name->data, name, best);
+    if (m->loading)
+        return rl_fail(cx, "module '%s' has no '%s' (yet)", m->name->data, name);
+    if (best)
+        return rl_fail(cx, "module '%s' has no '%s' (did you mean '%s'?)", m->name->data, name, best);
+    return rl_fail(cx, "module '%s' has no '%s'", m->name->data, name);
+}
+
 int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out) {
     size_t len = strlen(name);
     rl_value *v;
@@ -421,11 +584,18 @@ int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out) {
         } else if (m->names) {
             v = rl_map_get(m->names, name, len);
         }
-        if (!v) return rl_fail(cx, "module '%s' has no '%s' (yet)", m->name->data, name);
+        if (!v) return module_missing(cx, m, name);
         *out = rl_retain(*v);
         return RL_OK;
     }
-    if (obj.k != RL_MAP) return rl_fail(cx, "cannot read a field of %s", rl_a_type(obj));
+    if (obj.k != RL_MAP) {
+        const char *kind = obj.k == RL_LIST ? "list" : obj.k == RL_STR ? "string" : NULL;
+        char extra[512];
+        int bit = obj.k == RL_LIST ? 1 : obj.k == RL_STR ? 4 : 0;
+        if (kind && method_suffix(kind, bit, name, extra, sizeof extra))
+            return rl_fail(cx, "cannot read a field of %s%s", rl_a_type(obj), extra);
+        return rl_fail(cx, "cannot read a field of %s", rl_a_type(obj));
+    }
     v = rl_map_get(M(obj), name, len);
     if (!v) return no_key(cx, M(obj), name, len);
     *out = rl_retain(*v);

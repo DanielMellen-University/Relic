@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- A field of a list, map or string names the built-in or std function when the field is one of those real names. `required.append("owner")` is `cannot read a field of a list (write append(list, ...))`. `s.trim()` is `cannot read a field of a string (write strings.trim(s); use std/strings)`. A missing map key that is a map built-in or a `std/maps` function is named the same way: `map has no key 'drop' (write maps.drop(m, k); use std/maps)`. The names come from the built-in table and from the public functions in `std/lists`, `std/maps` and `std/strings`. A field that matches none of them is unchanged. Goldens `err_method_append`, `err_method_len`, `err_method_list_std`, `err_method_trim`, `err_method_map`, `err_method_keys`, `err_method_wrong`.
+
+- A missing module member suggests a close name, the same way an unknown name and a missing map key do. `strings.trm` is `module 'strings' has no 'trm' (did you mean 'trim'?)`. `(yet)` stays only while the module is still loading (a cycle, or a load that stopped). Once it has finished, the name is simply not there. Goldens `err_mod_member` and `err_mod_loading`. `err_use_field` no longer says `(yet)`.
+
 - The self-hosted `run`, `tokens`, `ast` and `check` commands report unreadable input as `relic: cannot open FILE` and exit 2. `cgen.relic` and compiled `relicc` do the same for the main input and imported modules, exiting 3. They name the file instead of reporting an error inside the tool.
 
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.

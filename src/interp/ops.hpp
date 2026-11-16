@@ -43,6 +43,15 @@ void op_std_boundary(RuntimeError& e, const std::string& callee_file, const std:
 // " (did you mean 'x'?)" for the closest candidate within a small edit
 // distance, or "". Ties go to the alphabetically first name.
 std::string op_suggest(const std::string& name, const std::vector<std::string>& candidates);
+
+// First-argument kinds recorded on a built-in. A field read of that kind
+// whose name is the built-in points at the built-in call.
+constexpr int kRecvList = 1;
+constexpr int kRecvMap = 2;
+constexpr int kRecvStr = 4;
+// The mask for a built-in that was registered with one, or 0. *arity is set
+// when the mask is not 0. Names come from the live built-in table.
+int builtin_method(const std::string& name, int* arity);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
 
 // Modules: the file a `use` path names, seen from the importing file, and the
