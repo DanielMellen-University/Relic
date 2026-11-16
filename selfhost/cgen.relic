@@ -299,7 +299,10 @@ fun visible_names(fc)
     while i >= 0
         let b = fc.blocks[i]
         for name in b.order
-            if not (name in seen) and name[0] != chr(1)
+            # hide_from drops a parameter from decls while its default is
+            # compiled. A name left only in order is not a candidate, and
+            # indexing decls would fail.
+            if not (name in seen) and name[0] != chr(1) and name in b.decls
                 let ok = false
                 for d in b.decls[name]
                     if d.idx < b.cur
@@ -312,7 +315,7 @@ fun visible_names(fc)
     for o in fc.outer
         let b = o.block
         for name in b.order
-            if not (name in seen) and name[0] != chr(1)
+            if not (name in seen) and name[0] != chr(1) and name in b.names
                 seen[name] = true
                 append(names, name)
                 append(slots, "&" + o.path + "->slots[" + str(b.names[name]) + "]")
@@ -952,20 +955,32 @@ fun param_default(p)
     return last
 
 # Drops parameter names from `from` on, so a default does not see itself or
-# a later parameter. Gives them back with show_saved.
+# a later parameter. names, decls and order all lose them; show_saved puts
+# the same three back. Slot numbers stored in names stay as they were
+# (order is only which names are visible). A name left in order after it
+# left decls makes visible_names fail.
 fun hide_from(b, params, from)
     let saved = []
+    let hidden = {}
     for i in from..len(params)
         let name = params[i].text
         append(saved, {name: name, at: b.names[name], decls: b.decls[name]})
+        hidden[name] = true
         remove(b.names, name)
         remove(b.decls, name)
-    return saved
+    let kept = []
+    let order = b.order
+    for name in order
+        if not (name in hidden)
+            append(kept, name)
+    b.order = kept
+    return {items: saved, order: order}
 
 fun show_saved(b, saved)
-    for s in saved
+    for s in saved.items
         b.names[s.name] = s.at
         b.decls[s.name] = s.decls
+    b.order = saved.order
 
 fun check_arg(fc, hint, value, name, pname)
     if hint == ""

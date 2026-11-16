@@ -1,0 +1,4 @@
+fun f(a = b, b = 1)
+    return a
+
+f()
