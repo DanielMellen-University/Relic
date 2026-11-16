@@ -104,7 +104,7 @@ fun _rows(text as string, delimiter as string) as list
         _end_record(rows, fields, value, field_line, field_column, line, column)
     return rows
 
-fun summarize(text as string, delimiter as string, key as string, required as list) as map
+fun summarize(text as string, delimiter as string, key as string, required as list = []) as map
     if delimiter != "," and delimiter != "\t"
         fail("delimiter must be comma or tab")
     let rows = _rows(text, delimiter)

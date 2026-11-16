@@ -94,8 +94,20 @@ owner Daniel
 
 - Lists start at 0. Reading past the end is an error.
 - Lists and maps are shared, not copied: `ys` and `xs` above are the same list. Use `lists.copy(xs)` for a copy.
-- Maps keep the order keys were added. Reading a missing key is an error, so check with `"k" in m` first.
+- Maps keep the order keys were added. Reading a missing key is an error, so check with `"k" in m` first. `not in` is the opposite test, including as the condition of `if` or `while`.
 - `==` compares lists and maps by their contents.
+
+```
+let required = []
+let value = "owner"
+if value not in required
+    append(required, value)
+print(required, "note" not in required)
+```
+
+```
+["owner"] true
+```
 
 `std/lists` works on any list (section 7 explains `use`). `find` gives the first item a test is true for (or `none`), `partition` splits a list in two by a test, and `take` and `drop` cut it:
 
@@ -168,8 +180,20 @@ print(add(2, 3), double(4), c())
 
 - `fun name(args) = expr` is the one-line form.
 - A function with no `return` gives `none`.
+- A later parameter can have a default. It is worked out on each call that leaves it out, and a call that passes it skips the default.
 - Functions are values. They can be stored, passed and returned, and they keep the names around them (closures).
 - A name exists only after its `fun` or `let` line has run. Put definitions above the top-level code that calls them.
+
+```
+fun greet(name, punct = "!")
+    return "hi " + name + punct
+
+print(greet("Ada"), greet("Ada", "."))
+```
+
+```
+hi Ada! hi Ada.
+```
 
 ## 5. Text and numbers
 

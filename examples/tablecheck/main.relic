@@ -47,7 +47,7 @@ fun main()
             else if word == "--require"
                 if strings.trim(value) == ""
                     usage_error("--require needs a nonblank column name")
-                if not (value in required)
+                if value not in required
                     append(required, value)
             else
                 if have_key
