@@ -28,6 +28,8 @@ Pieces Relic cannot do itself yet come from C++ and are named `host_*`, so the b
 | `host_cwd()` | `os.cwd` | `/` separators |
 | `host_read_line(prompt)` | `os.read_line`, `os.prompt` | next line of stdin without `\n` or `\r\n`, or `none` at the end; `prompt` is shown first only when stdin is a terminal |
 | `host_exit(code)` | `os.exit` | flushes output, then exits |
+| `host_program()` | `os.program` | path of this executable |
+| `host_run(argv, cwd, stdin, env)` | `os.run` | runs a program and returns `{code, out, err}` (see [STDLIB.md](STDLIB.md#stdos)) |
 | `host_gfx_*`, `host_clipboard_get`, `host_clipboard_set` | `std/graphics` | SDL2 graphics, input and clipboard ([STDLIB.md](STDLIB.md#stdgraphics)) |
 
 Used by the self-hosted interpreter:

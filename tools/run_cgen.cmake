@@ -1,6 +1,7 @@
 cmake_policy(SET CMP0053 NEW)
 include(${CMAKE_CURRENT_LIST_DIR}/error_bytes.cmake)
-# Runs one golden program compiled to C by selfhost/cgen.relic. Usage:
+# Fallback for compiled goldens when golden_runner was not built. The default
+# build runs them with golden_runner --cgen. Usage:
 #   cmake -DEXE=path/to/cgen_name -DTEST=tests/golden/name.relic -P tools/run_cgen.cmake
 # Same checks as run_golden.cmake: stdout against name.out, or stderr against
 # name.err (with exit code 1) for error tests. RELIC_LEAK_CHECK=1 makes the program exit 3 if any

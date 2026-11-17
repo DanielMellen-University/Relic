@@ -652,7 +652,8 @@ static const rl_builtin_def g_host[] = {
     {"host_exp", 1, h_exp}, {"host_log", 1, h_log}, {"host_pow", 2, h_pow},
     {"host_list_dir", 1, h_list_dir}, {"host_is_dir", 1, h_is_dir}, {"host_make_dir", 1, h_make_dir},
     {"host_remove", 1, h_remove}, {"host_rename", 2, h_rename}, {"host_file_size", 1, h_file_size},
-    {"host_cwd", 0, h_cwd}, {"host_env", 1, h_env}, {"host_read_line", 1, h_read_line}, {"host_exit", 1, h_exit}, {"host_sleep", 1, h_sleep},
+    {"host_cwd", 0, h_cwd}, {"host_env", 1, h_env}, {"host_read_line", 1, h_read_line}, {"host_exit", 1, h_exit},
+    {"host_program", 0, rl_bi_program}, {"host_run", 4, rl_bi_run}, {"host_sleep", 1, h_sleep},
     {"host_byte_len", 1, h_byte_len}, {"host_same", 2, h_same}, {"host_find", 2, h_find}, {"host_sort", 1, h_sort}, {"host_std_root", 0, h_std_root}, {"host_names", 0, h_names}, {"host_call", 2, h_call},
     {NULL, 0, NULL}};
 

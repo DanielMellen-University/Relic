@@ -7,6 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <direct.h>
+#include <fcntl.h>
+#include <io.h>
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 #include "gfx_scale.h"   /* src/builtins: the high-DPI math of both graphics modules */
 
@@ -454,7 +463,7 @@ static void test_errors_and_builtins(void) {
     SHOW(call1("type", rl_none()), "none");
     SHOW(call1("type", rl_float(1.5)), "float");
     CHECK(rl_builtin("host_names", &f));
-    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 81);
+    CHECK(rl_call(&cx, f, 0, NULL, &r) == RL_OK && L(r)->n == 83);
     rl_release(r);
     rl_release(f);
     {   /* Byte windows retain malformed groups, valid UTF-8 and NUL bytes. */
@@ -906,11 +915,138 @@ static void test_operator_errors(void) {
     drop_temps();
 }
 
-int main(void) {
-    char *argv[2];
-    argv[0] = (char *)"one";
-    argv[1] = (char *)"two";
-    rl_ctx_init(&cx, 2, argv);
+/* Child of host_run: echoes stdin, or prints two arguments. Binary mode so a
+ * NUL and a lone \n are the same on Windows as on Linux. */
+static int host_run_child(int argc, char **argv) {
+#ifdef _WIN32
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+#endif
+    if (argc >= 3 && strcmp(argv[2], "echo") == 0) {
+        char buf[4096];
+        size_t n;
+        const char *mark;
+        while ((n = fread(buf, 1, sizeof buf, stdin)) > 0) fwrite(buf, 1, n, stdout);
+        mark = getenv("RELIC_OS_RUN_MARK");
+        fprintf(stderr, "%s\n", mark ? mark : "");
+        fflush(stdout);
+        fflush(stderr);
+        return 7;
+    }
+    if (argc >= 5 && strcmp(argv[2], "args") == 0) {
+        printf("%s\n%s\n", argv[3], argv[4]);
+        fflush(stdout);
+        return 0;
+    }
+    return 9;
+}
+
+static void test_host_run(void) {
+    rl_value prog, args, cwd, in, env, out, k, val;
+    rl_value call_args[4];
+    static const char nul[3] = {'a', 0, 'b'};
+    args = rl_list_new(1);
+    val = rl_str_c("relic-no-such-program-zzz");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    cwd = rl_str_c("");
+    in = rl_str_c("");
+    env = rl_map_new();
+    call_args[0] = args;
+    call_args[1] = cwd;
+    call_args[2] = in;
+    call_args[3] = env;
+    ERR(call("host_run", 4, call_args, &out), "host_run(): cannot run relic-no-such-program-zzz");
+    rl_release(args);
+    args = rl_list_new(0);
+    call_args[0] = args;
+    ERR(call("host_run", 4, call_args, &out), "host_run(): argv must not be empty");
+    rl_release(args);
+    rl_release(cwd);
+    rl_release(in);
+    rl_release(env);
+
+    CHECK(call("host_program", 0, NULL, &prog) == RL_OK);
+    args = rl_list_new(3);
+    rl_list_push(L(args), prog);
+    val = rl_str_c("--host-run-child");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    val = rl_str_c("echo");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    cwd = rl_str_c("");
+    in = rl_str_new(nul, 3);
+    env = rl_map_new();
+    k = rl_str_c("RELIC_OS_RUN_MARK");
+    val = rl_str_c("yes");
+    rl_map_set(M(env), (rl_str *)k.u.o, val);
+    rl_release(k);
+    rl_release(val);
+    call_args[0] = args;
+    call_args[1] = cwd;
+    call_args[2] = in;
+    call_args[3] = env;
+    CHECK(call("host_run", 4, call_args, &out) == RL_OK);
+    {
+        rl_value *code = rl_map_get(M(out), "code", 4);
+        rl_value *o = rl_map_get(M(out), "out", 3);
+        rl_value *e = rl_map_get(M(out), "err", 3);
+        rl_str *os, *es;
+        CHECK(code && code->k == RL_INT && code->u.i == 7);
+        os = o && o->k == RL_STR ? (rl_str *)o->u.o : NULL;
+        es = e && e->k == RL_STR ? (rl_str *)e->u.o : NULL;
+        CHECK(os && os->len == 3 && memcmp(os->data, nul, 3) == 0);
+        CHECK(es && strcmp(es->data, "yes\n") == 0);
+    }
+    rl_release(out);
+    rl_release(args);
+    rl_release(cwd);
+    rl_release(in);
+    rl_release(env);
+
+    args = rl_list_new(5);
+    rl_list_push(L(args), prog);
+    val = rl_str_c("--host-run-child");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    val = rl_str_c("args");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    val = rl_str_c("hello world");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    val = rl_str_c("say \"hi\"");
+    rl_list_push(L(args), val);
+    rl_release(val);
+    cwd = rl_str_c("");
+    in = rl_str_c("");
+    env = rl_map_new();
+    call_args[0] = args;
+    call_args[1] = cwd;
+    call_args[2] = in;
+    call_args[3] = env;
+    CHECK(call("host_run", 4, call_args, &out) == RL_OK);
+    {
+        rl_value *o = rl_map_get(M(out), "out", 3);
+        rl_str *os = o && o->k == RL_STR ? (rl_str *)o->u.o : NULL;
+        CHECK(os && strcmp(os->data, "hello world\nsay \"hi\"\n") == 0);
+    }
+    rl_release(out);
+    rl_release(args);
+    rl_release(cwd);
+    rl_release(in);
+    rl_release(env);
+    rl_release(prog);
+}
+
+int main(int argc, char **argv) {
+    char *fake[2];
+    if (argc >= 3 && strcmp(argv[1], "--host-run-child") == 0) return host_run_child(argc, argv);
+    fake[0] = (char *)"one";
+    fake[1] = (char *)"two";
+    rl_ctx_init(&cx, 2, fake);
     test_numbers();
     test_strings();
     test_string_offsets();
@@ -919,6 +1055,7 @@ int main(void) {
     test_errors_and_builtins();
     test_codegen_support();
     test_host();
+    test_host_run();
     test_cycles();
     test_gfx_scale();
     test_small_api();

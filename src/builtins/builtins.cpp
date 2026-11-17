@@ -1,6 +1,7 @@
 // Built-in functions for Relic 1.0: print, len, append, str, keys, type.
 #include "interp/interp.hpp"
 #include "builtins/graphics.hpp"
+#include "builtins/process.hpp"
 
 namespace relic { std::string std_root(); }
 
@@ -432,6 +433,8 @@ void Interpreter::install_builtins() {
         }
         return Value(line);
     });
+    add("host_program", 0, [](std::vector<Value>&) { return host_process_program(); });
+    add("host_run", 4, [](std::vector<Value>& a) { return host_process_run(a); });
     add("host_exit", 1, [whole_arg, this](std::vector<Value>& a) -> Value {
         long long code = whole_arg(a[0], "code");
         // Program output is collected in a buffer until the run ends; write it now.

@@ -231,6 +231,8 @@ escapes control characters, so what it writes is still read back.
 | `env(name)` | string or `none` | |
 | `cwd()` | string | `/` separators |
 | `exit(code)` | never returns | flushes output first; `code` must be a whole number (`os.exit(): code must be a whole number`); the system keeps only part of it, so on Linux and macOS `-1` exits with 255 and `256` with 0 |
+| `program()` | string | path of this executable |
+| `run(argv, cwd, stdin, env)` | map | starts a program and waits; `argv` is the program and its arguments (a list of strings, not a shell command); `cwd` is the working folder or `""` for this one; `stdin` is the bytes on standard input (`""` is empty, not the terminal); `env` is extra variables, a map of strings. Returns `{code, out, err}`: the exit code and the bytes written. `code` is 0 to 255 on Linux and macOS. A bad argument is `os.run(): argv must be a list, got int` (and the same shape for `cwd`, `stdin`, `env`, and `argv item 0`). A program that cannot be started is `os.run(): cannot run PATH`; a missing folder is `os.run(): cannot use folder PATH` |
 | `read_line()` | string or `none` | the next line of standard input (see below) |
 | `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
 
