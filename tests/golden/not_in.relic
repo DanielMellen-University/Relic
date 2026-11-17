@@ -1,0 +1,26 @@
+let required = []
+let value = "owner"
+if value not in required
+    append(required, value)
+print(required)
+if value not in required
+    append(required, "again")
+print(required)
+
+print(1 not in [2, 3], 2 not in [2, 3])
+print("a" not in {b: 1}, "b" not in {b: 1})
+print("z" not in "hello", "ell" not in "hello")
+print("" not in "abc", "" not in "")
+print(1 not in [])
+print(not (1 not in [2]))
+print(1 not in [1] or true)
+
+let i = 0
+while i not in [1, 2]
+    i = i + 1
+print(i)
+
+if false
+    print("no")
+else if value not in ["no"]
+    print("else if")

@@ -1,0 +1,9 @@
+fun f(a = later)
+    return a
+
+fun g(p, a = p + later)
+    return a
+
+let later = 3
+print(f())
+print(g(1))

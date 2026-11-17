@@ -172,15 +172,27 @@ fun block(ck, b, new_scope)
     if scoped
         close_scope(ck)
 
+# The default expression is the last kid, unless that kid is the `as` hint.
+fun param_default(p)
+    if len(p.kids) == 0
+        return none
+    let last = p.kids[len(p.kids) - 1]
+    if last.kind == "Type"
+        return none
+    return last
+
 fun function(ck, n)
     let sc = new_scope()
-    for prm in n.kids[0].kids
-        sc.names[prm.text] = true
     let body = n.kids[1]
     if body.kind == "Block"
         pend(sc, body)
     append(ck.fns, {base: len(ck.scopes), loops: 0})
     append(ck.scopes, sc)
+    for prm in n.kids[0].kids
+        let d = param_default(prm)
+        if d != none
+            expr(ck, d)
+        sc.names[prm.text] = true
     if body.kind == "Block"
         for st in body.kids
             stmt(ck, st)

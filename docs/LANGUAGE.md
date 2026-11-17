@@ -67,7 +67,7 @@ Lowest precedence first:
 | 1 | `or` | stops early; both sides must be bools |
 | 2 | `and` | stops early; both sides must be bools |
 | 3 | `not` | needs a bool |
-| 4 | `== != < <= > >= in` | no chaining: `a < b < c` is an error |
+| 4 | `== != < <= > >= in` `not in` | no chaining: `a < b < c` is an error; `not in` is one operator |
 | 5 | `..` | `a..b` is the ints from `a` up to `b - 1` |
 | 6 | `+ -` | |
 | 7 | `* / %` | |
@@ -80,7 +80,7 @@ Lowest precedence first:
 - `==` and `!=` compare lists and maps by contents, strings by contents, and functions by identity. `none` equals only `none`. `1 == 1.0` is `true`.
 - An int and a float compare as floats, in every engine: past 2^53 the int is rounded first, so `9007199254740993 == 9007199254740992.0` is `true` and `9007199254740993 > 9007199254740992.0` is `false`. Two ints compare exactly.
 - `<` and friends compare numbers with numbers and strings with strings (by code point). They follow IEEE order: `nan` is unordered, so `<`, `<=`, `>` and `>=` are all `false`, including `nan <= nan` and an int next to a float (`nan <= 1`, `1 >= nan`). `nan == nan` is `false` and `nan != nan` is `true`. Every engine does this.
-- `x in list` checks for an item, `"k" in map` for a key, `"ell" in "hello"` for a substring. Map keys are strings: `5 in m`, `m[5]` and `m[5] = v` fail with `map keys must be strings, got int` (the type is named since 1.0.52).
+- `x in list` checks for an item, `"k" in map` for a key, `"ell" in "hello"` for a substring. `x not in list` is the opposite test, at the same precedence, including in a block header (`if value not in required`). It fails the same way `in` does: map keys are strings, so `5 not in m` is `map keys must be strings, got int`, and `1 not in "a"` is `can only look for a string inside a string`. `5 in m`, `m[5]` and `m[5] = v` fail with `map keys must be strings, got int` (the type is named since 1.0.52).
 - Range ends must be whole numbers.
 
 ## Control flow
@@ -112,13 +112,17 @@ fun area(w, h)
     return w * h
 
 fun double(x) = x * 2
+
+fun summarize(text, required = [])
+    return required
 ```
 
 - Functions are values. They can be stored in lists and maps, passed and returned.
 - A function with no `return`, or a bare `return`, gives `none`.
-- Calling with the wrong number of arguments is an error.
-- Parameters have no default values. Pass every argument explicitly, or write
-  a wrapper function that supplies the defaults.
+- A parameter can have a default, written `name = expression` after an `as` hint when there is one: `fun take(n as int = 2)`.
+- Every parameter with a default comes after the ones without. `fun f(a = 1, b)` is a syntax error: `parameter 'b' has no default, but 'a' before it does`.
+- The default expression runs on each call that omits that argument, inside the function, and it sees the parameters before it. A call that passes the argument does not run the default. `fun bump(xs = [])` builds a new list every time the argument is omitted, so two calls do not share one list.
+- Too few or too many arguments name the function. With no defaults: `f() takes 2 arguments, got 1`. With some defaults: `f() takes 1 to 2 arguments, got 0` and `f() takes 1 to 2 arguments, got 3`. When every parameter has a default: `f() takes at most 1 argument, got 2` (`argument` when the most is one).
 - Calls more than 800 deep stop with `too much recursion (more than 800 calls deep)`. `relic --tree` walks the tree on the native stack, so a very big expression inside deep recursion can stop it sooner, with `too much recursion (calls and expressions nest too deeply for the stack)`; it uses up to three quarters of the stack (6 MB of the usual 8 MB). Both errors can be caught with `try`.
 
 ## Type hints
@@ -132,7 +136,7 @@ fun area(w as number, h as number) as number
 fun greet(name as string) as string = "hello " + name
 ```
 
-- Hints go on `let`, on parameters, and after the `)` of a `fun` for the return value.
+- Hints go on `let`, on parameters, and after the `)` of a `fun` for the return value. On a parameter the hint comes before a default: `n as int = 2`.
 - Hint types: `any`, `none`, `bool`, `int`, `float`, `number` (int or float), `string`, `list`, `map`, `function`, `module`. Any other name is a syntax error.
 - `float` means float only. Use `number` to take both.
 - A hinted name is checked at `let`, at every later `x = ...`, at each call, and at return (falling off the end returns `none`).

@@ -140,7 +140,6 @@ struct ExpectRow {
     int cover_got;
 };
 const ExpectRow kExpect[] = {
-    {"')' after the parameters", (int)relic::Tok::Assign, "", -1, "", "Relic has no default parameter values", "pass every argument explicitly, or write a wrapper function", 0, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Plus, "", "Relic has no '+='", "write it out, as in x = x + n", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Minus, "", "Relic has no '-='", "write it out, as in x = x - n", 1, 1},
     {"an expression", (int)relic::Tok::Assign, "", (int)relic::Tok::Star, "", "Relic has no '*='", "write it out, as in x = x * n", 1, 1},
@@ -159,7 +158,7 @@ const ExpectRow kExpect[] = {
     {"'=' after the name", (int)relic::Tok::Colon, "", -1, "", "", "use '=', not ':='", 0, 1},
     {"'in' after the loop name", (int)relic::Tok::Name, "of", -1, "", "", "loops are written 'for name in list'", 0, 1},
     {"'in' after the loop name", (int)relic::Tok::Colon, "", -1, "", "", "loops are written 'for name in list', not a colon", 0, 1},
-    {"end of line", (int)relic::Tok::Not, "", -1, "", "", "write 'not (a in b)' to negate a test", 0, 1},
+    {"end of line", (int)relic::Tok::Not, "", -1, "", "", "write 'a not in b', or 'not (a in b)' to negate a test", 0, 1},
     {"'catch' after the 'try' block", -1, "", -1, "", "", "a try needs a catch after its block", 0, 1},
     {nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, 0, 0},
 };

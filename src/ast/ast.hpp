@@ -20,7 +20,7 @@ enum class Node {
     While,     // kids: cond, Block
     For,       // text: loop name. kids: iterable, Block
     Fun,       // text: name. kids: Params, body (Block, or one expression for the short form), [Type]
-    Params,    // kids: Name nodes, each with an optional Type kid
+    Params,    // kids: Name nodes. Each Name's kids: [Type], then [default expression]
     Return,    // kids: [value]
     Break,
     Next,
@@ -60,5 +60,21 @@ const char* node_name(Node kind);
 
 // Prints the tree, one node per line, two spaces per level.
 std::string dump_ast(const Ast& node);
+
+// A parameter's optional `as` hint and its optional default expression.
+// The hint, when present, is the first kid. The default, when present, is
+// the last kid and is never a Type node.
+inline const Ast* param_type(const Ast& prm) {
+    if (!prm.kids.empty() && prm.kids[0]->kind == Node::Type) return prm.kids[0].get();
+    return nullptr;
+}
+inline const Ast* param_default(const Ast& prm) {
+    if (prm.kids.empty() || prm.kids.back()->kind == Node::Type) return nullptr;
+    return prm.kids.back().get();
+}
+inline std::string param_hint_text(const Ast& prm) {
+    const Ast* t = param_type(prm);
+    return t ? t->text : std::string();
+}
 
 }  // namespace relic

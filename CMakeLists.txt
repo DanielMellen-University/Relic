@@ -445,6 +445,13 @@ if(RELIC_C_RUNTIME AND RELIC_CGEN_TESTS)
       relic_cgen_test(${name} ${t})
     endif()
   endforeach()
+  # A known-bad .out must make the runner exit nonzero and name the mismatch.
+  add_test(NAME golden_runner_mismatch
+    COMMAND ${CMAKE_COMMAND}
+      -DRUNNER=$<TARGET_FILE:golden_runner>
+      -DEXE=$<TARGET_FILE:cgen_hello>
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/golden_runner_mismatch
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_golden_runner_mismatch.cmake)
   # Cases for the compiled side only (expected output from relic --tree).
   file(GLOB CGEN_ONLY_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/cgen/*.relic)
   foreach(t ${CGEN_ONLY_TESTS})

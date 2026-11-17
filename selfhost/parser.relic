@@ -50,6 +50,14 @@ fun peek(p)
         return p.dead
     return p.toks[p.pos]
 
+fun peek_at(p, n)
+    if p.err != none
+        return p.dead
+    let i = p.pos + n
+    if i >= len(p.toks)
+        return p.toks[len(p.toks) - 1]
+    return p.toks[i]
+
 fun at(p, kind) = peek(p).kind == kind
 
 fun advance(p)
@@ -107,8 +115,6 @@ fun expect_extra(p, what)
     let prev = none
     if p.pos > 0
         prev = p.toks[p.pos - 1]
-    if what == "')' after the parameters" and got.kind == "ASSIGN"
-        return {msg: "Relic has no default parameter values", hint: "pass every argument explicitly, or write a wrapper function", cover_prev: false, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "PLUS"
         return {msg: "Relic has no '+='", hint: "write it out, as in x = x + n", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "ASSIGN" and prev != none and prev.kind == "MINUS"
@@ -146,7 +152,7 @@ fun expect_extra(p, what)
     if what == "'in' after the loop name" and got.kind == "COLON"
         return {msg: "", hint: "loops are written 'for name in list', not a colon", cover_prev: false, cover_got: true}
     if what == "end of line" and got.kind == "NOT"
-        return {msg: "", hint: "write 'not (a in b)' to negate a test", cover_prev: false, cover_got: true}
+        return {msg: "", hint: "write 'a not in b', or 'not (a in b)' to negate a test", cover_prev: false, cover_got: true}
     if what == "'catch' after the 'try' block"
         return {msg: "", hint: "a try needs a catch after its block", cover_prev: false, cover_got: true}
     return none
@@ -370,6 +376,8 @@ fun fun_stmt(p)
     let names = {}
     if not at(p, "RPAREN")
         let more = true
+        let seen_default = false
+        let default_name = ""
         while more and p.err == none
             let t = expect(p, "NAME", "a parameter name")
             if t.text in names
@@ -379,6 +387,12 @@ fun fun_stmt(p)
             let hint = type_hint(p)
             if hint != none
                 add(prm, hint)
+            if match(p, "ASSIGN")
+                add(prm, expression(p))
+                seen_default = true
+                default_name = t.text
+            else if seen_default
+                fail_span(p, t, t.col, "parameter '{t.text}' has no default, but '{default_name}' before it does", "put parameters without defaults first")
             add(params, prm)
             more = match(p, "COMMA")
     expect(p, "RPAREN", "')' after the parameters")
@@ -484,9 +498,16 @@ fun expression(p)
     return e
 
 fun binary(left, op, right)
-    let n = node("Binary", op, op.text)
+    return binary_text(left, op, op.text, right)
+
+fun binary_text(left, op, text, right)
+    let n = node("Binary", op, text)
     add(n, left)
     return add(n, right)
+
+# `not in` is one comparison. `not` by itself stays the prefix operator.
+fun is_not_in(p)
+    return peek(p).kind == "NOT" and peek_at(p, 1).kind == "IN"
 
 fun or_expr(p)
     let left = and_expr(p)
@@ -520,14 +541,22 @@ let compare_ops = {EQ_EQ: true, BANG_EQ: true, LESS: true, LESS_EQ: true, GREATE
 
 fun compare(p)
     let left = range(p)
-    if peek(p).kind in compare_ops
+    if peek(p).kind in compare_ops or is_not_in(p)
         let op = advance(p)
+        let text = op.text
+        if op.kind == "NOT"
+            advance(p)
+            text = "not in"
         let h = p.h
-        left = binary(left, op, range(p))
+        left = binary_text(left, op, text, range(p))
         grow(p, left, h)
-        if peek(p).kind in compare_ops
-            let op = peek(p)
-            fail_span(p, op, op.col + text_cols(op.text) - 1, "comparisons cannot be chained; use 'and'", "")
+        if peek(p).kind in compare_ops or is_not_in(p)
+            let bad = peek(p)
+            let end = bad.col + text_cols(bad.text) - 1
+            if bad.kind == "NOT" and peek_at(p, 1).line == bad.line
+                let inn = peek_at(p, 1)
+                end = inn.col + text_cols(inn.text) - 1
+            fail_span(p, bad, end, "comparisons cannot be chained; use 'and'", "")
     return left
 
 fun range(p)
