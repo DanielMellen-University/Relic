@@ -428,6 +428,19 @@ static std::string call_inside(const Ast& field, const Ast& call) {
     return s;
 }
 
+// spell(inside), at most 80 characters. A longer call keeps the first 80 and adds "...".
+// The same cut is in selfhost/interp.relic and runtime/c/rl_ops.c.
+static std::string cap_call(const char* spell, const std::string& inside) {
+    std::string text = std::string(spell) + "(" + inside + ")";
+    size_t chars = 0, i = 0;
+    while (i < text.size() && chars < 80) {
+        i += utf8_char_size(text, i);
+        ++chars;
+    }
+    if (i >= text.size()) return text;
+    return text.substr(0, i) + "...";
+}
+
 // The full error for a method-style call, or "" when op_field should run.
 static std::string method_message(const Value& obj, const Ast& field, const Ast& call) {
     const char* type = nullptr;
@@ -441,10 +454,10 @@ static std::string method_message(const Value& obj, const Ast& field, const Ast&
     }
     const char* spell = method_spell(type, field.text);
     if (!spell) return "";
-    std::string inside = call_inside(field, call);
+    std::string shown = cap_call(spell, call_inside(field, call));
     if (std::string(type) == "map")
-        return "map has no key '" + field.text + "' (write " + spell + "(" + inside + "))";
-    return std::string("cannot read a field of ") + a_type(obj) + " (write " + spell + "(" + inside + "))";
+        return "map has no key '" + field.text + "' (write " + shown + ")";
+    return std::string("cannot read a field of ") + a_type(obj) + " (write " + shown + ")";
 }
 
 Value op_method(const Ast& call, const Value& obj) {

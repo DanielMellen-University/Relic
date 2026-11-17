@@ -535,6 +535,37 @@ static const char *method_spell(const char *type, const char *name) {
     return NULL;
 }
 
+/* Copy up to *left characters of s into out. Returns 1 when s did not fit. */
+static int take_chars(const char *s, size_t len, size_t *left, char *out, size_t *n, size_t cap) {
+    size_t pos = 0;
+    while (pos < len) {
+        size_t k = rl_utf8_char_size(s, len, pos);
+        if (*left == 0 || *n + k >= cap) return 1;
+        memcpy(out + *n, s + pos, k);
+        *n += k;
+        pos += k;
+        *left -= 1;
+    }
+    return 0;
+}
+
+/* spell(inside), at most 80 characters. A longer call keeps the first 80 and adds "...".
+ * The same cut is in src/interp/interp.cpp and selfhost/interp.relic. */
+static void cap_call(const char *spell, const char *inside, char *out, size_t cap) {
+    size_t left = 80, n = 0;
+    int more = 0;
+    if (!inside) inside = "";
+    more |= take_chars(spell, strlen(spell), &left, out, &n, cap);
+    more |= take_chars("(", 1, &left, out, &n, cap);
+    more |= take_chars(inside, strlen(inside), &left, out, &n, cap);
+    more |= take_chars(")", 1, &left, out, &n, cap);
+    if (more && n + 3 < cap) {
+        memcpy(out + n, "...", 3);
+        n += 3;
+    }
+    out[n] = '\0';
+}
+
 static int module_missing(rl_ctx *cx, rl_module *m, const char *name) {
     size_t len, best_d, i;
     const char *best;
@@ -574,9 +605,11 @@ int rl_method(rl_ctx *cx, rl_value obj, const char *name, const char *inside, rl
     }
     spell = type ? method_spell(type, name) : NULL;
     if (spell) {
+        char shown[384];
+        cap_call(spell, inside, shown, sizeof shown);
         if (missing_map)
-            return rl_fail(cx, "map has no key '%s' (write %s(%s))", name, spell, inside);
-        return rl_fail(cx, "cannot read a field of %s (write %s(%s))", rl_a_type(obj), spell, inside);
+            return rl_fail(cx, "map has no key '%s' (write %s)", name, shown);
+        return rl_fail(cx, "cannot read a field of %s (write %s)", rl_a_type(obj), shown);
     }
     return rl_field(cx, obj, name, out);
 }

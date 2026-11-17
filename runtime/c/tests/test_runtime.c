@@ -748,6 +748,14 @@ static void test_codegen_support(void) {
         ERR(rl_method(&cx, text, "trim", "s", &out),
             "cannot read a field of a string (write strings.trim(s))");
         ERR(rl_method(&cx, row, "keys", "m", &out), "map has no key 'keys' (write keys(m))");
+        /* 80 characters of call text stay whole. One past that, and a cut on a
+         * non-ASCII character, keep 80 and add "...". */
+        ERR(rl_method(&cx, list, "append", "xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"", &out),
+            "cannot read a field of a list (write append(xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"))");
+        ERR(rl_method(&cx, list, "append", "xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"", &out),
+            "cannot read a field of a list (write append(xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"...)");
+        ERR(rl_method(&cx, list, "append", "xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaézz\"", &out),
+            "cannot read a field of a list (write append(xs, \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé...)");
         CHECK(rl_set_field(&cx, row, "keys", rl_int(7)) == RL_OK);
         CHECK(rl_method(&cx, row, "keys", "m", &out) == RL_OK && out.k == RL_INT && out.u.i == 7);
         rl_release(out);

@@ -560,6 +560,14 @@ fun call_inside(field, call)
         s = s + ", " + src_expr(call.kids[i])
     return s
 
+# spell(inside), at most 80 characters. A longer call keeps the first 80 and adds "...".
+# The same cut is in src/interp/interp.cpp and runtime/c/rl_ops.c.
+fun cap_call(spell, inside)
+    let text = spell + "(" + inside + ")"
+    if len(text) <= 80
+        return text
+    return slice(text, 0, 80) + "..."
+
 # Keep in step with method_spell in src/interp/interp.cpp and runtime/c/rl_ops.c.
 let method_for_list = {
     append: "append",
@@ -1084,11 +1092,11 @@ fun machine(rt, st, vals)
                 let spelled = method_spell(type_of(obj), field.text)
                 let missing_map = type_of(obj) == "map" and not (field.text in obj)
                 if spelled != "" and (type_of(obj) == "list" or type_of(obj) == "string" or missing_map)
-                    let inside = call_inside(field, m)
+                    let shown = cap_call(spelled, call_inside(field, m))
                     if missing_map
-                        fail(rt, field, "map has no key '{field.text}' (write {spelled}({inside}))")
+                        fail(rt, field, "map has no key '{field.text}' (write {shown})")
                     else
-                        fail(rt, field, "cannot read a field of " + a_type(obj) + " (write {spelled}({inside}))")
+                        fail(rt, field, "cannot read a field of " + a_type(obj) + " (write {shown})")
                 else
                     let got = field_of(rt, field, obj)
                     if rt.err == none
