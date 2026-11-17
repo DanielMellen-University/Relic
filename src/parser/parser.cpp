@@ -236,12 +236,23 @@ private:
         auto params = make(Node::Params, open);
         std::unordered_set<std::string> names;
         if (!at(Tok::RParen)) {
+            bool seen_default = false;
+            std::string default_name;
             do {
                 const Token& p = expect(Tok::Name, "a parameter name");
                 if (!names.insert(p.text).second)
                     fail(p, "duplicate parameter '" + p.text + "'", "each parameter name is written once");
-                params->kids.push_back(make(Node::Name, p, p.text));
-                if (auto hint = type_hint()) params->kids.back()->kids.push_back(std::move(hint));
+                auto prm = make(Node::Name, p, p.text);
+                if (auto hint = type_hint()) prm->kids.push_back(std::move(hint));
+                if (match(Tok::Assign)) {
+                    prm->kids.push_back(expression());
+                    seen_default = true;
+                    default_name = p.text;
+                } else if (seen_default) {
+                    fail(p, "parameter '" + p.text + "' has no default, but '" + default_name + "' before it does",
+                         "put parameters without defaults first");
+                }
+                params->kids.push_back(std::move(prm));
             } while (match(Tok::Comma));
         }
         expect(Tok::RParen, "')' after the parameters");
@@ -347,7 +358,11 @@ private:
     }
 
     AstPtr binary(AstPtr left, const Token& op, AstPtr right) {
-        auto n = make(Node::Binary, *left, op.text);
+        return binary(std::move(left), op, op.text, std::move(right));
+    }
+
+    AstPtr binary(AstPtr left, const Token& op, const std::string& text, AstPtr right) {
+        auto n = make(Node::Binary, *left, text);
         n->line = op.line;
         n->col = op.col;
         n->kids.push_back(std::move(left));
@@ -394,17 +409,32 @@ private:
                k == Tok::Greater || k == Tok::GreaterEq || k == Tok::In;
     }
 
-    // Comparisons do not chain: `a < b < c` is an error.
+    // `not in` is one operator, same level as `in`. `not` alone is the prefix.
+    bool starts_cmp() const {
+        if (is_compare(peek().kind)) return true;
+        return peek().kind == Tok::Not && peek(1).kind == Tok::In;
+    }
+
+    // Comparisons do not chain: `a < b < c` and `a in b not in c` are errors.
     AstPtr compare() {
         auto left = range();
-        if (is_compare(peek().kind)) {
+        if (starts_cmp()) {
             const Token& op = advance();
+            std::string text = op.text;
+            if (op.kind == Tok::Not) {
+                advance();
+                text = "not in";
+            }
             int h = h_;
-            left = binary(std::move(left), op, range());
+            left = binary(std::move(left), op, text, range());
             grow(*left, h);
-            if (is_compare(peek().kind))
-                fail(peek(), "comparisons cannot be chained; use 'and'", "",
-                     peek().col + text_cols(peek().text) - 1);
+            if (starts_cmp()) {
+                const Token& next = peek();
+                int end = next.col + text_cols(next.text) - 1;
+                if (next.kind == Tok::Not && peek(1).line == next.line)
+                    end = peek(1).col + text_cols(peek(1).text) - 1;
+                fail(next, "comparisons cannot be chained; use 'and'", "", end);
+            }
         }
         return left;
     }

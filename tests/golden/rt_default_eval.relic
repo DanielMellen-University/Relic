@@ -1,0 +1,4 @@
+fun side(x = fail("default ran"))
+    return x
+
+side()

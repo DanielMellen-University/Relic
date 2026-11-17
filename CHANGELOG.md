@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Functions take default parameter values: `fun summarize(text, required = [])`. Defaults come after parameters that have none (`parameter 'b' has no default, but 'a' before it does`). A default runs fresh on each call that omits the argument, inside the function, and it can use the earlier parameters. Passing the argument skips it, so a default list is not shared between calls. Too few or too many arguments name the function: `f() takes 1 to 2 arguments, got 0`, `f() takes 1 to 2 arguments, got 3`, and `f() takes at most 1 argument, got 2` when every parameter has a default. The same on the VM, the tree-walker, the self-hosted interpreter and compiled code.
+- `not in` tests membership with the same precedence as `in`, including in a block header (`if value not in required`). It works on lists, on map keys and on strings, and a bad value gets the same error `in` would (`cannot look inside an int`, `map keys must be strings, got int`, `can only look for a string inside a string`).
 - The self-hosted `run`, `tokens`, `ast` and `check` commands report unreadable input as `relic: cannot open FILE` and exit 2. `cgen.relic` and compiled `relicc` do the same for the main input and imported modules, exiting 3. They name the file instead of reporting an error inside the tool.
 
 - Mismatched brackets inside interpolation report the offending closer. They can no longer consume brackets outside the interpolation or become an unrelated unterminated-string error.

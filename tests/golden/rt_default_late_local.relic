@@ -1,0 +1,7 @@
+fun outer()
+    fun inner(a = later)
+        return a
+    let later = 3
+    return inner()
+
+print(outer())

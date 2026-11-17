@@ -1,0 +1,4 @@
+fun take(n as int = 2)
+    return n
+
+take("x")
