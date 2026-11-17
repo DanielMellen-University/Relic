@@ -76,21 +76,21 @@ Value op_binary(const Ast& n, const Value& a, const Value& b) {
     };
     if (op == "==") return Value(equal(a, b));
     if (op == "!=") return Value(!equal(a, b));
-    if (op == "in") {
+    if (op == "in" || op == "not in") {
+        bool hit = false;
         if (b.is<std::shared_ptr<List>>()) {
             for (const auto& x : *b.as<std::shared_ptr<List>>())
-                if (equal(a, x)) return Value(true);
-            return Value(false);
-        }
-        if (b.is<std::shared_ptr<Map>>()) {
+                if (equal(a, x)) { hit = true; break; }
+        } else if (b.is<std::shared_ptr<Map>>()) {
             if (!a.is<std::string>()) fail(n, std::string("map keys must be strings, got ") + type_name(a));
-            return Value(b.as<std::shared_ptr<Map>>()->has(a.as<std::string>()));
-        }
-        if (b.is<std::string>()) {
+            hit = b.as<std::shared_ptr<Map>>()->has(a.as<std::string>());
+        } else if (b.is<std::string>()) {
             if (!a.is<std::string>()) fail(n, "can only look for a string inside a string");
-            return Value(b.as<std::string>().find(a.as<std::string>()) != std::string::npos);
+            hit = b.as<std::string>().find(a.as<std::string>()) != std::string::npos;
+        } else {
+            fail(n, std::string("cannot look inside ") + a_type(b));
         }
-        fail(n, std::string("cannot look inside ") + a_type(b));
+        return Value(op == "not in" ? !hit : hit);
     }
     if (op == "+") {
         if (is_num(a) && is_num(b)) return op_math(n, a, b);
@@ -596,6 +596,15 @@ std::string op_arity_message(const std::string& name, size_t want, size_t got) {
            ", got " + std::to_string(got);
 }
 
+std::string op_arity_range(const std::string& name, size_t least, size_t most, size_t got) {
+    if (least == most) return op_arity_message(name, least, got);
+    if (least == 0)
+        return name + "() takes at most " + std::to_string(most) + " argument" + (most == 1 ? "" : "s") +
+               ", got " + std::to_string(got);
+    return name + "() takes " + std::to_string(least) + " to " + std::to_string(most) + " arguments, got " +
+           std::to_string(got);
+}
+
 Value op_call_builtin(const Ast& n, const Builtin& b, std::vector<Value>& args) {
     if (b.arity >= 0 && static_cast<int>(args.size()) != b.arity)
         fail(n, op_arity_message(b.name, static_cast<size_t>(b.arity), args.size()));
@@ -1021,19 +1030,25 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
 
     const Function& f = *callee.as<std::shared_ptr<Function>>();
     const Ast& params = *f.node->kids[0];
-    if (args.size() != params.kids.size())
-        fail(n, f.name + "() takes " + std::to_string(params.kids.size()) + " argument" +
-                    (params.kids.size() == 1 ? "" : "s") + ", got " + std::to_string(args.size()));
+    size_t nreq = 0;
+    for (const auto& prm : params.kids) {
+        if (param_default(*prm)) break;
+        ++nreq;
+    }
+    if (args.size() < nreq || args.size() > params.kids.size())
+        fail(n, op_arity_range(f.name, nreq, params.kids.size(), args.size()));
+    for (size_t i = 0; i < args.size(); ++i) {
+        const Ast& prm = *params.kids[i];
+        if (const Ast* hint = param_type(prm))
+            op_check_type(n, hint->text, args[i], f.name + "() argument '" + prm.text + "' must be");
+    }
     gc_maybe();
     if (depth_ >= kMaxDepth) fail(n, "too much recursion (more than " + std::to_string(kMaxDepth) + " calls deep)");
 
     auto scope = std::make_shared<Env>(f.closure);
     for (size_t i = 0; i < args.size(); ++i) {
         const Ast& prm = *params.kids[i];
-        if (!prm.kids.empty()) {
-            op_check_type(n, prm.kids[0]->text, args[i], f.name + "() argument '" + prm.text + "' must be");
-            scope->hints[prm.text] = prm.kids[0]->text;
-        }
+        if (const Ast* hint = param_type(prm)) scope->hints[prm.text] = hint->text;
         scope->vars[prm.text] = args[i];
     }
     const std::string& ret_hint = op_hint(*f.node);
@@ -1047,6 +1062,18 @@ Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
     struct Restore { std::string& cur; std::string old; ~Restore() { cur = old; } } restore{current_file_, saved};
     Flow fl;
     try {
+        // A missing argument's default runs here, in this call, seeing the
+        // arguments already bound. The next call evaluates it again.
+        for (size_t i = args.size(); i < params.kids.size(); ++i) {
+            const Ast& prm = *params.kids[i];
+            const Ast* def = param_default(prm);
+            Value v = eval(*def, scope);
+            if (const Ast* hint = param_type(prm)) {
+                op_check_type(*def, hint->text, v, f.name + "() argument '" + prm.text + "' must be");
+                scope->hints[prm.text] = hint->text;
+            }
+            scope->vars[prm.text] = std::move(v);
+        }
         if (body.kind != Node::Block) {  // short form: fun f(x) = expr
             Value r = eval(body, scope);
             if (!ret_hint.empty()) op_check_type(body, ret_hint, r, ret_what);

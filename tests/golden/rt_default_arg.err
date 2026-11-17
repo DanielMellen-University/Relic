@@ -1,0 +1,3 @@
+rt_default_arg.relic:4:5: error: take() argument 'n' must be int, got string
+    take("x")
+        ^

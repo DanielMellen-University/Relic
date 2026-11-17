@@ -31,6 +31,7 @@ enum class Op {
     LoadLate, StoreLate, Mark,
     SetHintGlobal, CheckHint, CheckHintGlobal, SkipUnlessLate, RangeStart,
     Method,
+    JumpIfProvided,  // a = target, b = parameter index; skip when that argument was passed
 };
 
 const char* op_name(Op o) {
@@ -45,6 +46,7 @@ const char* op_name(Op o) {
         "LOAD_LATE", "STORE_LATE", "MARK",
         "SET_HINT_GLOBAL", "CHECK_HINT", "CHECK_HINT_GLOBAL", "SKIP_UNLESS_LATE", "RANGE_START",
         "METHOD",
+        "JUMP_IF_PROVIDED",
     };
     return names[static_cast<int>(o)];
 }
@@ -79,6 +81,7 @@ struct Proto {
     std::string name;
     const Ast* node = nullptr;
     int nparams = 0;
+    int nrequired = 0;  // parameters without a default; they come first
     int nslots = 0;  // slots of the function's own scope (params first)
     std::vector<Instr> code;
     std::vector<Value> consts;
@@ -89,6 +92,7 @@ struct Proto {
 struct Scope : GcObj {
     std::vector<Value> slots;
     std::shared_ptr<Scope> parent;
+    int argc = -1;  // arguments passed to this function scope; -1 for any other scope
     Scope(int n, std::shared_ptr<Scope> p) : slots(static_cast<size_t>(n)), parent(std::move(p)) {}
     void trace(std::vector<GcObj*>& out) const override {
         for (const Value& v : slots) trace_value(v, out);
@@ -477,20 +481,31 @@ private:
                 emit(Op::Pop);
                 return;
             case Node::If: {
-                expr(*n.kids[0]);
-                size_t jf = emit(Op::JumpIfFalse, 0, str("'if' condition"), n.kids[0].get());
-                block(*n.kids[1], true);
-                if (n.kids.size() > 2) {
-                    size_t jend = emit(Op::Jump);
-                    patch(jf, here());
-                    const Ast& alt = *n.kids[2];
-                    if (alt.kind == Node::If) stmt(alt);
-                    else block(alt, true);
-                    patch(jend, here());
-                } else {
-                    patch(jf, here());
+                // A loop, not stmt() again: a 10,000-long `else if` chain must
+                // not spend one C stack frame per link.
+                std::vector<size_t> ends;
+                const Ast* cur = &n;
+                while (true) {
+                    expr(*cur->kids[0]);
+                    size_t jf = emit(Op::JumpIfFalse, 0, str("'if' condition"), cur->kids[0].get());
+                    block(*cur->kids[1], true);
+                    if (cur->kids.size() > 2 && cur->kids[2]->kind == Node::If) {
+                        ends.push_back(emit(Op::Jump));
+                        patch(jf, here());
+                        cur = cur->kids[2].get();
+                        continue;
+                    }
+                    if (cur->kids.size() > 2) {
+                        size_t jend = emit(Op::Jump);
+                        patch(jf, here());
+                        block(*cur->kids[2], true);
+                        patch(jend, here());
+                    } else {
+                        patch(jf, here());
+                    }
+                    for (size_t ip : ends) patch(ip, here());
+                    return;
                 }
-                return;
             }
             case Node::While: {
                 size_t top = here();
@@ -655,6 +670,12 @@ private:
         p->mod = &prog_;
         const Ast& params = *n.kids[0];
         p->nparams = static_cast<int>(params.kids.size());
+        p->nrequired = 0;
+        bool count_required = true;
+        for (const auto& prm : params.kids) {
+            if (param_default(*prm)) count_required = false;
+            else if (count_required) ++p->nrequired;
+        }
         Proto* proto = p.get();
         int idx = static_cast<int>(prog_.protos.size());
         prog_.protos.push_back(std::move(p));
@@ -664,20 +685,54 @@ private:
         s.fn_scope = true;
         for (const auto& prm : params.kids) {
             s.names[prm->text] = s.count++;
-            proto->param_hints.push_back(prm->kids.empty() ? "" : prm->kids[0]->text);
-            if (!prm->kids.empty()) s.hints[prm->text] = prm->kids[0]->text;
+            std::string hint = param_hint_text(*prm);
+            proto->param_hints.push_back(hint);
+            if (!hint.empty()) s.hints[prm->text] = hint;
         }
         const Ast& body = *n.kids[1];
         if (body.kind == Node::Block) {
             std::vector<std::pair<std::string, std::string>> pre;
-            for (const auto& prm : params.kids) pre.push_back({prm->text, prm->kids.empty() ? "" : prm->kids[0]->text});
+            for (const auto& prm : params.kids) pre.push_back({prm->text, param_hint_text(*prm)});
             pend(s, body, pre);
         }
         proto->nslots = s.count;
         scopes_.push_back(std::move(s));
+        // Omitted arguments are filled here, each default seeing only the
+        // parameters before it. A passed argument skips that default.
+        size_t si = fns_.back().scope_base;
+        for (size_t i = 0; i < params.kids.size(); ++i) {
+            const Ast* def = param_default(*params.kids[i]);
+            if (!def) continue;
+            int slot = scopes_[si].names[params.kids[i]->text];
+            struct RestoreNames {
+                std::vector<CScope>& scopes;
+                size_t si;
+                std::vector<std::pair<std::string, int>> hidden;
+                RestoreNames(std::vector<CScope>& scopes, size_t si) : scopes(scopes), si(si) {}
+                ~RestoreNames() {
+                    for (const auto& h : hidden) scopes[si].names[h.first] = h.second;
+                }
+            } restore(scopes_, si);
+            for (size_t j = i; j < params.kids.size(); ++j) {
+                auto it = scopes_[si].names.find(params.kids[j]->text);
+                if (it == scopes_[si].names.end()) continue;
+                restore.hidden.push_back(*it);
+                scopes_[si].names.erase(it);
+            }
+            size_t jmp = emit(Op::JumpIfProvided, 0, static_cast<int>(i), def);
+            expr(*def);
+            std::string hint = param_hint_text(*params.kids[i]);
+            if (!hint.empty())
+                emit(Op::CheckType, str(hint),
+                     str(n.text + "() argument '" + params.kids[i]->text + "' must be"), def);
+            emit(Op::Store, 0, slot, def);
+            patch(jmp, here());
+        }
         // A hinted parameter that a later `let` re-hints starts its hint slot.
-        for (const auto& prm : params.kids)
-            if (!prm->kids.empty()) set_hint(prm->text, prm->kids[0]->text);
+        for (const auto& prm : params.kids) {
+            std::string hint = param_hint_text(*prm);
+            if (!hint.empty()) set_hint(prm->text, hint);
+        }
         if (body.kind == Node::Block) {
             for (const auto& st : body.kids) stmt(*st);
             if (op_hint(n).empty()) {
@@ -878,8 +933,9 @@ private:
         const Function& f = *callee.as<std::shared_ptr<Function>>();
         if (!f.proto) fail_at(*in.at, "cannot call a function made outside the VM");
         const Proto& p = *static_cast<const Proto*>(f.proto);
-        if (args.size() != static_cast<size_t>(p.nparams))
-            fail_at(*in.at, op_arity_message(f.name, static_cast<size_t>(p.nparams), args.size()));
+        if (args.size() < static_cast<size_t>(p.nrequired) || args.size() > static_cast<size_t>(p.nparams))
+            fail_at(*in.at, op_arity_range(f.name, static_cast<size_t>(p.nrequired), static_cast<size_t>(p.nparams),
+                                           args.size()));
         gc_maybe();
         if (depth_ >= kMaxCallDepth)
             fail_at(*in.at, "too much recursion (more than " + std::to_string(kMaxCallDepth) + " calls deep)");
@@ -887,6 +943,7 @@ private:
             if (!p.param_hints[i].empty())
                 op_check_type(*in.at, p.param_hints[i], args[i], f.name + "() argument '" + p.node->kids[0]->kids[i]->text + "' must be");
         auto scope = new_scope(p.nslots, std::static_pointer_cast<Scope>(f.vm_scope));
+        scope->argc = static_cast<int>(args.size());
         for (size_t i = 0; i < args.size(); ++i) scope->slots[i] = std::move(args[i]);
         ++depth_;
         struct Guard { int& d; ~Guard() { --d; } } guard{depth_};
@@ -912,6 +969,7 @@ private:
             spare_.pop_back();
             s->slots.resize(static_cast<size_t>(n));
             s->parent = std::move(parent);
+            s->argc = -1;
             return s;
         }
         return std::make_shared<Scope>(n, std::move(parent));
@@ -1160,6 +1218,9 @@ private:
                     break;
                 case Op::JumpIfTrueKeep:
                     if (st.back().as<bool>()) ip = static_cast<size_t>(in.a);
+                    break;
+                case Op::JumpIfProvided:
+                    if (sc->argc > in.b) ip = static_cast<size_t>(in.a);
                     break;
                 case Op::Binary: binary(in, st, sc.get(), globals_, defined_); break;
                 case Op::Unary: st.back() = op_unary(*in.at, st.back()); break;

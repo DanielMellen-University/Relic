@@ -216,16 +216,16 @@ Adding `--require` exposed the following gaps. Temporary mistake probes on
 interpreter and compiled output. The strict-bool mistake `if strings.trim(value)`
 already explained that it received a string; it needed no diagnostic change.
 
-- Default parameters are unavailable, so existing `summarize` callers now pass
-  `[]` explicitly. The vague `expected ')'` diagnostic is fixed by `syn_default_param`.
+- Fixed: a parameter can have a default, so `summarize` takes
+  `required as list = []`. A caller can omit that list. The default is
+  evaluated fresh on each call that omits it.
 
   ```relic
-  fun summarize(text, required = [])
-      return required
+  fun summarize(text as string, delimiter as string, key as string, required as list = []) as map
   ```
 
-- Negated membership in a block header reports only `expected end of line before
-  the block, got 'not'`. It lacks the expression-statement hint; use `not (value in required)`.
+- Fixed: `not in` has the same precedence as `in` and works in a block header.
+  `main.relic` uses it when collecting `--require` names.
 
   ```relic
   let required = []

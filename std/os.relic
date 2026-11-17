@@ -5,6 +5,18 @@ fun env(name) = host_env(name)    # a string, or none when not set
 fun cwd() = host_cwd()            # current folder, with "/" separators
 fun exit(code) = host_exit(code)  # stops the program now with this exit code
 
+# The path of this executable. A program can pass it to run to start itself.
+fun program() = host_program()
+
+# run(argv, cwd, stdin, env): start a program and wait for it.
+# argv is the program and its arguments, a list of strings, not a shell line.
+# cwd is the working folder, or "" to stay here. stdin is the bytes fed to the
+# program ("" is empty input, not the terminal). env adds variables; the
+# program also sees the ones this process has. Returns a map with code (the
+# exit code), out and err (the bytes written). On Linux and macOS the system
+# keeps only the low 8 bits of the exit code, as os.exit does.
+fun run(argv, cwd, stdin, env) = host_run(argv, cwd, stdin, env)
+
 # Standard input. Both give the next line without its line end ("\n" or "\r\n"),
 # or none at the end of the input. prompt(text) shows text first, but only when
 # stdin is a terminal (nothing is shown into a pipe or from a file).

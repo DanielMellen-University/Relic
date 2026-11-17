@@ -1,0 +1,230 @@
+# Golden comparison, in Relic. ctest runs this program, compiled to C:
+#   golden_runner [--cgen] EXE TEST
+# TEST is tests/golden/name.relic (or a compiled-only program). EXE is relic,
+# or the program compiled from TEST when --cgen is set.
+# Same checks as the old CMake runner: stdout against name.out, or stderr
+# bytes against name.err (exit 1) for an error test. Line endings of \r\n
+# become \n. Error text loses the test folder's path, with / or \. --cgen
+# also sets RELIC_LEAK_CHECK on the child, skips on "cgen-skip: ", and fails
+# a leak. A REPL test (repl_*.relic) is typed into EXE on stdin.
+use std/os
+use std/files
+use std/strings
+
+fun die(msg)
+    eprint(msg)
+    os.exit(1)
+
+fun emit(s)
+    if len(s) > 0 and s[len(s) - 1] == "\n"
+        print(slice(s, 0, len(s) - 1))
+    else
+        print(s)
+
+fun parent_dir(path)
+    let cut = -1
+    let i = 0
+    for c in path
+        if c == "/" or c == "\\"
+            cut = i
+        i = i + 1
+    if cut < 0
+        return ""
+    if cut == 0
+        return slice(path, 0, 1)
+    return slice(path, 0, cut)
+
+fun base_name(path)
+    let dir = parent_dir(path)
+    let b = path
+    if dir != ""
+        let skip = len(dir)
+        if skip < len(path) and (path[skip] == "/" or path[skip] == "\\")
+            skip = skip + 1
+        b = slice(path, skip, len(path))
+    if len(b) >= 6 and slice(b, len(b) - 6, len(b)) == ".relic"
+        return slice(b, 0, len(b) - 6)
+    return b
+
+fun sibling(dir, name, ext)
+    let file = name + ext
+    if dir == ""
+        return file
+    let last = dir[len(dir) - 1]
+    if last == "/" or last == "\\"
+        return dir + file
+    if not ("/" in dir) and "\\" in dir
+        return dir + "\\" + file
+    return dir + "/" + file
+
+fun norm(s)
+    return strings.replace(s, "\u{d}\n", "\n")
+
+fun has_nul(s)
+    return chr(0) in s
+
+fun strip_dir(s, dir)
+    if dir == ""
+        return s
+    let fwd = strings.replace(dir, "\\", "/")
+    let back = strings.replace(dir, "/", "\\")
+    s = strings.replace(s, fwd + "/", "")
+    s = strings.replace(s, back + "\\", "")
+    s = strings.replace(s, dir + "/", "")
+    s = strings.replace(s, dir + "\\", "")
+    return s
+
+fun hex_byte(n)
+    let digits = "0123456789abcdef"
+    let hi = int(n / 16)
+    let lo = n - hi * 16
+    return digits[hi] + digits[lo] + ";"
+
+fun utf8_hex(cp)
+    if cp < 128
+        return hex_byte(cp)
+    if cp < 2048
+        let hi = int(cp / 64)
+        return hex_byte(192 + hi) + hex_byte(128 + (cp - hi * 64))
+    if cp < 65536
+        let b0 = int(cp / 4096)
+        let rest = cp - b0 * 4096
+        let b1 = int(rest / 64)
+        return hex_byte(224 + b0) + hex_byte(128 + b1) + hex_byte(128 + (rest - b1 * 64))
+    let b0 = int(cp / 262144)
+    let rest = cp - b0 * 262144
+    let b1 = int(rest / 4096)
+    rest = rest - b1 * 4096
+    let b2 = int(rest / 64)
+    return hex_byte(240 + b0) + hex_byte(128 + b1) + hex_byte(128 + b2) + hex_byte(128 + (rest - b2 * 64))
+
+fun hex_of(s)
+    let parts = []
+    for c in s
+        if host_byte_len(c) == 1
+            append(parts, hex_byte(ord(c)))
+        else
+            append(parts, utf8_hex(ord(c)))
+    return strings.join(parts, "")
+
+# First character index where a and b differ, or the length of the shorter
+# one when one is a prefix of the other. Binary search, so a long mismatch
+# does not walk the text from the start at every character.
+fun diff_at(a, b)
+    let n = len(a)
+    if len(b) < n
+        n = len(b)
+    let lo = 0
+    let hi = n
+    while lo < hi
+        let mid = lo + int((hi - lo) / 2)
+        if slice(a, 0, mid + 1) == slice(b, 0, mid + 1)
+            lo = mid + 1
+        else
+            hi = mid
+    return lo
+
+fun mismatch(name, kind, want, got)
+    if has_nul(want) or has_nul(got)
+        let title = kind + " mismatch"
+        if kind == "stderr"
+            title = "binary stderr mismatch"
+        die(name + ": " + title + "\n--- want bytes\n" + hex_of(want) + "\n--- got bytes\n" + hex_of(got))
+    let at = diff_at(want, got)
+    die(name + ": " + kind + " mismatch\nfirst difference at character " + str(at) + " (want " + str(len(want)) + " characters, got " + str(len(got)) + ")\n--- want\n" + want + "--- got\n" + got)
+
+fun read_opt(path)
+    if files.exists(path)
+        return norm(files.read(path))
+    return none
+
+let argv0 = os.args()
+let cgen = false
+let i = 0
+if len(argv0) > 0 and argv0[0] == "--cgen"
+    cgen = true
+    i = 1
+if len(argv0) - i != 2
+    die("usage: golden_runner [--cgen] EXE TEST")
+let exe = argv0[i]
+let test = argv0[i + 1]
+let dir = parent_dir(test)
+let name = base_name(test)
+let repl = strings.starts_with(name, "repl_")
+
+# The host is `relic FILE`. A program already compiled from FILE is run with
+# no path argument: its source is inside the executable, and args() stays empty.
+let cmd = [exe]
+if not cgen and not repl
+    let args_text = read_opt(sibling(dir, name, ".args"))
+    if args_text != none
+        for w in strings.words(args_text)
+            append(cmd, w)
+    append(cmd, test)
+let input = ""
+if repl
+    input = files.read(test)
+else
+    let in_text = read_opt(sibling(dir, name, ".in"))
+    if in_text != none
+        input = in_text
+    else
+        input = ""
+
+# .in is kept byte for byte (CRLF included). read_opt normalized it, so read
+# the file again raw when it exists.
+if not repl
+    let in_path = sibling(dir, name, ".in")
+    if files.exists(in_path)
+        input = files.read(in_path)
+
+let env = {}
+if cgen
+    env["RELIC_LEAK_CHECK"] = "1"
+
+let ran = none
+try
+    ran = os.run(cmd, dir, input, env)
+catch e
+    die(name + ": " + e.message)
+
+let out = norm(ran.out)
+let err = norm(ran.err)
+let code = ran.code
+
+if cgen and strings.starts_with(out, "cgen-skip: ")
+    emit(out)
+    os.exit(0)
+if cgen and code == 3 and "leak: " in err
+    die(name + ": leaked values\n" + err)
+
+if repl
+    let want_out = read_opt(sibling(dir, name, ".out"))
+    if want_out == none
+        want_out = ""
+    if out != want_out
+        mismatch(name, "stdout", want_out, out)
+    let want_err = read_opt(sibling(dir, name, ".err"))
+    if want_err != none
+        if strip_dir(err, dir) != want_err
+            mismatch(name, "stderr", want_err, strip_dir(err, dir))
+    else if err != ""
+        mismatch(name, "stderr", "", err)
+    os.exit(0)
+
+let want_err = read_opt(sibling(dir, name, ".err"))
+if want_err != none
+    let got = strip_dir(err, dir)
+    if code != 1
+        die(name + ": expected an error and exit 1, got exit " + str(code))
+    if got != want_err
+        mismatch(name, "stderr", want_err, got)
+    os.exit(0)
+
+let want_out = read_opt(sibling(dir, name, ".out"))
+if want_out == none
+    want_out = ""
+if code != 0
+    die(name + ": exit " + str(code) + "\n" + err)
+if out != want_out
+    mismatch(name, "stdout", want_out, out)

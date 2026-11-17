@@ -1,0 +1,3 @@
+rt_default_hint.relic:1:21: error: take() argument 'n' must be int, got string
+    fun take(n as int = "x")
+                        ^

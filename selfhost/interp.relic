@@ -756,21 +756,25 @@ fun binop(rt, n, a, b)
         return equal(a, b)
     if op == "!="
         return not equal(a, b)
-    if op == "in"
+    if op == "in" or op == "not in"
+        let hit = false
         if tb == "list"
             for x in b
                 if equal(a, x)
-                    return true
-            return false
-        if tb == "map"
+                    hit = true
+        else if tb == "map"
             if ta != "string"
                 return fail(rt, n, "map keys must be strings, got " + type_of(a))
-            return a in b
-        if tb == "string"
+            hit = a in b
+        else if tb == "string"
             if ta != "string"
                 return fail(rt, n, "can only look for a string inside a string")
-            return a in b
-        return fail(rt, n, "cannot look inside " + a_type(b))
+            hit = a in b
+        else
+            return fail(rt, n, "cannot look inside " + a_type(b))
+        if op == "not in"
+            return not hit
+        return hit
     if op == "+"
         if is_num(ta) and is_num(tb)
             return math(rt, n, op, a, b)
@@ -817,6 +821,41 @@ fun plural(n)
         return ""
     return "s"
 
+fun arity_message(name, need, got)
+    return "{name}() takes {need} argument{plural(need)}, got {got}"
+
+# least == most keeps the exact message. A function whose every parameter
+# has a default says "at most".
+fun arity_range(name, least, most, got)
+    if least == most
+        return arity_message(name, least, got)
+    if least == 0
+        return "{name}() takes at most {most} argument{plural(most)}, got {got}"
+    return "{name}() takes {least} to {most} arguments, got {got}"
+
+# A parameter's `as` hint, or "". The hint is the first kid when it is a Type.
+fun param_hint(p)
+    if len(p.kids) > 0 and p.kids[0].kind == "Type"
+        return p.kids[0].text
+    return ""
+
+# The default expression, or none. It is the last kid, and it is not a Type.
+fun param_default(p)
+    if len(p.kids) == 0
+        return none
+    let last = p.kids[len(p.kids) - 1]
+    if last.kind == "Type"
+        return none
+    return last
+
+fun required_count(params)
+    let n = 0
+    for p in params
+        if param_default(p) != none
+            return n
+        n = n + 1
+    return n
+
 # An error leaving std into user code is reported at the user's call, with
 # "host_x(): " renamed to the std function the user called.
 fun in_std(file)
@@ -849,6 +888,7 @@ fun std_boundary(rt, f, caller_file, n)
 #   [k_try, node, env, depth, nvals]     the try part is running above it
 #   [k_call, fun, caller_file, call]     a function body is running above it
 #   [k_module, mod, caller_file, use, env]  a module body is running above it
+#   [k_defaults, fun, scope, index]      the next omitted default, then the body
 # The rest are popped when they run: x_eval looks at a node and pushes the
 # frames for its parts, the others take their parts' values from vals.
 # A return unwinds to the nearest k_call, break and next to the nearest loop
@@ -860,6 +900,7 @@ let k_for = 2
 let k_try = 3
 let k_call = 4
 let k_module = 5
+let k_defaults = 6
 let x_eval = 10
 let x_binary = 11
 let x_call = 12
@@ -881,6 +922,7 @@ let x_while = 27
 let x_for = 28
 let x_return = 29
 let x_method = 30
+let x_bind_default = 31
 
 # A value no built-in returns as an error: host_read_line must wait for a line.
 let wait_mark = {wait: true}
@@ -1097,6 +1139,17 @@ fun machine(rt, st, vals)
             else if step == x_return
                 rt.flow_node = m
                 flow_out(rt, st, vals, flow_return, pop(vals))
+            else if step == x_bind_default
+                let v = pop(vals)
+                let prm = m
+                let scope = fr[2]
+                let hint = param_hint(prm)
+                if hint != ""
+                    check_type(rt, fr[3], hint, v, "{fr[4]}() argument '{prm.text}' must be")
+                    if rt.err == none
+                        scope.hints[prm.text] = hint
+                if rt.err == none
+                    scope.vars[prm.text] = v
             else if step == x_assign
                 let t = m.kids[0]
                 let idx = none
@@ -1227,6 +1280,19 @@ fun machine(rt, st, vals)
                 use_module(rt, st, n, en)
             else
                 fail(rt, n, "cannot run a " + k + " here")
+        else if step == k_defaults
+            let f = fr[1]
+            let scope = fr[2]
+            let i = fr[3]
+            let params = f.node.kids[0].kids
+            if i >= len(params)
+                pop(st)
+                start_body(st, f, scope)
+            else
+                let prm = params[i]
+                fr[3] = i + 1
+                append(st, [x_bind_default, prm, scope, param_default(prm), f.name])
+                append(st, [x_eval, param_default(prm), scope])
         else if step == k_call
             # The body ended without a return.
             let body = fr[1].node.kids[1]
@@ -1259,30 +1325,40 @@ fun machine(rt, st, vals)
         return vals[0]
     return none
 
-# A user function call: checks, then a k_call frame and its body on top.
-fun enter(rt, st, f, argv, n)
-    let params = f.node.kids[0].kids
-    if len(argv) != len(params)
-        return fail(rt, n, "{f.name}() takes {len(params)} argument{plural(len(params))}, got {len(argv)}")
-    if rt.depth >= max_depth
-        return fail(rt, n, "too much recursion (more than {max_depth} calls deep)")
-    let scope = new_env(f.closure)
-    for i in 0..len(argv)
-        let prm = params[i]
-        if len(prm.kids) > 0
-            check_type(rt, n, prm.kids[0].text, argv[i], "{f.name}() argument '{prm.text}' must be")
-            if rt.err != none
-                return none
-            scope.hints[prm.text] = prm.kids[0].text
-        scope.vars[prm.text] = argv[i]
-    rt.depth = rt.depth + 1
-    append(st, [k_call, f, rt.file, n])
-    rt.file = f.file
+# The function body goes on the stack above its k_call frame.
+fun start_body(st, f, scope)
     let body = f.node.kids[1]
     if body.kind == "Block"
         append(st, [k_block, body, scope, 0])
     else
         append(st, [x_eval, body, scope])
+
+# A user function call: checks, then a k_call frame and its body on top.
+# Omitted arguments are filled by k_defaults, one fresh evaluation each call.
+fun enter(rt, st, f, argv, n)
+    let params = f.node.kids[0].kids
+    let least = required_count(params)
+    if len(argv) < least or len(argv) > len(params)
+        return fail(rt, n, arity_range(f.name, least, len(params), len(argv)))
+    if rt.depth >= max_depth
+        return fail(rt, n, "too much recursion (more than {max_depth} calls deep)")
+    let scope = new_env(f.closure)
+    for i in 0..len(argv)
+        let prm = params[i]
+        let hint = param_hint(prm)
+        if hint != ""
+            check_type(rt, n, hint, argv[i], "{f.name}() argument '{prm.text}' must be")
+            if rt.err != none
+                return none
+            scope.hints[prm.text] = hint
+        scope.vars[prm.text] = argv[i]
+    rt.depth = rt.depth + 1
+    append(st, [k_call, f, rt.file, n])
+    rt.file = f.file
+    if len(argv) < len(params)
+        append(st, [k_defaults, f, scope, len(argv)])
+    else
+        start_body(st, f, scope)
 
 # The k_call frame on top gets its result: the return hint is checked (an
 # error leaves the frame for unwind_error), then the frame goes.

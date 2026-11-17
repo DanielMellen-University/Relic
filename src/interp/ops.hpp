@@ -48,6 +48,9 @@ void op_std_boundary(RuntimeError& e, const std::string& callee_file, const std:
 // distance, or "". Ties go to the alphabetically first name.
 std::string op_suggest(const std::string& name, const std::vector<std::string>& candidates);
 std::string op_arity_message(const std::string& name, size_t want, size_t got);
+// least == most keeps the exact message. Otherwise a range, or "at most"
+// when every parameter has a default.
+std::string op_arity_range(const std::string& name, size_t least, size_t most, size_t got);
 
 // Modules: the file a `use` path names, seen from the importing file, and the
 // key that identifies a file in the module cache.

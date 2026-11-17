@@ -1,0 +1,3 @@
+rt_default_later_param.relic:1:11: error: 'b' is not defined
+    fun f(a = b, b = 1)
+              ^

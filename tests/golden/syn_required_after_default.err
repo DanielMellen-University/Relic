@@ -1,0 +1,4 @@
+syn_required_after_default.relic:1:14: error: parameter 'b' has no default, but 'a' before it does
+    fun f(a = 1, b)
+                 ^
+hint: put parameters without defaults first

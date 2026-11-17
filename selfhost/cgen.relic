@@ -75,7 +75,7 @@ fun unsupported(cg, n, what)
     if cg.bad == none
         cg.bad = {file: cg.cur_file, line: n.line, col: n.col, what: what}
 
-let builtin_names = ["print", "eprint", "len", "append", "str", "keys", "fail", "gc", "type", "slice", "ord", "chr", "num", "int", "float", "pop", "insert", "remove", "args", "host_args", "host_read_file", "host_write_file", "host_file_exists", "host_clock", "host_now", "host_floor", "host_sqrt", "host_sin", "host_cos", "host_exp", "host_log", "host_pow", "host_list_dir", "host_is_dir", "host_make_dir", "host_remove", "host_rename", "host_file_size", "host_cwd", "host_env", "host_read_line", "host_exit", "host_sleep", "host_byte_len", "host_same", "host_find", "host_sort", "host_std_root", "host_names", "host_call", "host_gfx_available", "host_gfx_has_png", "host_gfx_has_fonts", "host_gfx_open", "host_gfx_close", "host_gfx_clear", "host_gfx_rect", "host_gfx_pixel", "host_gfx_present", "host_gfx_quit_requested", "host_gfx_wait", "host_gfx_key_down", "host_gfx_next_key", "host_gfx_mouse_x", "host_gfx_mouse_y", "host_gfx_mouse_down", "host_gfx_text", "host_gfx_image_load", "host_gfx_image", "host_gfx_image_width", "host_gfx_image_height", "host_gfx_font_load", "host_gfx_font_text", "host_gfx_font_size", "host_gfx_next_event", "host_gfx_simulate", "host_gfx_size", "host_gfx_line", "host_gfx_outline", "host_gfx_rect_alpha", "host_gfx_clip", "host_gfx_canvas", "host_gfx_draw_to", "host_gfx_title", "host_gfx_set_title", "host_gfx_window_size", "host_gfx_set_window_size", "host_gfx_scale", "host_gfx_fullscreen", "host_gfx_set_fullscreen", "host_gfx_set_cursor", "host_gfx_show_cursor", "host_gfx_cursor_visible", "host_gfx_set_vsync", "host_gfx_vsync", "host_gfx_ticks", "host_gfx_frame_time", "host_gfx_present_capped", "host_clipboard_set", "host_clipboard_get"]
+let builtin_names = ["print", "eprint", "len", "append", "str", "keys", "fail", "gc", "type", "slice", "ord", "chr", "num", "int", "float", "pop", "insert", "remove", "args", "host_args", "host_read_file", "host_write_file", "host_file_exists", "host_clock", "host_now", "host_floor", "host_sqrt", "host_sin", "host_cos", "host_exp", "host_log", "host_pow", "host_list_dir", "host_is_dir", "host_make_dir", "host_remove", "host_rename", "host_file_size", "host_cwd", "host_env", "host_read_line", "host_exit", "host_program", "host_run", "host_sleep", "host_byte_len", "host_same", "host_find", "host_sort", "host_std_root", "host_names", "host_call", "host_gfx_available", "host_gfx_has_png", "host_gfx_has_fonts", "host_gfx_open", "host_gfx_close", "host_gfx_clear", "host_gfx_rect", "host_gfx_pixel", "host_gfx_present", "host_gfx_quit_requested", "host_gfx_wait", "host_gfx_key_down", "host_gfx_next_key", "host_gfx_mouse_x", "host_gfx_mouse_y", "host_gfx_mouse_down", "host_gfx_text", "host_gfx_image_load", "host_gfx_image", "host_gfx_image_width", "host_gfx_image_height", "host_gfx_font_load", "host_gfx_font_text", "host_gfx_font_size", "host_gfx_next_event", "host_gfx_simulate", "host_gfx_size", "host_gfx_line", "host_gfx_outline", "host_gfx_rect_alpha", "host_gfx_clip", "host_gfx_canvas", "host_gfx_draw_to", "host_gfx_title", "host_gfx_set_title", "host_gfx_window_size", "host_gfx_set_window_size", "host_gfx_scale", "host_gfx_fullscreen", "host_gfx_set_fullscreen", "host_gfx_set_cursor", "host_gfx_show_cursor", "host_gfx_cursor_visible", "host_gfx_set_vsync", "host_gfx_vsync", "host_gfx_ticks", "host_gfx_frame_time", "host_gfx_present_capped", "host_clipboard_set", "host_clipboard_get"]
 let is_builtin = {}
 for b in builtin_names
     is_builtin[b] = true
@@ -299,7 +299,10 @@ fun visible_names(fc)
     while i >= 0
         let b = fc.blocks[i]
         for name in b.order
-            if not (name in seen) and name[0] != chr(1)
+            # hide_from drops a parameter from decls while its default is
+            # compiled. A name left only in order is not a candidate, and
+            # indexing decls would fail.
+            if not (name in seen) and name[0] != chr(1) and name in b.decls
                 let ok = false
                 for d in b.decls[name]
                     if d.idx < b.cur
@@ -312,7 +315,7 @@ fun visible_names(fc)
     for o in fc.outer
         let b = o.block
         for name in b.order
-            if not (name in seen) and name[0] != chr(1)
+            if not (name in seen) and name[0] != chr(1) and name in b.names
                 seen[name] = true
                 append(names, name)
                 append(slots, "&" + o.path + "->slots[" + str(b.names[name]) + "]")
@@ -560,8 +563,10 @@ fun binary_op(fc, n, dst, a)
         emit(fc, dst + " = rl_bool(rl_equal(" + a.expr + ", " + b.expr + "));")
     else if op == "!="
         emit(fc, dst + " = rl_bool(!rl_equal(" + a.expr + ", " + b.expr + "));")
-    else if op == "in"
+    else if op == "in" or op == "not in"
         check(fc, "rl_in(cx, " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
+        if op == "not in"
+            check(fc, "rl_not(cx, " + dst + ", &" + dst + ")", n)
     else
         check(fc, "rl_compare(cx, \"" + op + "\", " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
 
@@ -1026,7 +1031,11 @@ fun fun_stmt(fc, s, b)
     for o in fc.outer
         append(sub.outer, {block: o.block, cur: o.cur, path: path + slice(o.path, 1, len(o.path))})
     compile_function(sub, cname, params, body)
-    let f = "rl_fun_new(" + c_string(s.text).lit + ", " + cname + ", " + str(len(params)) + ", " + env_expr(fc) + ")"
+    let arity = len(params)
+    for p in params
+        if param_default(p) != none
+            arity = -1
+    let f = "rl_fun_new(" + c_string(s.text).lit + ", " + cname + ", " + str(arity) + ", " + env_expr(fc) + ")"
     if fc.mod.std
         f = "rl_fun_std(" + f + ", " + c_string(fc.mod.name).lit + ")"
     emit(fc, "RLC_SET(" + slot_here(b, s.text) + ", " + f + ");")
@@ -1041,32 +1050,132 @@ fun safe_name(s)
             append(out, "_")
     return strings.join(out, "")
 
+# The `as` hint on a parameter, or "". It is the first kid when that kid is a Type.
+fun param_hint(p)
+    if len(p.kids) > 0 and p.kids[0].kind == "Type"
+        return p.kids[0].text
+    return ""
+
+# The default expression, or none. It is the last kid and it is not a Type.
+fun param_default(p)
+    if len(p.kids) == 0
+        return none
+    let last = p.kids[len(p.kids) - 1]
+    if last.kind == "Type"
+        return none
+    return last
+
+# Drops parameter names from `from` on, so a default does not see itself or
+# a later parameter. names, decls and order all lose them; show_saved puts
+# the same three back. Slot numbers stored in names stay as they were
+# (order is only which names are visible). A name left in order after it
+# left decls makes visible_names fail.
+fun hide_from(b, params, from)
+    let saved = []
+    let hidden = {}
+    for i in from..len(params)
+        let name = params[i].text
+        append(saved, {name: name, at: b.names[name], decls: b.decls[name]})
+        hidden[name] = true
+        remove(b.names, name)
+        remove(b.decls, name)
+    let kept = []
+    let order = b.order
+    for name in order
+        if not (name in hidden)
+            append(kept, name)
+    b.order = kept
+    return {items: saved, order: order}
+
+fun show_saved(b, saved)
+    for s in saved.items
+        b.names[s.name] = s.at
+        b.decls[s.name] = s.decls
+    b.order = saved.order
+
+fun check_arg(fc, hint, value, name, pname)
+    if hint == ""
+        return
+    emit(fc, "if (rl_check_type(cx, \"" + hint + "\", " + value + ", " + c_string(name + "() argument '" + pname + "' must be").lit + ")) goto fail;")
+    fc.used["fail"] = true
+
+# Too few or too many arguments. The call site fills in the position, because
+# this runs before any rl_at in the function. rl_fun_new's arity is -1 so
+# rl_call does not reject the call first.
+fun arity_fail(fc, name, least, most)
+    fc.used["fail"] = true
+    let fmt = name + "() takes "
+    if least == 0
+        fmt = fmt + "at most " + str(most) + " argument"
+        if most != 1
+            fmt = fmt + "s"
+    else
+        fmt = fmt + str(least) + " to " + str(most) + " arguments"
+    fmt = fmt + ", got %d"
+    let test = "argc > " + str(most)
+    if least > 0
+        test = "argc < " + str(least) + " || " + test
+    emit(fc, "if (" + test + ") " + LB + " rl_fail(cx, " + c_string(fmt).lit + ", argc); goto fail; " + RB)
+
 # Compiles one Relic function into cg.funs.
 fun compile_function(fc, cname, params, body)
+    let has_default = false
+    let least = 0
+    let counting = true
+    for p in params
+        if param_default(p) != none
+            has_default = true
+            counting = false
+        else if counting
+            least = least + 1
     let extras = []
     let i = 0
     for p in params
-        let h = ""
-        if len(p.kids) > 0
-            h = p.kids[0].text
-        append(extras, {name: p.text, hint: h, init: "rl_retain(argv[" + str(i) + "])"})
+        append(extras, {name: p.text, hint: param_hint(p), init: "rl_retain(argv[" + str(i) + "])"})
         i = i + 1
     let stmts = []
     if body.kind == "Block"
         stmts = body.kids
     let b = open_block(fc, new_block(fc, stmts, extras), false)
-    i = 0
-    for p in params
-        if len(p.kids) > 0
-            emit(fc, "if (rl_check_type(cx, \"" + p.kids[0].text + "\", argv[" + str(i) + "], " + c_string(fc.name + "() argument '" + p.text + "' must be").lit + ")) goto fail;")
-            fc.used["fail"] = true
-        i = i + 1
-    for x in extras
-        emit(fc, "RLC_SET(" + slot_here(b, x.name) + ", " + x.init + ");")
+    if not has_default
+        i = 0
+        for p in params
+            check_arg(fc, param_hint(p), "argv[" + str(i) + "]", fc.name, p.text)
+            i = i + 1
+        for x in extras
+            emit(fc, "RLC_SET(" + slot_here(b, x.name) + ", " + x.init + ");")
+    else
+        arity_fail(fc, fc.name, least, len(params))
+        # idx -1 parameters are visible; a body `let` (idx >= 0) is not yet.
+        b.cur = 0
+        i = 0
+        for p in params
+            let h = param_hint(p)
+            let d = param_default(p)
+            let slot = slot_here(b, p.text)
+            if d == none
+                check_arg(fc, h, "argv[" + str(i) + "]", fc.name, p.text)
+                emit(fc, "RLC_SET(" + slot + ", rl_retain(argv[" + str(i) + "]));")
+            else
+                let saved = hide_from(b, params, i)
+                emit(fc, "if (argc > " + str(i) + ") " + LB)
+                check_arg(fc, h, "argv[" + str(i) + "]", fc.name, p.text)
+                emit(fc, "RLC_SET(" + slot + ", rl_retain(argv[" + str(i) + "]));")
+                emit(fc, RB + " else " + LB)
+                let t = temp(fc)
+                expr(fc, d, t)
+                if h != ""
+                    hint_check(fc, h, T(t), fc.name + "() argument '" + p.text + "' must be", d)
+                emit(fc, "RLC_SET(" + slot + ", " + T(t) + "); " + T(t) + " = rl_none();")
+                fc.nt = t
+                emit(fc, RB)
+                show_saved(b, saved)
+            i = i + 1
     # A hinted parameter that a later `let` re-hints starts its hint slot.
     for p in params
-        if len(p.kids) > 0 and p.kids[0].text != "any" and hint_name(p.text) in b.names
-            emit(fc, "RLC_SET(" + slot_here(b, hint_name(p.text)) + ", rl_retain(K[" + str(konst(fc.cg, p.kids[0].text)) + "]));")
+        let h = param_hint(p)
+        if h != "" and h != "any" and hint_name(p.text) in b.names
+            emit(fc, "RLC_SET(" + slot_here(b, hint_name(p.text)) + ", rl_retain(K[" + str(konst(fc.cg, h)) + "]));")
     if body.kind == "Block"
         block(fc, stmts, b)
         if fc.ret_hint != ""
