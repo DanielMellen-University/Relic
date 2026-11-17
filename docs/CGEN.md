@@ -50,7 +50,7 @@ relic_add_program(paint apps/paint.relic GRAPHICS)   # links relic_rt_gfx (SDL2)
 
 When the C is written again: when `relicc` changes, when `file` changes, or when any `.relic` file under the folder of `file` (subfolders too) or in Relic's `std/` changes. That is a safe superset of what the program uses, since a module is usually in the program's folder or below it. A module somewhere else (`use ../shared/util`) is not seen on its own, so list it under `DEPENDS`. A new `.relic` file is picked up at the next build (the folder is globbed with `CONFIGURE_DEPENDS`), and files inside the build folder are left out.
 
-Added to another project, Relic builds `relicc` and the runtime but leaves out its own 432 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
+Added to another project, Relic builds `relicc` and the runtime but leaves out its own 438 compiled goldens (`RELIC_CGEN_TESTS` defaults to off there). The program reads `std/` from the Relic tree it was built from; `$RELIC_STD` overrides that at run time.
 
 The generated program takes its command-line args like `relic FILE args...` does. With `RELIC_LEAK_CHECK` set in the environment it checks at exit that every container and string was freed, and exits 3 with `leak: ...` if not.
 
@@ -115,7 +115,7 @@ Modules are compiled into the same C file as the program (option 1, decided by D
 
 - While compiling, each `use` is resolved the way the host resolves it: `std/name` is `host_std_root()` plus `name.relic`, anything else is relative to the folder of the file that has the `use`. The key is the absolute path with `.` and `dir/..` folded away. A file seen before is not compiled again.
 - The main file is module 0, registered before anything runs, so a module that uses it back gets the main scope instead of running the main file twice (golden `use_main_cycle`).
-- `use` runs `rlc_use_i`. The first time, it makes the module's scope and value and runs its top level. After that, and while it is still running (a cycle), it hands out the same value, so names the module has not reached yet are not there "(yet)" (goldens `use_cycle`, `err_use_field`). A module that failed partway stays loaded as far as it got (golden `use_cache`); one with a caught syntax error stays loaded with no names (`use_parse_cache`).
+- `use` runs `rlc_use_i`. The first time, it makes the module's scope and value and runs its top level. After that, and while it is still running (a cycle), it hands out the same value, so names the module has not reached yet are not there "(yet)" (golden `use_cache`). Once the module finishes, a missing name does not say "(yet)", and a close member is suggested (goldens `err_use_field`, `err_module_suggest`). A module that failed partway stays loaded as far as it got (golden `use_cache`); one with a caught syntax error stays loaded with no names (`use_parse_cache`).
 - A missing file fails at the `use` with `cannot find module 'x' (no file x.relic)`. A module with a lex or parse error fails at the `use` with that error at its own file and position (golden `err_use_parse`).
 - A module value (`rl_module_scoped`) reads its names from the module's top-level scope, with the host's messages for private `_names` and missing ones.
 - The std boundary: a std function called from code outside `std/` that fails inside `std/` reports the error at the call, and a `host_*` message gets the std name: `files.list(): cannot list x` (goldens `err_std_name`, `std_folders`). Generated code outside `std/` calls `rl_std_boundary` after a failed call; functions defined in a std module carry their module's name (`rl_fun_std`).
@@ -136,7 +136,7 @@ Errors such as `'x' is not defined`, `'x' is not declared; use 'let x = ...'`, `
 
 Every golden program in `tests/golden/` except REPL tests (`repl_*`) and those with a `.args` file (they test CLI flags) has a ctest case `cgen_name`. At build time cgen writes `build/cgen/name.c` (with `--stub`; `relicc` in the default build, cgen on the host in a host build), CMake compiles it with the runtime's flags (`-std=c99 -Wall -Wextra -pedantic`, or `/W4` on MSVC), and `tools/golden_runner.relic --cgen` runs it in `tests/golden/` with `RELIC_LEAK_CHECK=1` and compares stdout with `name.out`, or stderr with `name.err`. A program cgen refused would show as skipped; none is today.
 
-Today: 432 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers, one per program in `examples/learn/` plus `examples/word_count.relic`, which must print the same bytes as that program's `.out`. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
+Today: 438 cases, all pass. Cases for the compiled side only can go in `tests/cgen/`, with expected output from `relic --tree` (`cgen_only_name`); there are 32: `json_deep`, nested JSON at the recursion limit, which the Relic-written interpreter would need seconds for, `long_string`, a string constant of about 75 KB, longer than MSVC takes in one C literal, and 30 `learn_*` wrappers, one per program in `examples/learn/` plus `examples/word_count.relic`, which must print the same bytes as that program's `.out`. The generated C compiles with no warnings, so CI builds it with warnings as errors. The one exception is MSVC's C4702 (unreachable code), turned off at the top of each generated file: the code after a jump to `fail:` or a `catch` label is still compiled, and that is expected. `relic_cgen_test(name file)` in the top-level `CMakeLists.txt` adds a case for any other program with a golden `.out`, and `relic_cgen_exe(name file)` just builds one.
 
 The `build`, `no-cxx` and `cgen` CI jobs build and run these with relicc, and the `host` jobs with the host. The `cgen` job does it strict (warnings as errors) on gcc and clang on Linux (with ASan, UBSan and LSan, UBSan errors fatal), clang on macOS and MSVC on Windows. `-DRELIC_CGEN_TESTS=OFF` leaves them out of a build.
 
@@ -146,13 +146,13 @@ The Relic-written front end and cgen compile to C, and the results are checked i
 
 | Test | Checks |
 |---|---|
-| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (492 today) |
+| `cgen_selfhost_lexer` | `selfhost/tokens.relic` compiled to C prints exactly what `relic --tokens` prints, for every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (498 today) |
 | `cgen_selfhost_parser` | `selfhost/ast.relic` compiled to C prints exactly what `relic --ast` prints, for the same files |
 | `cgen_fixed_point` | cgen compiled by cgen on the host (stage 1) writes, for `selfhost/cgen.relic`, exactly the C that cgen on the host (stage 0) wrote. Stage 2 is built from that same C, so it is the same program: a fixed point. It runs with the leak check on |
 
 These three need the host (`-DRELIC_BUILD_HOST=ON`). The C-only build has its own fixed point check, `bootstrap_fixed_point` (below).
 
-Stage 1 writing the same C as the host for every compiled golden is a test now, `cgen_stage1_matches_host` (below; 432 today). Checked by hand when C4 was done, with 131 compiled goldens then: `selfhost/run.relic` compiled to C ran 127 goldens (all but the REPL and `.args` ones and the four `selfhost_interp` skips) and matched the host on every one.
+Stage 1 writing the same C as the host for every compiled golden is a test now, `cgen_stage1_matches_host` (below; 438 today). Checked by hand when C4 was done, with 131 compiled goldens then: `selfhost/run.relic` compiled to C ran 127 goldens (all but the REPL and `.args` ones and the four `selfhost_interp` skips) and matched the host on every one.
 
 ## Bootstrap
 

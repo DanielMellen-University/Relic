@@ -161,7 +161,7 @@ fun set_main(rt, path)
     rt.modules[norm_path(path)] = new_module(name, rt.globals)
 
 fun new_module(name, scope)
-    return tagged({name: name, scope: scope}, "module")
+    return tagged({name: name, scope: scope, ready: false}, "module")
 
 fun last_slash(s)
     let cut = -1
@@ -457,12 +457,275 @@ fun unary_of(rt, n, v)
         return fail(rt, n, "'not' needs true or false, got " + type_of(v))
     return not v
 
+# How a call is written back in a method hint. The same rules are in
+# src/interp/interp.cpp and selfhost/cgen.relic.
+fun src_plain(s)
+    if s == ""
+        return false
+    let c0 = s[0]
+    if not (lexer.is_alpha(c0) or c0 == "_")
+        return false
+    for c in s
+        if not lexer.is_word(c)
+            return false
+    return true
+
+fun src_quote(s)
+    let q = "\""
+    for c in s
+        if c == "\n"
+            q = q + "\\n"
+        else if c == "\t"
+            q = q + "\\t"
+        else if c == "\""
+            q = q + "\\\""
+        else if c == "\\"
+            q = q + "\\\\"
+        else
+            q = q + c
+    return q + "\""
+
+fun src_atom_kind(k)
+    return k == "Name" or k == "Number" or k == "String" or k == "True" or k == "False" or k == "None" or k == "List" or k == "Map" or k == "Field" or k == "Index" or k == "Call"
+
+fun src_expr(n)
+    let k = n.kind
+    if k == "Name" or k == "Number"
+        return n.text
+    if k == "True"
+        return "true"
+    if k == "False"
+        return "false"
+    if k == "None"
+        return "none"
+    if k == "String"
+        return src_quote(n.text)
+    if k == "List"
+        return "[" + src_join(n.kids) + "]"
+    if k == "Map"
+        let s = chr(123)
+        for i in 0..len(n.kids)
+            if i > 0
+                s = s + ", "
+            let key = n.kids[i].text
+            if not src_plain(key)
+                key = src_quote(key)
+            s = s + key + ": " + src_expr(n.kids[i].kids[0])
+        return s + chr(125)
+    if k == "Field"
+        return src_atom(n.kids[0]) + "." + n.text
+    if k == "Index"
+        return src_atom(n.kids[0]) + "[" + src_expr(n.kids[1]) + "]"
+    if k == "Call"
+        return src_atom(n.kids[0]) + "(" + src_join(slice(n.kids, 1, len(n.kids))) + ")"
+    if k == "Unary"
+        if n.text == "not"
+            return "not " + src_atom(n.kids[0])
+        return "-" + src_atom(n.kids[0])
+    if k == "Binary"
+        return src_atom(n.kids[0]) + " " + n.text + " " + src_atom(n.kids[1])
+    if k == "Range"
+        return src_atom(n.kids[0]) + ".." + src_atom(n.kids[1])
+    if k == "Interp"
+        if len(n.kids) == 0
+            return "\"\""
+        let s = ""
+        for i in 0..len(n.kids)
+            if i > 0
+                s = s + " + "
+            let part = n.kids[i]
+            if part.kind == "String"
+                s = s + src_quote(part.text)
+            else
+                s = s + src_atom(part)
+        return s
+    return "?"
+
+fun src_atom(n)
+    if src_atom_kind(n.kind)
+        return src_expr(n)
+    return "(" + src_expr(n) + ")"
+
+fun src_join(nodes)
+    let s = ""
+    for i in 0..len(nodes)
+        if i > 0
+            s = s + ", "
+        s = s + src_expr(nodes[i])
+    return s
+
+fun call_inside(field, call)
+    let s = src_expr(field.kids[0])
+    for i in 1..len(call.kids)
+        s = s + ", " + src_expr(call.kids[i])
+    return s
+
+# spell(inside), at most 80 characters. A longer call keeps the first 80 and adds "...".
+# The same cut is in src/interp/interp.cpp and runtime/c/rl_ops.c.
+fun cap_call(spell, inside)
+    let text = spell + "(" + inside + ")"
+    if len(text) <= 80
+        return text
+    return slice(text, 0, 80) + "..."
+
+# Keep in step with method_spell in src/interp/interp.cpp and runtime/c/rl_ops.c.
+let method_for_list = {
+    append: "append",
+    pop: "pop",
+    insert: "insert",
+    remove: "remove",
+    slice: "slice",
+    len: "len",
+    map: "lists.map",
+    filter: "lists.filter",
+    reduce: "lists.reduce",
+    sum: "lists.sum",
+    index_of: "lists.index_of",
+    contains: "lists.contains",
+    unique: "lists.unique",
+    any: "lists.any",
+    all: "lists.all",
+    flatten: "lists.flatten",
+    zip: "lists.zip",
+    count: "lists.count",
+    chunk: "lists.chunk",
+    find: "lists.find",
+    find_index: "lists.find_index",
+    take: "lists.take",
+    drop: "lists.drop",
+    partition: "lists.partition",
+    product: "lists.product",
+    group_by: "lists.group_by",
+    count_by: "lists.count_by",
+    min: "lists.min",
+    max: "lists.max",
+    min_by: "lists.min_by",
+    max_by: "lists.max_by",
+    last: "lists.last",
+    windows: "lists.windows",
+    mean: "lists.mean",
+    rotate: "lists.rotate",
+    sum_by: "lists.sum_by",
+    reverse: "lists.reverse",
+    copy: "lists.copy",
+    sort_by: "lists.sort_by",
+    sort: "lists.sort",
+    join: "strings.join",
+    from_items: "maps.from_items"
+}
+let method_for_map = {
+    keys: "keys",
+    remove: "remove",
+    len: "len",
+    values: "maps.values",
+    items: "maps.items",
+    get: "maps.get",
+    merge: "maps.merge",
+    drop: "maps.drop",
+    invert: "maps.invert",
+    map_values: "maps.map_values",
+    filter: "maps.filter",
+    pick: "maps.pick",
+    find_key: "maps.find_key",
+    has_value: "maps.has_value"
+}
+let method_for_string = {
+    slice: "slice",
+    len: "len",
+    ord: "ord",
+    find: "strings.find",
+    contains: "strings.contains",
+    starts_with: "strings.starts_with",
+    ends_with: "strings.ends_with",
+    upper: "strings.upper",
+    lower: "strings.lower",
+    is_space: "strings.is_space",
+    is_digits: "strings.is_digits",
+    is_alpha: "strings.is_alpha",
+    remove_prefix: "strings.remove_prefix",
+    remove_suffix: "strings.remove_suffix",
+    words: "strings.words",
+    trim: "strings.trim",
+    trim_start: "strings.trim_start",
+    trim_end: "strings.trim_end",
+    split: "strings.split",
+    replace: "strings.replace",
+    count: "strings.count",
+    find_last: "strings.find_last",
+    reverse: "strings.reverse",
+    lines: "strings.lines",
+    repeat: "strings.repeat",
+    pad_left: "strings.pad_left",
+    pad_right: "strings.pad_right",
+    center: "strings.center",
+    capitalize: "strings.capitalize",
+    truncate: "strings.truncate",
+    is_upper: "strings.is_upper",
+    is_lower: "strings.is_lower",
+    map: "lists.map",
+    filter: "lists.filter",
+    reduce: "lists.reduce",
+    sum: "lists.sum",
+    index_of: "lists.index_of",
+    unique: "lists.unique",
+    any: "lists.any",
+    all: "lists.all",
+    flatten: "lists.flatten",
+    zip: "lists.zip",
+    chunk: "lists.chunk",
+    find_index: "lists.find_index",
+    take: "lists.take",
+    drop: "lists.drop",
+    partition: "lists.partition",
+    product: "lists.product",
+    group_by: "lists.group_by",
+    count_by: "lists.count_by",
+    min: "lists.min",
+    max: "lists.max",
+    min_by: "lists.min_by",
+    max_by: "lists.max_by",
+    last: "lists.last",
+    windows: "lists.windows",
+    mean: "lists.mean",
+    rotate: "lists.rotate",
+    sum_by: "lists.sum_by",
+    copy: "lists.copy",
+    sort_by: "lists.sort_by",
+    sort: "lists.sort"
+}
+
+fun method_spell(t, name)
+    let table = none
+    if t == "list"
+        table = method_for_list
+    else if t == "string"
+        table = method_for_string
+    else if t == "map"
+        table = method_for_map
+    else
+        return ""
+    if name in table
+        return table[name]
+    return ""
+
+fun module_members(obj)
+    let names = []
+    for name in keys(obj.scope.vars)
+        if name != "" and name[0] != "_"
+            append(names, name)
+    return names
+
+fun module_missing(rt, n, obj)
+    if obj.ready
+        return fail(rt, n, "module '{obj.name}' has no '{n.text}'" + suggest(n.text, module_members(obj)))
+    return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
+
 fun field_of(rt, n, obj)
     if type_of(obj) == "module"
         if len(n.text) > 0 and n.text[0] == "_"
             return fail(rt, n, "'{n.text}' is private to module '{obj.name}'")
         if not (n.text in obj.scope.vars)
-            return fail(rt, n, "module '{obj.name}' has no '{n.text}' (yet)")
+            return module_missing(rt, n, obj)
         return obj.scope.vars[n.text]
     if type_of(obj) != "map"
         return fail(rt, n, "cannot read a field of " + a_type(obj))
@@ -666,7 +929,8 @@ let x_if = 26
 let x_while = 27
 let x_for = 28
 let x_return = 29
-let x_bind_default = 30
+let x_method = 30
+let x_bind_default = 31
 
 # A value no built-in returns as an error: host_read_line must wait for a line.
 let wait_mark = {wait: true}
@@ -713,6 +977,10 @@ fun machine(rt, st, vals)
                             append(vals, e.vars[a.text])
                         else
                             append(st, [x_eval, a, en])
+                else if mk == "Call" and m.kids[0].kind == "Field"
+                    # The receiver runs before the arguments, as on the host.
+                    append(st, [x_method, m, en])
+                    append(st, [x_eval, m.kids[0].kids[0], en])
                 else if mk == "Call"
                     # Leading names and strings (the callee, simple arguments)
                     # are read now, with no frame; the rest get frames.
@@ -818,6 +1086,26 @@ fun machine(rt, st, vals)
                     enter(rt, st, callee, argv, m)
             else if step == x_drop
                 pop(vals)
+            else if step == x_method
+                let obj = pop(vals)
+                let field = m.kids[0]
+                let spelled = method_spell(type_of(obj), field.text)
+                let missing_map = type_of(obj) == "map" and not (field.text in obj)
+                if spelled != "" and (type_of(obj) == "list" or type_of(obj) == "string" or missing_map)
+                    let shown = cap_call(spelled, call_inside(field, m))
+                    if missing_map
+                        fail(rt, field, "map has no key '{field.text}' (write {shown})")
+                    else
+                        fail(rt, field, "cannot read a field of " + a_type(obj) + " (write {shown})")
+                else
+                    let got = field_of(rt, field, obj)
+                    if rt.err == none
+                        append(vals, got)
+                        append(st, [x_call, m])
+                        let j = len(m.kids) - 1
+                        while j >= 1
+                            append(st, [x_eval, m.kids[j], fr[2]])
+                            j = j - 1
             else if step == x_field
                 append(vals, field_of(rt, m, pop(vals)))
             else if step == x_index
@@ -1036,7 +1324,8 @@ fun machine(rt, st, vals)
             # the try part ended without an error
             pop(st)
         else
-            # k_module: the module's body ended
+            # k_module: the module's body ended, so a missing name is not "(yet)"
+            fr[1].ready = true
             pop(st)
             rt.file = fr[2]
             bind_module(fr[3], fr[4], fr[1])

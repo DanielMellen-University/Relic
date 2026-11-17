@@ -1,0 +1,15 @@
+# A method hint quotes the call. At 80 characters the call is kept whole.
+# One character past that, and a call cut on a non-ASCII character, keep 80 and add '...'.
+let xs = [1]
+try
+    xs.append("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+catch e
+    print("exact", e.message)
+try
+    xs.append("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+catch e
+    print("over", e.message)
+try
+    xs.append("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaézz")
+catch e
+    print("utf8", e.message)

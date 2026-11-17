@@ -30,6 +30,7 @@ enum class Op {
     ForPrep, ForNext, ForRangePrep, ForRangeNext, Fail, Use, TryBegin, TryEnd, CheckType,
     LoadLate, StoreLate, Mark,
     SetHintGlobal, CheckHint, CheckHintGlobal, SkipUnlessLate, RangeStart,
+    Method,
     JumpIfProvided,  // a = target, b = parameter index; skip when that argument was passed
 };
 
@@ -44,6 +45,7 @@ const char* op_name(Op o) {
         "FOR_PREP", "FOR_NEXT", "FOR_RANGE_PREP", "FOR_RANGE_NEXT", "FAIL", "USE", "TRY_BEGIN", "TRY_END", "CHECK_TYPE",
         "LOAD_LATE", "STORE_LATE", "MARK",
         "SET_HINT_GLOBAL", "CHECK_HINT", "CHECK_HINT_GLOBAL", "SKIP_UNLESS_LATE", "RANGE_START",
+        "METHOD",
         "JUMP_IF_PROVIDED",
     };
     return names[static_cast<int>(o)];
@@ -804,6 +806,15 @@ private:
                 emit(Op::Binary, binop_code(n.text), 0, &n);
                 return;
             case Node::Call:
+                // obj.name(args) checks the receiver before the arguments run,
+                // so a method-style mistake does not run the arguments.
+                if (!n.kids.empty() && n.kids[0]->kind == Node::Field) {
+                    expr(*n.kids[0]->kids[0]);
+                    emit(Op::Method, 0, 0, &n);
+                    for (size_t i = 1; i < n.kids.size(); ++i) expr(*n.kids[i]);
+                    emit(Op::Call, static_cast<int>(n.kids.size() - 1), 0, &n);
+                    return;
+                }
                 for (const auto& k : n.kids) expr(*k);
                 emit(Op::Call, static_cast<int>(n.kids.size() - 1), 0, &n);
                 return;
@@ -900,6 +911,11 @@ private:
         } catch (RuntimeError& e) {
             if (e.file.empty()) e.file = file;
             throw;
+        }
+        p->value->ready = true;
+        for (size_t i = 0; i < p->global_names.size(); ++i) {
+            const std::string& name = p->global_names[i];
+            if (p->defined[i] && !name.empty() && name[0] != '_') p->value->members.push_back(name);
         }
         return Value(p->value);
     }
@@ -1215,6 +1231,7 @@ private:
                     break;
                 }
                 case Op::Field: st.back() = op_field(*in.at, st.back()); break;
+                case Op::Method: st.back() = op_method(*in.at, st.back()); break;
                 case Op::Index: {
                     Value idx = pop();
                     st.back() = op_index(*in.at, st.back(), idx);

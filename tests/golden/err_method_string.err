@@ -1,0 +1,3 @@
+err_method_string.relic:3:5: error: cannot read a field of a string (write strings.trim(text))
+    text.trim()
+        ^

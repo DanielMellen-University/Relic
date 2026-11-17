@@ -88,6 +88,11 @@ struct Module {
     std::shared_ptr<Env> scope;  // tree-walker modules
     // VM modules: finds a top-level name, or null if it is not defined yet.
     std::function<const Value*(const std::string&)> lookup;
+    // Set once the module's top level has finished. Until then a missing name
+    // is "(yet)": the file may still define it. VM modules also snapshot the
+    // public names that exist at that point, for "did you mean".
+    bool ready = false;
+    std::vector<std::string> members;
 };
 
 struct NoneV {};

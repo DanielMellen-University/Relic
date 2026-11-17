@@ -318,6 +318,10 @@ endif() # RELIC_BUILD_HOST
 add_test(NAME doc_counts
   COMMAND ${CMAKE_COMMAND} -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_doc_counts.cmake)
 
+# The three copies of the method-hint table agree, and each entry names a real function.
+add_test(NAME method_hint_tables
+  COMMAND ${CMAKE_COMMAND} -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_method_hints.cmake)
+
 # ---- C: runtime, bootstrap compiler, compiled goldens ----
 if(RELIC_C_RUNTIME)
   add_subdirectory(runtime/c)

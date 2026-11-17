@@ -115,6 +115,7 @@ typedef struct rl_module {
     rl_scope *scope;          /* ... a compiled module's top-level scope */
     size_t nnames;            /* and the names of its slots */
     const char *const *snames;
+    int ready;                /* top level finished; missing names are not "(yet)" */
 } rl_module;
 
 /* Per-program state: output, the current error, call depth, args. */
@@ -167,8 +168,11 @@ void rl_scope_release(rl_scope *s);
 rl_value rl_fun_new(const char *name, rl_code code, int arity, rl_scope *env);
 rl_value rl_module_new(const char *name);
 /* A module over a compiled scope: slot i is the name names[i] (static
- * strings); a slot still unset is not there "(yet)". Retains scope. */
+ * strings); a slot still unset is not there "(yet)" until the module is
+ * marked ready. Retains scope. */
 rl_value rl_module_scoped(const char *name, rl_scope *scope, size_t n, const char *const *names);
+/* The module's top level finished. A missing name no longer says "(yet)". */
+void rl_module_mark_ready(rl_value module);
 /* Marks a function value as defined in std module `stem`; returns f. */
 rl_value rl_fun_std(rl_value f, const char *stem);
 
@@ -220,6 +224,10 @@ int rl_in(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
 int rl_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value *out);
 int rl_set_index(rl_ctx *cx, rl_value obj, rl_value idx, rl_value v);
 int rl_field(rl_ctx *cx, rl_value obj, const char *name, rl_value *out);
+/* obj.name(args), with `inside` the source of the receiver and arguments
+ * (`required, "owner"`). A list, string, or missing map key whose name is a
+ * real built-in or std function fails with a hint. Otherwise rl_field. */
+int rl_method(rl_ctx *cx, rl_value obj, const char *name, const char *inside, rl_value *out);
 int rl_set_field(rl_ctx *cx, rl_value obj, const char *name, rl_value v);
 int rl_range(rl_ctx *cx, rl_value a, rl_value b, rl_value *out);
 /* Checks a range start before its end is evaluated (the same check rl_range makes). */

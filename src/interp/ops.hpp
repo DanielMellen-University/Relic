@@ -16,6 +16,10 @@ Value op_number(const Ast& n);  // a Number literal: int, or float if it has a p
 Value op_unary(const Ast& n, const Value& v);
 Value op_range(const Ast& n, const Value& a, const Value& b);
 Value op_field(const Ast& n, const Value& obj);
+// The field read of `obj.name(args)`. A list, string, or missing map key whose
+// name is a real built-in or std function fails with a hint to write that
+// call. Anything else is op_field.
+Value op_method(const Ast& call, const Value& obj);
 Value op_index(const Ast& n, const Value& obj, const Value& idx);
 void op_set_field(const Ast& target, const Value& obj, Value v);
 void op_set_index(const Ast& target, const Value& obj, const Value& idx, Value v);

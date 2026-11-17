@@ -570,6 +570,109 @@ fun binary_op(fc, n, dst, a)
     else
         check(fc, "rl_compare(cx, \"" + op + "\", " + a.expr + ", " + b.expr + ", &" + dst + ")", n)
 
+# How a call is written back in a method hint. The same rules are in
+# src/interp/interp.cpp and selfhost/interp.relic.
+fun src_plain(s)
+    if s == ""
+        return false
+    let c0 = s[0]
+    if not (lexer.is_alpha(c0) or c0 == "_")
+        return false
+    for c in s
+        if not lexer.is_word(c)
+            return false
+    return true
+
+fun src_quote(s)
+    let q = "\""
+    for c in s
+        if c == "\n"
+            q = q + "\\n"
+        else if c == "\t"
+            q = q + "\\t"
+        else if c == "\""
+            q = q + "\\\""
+        else if c == "\\"
+            q = q + "\\\\"
+        else
+            q = q + c
+    return q + "\""
+
+fun src_atom_kind(k)
+    return k == "Name" or k == "Number" or k == "String" or k == "True" or k == "False" or k == "None" or k == "List" or k == "Map" or k == "Field" or k == "Index" or k == "Call"
+
+fun src_expr(n)
+    let k = n.kind
+    if k == "Name" or k == "Number"
+        return n.text
+    if k == "True"
+        return "true"
+    if k == "False"
+        return "false"
+    if k == "None"
+        return "none"
+    if k == "String"
+        return src_quote(n.text)
+    if k == "List"
+        return "[" + src_join(n.kids) + "]"
+    if k == "Map"
+        let s = chr(123)
+        for i in 0..len(n.kids)
+            if i > 0
+                s = s + ", "
+            let key = n.kids[i].text
+            if not src_plain(key)
+                key = src_quote(key)
+            s = s + key + ": " + src_expr(n.kids[i].kids[0])
+        return s + chr(125)
+    if k == "Field"
+        return src_atom(n.kids[0]) + "." + n.text
+    if k == "Index"
+        return src_atom(n.kids[0]) + "[" + src_expr(n.kids[1]) + "]"
+    if k == "Call"
+        return src_atom(n.kids[0]) + "(" + src_join(slice(n.kids, 1, len(n.kids))) + ")"
+    if k == "Unary"
+        if n.text == "not"
+            return "not " + src_atom(n.kids[0])
+        return "-" + src_atom(n.kids[0])
+    if k == "Binary"
+        return src_atom(n.kids[0]) + " " + n.text + " " + src_atom(n.kids[1])
+    if k == "Range"
+        return src_atom(n.kids[0]) + ".." + src_atom(n.kids[1])
+    if k == "Interp"
+        if len(n.kids) == 0
+            return "\"\""
+        let s = ""
+        for i in 0..len(n.kids)
+            if i > 0
+                s = s + " + "
+            let part = n.kids[i]
+            if part.kind == "String"
+                s = s + src_quote(part.text)
+            else
+                s = s + src_atom(part)
+        return s
+    return "?"
+
+fun src_atom(n)
+    if src_atom_kind(n.kind)
+        return src_expr(n)
+    return "(" + src_expr(n) + ")"
+
+fun src_join(nodes)
+    let s = ""
+    for i in 0..len(nodes)
+        if i > 0
+            s = s + ", "
+        s = s + src_expr(nodes[i])
+    return s
+
+fun call_inside(field, call)
+    let s = src_expr(field.kids[0])
+    for i in 1..len(call.kids)
+        s = s + ", " + src_expr(call.kids[i])
+    return s
+
 let postfix_kinds = {Call: true, Field: true, Index: true}
 
 # Calls, fields and indexes on a value that is itself one (f()(), m.a.b[0] ...)
@@ -588,19 +691,27 @@ fun postfix(fc, n, d)
     let i = len(spine) - 1
     while i >= 0
         let lv = spine[i]
-        postfix_op(fc, lv.n, lv.d, a)
+        let calln = none
+        if i > 0 and spine[i - 1].n.kind == "Call" and lv.n.kind == "Field"
+            calln = spine[i - 1].n
+        postfix_op(fc, lv.n, lv.d, a, calln)
         if i > 0
             free_to(fc, lv.mark)
             a = {expr: T(lv.d), temp: lv.temp}
         i = i - 1
 
 # One call, field or index, with the value it applies to already in a.
-fun postfix_op(fc, n, d, a)
+# calln is the call this field is the callee of, or none.
+fun postfix_op(fc, n, d, a, calln)
     let k = n.kind
     if k == "Call"
         call(fc, n, d, a)
     else if k == "Field"
-        check(fc, "rl_field(cx, " + a.expr + ", " + c_string(n.text).lit + ", &" + T(d) + ")", n)
+        if calln != none
+            let inside = call_inside(n, calln)
+            check(fc, "rl_method(cx, " + a.expr + ", " + c_string(n.text).lit + ", " + c_string(inside).lit + ", &" + T(d) + ")", n)
+        else
+            check(fc, "rl_field(cx, " + a.expr + ", " + c_string(n.text).lit + ", &" + T(d) + ")", n)
     else
         let i = operand(fc, n.kids[1])
         check3(fc, "rl_index(cx, " + a.expr + ", " + i.expr + ", &" + T(d) + ")", n, n.kids[0], n.kids[1])
@@ -1291,8 +1402,9 @@ fun module_tables(cg, o)
         append(o, "static int rlc_use_" + str(ix) + "(rl_ctx *cx, rl_value *out);")
 
 # rlc_use_i: module i's value, running the module first if it has not
-# started yet. A module that is still running (a cycle) is handed out as it
-# is, so its later names are not there "(yet)".
+# started yet. A module that is still running (a cycle), or that stopped
+# before its top level finished, is handed out as it is, so its later names
+# are not there "(yet)". Once it finishes, a missing name does not say that.
 fun module_uses(cg, o)
     for ix in cg.uses
         let m = cg.mods[ix]
@@ -1317,6 +1429,7 @@ fun module_uses(cg, o)
             append(o, "        return RL_ERR;")
         else
             append(o, "        if (rlc_mod_" + i + "(cx, MS[" + i + "])) return RL_ERR;")
+            append(o, "        rl_module_mark_ready(MOD[" + i + "]);")
         append(o, "    " + RB)
         append(o, "    *out = rl_retain(MOD[" + i + "]);")
         append(o, "    return RL_OK;")
@@ -1390,6 +1503,7 @@ fun compile_program(cg, tree)
     append(o, "    MS[0] = rl_scope_new(NULL, " + str(max1(ntop)) + ");")
     append(o, "    MOD[0] = rl_module_scoped(" + c_string(main.name).lit + ", MS[0], " + str(ntop) + ", NM0);")
     append(o, "    r = rlc_mod_0(&cx, MS[0]);")
+    append(o, "    if (!r) rl_module_mark_ready(MOD[0]);")
     append(o, "    fflush(stdout);")
     append(o, "    if (r) rl_report(&cx, stderr, NULL);")
     append(o, "    for (i = 0; i < " + str(nm) + "; ++i) " + LB + " rl_release(MOD[i]); if (MS[i]) rl_scope_release(MS[i]); " + RB)

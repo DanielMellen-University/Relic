@@ -201,6 +201,285 @@ Value op_unary(const Ast& n, const Value& v) {
 
 static std::vector<std::string> map_keys(const Map& m) { return m.key_list(); }
 
+// How a call's receiver and arguments are written back in a hint. The same
+// rules are in selfhost/interp.relic and selfhost/cgen.relic.
+static bool src_plain(const std::string& s) {
+    if (s.empty()) return false;
+    unsigned char c0 = static_cast<unsigned char>(s[0]);
+    if (!((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z') || c0 == '_')) return false;
+    for (unsigned char c : s)
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || (c >= '0' && c <= '9'))) return false;
+    return true;
+}
+
+static std::string src_quote(const std::string& s) {
+    std::string q = "\"";
+    for (unsigned char c : s) {
+        if (c == '\n') q += "\\n";
+        else if (c == '\t') q += "\\t";
+        else if (c == '"') q += "\\\"";
+        else if (c == '\\') q += "\\\\";
+        else q += static_cast<char>(c);
+    }
+    return q + "\"";
+}
+
+static bool src_atom_kind(Node k) {
+    switch (k) {
+        case Node::Name: case Node::Number: case Node::String:
+        case Node::True: case Node::False: case Node::None:
+        case Node::List: case Node::Map: case Node::Field:
+        case Node::Index: case Node::Call: return true;
+        default: return false;
+    }
+}
+
+static std::string src_expr(const Ast& n);
+
+static std::string src_atom(const Ast& n) {
+    if (src_atom_kind(n.kind)) return src_expr(n);
+    return "(" + src_expr(n) + ")";
+}
+
+static std::string src_join(const std::vector<std::unique_ptr<Ast>>& kids, size_t from) {
+    std::string s;
+    for (size_t i = from; i < kids.size(); ++i) {
+        if (i != from) s += ", ";
+        s += src_expr(*kids[i]);
+    }
+    return s;
+}
+
+static std::string src_expr(const Ast& n) {
+    switch (n.kind) {
+        case Node::Name: case Node::Number: return n.text;
+        case Node::True: return "true";
+        case Node::False: return "false";
+        case Node::None: return "none";
+        case Node::String: return src_quote(n.text);
+        case Node::List: return "[" + src_join(n.kids, 0) + "]";
+        case Node::Map: {
+            std::string s = "{";
+            for (size_t i = 0; i < n.kids.size(); ++i) {
+                if (i) s += ", ";
+                const std::string& key = n.kids[i]->text;
+                s += src_plain(key) ? key : src_quote(key);
+                s += ": ";
+                s += src_expr(*n.kids[i]->kids[0]);
+            }
+            return s + "}";
+        }
+        case Node::Field: return src_atom(*n.kids[0]) + "." + n.text;
+        case Node::Index: return src_atom(*n.kids[0]) + "[" + src_expr(*n.kids[1]) + "]";
+        case Node::Call: return src_atom(*n.kids[0]) + "(" + src_join(n.kids, 1) + ")";
+        case Node::Unary: return (n.text == "not" ? "not " : "-") + src_atom(*n.kids[0]);
+        case Node::Binary: return src_atom(*n.kids[0]) + " " + n.text + " " + src_atom(*n.kids[1]);
+        case Node::Range: return src_atom(*n.kids[0]) + ".." + src_atom(*n.kids[1]);
+        case Node::Interp: {
+            if (n.kids.empty()) return "\"\"";
+            std::string s;
+            for (size_t i = 0; i < n.kids.size(); ++i) {
+                if (i) s += " + ";
+                if (n.kids[i]->kind == Node::String) s += src_quote(n.kids[i]->text);
+                else s += src_atom(*n.kids[i]);
+            }
+            return s;
+        }
+        default: return "?";
+    }
+}
+
+// Keep in step with method_spell in selfhost/interp.relic and runtime/c/rl_ops.c.
+// A name is listed only when a real built-in or std function takes that value first.
+struct Meth { const char* type; const char* name; const char* spell; };
+static const Meth kMethods[] = {
+    {"list", "append", "append"},
+    {"list", "pop", "pop"},
+    {"list", "insert", "insert"},
+    {"list", "remove", "remove"},
+    {"list", "slice", "slice"},
+    {"list", "len", "len"},
+    {"list", "map", "lists.map"},
+    {"list", "filter", "lists.filter"},
+    {"list", "reduce", "lists.reduce"},
+    {"list", "sum", "lists.sum"},
+    {"list", "index_of", "lists.index_of"},
+    {"list", "contains", "lists.contains"},
+    {"list", "unique", "lists.unique"},
+    {"list", "any", "lists.any"},
+    {"list", "all", "lists.all"},
+    {"list", "flatten", "lists.flatten"},
+    {"list", "zip", "lists.zip"},
+    {"list", "count", "lists.count"},
+    {"list", "chunk", "lists.chunk"},
+    {"list", "find", "lists.find"},
+    {"list", "find_index", "lists.find_index"},
+    {"list", "take", "lists.take"},
+    {"list", "drop", "lists.drop"},
+    {"list", "partition", "lists.partition"},
+    {"list", "product", "lists.product"},
+    {"list", "group_by", "lists.group_by"},
+    {"list", "count_by", "lists.count_by"},
+    {"list", "min", "lists.min"},
+    {"list", "max", "lists.max"},
+    {"list", "min_by", "lists.min_by"},
+    {"list", "max_by", "lists.max_by"},
+    {"list", "last", "lists.last"},
+    {"list", "windows", "lists.windows"},
+    {"list", "mean", "lists.mean"},
+    {"list", "rotate", "lists.rotate"},
+    {"list", "sum_by", "lists.sum_by"},
+    {"list", "reverse", "lists.reverse"},
+    {"list", "copy", "lists.copy"},
+    {"list", "sort_by", "lists.sort_by"},
+    {"list", "sort", "lists.sort"},
+    {"list", "join", "strings.join"},
+    {"list", "from_items", "maps.from_items"},
+    {"map", "keys", "keys"},
+    {"map", "remove", "remove"},
+    {"map", "len", "len"},
+    {"map", "values", "maps.values"},
+    {"map", "items", "maps.items"},
+    {"map", "get", "maps.get"},
+    {"map", "merge", "maps.merge"},
+    {"map", "drop", "maps.drop"},
+    {"map", "invert", "maps.invert"},
+    {"map", "map_values", "maps.map_values"},
+    {"map", "filter", "maps.filter"},
+    {"map", "pick", "maps.pick"},
+    {"map", "find_key", "maps.find_key"},
+    {"map", "has_value", "maps.has_value"},
+    {"string", "slice", "slice"},
+    {"string", "len", "len"},
+    {"string", "ord", "ord"},
+    {"string", "find", "strings.find"},
+    {"string", "contains", "strings.contains"},
+    {"string", "starts_with", "strings.starts_with"},
+    {"string", "ends_with", "strings.ends_with"},
+    {"string", "upper", "strings.upper"},
+    {"string", "lower", "strings.lower"},
+    {"string", "is_space", "strings.is_space"},
+    {"string", "is_digits", "strings.is_digits"},
+    {"string", "is_alpha", "strings.is_alpha"},
+    {"string", "remove_prefix", "strings.remove_prefix"},
+    {"string", "remove_suffix", "strings.remove_suffix"},
+    {"string", "words", "strings.words"},
+    {"string", "trim", "strings.trim"},
+    {"string", "trim_start", "strings.trim_start"},
+    {"string", "trim_end", "strings.trim_end"},
+    {"string", "split", "strings.split"},
+    {"string", "replace", "strings.replace"},
+    {"string", "count", "strings.count"},
+    {"string", "find_last", "strings.find_last"},
+    {"string", "reverse", "strings.reverse"},
+    {"string", "lines", "strings.lines"},
+    {"string", "repeat", "strings.repeat"},
+    {"string", "pad_left", "strings.pad_left"},
+    {"string", "pad_right", "strings.pad_right"},
+    {"string", "center", "strings.center"},
+    {"string", "capitalize", "strings.capitalize"},
+    {"string", "truncate", "strings.truncate"},
+    {"string", "is_upper", "strings.is_upper"},
+    {"string", "is_lower", "strings.is_lower"},
+    {"string", "map", "lists.map"},
+    {"string", "filter", "lists.filter"},
+    {"string", "reduce", "lists.reduce"},
+    {"string", "sum", "lists.sum"},
+    {"string", "index_of", "lists.index_of"},
+    {"string", "unique", "lists.unique"},
+    {"string", "any", "lists.any"},
+    {"string", "all", "lists.all"},
+    {"string", "flatten", "lists.flatten"},
+    {"string", "zip", "lists.zip"},
+    {"string", "chunk", "lists.chunk"},
+    {"string", "find_index", "lists.find_index"},
+    {"string", "take", "lists.take"},
+    {"string", "drop", "lists.drop"},
+    {"string", "partition", "lists.partition"},
+    {"string", "product", "lists.product"},
+    {"string", "group_by", "lists.group_by"},
+    {"string", "count_by", "lists.count_by"},
+    {"string", "min", "lists.min"},
+    {"string", "max", "lists.max"},
+    {"string", "min_by", "lists.min_by"},
+    {"string", "max_by", "lists.max_by"},
+    {"string", "last", "lists.last"},
+    {"string", "windows", "lists.windows"},
+    {"string", "mean", "lists.mean"},
+    {"string", "rotate", "lists.rotate"},
+    {"string", "sum_by", "lists.sum_by"},
+    {"string", "copy", "lists.copy"},
+    {"string", "sort_by", "lists.sort_by"},
+    {"string", "sort", "lists.sort"},
+};
+
+static const char* method_spell(const std::string& type, const std::string& name) {
+    for (const Meth& m : kMethods)
+        if (type == m.type && name == m.name) return m.spell;
+    return nullptr;
+}
+
+static std::string call_inside(const Ast& field, const Ast& call) {
+    std::string s = src_expr(*field.kids[0]);
+    for (size_t i = 1; i < call.kids.size(); ++i) {
+        s += ", ";
+        s += src_expr(*call.kids[i]);
+    }
+    return s;
+}
+
+// spell(inside), at most 80 characters. A longer call keeps the first 80 and adds "...".
+// The same cut is in selfhost/interp.relic and runtime/c/rl_ops.c.
+static std::string cap_call(const char* spell, const std::string& inside) {
+    std::string text = std::string(spell) + "(" + inside + ")";
+    size_t chars = 0, i = 0;
+    while (i < text.size() && chars < 80) {
+        i += utf8_char_size(text, i);
+        ++chars;
+    }
+    if (i >= text.size()) return text;
+    return text.substr(0, i) + "...";
+}
+
+// The full error for a method-style call, or "" when op_field should run.
+static std::string method_message(const Value& obj, const Ast& field, const Ast& call) {
+    const char* type = nullptr;
+    if (obj.is<std::shared_ptr<List>>()) type = "list";
+    else if (obj.is<std::string>()) type = "string";
+    else if (obj.is<std::shared_ptr<Map>>()) {
+        if (obj.as<std::shared_ptr<Map>>()->has(field.text)) return "";
+        type = "map";
+    } else {
+        return "";
+    }
+    const char* spell = method_spell(type, field.text);
+    if (!spell) return "";
+    std::string shown = cap_call(spell, call_inside(field, call));
+    if (std::string(type) == "map")
+        return "map has no key '" + field.text + "' (write " + shown + ")";
+    return std::string("cannot read a field of ") + a_type(obj) + " (write " + shown + ")";
+}
+
+Value op_method(const Ast& call, const Value& obj) {
+    const Ast& field = *call.kids[0];
+    std::string msg = method_message(obj, field, call);
+    if (!msg.empty()) fail(field, msg);
+    return op_field(field, obj);
+}
+
+static std::vector<std::string> module_members(const Module& m) {
+    if (!m.scope) return m.members;
+    std::vector<std::string> names;
+    for (const auto& kv : m.scope->vars)
+        if (!kv.first.empty() && kv.first[0] != '_') names.push_back(kv.first);
+    return names;
+}
+
+static void fail_module_missing(const Ast& n, const Module& m) {
+    if (!m.ready) fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+    fail(n, "module '" + m.name + "' has no '" + n.text + "'" + op_suggest(n.text, module_members(m)));
+}
+
 Value op_field(const Ast& n, const Value& obj) {
             if (obj.is<std::shared_ptr<Module>>()) {
                 const Module& m = *obj.as<std::shared_ptr<Module>>();
@@ -208,12 +487,12 @@ Value op_field(const Ast& n, const Value& obj) {
                     fail(n, "'" + n.text + "' is private to module '" + m.name + "'");
                 if (m.lookup) {
                     const Value* v = m.lookup(n.text);
-                    if (!v) fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                    if (!v) fail_module_missing(n, m);
                     return *v;
                 }
                 auto it = m.scope->vars.find(n.text);
                 if (it == m.scope->vars.end())
-                    fail(n, "module '" + m.name + "' has no '" + n.text + "' (yet)");
+                    fail_module_missing(n, m);
                 return it->second;
             }
             if (!obj.is<std::shared_ptr<Map>>())
@@ -452,7 +731,7 @@ void Interpreter::set_main_file(const std::string& path) {
     // Register the main file, so a module that uses it back gets this same
     // scope instead of running the file a second time.
     std::string name = fs::path(path).stem().string();
-    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_, {}});
+    modules_[key_of(path)] = std::make_shared<Module>(Module{name, path, globals_, {}, false, {}});
 }
 
 Value Interpreter::load_module(const Ast& use) {
@@ -468,7 +747,7 @@ Value Interpreter::load_module(const Ast& use) {
     ss << in.rdbuf();
 
     std::string name = use.text.substr(use.text.find_last_of('/') + 1);
-    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_), {}});
+    auto mod = std::make_shared<Module>(Module{name, file, std::make_shared<Env>(builtins_), {}, false, {}});
     modules_[key] = mod;  // before running, so cycles find it
 
     std::string saved = current_file_;
@@ -501,6 +780,7 @@ Value Interpreter::load_module(const Ast& use) {
         if (e.file.empty()) e.file = file;
         throw;
     }
+    mod->ready = true;
     return Value(mod);
 }
 
@@ -751,7 +1031,8 @@ Value Interpreter::binary(const Ast& n, const std::shared_ptr<Env>& env) {
 }
 
 Value Interpreter::call(const Ast& n, const std::shared_ptr<Env>& env) {
-    Value callee = eval(*n.kids[0], env);
+    const Ast& callee_n = *n.kids[0];
+    Value callee = callee_n.kind == Node::Field ? op_method(n, eval(*callee_n.kids[0], env)) : eval(callee_n, env);
     std::vector<Value> args;
     for (size_t i = 1; i < n.kids.size(); ++i) args.push_back(eval(*n.kids[i], env));
 

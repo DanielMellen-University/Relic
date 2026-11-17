@@ -1,0 +1,129 @@
+# More of the same hints, plus the cases that must stay as they were:
+# a name that is not a function, a field that is not a call, a map key that
+# is a function, and a module that never finished loading.
+let xs = [1]
+try
+    xs.append("owner")
+catch e
+    print("append", e.message)
+try
+    xs.pop()
+catch e
+    print("pop", e.message)
+try
+    xs.insert(0, 9)
+catch e
+    print("insert", e.message)
+try
+    xs.remove(0)
+catch e
+    print("remove", e.message)
+try
+    xs.slice(0, 1)
+catch e
+    print("slice", e.message)
+try
+    xs.len()
+catch e
+    print("len", e.message)
+try
+    xs.sort()
+catch e
+    print("sort", e.message)
+try
+    xs.join(",")
+catch e
+    print("join", e.message)
+try
+    xs.size()
+catch e
+    print("size", e.message)
+try
+    print(xs.append)
+catch e
+    print("bare", e.message)
+
+fun boom()
+    print("ran")
+    return 1
+try
+    xs.append(boom())
+catch e
+    print("side", e.message)
+
+let text = "  hi"
+try
+    text.trim()
+catch e
+    print("trim", e.message)
+try
+    text.upper()
+catch e
+    print("upper", e.message)
+try
+    text.ord()
+catch e
+    print("ord", e.message)
+try
+    text.find("h")
+catch e
+    print("find", e.message)
+
+let row = {width: 4}
+try
+    row.keys()
+catch e
+    print("keys", e.message)
+try
+    row.values()
+catch e
+    print("values", e.message)
+try
+    row.widht()
+catch e
+    print("widht", e.message)
+
+fun seven() = 7
+let calls = {}
+calls.keys = seven
+print("kept", calls.keys())
+
+let nested = [[2]]
+try
+    nested[0].append(3)
+catch e
+    print("index", e.message)
+try
+    (xs + [4]).len()
+catch e
+    print("plus", e.message)
+
+use std/strings
+try
+    print(strings.trm("  "))
+catch e
+    print("trm", e.message)
+try
+    print(strings.zzzz())
+catch e
+    print("zzzz", e.message)
+
+use modules/mathx
+try
+    print(mathx.squre(2))
+catch e
+    print("squre", e.message)
+
+try
+    use modules/half
+catch e
+    print("half", e.message)
+use modules/half as again
+try
+    print(again.b)
+catch e
+    print("yet", e.message)
+try
+    print(again.nope)
+catch e
+    print("yetnope", e.message)

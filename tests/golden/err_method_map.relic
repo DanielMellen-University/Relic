@@ -1,0 +1,3 @@
+# A missing map key that is a real function points at that call.
+let row = {}
+row.keys()
