@@ -313,8 +313,6 @@ fun drop(xs, n)
         i = i + 1
     return out
 
-# Since 1.0.50: two lists, the items test(x) is true for and the rest, each in
-# the order they came.
 # take_while: the items from the front while test(x) is true, stopping at the
 # first one it is false for. drop_while: the rest, from that item on.
 fun take_while(xs, test)
@@ -339,6 +337,8 @@ fun drop_while(xs, test)
         append(out, x)
     return out
 
+# Since 1.0.50: two lists, the items test(x) is true for and the rest, each in
+# the order they came.
 fun partition(xs, test)
     _seq("partition", xs)
     _fn("partition", "test", test)
