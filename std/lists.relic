@@ -589,6 +589,36 @@ fun _merge(xs, less)
 
 fun natural(a, b) = a < b
 
+# bisect: where item would go in xs, which must already be sorted (as sort
+# leaves it): the index of the first item that is not < item, so before any
+# equal ones; len(xs) when every item is smaller. A binary search, so a
+# 100,000 item list takes about 17 compares. item must be a number or a
+# string, and comparing it with the items has the usual errors ("cannot
+# compare an int and a string").
+fun _sortable(name, item)
+    let t = type(item)
+    if t != "int" and t != "float" and t != "string"
+        fail("lists." + name + "(): item must be a number or a string, got " + t)
+
+fun _bisect(ys, item, after)
+    let lo = 0
+    let hi = len(ys)
+    while lo < hi
+        let mid = int((lo + hi) / 2)
+        let go_right = ys[mid] < item
+        if after
+            go_right = not (item < ys[mid])
+        if go_right
+            lo = mid + 1
+        else
+            hi = mid
+    return lo
+
+fun bisect(xs, item)
+    _seq("bisect", xs)
+    _sortable("bisect", item)
+    return _bisect(_items(xs), item, false)
+
 # A list of only numbers or only strings is sorted by the host (host_sort,
 # the same merge as sort_by, so the order is the same, ties and NaN too);
 # anything else goes through sort_by, with its errors.

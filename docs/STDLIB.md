@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting, bisect |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -89,6 +89,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `reverse(xs)` | list | new list; a string's characters or a map's keys work too (since 1.0.52; a map was an error) |
 | `copy(xs)` | list | shallow; of a string or a map, a list of its characters or keys (since 1.0.52; a string gave the string back, a map was an error) |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |
+| `bisect(xs, item)` | int | for a sorted `xs`, the index of the first item that is not `<` `item` (before equal ones), or `len(xs)`; a binary search. `item` must be a number or a string (`lists.bisect(): item must be a number or a string, got none`), and comparing it with the items has the usual errors, such as `cannot compare an int and a string` |
 | `sort_by(xs, less)` | list | `less(a, b)` is bool. `sort` and `sort_by` take a string's characters or a map's keys too (since 1.0.52; both failed on a map, and `sort_by` on a string) |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and

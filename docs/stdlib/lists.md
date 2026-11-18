@@ -70,6 +70,14 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 `zip([1, 2, 3], ["a", "b"])` → `[[1, "a"], [2, "b"]]`
 
+`bisect` works on a list that is already sorted. It says where an item would go: the index of the first item that is not smaller, so before equal ones. It is a binary search, so a long list costs a handful of compares.
+
+`bisect([1, 3, 3, 5], 3)` → `1`
+
+`bisect([1, 3, 3, 5], 4)` → `3`
+
+`bisect(["apple", "fig", "pear"], "kiwi")` → `2`
+
 `union`, `intersect` and `difference` treat two lists as sets. The result has no item twice and keeps the order items first came in, `a` before `b`. Items match by `==`, so `1` and `1.0` are one item and the first is kept.
 
 `union([1, 2, 2], [3, 2])` → `[1, 2, 3]`
