@@ -29,6 +29,7 @@
 - `strings.starts_with` and `ends_with` fail when one side is a string and the other is a list: `strings.starts_with(): prefix must be a string, got list` (it was `false`; the 1.0.53 note left this for later). Same-kind calls are unchanged. Golden `std_strings_affix_mixed`.
 - `math.lcm` of `-2^63` and any non-zero int is `int overflow`, the same overflow other results past the int range report. It named `math.abs` before. `lcm` with `0` is still `0`. Golden `std_math_lcm_min_int`.
 - `%` of floats gives a zero the sign of the divisor: `-7.5 % 2.5` is `0.0` and `1.0 % -1.0` is `-0.0` (they were `-0.0` and `0.0`). Golden `float_rem_sign`.
+- New in `std/lists`: `take_while` and `drop_while`; `unique_by` (the first item for each key); `union`, `intersect` and `difference`, which treat two lists as sets, keep first-seen order and match items by `==`; `scan`, every step of `reduce`; `bisect`, a binary search for where an item goes in a sorted list, and `insert_sorted`, which adds one after any equal items so ties stay in arrival order; and `median`. Each names itself in its errors like the other helpers (`lists.median(): the list is empty`, `lists.bisect(): item must be a number or a string, got none`). Tests in `tests/cgen/std_lists_*`, examples in [docs/stdlib/lists.md](docs/stdlib/lists.md) checked by `stdlib_examples`, and `tools/fuzz_gen.py` calls them (seeds 201 to 204, 200 programs, agreed on the VM, the tree-walker, the self-hosted interpreter and compiled code).
 
 ## 1.0.53 (2026-11-05)
 
