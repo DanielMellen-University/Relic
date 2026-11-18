@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -78,6 +78,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `take_while(xs, test)` / `drop_while(xs, test)` | list | the items from the front while `test(x)` is true, stopping at the first false one (`test` is not called after it), or the items from that one on |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
+| `unique_by(xs, key)` | list | the first item for each `key(x)`, in order, with `key` called once per item; `lists.unique_by(): key must give a string, got int` otherwise |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `key` is called once per item (since 1.0.52; the first was called twice); `lists.min_by(): the list is empty` (since 1.0.50) |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |

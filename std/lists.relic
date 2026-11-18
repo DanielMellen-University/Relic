@@ -306,6 +306,22 @@ fun group_by(xs, key)
         append(out[k], x)
     return out
 
+# unique_by: the first item for each key(x), in order. key(x) must give a
+# string, as for group_by.
+fun unique_by(xs, key)
+    _seq("unique_by", xs)
+    _fn("unique_by", "key", key)
+    let out = []
+    let seen = {}
+    for x in xs
+        let k = key(x)
+        if type(k) != "string"
+            fail("lists.unique_by(): key must give a string, got " + type(k))
+        if not k in seen
+            seen[k] = true
+            append(out, x)
+    return out
+
 # Since 1.0.50: a map from key(x) to how many items have that key, keys in the
 # order they first came; group_by with the counts. key(x) must give a string.
 fun count_by(xs, key)
