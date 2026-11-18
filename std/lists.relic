@@ -213,6 +213,66 @@ fun find_index(xs, test)
         i = i + 1
     return -1
 
+# union, intersect and difference treat two lists as sets: the result has no
+# item twice, in the order items first came (a, then b for union), and items
+# match by ==, so 1 and 1.0 are the same item and the first one is kept.
+# Strings are looked up in a map; other items are compared one by one.
+fun _set_of(xs)
+    let strs = {}
+    let rest = []
+    for x in xs
+        if type(x) == "string"
+            strs[x] = true
+        else
+            append(rest, x)
+    return [strs, rest]
+
+fun _in_set(set, x)
+    if type(x) == "string"
+        return x in set[0]
+    return x in set[1]
+
+fun _add_new(out, set, x)
+    if not _in_set(set, x)
+        append(out, x)
+        if type(x) == "string"
+            set[0][x] = true
+        else
+            append(set[1], x)
+
+fun union(a, b)
+    _seq_named("union", "a", a)
+    _seq_named("union", "b", b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        _add_new(out, seen, x)
+    for x in b
+        _add_new(out, seen, x)
+    return out
+
+fun intersect(a, b)
+    _seq_named("intersect", "a", a)
+    _seq_named("intersect", "b", b)
+    let other = _set_of(b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        if _in_set(other, x)
+            _add_new(out, seen, x)
+    return out
+
+fun difference(a, b)
+    _seq_named("difference", "a", a)
+    _seq_named("difference", "b", b)
+    let other = _set_of(b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        if not _in_set(other, x)
+            _add_new(out, seen, x)
+    return out
+
 # Since 1.0.50: the first n items (all of them when there are fewer), and the
 # items after the first n. n must be a whole number, 0 or more.
 fun _count_arg(name, n)

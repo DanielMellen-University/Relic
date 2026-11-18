@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -76,6 +76,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more, got -1` otherwise (`lists.drop()` the same) (since 1.0.50) |
 | `take_while(xs, test)` / `drop_while(xs, test)` | list | the items from the front while `test(x)` is true, stopping at the first false one (`test` is not called after it), or the items from that one on |
+| `union(a, b)` / `intersect(a, b)` / `difference(a, b)` | list | `a` and `b` as sets: no item twice, in the order items first came (`a`, then `b`); items match by `==`, so `1` and `1.0` are one item and the first is kept. Strings are found through a map, other items one by one. `lists.union(): a must be a list, got int` (`b` for the second) |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `unique_by(xs, key)` | list | the first item for each `key(x)`, in order, with `key` called once per item; `lists.unique_by(): key must give a string, got int` otherwise |

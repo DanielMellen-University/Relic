@@ -70,6 +70,14 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 `zip([1, 2, 3], ["a", "b"])` → `[[1, "a"], [2, "b"]]`
 
+`union`, `intersect` and `difference` treat two lists as sets. The result has no item twice and keeps the order items first came in, `a` before `b`. Items match by `==`, so `1` and `1.0` are one item and the first is kept.
+
+`union([1, 2, 2], [3, 2])` → `[1, 2, 3]`
+
+`intersect([1, 2, 3, 2], [2, 3, 5])` → `[2, 3]`
+
+`difference(["a", "b", "a"], ["b"])` → `["a"]`
+
 `copy` does not share the list. [copy.relic](../../examples/ref/lists/copy.relic) appends to the copy and prints `[1, 2]` then `[1, 2, 3]`.
 
 ### Calls that take a function
