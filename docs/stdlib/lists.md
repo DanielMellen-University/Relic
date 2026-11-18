@@ -8,7 +8,7 @@ A string passed as `xs` is read as its characters. A map is read as its keys. An
 
 ### Adding and counting
 
-`sum` adds the numbers, from 0. `product` multiplies them, and an empty list is 1. `mean` is the sum divided by the count. `count` is how many items are `==` the one you ask about. `1` and `1.0` match.
+`sum` adds the numbers, from 0. `product` multiplies them, and an empty list is 1. `mean` is the sum divided by the count. `median` is the middle item once sorted, or the mean of the two middle items (a float) when the count is even. `count` is how many items are `==` the one you ask about. `1` and `1.0` match.
 
 `sum([1, 2, 3, 4])` → `10`
 
@@ -19,6 +19,10 @@ A string passed as `xs` is read as its characters. A map is read as its keys. An
 `product([])` → `1`
 
 `mean([1, 2, 3, 4])` → `2.5`
+
+`median([3, 1, 2])` → `2`
+
+`median([4, 1, 3, 2])` → `2.5`
 
 `count([1, 1.0, 2], 1)` → `2`
 

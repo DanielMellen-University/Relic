@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -83,6 +83,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `unique_by(xs, key)` | list | the first item for each `key(x)`, in order, with `key` called once per item; `lists.unique_by(): key must give a string, got int` otherwise |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `key` is called once per item (since 1.0.52; the first was called twice); `lists.min_by(): the list is empty` (since 1.0.50) |
+| `median(xs)` | number | the middle item once sorted, as it is, for an odd count; the mean of the two middle items, as a float, for an even count. `lists.median(): the list is empty`, and `lists.median(): item 1 must be a number, got string` |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is `lists.windows(): size must be a whole number above 0, got 0` (since 1.0.50) |
 | `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |

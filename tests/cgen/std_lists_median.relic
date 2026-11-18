@@ -1,0 +1,20 @@
+use std/lists
+print(lists.median([3, 1, 2]), lists.median([4, 1, 3, 2]), lists.median([7]), lists.median([1.5, 0.5]))
+print(lists.median([5, 5, 1, 9, 9]), lists.median([-3, 3]), lists.median([2, 2.0]))
+# no overflow from adding the two middle ints
+print(lists.median([9223372036854775807, 9223372036854775807]))
+let xs = [3, 1, 2]
+lists.median(xs)
+print(xs)
+try
+    lists.median([])
+catch e
+    print(e.message)
+try
+    lists.median([1, "2"])
+catch e
+    print(e.message)
+try
+    lists.median("abc")
+catch e
+    print(e.message)

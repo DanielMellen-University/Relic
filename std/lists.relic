@@ -490,6 +490,25 @@ fun windows(xs, n)
         append(out, slice(items, i, i + n))
     return out
 
+# median: the middle item once sorted, as it is, for an odd count; the mean
+# of the two middle ones, as a float, for an even count. Items must be
+# numbers, and an empty list is an error, as for mean. A NaN item sorts where
+# sort leaves it.
+fun median(xs)
+    _empty("median", xs)
+    let i = 0
+    for x in xs
+        let t = type(x)
+        if t != "int" and t != "float"
+            fail("lists.median(): item " + str(i) + " must be a number, got " + t)
+        i = i + 1
+    let ys = sort(xs)
+    let n = len(ys)
+    let mid = int(n / 2)
+    if n % 2 == 1
+        return ys[mid]
+    return float(ys[mid - 1]) / 2 + float(ys[mid]) / 2
+
 # Since 1.0.50: the average of the items, as a float; an empty list is an
 # error, as for min and max.
 fun mean(xs)
