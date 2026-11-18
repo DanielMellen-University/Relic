@@ -619,6 +619,20 @@ fun bisect(xs, item)
     _sortable("bisect", item)
     return _bisect(_items(xs), item, false)
 
+# insert_sorted: a new sorted list with item added after any equal items, so
+# adding items one at a time keeps them in the order they came, as sort does.
+# xs is left as it is.
+fun insert_sorted(xs, item)
+    _seq("insert_sorted", xs)
+    _sortable("insert_sorted", item)
+    let ys = _items(xs)
+    let at = _bisect(ys, item, true)
+    let out = slice(ys, 0, at)
+    append(out, item)
+    for y in slice(ys, at, len(ys))
+        append(out, y)
+    return out
+
 # A list of only numbers or only strings is sorted by the host (host_sort,
 # the same merge as sort_by, so the order is the same, ties and NaN too);
 # anything else goes through sort_by, with its errors.

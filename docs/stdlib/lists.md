@@ -78,6 +78,10 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 `bisect(["apple", "fig", "pear"], "kiwi")` → `2`
 
+`insert_sorted` returns a new sorted list with the item added after any equal ones, so adding items one at a time keeps ties in the order they came, as `sort` does.
+
+`insert_sorted([1, 3, 5], 4)` → `[1, 3, 4, 5]`
+
 `union`, `intersect` and `difference` treat two lists as sets. The result has no item twice and keeps the order items first came in, `a` before `b`. Items match by `==`, so `1` and `1.0` are one item and the first is kept.
 
 `union([1, 2, 2], [3, 2])` → `[1, 2, 3]`
