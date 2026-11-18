@@ -1,0 +1,29 @@
+use std/lists
+fun small(x) = x < 3
+fun space(c) = c == " "
+fun always(x) = true
+print(lists.take_while([1, 2, 3, 1], small), lists.drop_while([1, 2, 3, 1], small))
+# a later item that passes again is kept by drop_while and not taken by take_while
+print(lists.take_while([5, 1], small), lists.drop_while([5, 1], small))
+print(lists.take_while([], small), lists.drop_while([], small))
+print(lists.take_while([1, 2], always), lists.drop_while([1, 2], always))
+# a string is its characters, a map its keys
+print(lists.drop_while("  hi there", space), lists.take_while({a: 1, b: 2}, always))
+let xs = [1, 2, 3]
+lists.drop_while(xs, small)
+print(xs)
+# test stops being called at the first false
+let calls = [0]
+fun counted(x)
+    calls[0] = calls[0] + 1
+    return x < 2
+lists.take_while([1, 2, 3, 4], counted)
+print(calls[0])
+try
+    lists.take_while(5, small)
+catch e
+    print(e.message)
+try
+    lists.drop_while([1], 5)
+catch e
+    print(e.message)

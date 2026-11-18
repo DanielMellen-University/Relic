@@ -242,6 +242,30 @@ fun drop(xs, n)
 
 # Since 1.0.50: two lists, the items test(x) is true for and the rest, each in
 # the order they came.
+# take_while: the items from the front while test(x) is true, stopping at the
+# first one it is false for. drop_while: the rest, from that item on.
+fun take_while(xs, test)
+    _seq("take_while", xs)
+    _fn("take_while", "test", test)
+    let out = []
+    for x in xs
+        if not test(x)
+            break
+        append(out, x)
+    return out
+
+fun drop_while(xs, test)
+    _seq("drop_while", xs)
+    _fn("drop_while", "test", test)
+    let out = []
+    let dropping = true
+    for x in xs
+        if dropping and test(x)
+            next
+        dropping = false
+        append(out, x)
+    return out
+
 fun partition(xs, test)
     _seq("partition", xs)
     _fn("partition", "test", test)

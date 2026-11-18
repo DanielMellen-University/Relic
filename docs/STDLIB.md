@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -75,6 +75,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `find(xs, test)` | any | the first item `test(x)` is true for, or `none`; it stops there (since 1.0.50) |
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more, got -1` otherwise (`lists.drop()` the same) (since 1.0.50) |
+| `take_while(xs, test)` / `drop_while(xs, test)` | list | the items from the front while `test(x)` is true, stopping at the first false one (`test` is not called after it), or the items from that one on |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
