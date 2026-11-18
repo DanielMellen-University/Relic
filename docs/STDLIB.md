@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -59,6 +59,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `map(xs, f)` | list | |
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
+| `scan(xs, f, start)` | list | each step of `reduce` in order: `[f(start, x0), f(f(start, x0), x1), ...]`; `start` is not included, so `[]` gives `[]` |
 | `sum(xs)` | number | an item that is not a number is `lists.sum(): item 1 must be a number, got string` (since 1.0.52; `product`, `mean` and `sum_by` say the same with their own name) |
 | `mean(xs)` | float | the sum over the count; `lists.mean(): the list is empty` (since 1.0.50); ints whose sum would pass the int range are added as floats (since 1.0.52; it was `int overflow`) |
 | `sum_by(xs, f)` | number | `f(x)` for each item added up from `0`, as `sum(map(xs, f))` without the list in between (since 1.0.50) |

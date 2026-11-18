@@ -1,0 +1,6 @@
+[1, 3, 6, 10] [3, 3, 4, 4, 5]
+["a", "ab", "abc"] []
+true
+[50, 30, 35]
+lists.scan(): f must be a function, got int
+lists.scan(): xs must be a list, got none

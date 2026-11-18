@@ -53,6 +53,19 @@ fun reduce(xs, f, start)
         acc = f(acc, x)
     return acc
 
+# scan: every step of reduce, in order; scan([1, 2], f, 0) is
+# [f(0, 1), f(f(0, 1), 2)]. start itself is not in the list, so an empty list
+# gives [].
+fun scan(xs, f, start)
+    _seq("scan", xs)
+    _fn("scan", "f", f)
+    let out = []
+    let acc = start
+    for x in xs
+        acc = f(acc, x)
+        append(out, acc)
+    return out
+
 # sum: the items added with +, from 0, so a list of strings is an error
 # ("cannot add an int and a string") and not a join.
 fun sum(xs)

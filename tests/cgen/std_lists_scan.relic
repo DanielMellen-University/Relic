@@ -1,0 +1,22 @@
+use std/lists
+use std/math
+fun add(a, b) = a + b
+fun keep_max(a, b) = math.max(a, b)
+fun glue(acc, c) = acc + c
+print(lists.scan([1, 2, 3, 4], add, 0), lists.scan([3, 1, 4, 1, 5], keep_max, 0))
+print(lists.scan("abc", glue, ""), lists.scan([], add, 10))
+# the last step is what reduce gives
+let xs = [5, -2, 7]
+print(lists.scan(xs, add, 100)[2] == lists.reduce(xs, add, 100))
+# a running balance
+let moves = [{amount: 50}, {amount: -20}, {amount: 5}]
+fun balance(total, m) = total + m["amount"]
+print(lists.scan(moves, balance, 0))
+try
+    lists.scan([1], 1, 0)
+catch e
+    print(e.message)
+try
+    lists.scan(none, add, 0)
+catch e
+    print(e.message)
