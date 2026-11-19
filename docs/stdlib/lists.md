@@ -8,7 +8,7 @@ A string passed as `xs` is read as its characters. A map is read as its keys. An
 
 ### Adding and counting
 
-`sum` adds the numbers, from 0. `product` multiplies them, and an empty list is 1. `mean` is the sum divided by the count. `count` is how many items are `==` the one you ask about. `1` and `1.0` match.
+`sum` adds the numbers, from 0. `product` multiplies them, and an empty list is 1. `mean` is the sum divided by the count. `median` is the middle item once sorted, or the mean of the two middle items (a float) when the count is even. `count` is how many items are `==` the one you ask about. `1` and `1.0` match.
 
 `sum([1, 2, 3, 4])` → `10`
 
@@ -19,6 +19,10 @@ A string passed as `xs` is read as its characters. A map is read as its keys. An
 `product([])` → `1`
 
 `mean([1, 2, 3, 4])` → `2.5`
+
+`median([3, 1, 2])` → `2`
+
+`median([4, 1, 3, 2])` → `2.5`
 
 `count([1, 1.0, 2], 1)` → `2`
 
@@ -70,11 +74,31 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 `zip([1, 2, 3], ["a", "b"])` → `[[1, "a"], [2, "b"]]`
 
+`bisect` works on a list that is already sorted. It says where an item would go: the index of the first item that is not smaller, so before equal ones. It is a binary search, so a long list costs a handful of compares.
+
+`bisect([1, 3, 3, 5], 3)` → `1`
+
+`bisect([1, 3, 3, 5], 4)` → `3`
+
+`bisect(["apple", "fig", "pear"], "kiwi")` → `2`
+
+`insert_sorted` returns a new sorted list with the item added after any equal ones, so adding items one at a time keeps ties in the order they came, as `sort` does.
+
+`insert_sorted([1, 3, 5], 4)` → `[1, 3, 4, 5]`
+
+`union`, `intersect` and `difference` treat two lists as sets. The result has no item twice and keeps the order items first came in, `a` before `b`. Items match by `==`, so `1` and `1.0` are one item and the first is kept.
+
+`union([1, 2, 2], [3, 2])` → `[1, 2, 3]`
+
+`intersect([1, 2, 3, 2], [2, 3, 5])` → `[2, 3]`
+
+`difference(["a", "b", "a"], ["b"])` → `["a"]`
+
 `copy` does not share the list. [copy.relic](../../examples/ref/lists/copy.relic) appends to the copy and prints `[1, 2]` then `[1, 2, 3]`.
 
 ### Calls that take a function
 
-`map(xs, f)` builds `[f(x), ...]`. `filter(xs, keep)` keeps items where `keep(x)` is true. `reduce(xs, f, start)` is `f(f(start, first), next)`. `any` and `all` stop at the first item that decides. An empty list is false for `any` and true for `all`. `find` returns the item or `none`. `find_index` returns the index or `-1`. `partition` returns `[yes, no]`. `group_by` and `count_by` key the items. The key must be a string. `min_by` and `max_by` pick the item whose key is smallest or largest, the first of a tie. `sum_by` adds `f(x)`. `sort_by(xs, less)` is stable: `less(a, b)` says whether `a` belongs before `b`.
+`map(xs, f)` builds `[f(x), ...]`. `filter(xs, keep)` keeps items where `keep(x)` is true. `reduce(xs, f, start)` is `f(f(start, first), next)`. `scan(xs, f, start)` gives every one of those steps in a list, so its last item is what `reduce` returns and an empty list gives `[]`. `any` and `all` stop at the first item that decides. An empty list is false for `any` and true for `all`. `find` returns the item or `none`. `find_index` returns the index or `-1`. `take_while` keeps items from the front while `test(x)` is true and stops at the first false one. `drop_while` returns the rest, from that item on. `partition` returns `[yes, no]`. `group_by` and `count_by` key the items, and `unique_by` keeps the first item for each key. The key must be a string. `min_by` and `max_by` pick the item whose key is smallest or largest, the first of a tie. `sum_by` adds `f(x)`. `sort_by(xs, less)` is stable: `less(a, b)` says whether `a` belongs before `b`.
 
 [map.relic](../../examples/ref/lists/map.relic) prints `[2, 4, 6]`. [filter.relic](../../examples/ref/lists/filter.relic) prints `[2, 4]`. [reduce.relic](../../examples/ref/lists/reduce.relic) prints `10` and then `10` for an empty list started at 10. [partition.relic](../../examples/ref/lists/partition.relic) prints `[[2, 4], [1, 3, 5]]`. [group_by.relic](../../examples/ref/lists/group_by.relic) prints `{a: ["ant", "asp"], b: ["bee"], c: ["cow"]}`. [sort_by.relic](../../examples/ref/lists/sort_by.relic) prints `["a", "d", "cc", "bbb"]`.
 

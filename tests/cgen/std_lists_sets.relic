@@ -1,0 +1,23 @@
+use std/lists
+print(lists.union([1, 2, 2], [3, 2, 4]), lists.intersect([1, 2, 3, 2], [2, 3, 5]), lists.difference([1, 2, 3, 1], [2]))
+print(lists.union(["b", "a"], ["a", "c", "b"]), lists.intersect(["x", "y"], ["y", "x"]), lists.difference(["x", "y", "x"], []))
+# == decides: 1 and 1.0 are the same item, and the first one seen is kept
+print(lists.union([1.0], [1, 2]), lists.intersect([1, 2.0], [2]), lists.difference([1, 1.0, 2], [2.0]))
+# lists and maps as items compare by value
+print(lists.union([[1], {a: 1}], [[1], {a: 1}, [2]]), lists.intersect([[1, 2], [3]], [[3]]))
+# a string is its characters, a map its keys
+print(lists.union("abca", "cd"), lists.intersect({a: 1, b: 2}, ["b"]), lists.difference("hello", "l"))
+print(lists.union([], []), lists.intersect([1], []), lists.difference([], [1]))
+# mixed strings and other items
+print(lists.union(["1", 1], [1, "1", none]), lists.difference(["1", 1, none], ["1"]))
+let a = [1, 2]
+lists.union(a, [3])
+print(a)
+try
+    lists.union(1, [2])
+catch e
+    print(e.message)
+try
+    lists.difference([1], 2)
+catch e
+    print(e.message)

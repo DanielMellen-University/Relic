@@ -1,0 +1,10 @@
+[1, 2, 3, 4] [2, 3] [1, 3]
+["b", "a", "c"] ["x", "y"] ["x", "y"]
+[1.0, 2] [2.0] [1]
+[[1], {a: 1}, [2]] [[3]]
+["a", "b", "c", "d"] ["b"] ["h", "e", "o"]
+[] [] []
+["1", 1, none] [1, none]
+[1, 2]
+lists.union(): a must be a list, got int
+lists.difference(): b must be a list, got int

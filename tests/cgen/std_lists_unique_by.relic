@@ -1,0 +1,23 @@
+use std/lists
+use std/strings
+fun first(s) = slice(s, 0, 1)
+fun name(p) = p["name"]
+fun num(x) = x
+print(lists.unique_by(["apple", "avocado", "banana", "blueberry", "cherry"], first))
+let people = [{name: "Ada", age: 36}, {name: "Linus", age: 54}, {name: "Ada", age: 99}]
+print(lists.unique_by(people, name))
+print(lists.unique_by([], first), lists.unique_by("Hello", strings.lower))
+# key is called once per item
+let calls = [0]
+fun counted(x)
+    calls[0] = calls[0] + 1
+    return str(x % 2)
+print(lists.unique_by([1, 2, 3, 4, 5], counted), calls[0])
+try
+    lists.unique_by([1, 2], num)
+catch e
+    print(e.message)
+try
+    lists.unique_by([1], "name")
+catch e
+    print(e.message)

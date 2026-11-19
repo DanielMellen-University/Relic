@@ -1,0 +1,7 @@
+2 2.5 7 1.0
+5 0.0 2.0
+9.22337203685478e+18
+[3, 1, 2]
+lists.median(): the list is empty
+lists.median(): item 1 must be a number, got string
+lists.median(): item 0 must be a number, got string

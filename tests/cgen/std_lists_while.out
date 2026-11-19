@@ -1,0 +1,9 @@
+[1, 2] [3, 1]
+[] [5, 1]
+[] []
+[1, 2] []
+["h", "i", " ", "t", "h", "e", "r", "e"] ["a", "b"]
+[1, 2, 3]
+2
+lists.take_while(): xs must be a list, got int
+lists.drop_while(): test must be a function, got int

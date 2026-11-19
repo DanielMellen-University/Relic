@@ -1,0 +1,6 @@
+["apple", "banana", "cherry"]
+[{name: "Ada", age: 36}, {name: "Linus", age: 54}]
+[] ["H", "e", "l", "o"]
+[1, 2] 5
+lists.unique_by(): key must give a string, got int
+lists.unique_by(): key must be a function, got string

@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, sum and product, find, any and all, min and max, count, unique, take and drop, partition, group_by and count_by, flatten, zip, chunk, windows, last, mean, min_by and max_by, sum_by, rotate, sorting |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -59,6 +59,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `map(xs, f)` | list | |
 | `filter(xs, keep)` | list | |
 | `reduce(xs, f, start)` | any | |
+| `scan(xs, f, start)` | list | each step of `reduce` in order: `[f(start, x0), f(f(start, x0), x1), ...]`; `start` is not included, so `[]` gives `[]` |
 | `sum(xs)` | number | an item that is not a number is `lists.sum(): item 1 must be a number, got string` (since 1.0.52; `product`, `mean` and `sum_by` say the same with their own name) |
 | `mean(xs)` | float | the sum over the count; `lists.mean(): the list is empty` (since 1.0.50); ints whose sum would pass the int range are added as floats (since 1.0.52; it was `int overflow`) |
 | `sum_by(xs, f)` | number | `f(x)` for each item added up from `0`, as `sum(map(xs, f))` without the list in between (since 1.0.50) |
@@ -75,16 +76,22 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `find(xs, test)` | any | the first item `test(x)` is true for, or `none`; it stops there (since 1.0.50) |
 | `find_index(xs, test)` | int | where that first item is, or `-1` (since 1.0.50) |
 | `take(xs, n)` / `drop(xs, n)` | list | the first `n` items (all when there are fewer), or the items after them; `lists.take(): count must be a whole number, 0 or more, got -1` otherwise (`lists.drop()` the same) (since 1.0.50) |
+| `take_while(xs, test)` / `drop_while(xs, test)` | list | the items from the front while `test(x)` is true, stopping at the first false one (`test` is not called after it), or the items from that one on |
+| `union(a, b)` / `intersect(a, b)` / `difference(a, b)` | list | `a` and `b` as sets: no item twice, in the order items first came (`a`, then `b`); items match by `==`, so `1` and `1.0` are one item and the first is kept. Strings are found through a map, other items one by one. `lists.union(): a must be a list, got int` (`b` for the second) |
 | `partition(xs, test)` | list | `[yes, no]`: the items `test(x)` is true for and the rest, each in order (since 1.0.50) |
 | `group_by(xs, key)` | map | each `key(x)` to the list of items with that key, in order; `lists.group_by(): key must give a string, got int` otherwise (since 1.0.50) |
+| `unique_by(xs, key)` | list | the first item for each `key(x)`, in order, with `key` called once per item; `lists.unique_by(): key must give a string, got int` otherwise |
 | `count_by(xs, key)` | map | each `key(x)` to how many items have that key, keys in the order they first came; `lists.count_by(): key must give a string, got int` otherwise (since 1.0.50) |
 | `min_by(xs, key)` / `max_by(xs, key)` | any | the item whose `key(x)` is smallest or largest by `<`, the first of equal ones; `key` is called once per item (since 1.0.52; the first was called twice); `lists.min_by(): the list is empty` (since 1.0.50) |
+| `median(xs)` | number | the middle item once sorted, as it is, for an odd count; the mean of the two middle items, as a float, for an even count. `lists.median(): the list is empty`, and `lists.median(): item 1 must be a number, got string` |
 | `last(xs)` | any | the last item; `lists.last(): the list is empty` (since 1.0.50) |
 | `windows(xs, n)` | list | every run of `n` items in a row, in order (`windows([1, 2, 3], 2)` is `[[1, 2], [2, 3]]`); fewer than `n` items give `[]`, and a size that is not a whole number above 0 is `lists.windows(): size must be a whole number above 0, got 0` (since 1.0.50) |
 | `rotate(xs, n)` | list | the first `n` items moved to the end (`rotate([1, 2, 3], 1)` is `[2, 3, 1]`); a negative `n` moves the last ones to the front, and `n` wraps round (since 1.0.50) |
 | `reverse(xs)` | list | new list; a string's characters or a map's keys work too (since 1.0.52; a map was an error) |
 | `copy(xs)` | list | shallow; of a string or a map, a list of its characters or keys (since 1.0.52; a string gave the string back, a map was an error) |
 | `sort(xs)` | list | new list, stable. A list of only numbers or only strings is sorted by the host, in the same order (100,000 ints: 0.94 s in 1.0.42, 0.012 s since 1.0.43); other lists go through `sort_by` |
+| `bisect(xs, item)` | int | for a sorted `xs`, the index of the first item that is not `<` `item` (before equal ones), or `len(xs)`; a binary search. `item` must be a number or a string (`lists.bisect(): item must be a number or a string, got none`), and comparing it with the items has the usual errors, such as `cannot compare an int and a string` |
+| `insert_sorted(xs, item)` | list | a new sorted list with `item` after any equal items, so building a list one item at a time gives what `sort` gives; `xs` is unchanged. Same `item` rules as `bisect` |
 | `sort_by(xs, less)` | list | `less(a, b)` is bool. `sort` and `sort_by` take a string's characters or a map's keys too (since 1.0.52; both failed on a map, and `sort_by` on a string) |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and

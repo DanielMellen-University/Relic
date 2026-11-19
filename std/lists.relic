@@ -53,6 +53,19 @@ fun reduce(xs, f, start)
         acc = f(acc, x)
     return acc
 
+# scan: every step of reduce, in order; scan([1, 2], f, 0) is
+# [f(0, 1), f(f(0, 1), 2)]. start itself is not in the list, so an empty list
+# gives [].
+fun scan(xs, f, start)
+    _seq("scan", xs)
+    _fn("scan", "f", f)
+    let out = []
+    let acc = start
+    for x in xs
+        acc = f(acc, x)
+        append(out, acc)
+    return out
+
 # sum: the items added with +, from 0, so a list of strings is an error
 # ("cannot add an int and a string") and not a join.
 fun sum(xs)
@@ -213,6 +226,66 @@ fun find_index(xs, test)
         i = i + 1
     return -1
 
+# union, intersect and difference treat two lists as sets: the result has no
+# item twice, in the order items first came (a, then b for union), and items
+# match by ==, so 1 and 1.0 are the same item and the first one is kept.
+# Strings are looked up in a map; other items are compared one by one.
+fun _set_of(xs)
+    let strs = {}
+    let rest = []
+    for x in xs
+        if type(x) == "string"
+            strs[x] = true
+        else
+            append(rest, x)
+    return [strs, rest]
+
+fun _in_set(set, x)
+    if type(x) == "string"
+        return x in set[0]
+    return x in set[1]
+
+fun _add_new(out, set, x)
+    if not _in_set(set, x)
+        append(out, x)
+        if type(x) == "string"
+            set[0][x] = true
+        else
+            append(set[1], x)
+
+fun union(a, b)
+    _seq_named("union", "a", a)
+    _seq_named("union", "b", b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        _add_new(out, seen, x)
+    for x in b
+        _add_new(out, seen, x)
+    return out
+
+fun intersect(a, b)
+    _seq_named("intersect", "a", a)
+    _seq_named("intersect", "b", b)
+    let other = _set_of(b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        if _in_set(other, x)
+            _add_new(out, seen, x)
+    return out
+
+fun difference(a, b)
+    _seq_named("difference", "a", a)
+    _seq_named("difference", "b", b)
+    let other = _set_of(b)
+    let out = []
+    let seen = _set_of([])
+    for x in a
+        if not _in_set(other, x)
+            _add_new(out, seen, x)
+    return out
+
 # Since 1.0.50: the first n items (all of them when there are fewer), and the
 # items after the first n. n must be a whole number, 0 or more.
 fun _count_arg(name, n)
@@ -238,6 +311,30 @@ fun drop(xs, n)
         if i >= n
             append(out, x)
         i = i + 1
+    return out
+
+# take_while: the items from the front while test(x) is true, stopping at the
+# first one it is false for. drop_while: the rest, from that item on.
+fun take_while(xs, test)
+    _seq("take_while", xs)
+    _fn("take_while", "test", test)
+    let out = []
+    for x in xs
+        if not test(x)
+            break
+        append(out, x)
+    return out
+
+fun drop_while(xs, test)
+    _seq("drop_while", xs)
+    _fn("drop_while", "test", test)
+    let out = []
+    let dropping = true
+    for x in xs
+        if dropping and test(x)
+            next
+        dropping = false
+        append(out, x)
     return out
 
 # Since 1.0.50: two lists, the items test(x) is true for and the rest, each in
@@ -280,6 +377,22 @@ fun group_by(xs, key)
         if not k in out
             out[k] = []
         append(out[k], x)
+    return out
+
+# unique_by: the first item for each key(x), in order. key(x) must give a
+# string, as for group_by.
+fun unique_by(xs, key)
+    _seq("unique_by", xs)
+    _fn("unique_by", "key", key)
+    let out = []
+    let seen = {}
+    for x in xs
+        let k = key(x)
+        if type(k) != "string"
+            fail("lists.unique_by(): key must give a string, got " + type(k))
+        if not k in seen
+            seen[k] = true
+            append(out, x)
     return out
 
 # Since 1.0.50: a map from key(x) to how many items have that key, keys in the
@@ -376,6 +489,25 @@ fun windows(xs, n)
     for i in 0..len(items) - n + 1
         append(out, slice(items, i, i + n))
     return out
+
+# median: the middle item once sorted, as it is, for an odd count; the mean
+# of the two middle ones, as a float, for an even count. Items must be
+# numbers, and an empty list is an error, as for mean. A NaN item sorts where
+# sort leaves it.
+fun median(xs)
+    _empty("median", xs)
+    let i = 0
+    for x in xs
+        let t = type(x)
+        if t != "int" and t != "float"
+            fail("lists.median(): item " + str(i) + " must be a number, got " + t)
+        i = i + 1
+    let ys = sort(xs)
+    let n = len(ys)
+    let mid = int(n / 2)
+    if n % 2 == 1
+        return ys[mid]
+    return float(ys[mid - 1]) / 2 + float(ys[mid]) / 2
 
 # Since 1.0.50: the average of the items, as a float; an empty list is an
 # error, as for min and max.
@@ -475,6 +607,50 @@ fun _merge(xs, less)
     return out + slice(a, i, len(a)) + slice(b, j, len(b))
 
 fun natural(a, b) = a < b
+
+# bisect: where item would go in xs, which must already be sorted (as sort
+# leaves it): the index of the first item that is not < item, so before any
+# equal ones; len(xs) when every item is smaller. A binary search, so a
+# 100,000 item list takes about 17 compares. item must be a number or a
+# string, and comparing it with the items has the usual errors ("cannot
+# compare an int and a string").
+fun _sortable(name, item)
+    let t = type(item)
+    if t != "int" and t != "float" and t != "string"
+        fail("lists." + name + "(): item must be a number or a string, got " + t)
+
+fun _bisect(ys, item, after)
+    let lo = 0
+    let hi = len(ys)
+    while lo < hi
+        let mid = int((lo + hi) / 2)
+        let go_right = ys[mid] < item
+        if after
+            go_right = not (item < ys[mid])
+        if go_right
+            lo = mid + 1
+        else
+            hi = mid
+    return lo
+
+fun bisect(xs, item)
+    _seq("bisect", xs)
+    _sortable("bisect", item)
+    return _bisect(_items(xs), item, false)
+
+# insert_sorted: a new sorted list with item added after any equal items, so
+# adding items one at a time keeps them in the order they came, as sort does.
+# xs is left as it is.
+fun insert_sorted(xs, item)
+    _seq("insert_sorted", xs)
+    _sortable("insert_sorted", item)
+    let ys = _items(xs)
+    let at = _bisect(ys, item, true)
+    let out = slice(ys, 0, at)
+    append(out, item)
+    for y in slice(ys, at, len(ys))
+        append(out, y)
+    return out
 
 # A list of only numbers or only strings is sorted by the host (host_sort,
 # the same merge as sort_by, so the order is the same, ties and NaN too);
