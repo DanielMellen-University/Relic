@@ -1,0 +1,34 @@
+# std/time dates: UTC, years 1 to 9999, no leap seconds.
+use std/time
+
+print(time.date(0))
+print(time.date(-1))
+print(time.iso(0), time.iso(-1), time.iso(951782400), time.iso(1795284060))
+print(time.iso(-62135596800), time.iso(253402300799))
+# a fraction is dropped, rounding down
+print(time.iso(1.9), time.iso(-0.5))
+
+print(time.from_date(1970, 1, 1), time.from_date(2026, 11, 21, 18, 1), time.from_date(2000, 2, 29, 23, 59, 59))
+print(time.from_date(1, 1, 1), time.from_date(9999, 12, 31, 23, 59, 59))
+print(time.parse_iso("2026-11-21T18:01:00Z"), time.parse_iso("1969-12-31"), time.parse_iso("0001-01-01"))
+
+# weekday is 1 (Monday) to 7 (Sunday); yday counts from 1
+let d = time.date(time.from_date(2024, 12, 31, 12))
+print(d.weekday, d.yday, time.date(time.from_date(2023, 12, 31)).yday, time.date(time.from_date(2026, 11, 22)).weekday)
+
+print(time.is_leap(1900), time.is_leap(2000), time.is_leap(2024), time.is_leap(2026), time.is_leap(-4))
+let feb = []
+for y in [1900, 2000, 2023, 2024]
+    append(feb, time.days_in_month(y, 2))
+print(feb, time.days_in_month(2026, 4), time.days_in_month(2026, 12))
+
+# every day of 2024 goes there and back
+let ok = true
+let s = time.from_date(2024, 1, 1)
+for i in 0..366
+    let back = time.date(s + i * 86400)
+    if time.from_date(back.year, back.month, back.day) != s + i * 86400 or back.yday != i + 1
+        ok = false
+print(ok, time.iso(s + 365 * 86400))
+
+print(time.date(time.now()).year >= 2026)
