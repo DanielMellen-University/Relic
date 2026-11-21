@@ -1,0 +1,21 @@
+random.new(): seed must be an int, got string
+random.new(): seed must be an int, got float
+random.float(): r must be a generator from random.new(), got none
+random.float(): r must be a generator from random.new(), got a map that random.new() did not make
+random.below(): n must be from 1 to 4294967087, got 0
+random.below(): n must be from 1 to 4294967087, got 4294967088
+random.below(): n must be an int, got float
+random.range(): hi must be above lo, got 5..5
+random.range(): hi must be an int, got string
+random.range(): hi - lo must be at most 4294967087
+random.range(): hi - lo must be at most 4294967087
+random.chance(): p must be from 0 to 1, got 1.5
+random.chance(): p must be from 0 to 1, got -0.1
+random.chance(): p must be a number, got string
+random.pick(): the list is empty
+random.pick(): xs must be a list, got string
+random.shuffle(): xs must be a list, got map
+random.sample(): k must be from 0 to 2, got 3
+random.sample(): k must be from 0 to 2, got -1
+random.sample(): k must be an int, got float
+random.chance(): p must be from 0 to 1, got nan

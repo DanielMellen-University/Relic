@@ -1,0 +1,50 @@
+# std/random: the same seed gives the same numbers on every engine.
+use std/lists
+use std/random
+
+# MRG32k3a's published first numbers for the all-12345 state
+let ref = {s1: [12345, 12345, 12345], s2: [12345, 12345, 12345]}
+print(random.float(ref), random.float(ref), random.float(ref))
+
+let r = random.new(42)
+let dice = []
+for i in 0..12
+    append(dice, random.range(r, 1, 7))
+print(dice)
+print(random.below(r, 1), random.below(r, 2), random.below(r, 1000), random.below(r, 4294967087))
+print(random.range(r, -3, -1), random.range(r, -9223372036854775807 - 1, -9223372036854775807 + 100))
+let f = random.float(r)
+print(type(f), f > 0 and f < 1)
+print(random.chance(r, 0), random.chance(r, 1), random.chance(r, 0.5))
+print(random.pick(r, ["red", "green", "blue"]))
+
+# shuffle and sample make new lists and leave xs alone
+let xs = [1, 2, 3, 4, 5, 6, 7, 8]
+let ys = random.shuffle(r, xs)
+print(ys, xs)
+print(random.sample(r, xs, 3), random.sample(r, xs, 0), random.shuffle(r, []))
+let all = random.sample(r, xs, 8)
+print(len(all), lists.sort(all) == xs)
+
+# two generators with one seed agree; nearby seeds do not start alike
+let a = random.new(7)
+let b = random.new(7)
+let same = true
+for i in 0..100
+    if random.below(a, 1000000) != random.below(b, 1000000)
+        same = false
+print(same)
+print(random.below(random.new(1), 1000000), random.below(random.new(2), 1000000), random.below(random.new(3), 1000000))
+print(random.below(random.new(-1), 1000000), random.below(random.new(0), 1000000))
+
+# roughly even: 6,000 rolls of a die
+let g = random.new(2026)
+let counts = [0, 0, 0, 0, 0, 0]
+for i in 0..6000
+    let k = random.below(g, 6)
+    counts[k] = counts[k] + 1
+let even = true
+for c in counts
+    if c < 900 or c > 1100
+        even = false
+print(counts, even)

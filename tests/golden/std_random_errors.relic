@@ -1,0 +1,88 @@
+# std/random: each bad argument names the call and what it got.
+use std/random
+
+let r = random.new(1)
+try
+    random.new("1")
+catch err
+    print(err.message)
+try
+    random.new(1.0)
+catch err
+    print(err.message)
+try
+    random.float(none)
+catch err
+    print(err.message)
+try
+    random.float({a: 1})
+catch err
+    print(err.message)
+try
+    random.below(r, 0)
+catch err
+    print(err.message)
+try
+    random.below(r, 4294967088)
+catch err
+    print(err.message)
+try
+    random.below(r, 2.0)
+catch err
+    print(err.message)
+try
+    random.range(r, 5, 5)
+catch err
+    print(err.message)
+try
+    random.range(r, 1, "9")
+catch err
+    print(err.message)
+try
+    random.range(r, -9223372036854775807 - 1, 9223372036854775807)
+catch err
+    print(err.message)
+try
+    random.range(r, 0, 4294967088)
+catch err
+    print(err.message)
+try
+    random.chance(r, 1.5)
+catch err
+    print(err.message)
+try
+    random.chance(r, -0.1)
+catch err
+    print(err.message)
+try
+    random.chance(r, "x")
+catch err
+    print(err.message)
+try
+    random.pick(r, [])
+catch err
+    print(err.message)
+try
+    random.pick(r, "abc")
+catch err
+    print(err.message)
+try
+    random.shuffle(r, {a: 1})
+catch err
+    print(err.message)
+try
+    random.sample(r, [1, 2], 3)
+catch err
+    print(err.message)
+try
+    random.sample(r, [1, 2], -1)
+catch err
+    print(err.message)
+try
+    random.sample(r, [1, 2], 1.0)
+catch err
+    print(err.message)
+try
+    random.chance(r, float("nan"))
+catch err
+    print(err.message)
