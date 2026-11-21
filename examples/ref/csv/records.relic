@@ -1,0 +1,5 @@
+# csv.records: each row as a map from the header's names.
+use std/csv
+let people = csv.records("name,city\nAda,London\nGrace,New York\n")
+for p in people
+    print(p.name + " lives in " + p.city)

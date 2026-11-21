@@ -1,0 +1,5 @@
+# csv.parse: a quoted field may hold the separator, a quote written twice, or a line break.
+use std/csv
+let rows = csv.parse("item,note\nlamp,\"red, tall\"\nmug,\"says \"\"hi\"\"\"\n")
+for row in rows
+    print(len(row), row)

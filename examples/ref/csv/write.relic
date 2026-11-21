@@ -1,0 +1,6 @@
+# csv.write: fields are quoted only when they need it, and parse reads them back.
+use std/csv
+let rows = [["name", "score"], ["Ada, Countess", 98], ["Linus \"T\"", 87.5], ["Grace", none]]
+let text = csv.write(rows)
+print(text)
+print(csv.parse(text)[1])
