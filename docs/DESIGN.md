@@ -53,7 +53,7 @@ Out of the language unless Daniel picks them:
 | A trailing colon on block lines, Python style | left out for now |
 | A `const` form for names that never change | |
 | A separate `++` for joining strings | `+` joins today |
-| Dates and time zones, random numbers | not in `std/` yet |
+| Dates and time zones | not in `std/` yet; seeded random numbers are in `std/random` |
 | Unicode-aware `upper` and `lower` | ASCII only today |
 | More than one graphics window | one at a time today |
 | A formal grammar | to be written once the syntax settles; draft until then |
