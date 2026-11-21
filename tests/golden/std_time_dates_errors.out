@@ -1,0 +1,23 @@
+time.date(): secs must be a number, got string
+time.date(): secs must be in the years 1 to 9999, got 253402300800
+time.iso(): secs must be in the years 1 to 9999, got -62135596801
+time.date(): secs must be in the years 1 to 9999, got nan
+time.from_date(): month must be from 1 to 12, got 13
+time.from_date(): day must be from 1 to 28 in 2023-02, got 29
+time.from_date(): day must be from 1 to 30 in 2026-04, got 31
+time.from_date(): year must be from 1 to 9999, got 0
+time.from_date(): hour must be from 0 to 23, got 24
+time.from_date(): minute must be from 0 to 59, got 60
+time.from_date(): second must be from 0 to 59, got 60
+time.from_date(): month must be an int, got 1.5
+from_date() takes 3 to 6 arguments, got 2
+time.days_in_month(): month must be from 1 to 12, got 0
+time.is_leap(): year must be an int, got string
+time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "2026-11-21 18:01:00"
+time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "2026-11-21T18:01:00"
+time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "26-11-21"
+time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "2026-1-21"
+time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "2026-11-2x"
+time.from_date(): day must be from 1 to 28 in 2026-02, got 30
+time.from_date(): hour must be from 0 to 23, got 25
+time.parse_iso(): text must be a string, got int

@@ -1,0 +1,6 @@
+# time.iso and time.parse_iso: there and back, and a week later.
+use std/time
+let s = time.parse_iso("2026-11-21T18:01:00Z")
+print(s, time.iso(s))
+print(time.iso(s + 7 * 86400))
+print(len(time.iso(time.now())))
