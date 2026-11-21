@@ -1,0 +1,6 @@
+# time.date: the parts of 2024-12-31 12:30:05 UTC, a Tuesday, day 366.
+use std/time
+let d = time.date(time.from_date(2024, 12, 31, 12, 30, 5))
+print(d.year, d.month, d.day, d.hour, d.minute, d.second)
+let names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+print(names[d.weekday - 1], d.yday)
