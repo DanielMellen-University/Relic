@@ -1,0 +1,150 @@
+# std/random: seeded random numbers. The same seed gives the same numbers on
+# every engine (the VM, the tree-walker, the self-hosted interpreter and
+# compiled programs), so a game or a test can replay a run.
+#
+# The generator is L'Ecuyer's MRG32k3a: two combined recurrences of order 3,
+# with a period of about 2^191. Every product stays below 2^53, so it is plain
+# int arithmetic in Relic and needs nothing from the host. It is not for
+# secrets: anyone who sees enough numbers can work out the next ones.
+
+let _m1 = 4294967087
+let _m2 = 4294944443
+
+fun _int(name, what, n)
+    if type(n) != "int"
+        fail("random." + name + "(): " + what + " must be an int, got " + type(n))
+
+fun _gen(name, r)
+    if type(r) != "map" or not ("s1" in r) or not ("s2" in r)
+        let got = type(r)
+        if got == "map"
+            got = "a map that random.new() did not make"
+        fail("random." + name + "(): r must be a generator from random.new(), got " + got)
+
+fun _list(name, xs)
+    if type(xs) != "list"
+        fail("random." + name + "(): xs must be a list, got " + type(xs))
+
+# The next number from 1 to _m1, from one step of each recurrence.
+fun _next(r)
+    let s1 = r.s1
+    let s2 = r.s2
+    let p1 = (1403580 * s1[1] - 810728 * s1[0]) % _m1
+    s1[0] = s1[1]
+    s1[1] = s1[2]
+    s1[2] = p1
+    let p2 = (527612 * s2[2] - 1370589 * s2[0]) % _m2
+    s2[0] = s2[1]
+    s2[1] = s2[2]
+    s2[2] = p2
+    if p1 > p2
+        return p1 - p2
+    return p1 - p2 + _m1
+
+# A uniform int from 0 to n - 1, for 1 <= n <= _m1. Draws that fall in the
+# last partial block are drawn again, so every result is equally likely.
+fun _below(r, n)
+    let limit = _m1 - _m1 % n
+    let z = _next(r) - 1
+    while z >= limit
+        z = _next(r) - 1
+    return z % n
+
+# A new generator. Any int is a seed: it is taken modulo each recurrence's
+# modulus, so two seeds give the same numbers only when they differ by a
+# multiple of both (about 1.8e19). The first 16 numbers are thrown away so that
+# seeds next to each other do not start alike.
+fun new(seed)
+    _int("new", "seed", seed)
+    let r = {s1: [12345, 12345, seed % _m1], s2: [12345, 12345, seed % _m2]}
+    for i in 0..16
+        _next(r)
+    return r
+
+# A float from 0 to 1, never exactly 0 or 1.
+fun float(r)
+    _gen("float", r)
+    return _next(r) / 4294967088
+
+# An int from 0 to n - 1.
+fun below(r, n)
+    _gen("below", r)
+    _int("below", "n", n)
+    if n < 1 or n > _m1
+        fail("random.below(): n must be from 1 to 4294967087, got " + str(n))
+    return _below(r, n)
+
+# An int from lo up to hi - 1, like the numbers in lo..hi.
+fun range(r, lo, hi)
+    _gen("range", r)
+    _int("range", "lo", lo)
+    _int("range", "hi", hi)
+    if hi <= lo
+        fail("random.range(): hi must be above lo, got " + str(lo) + ".." + str(hi))
+    # hi - lo could overflow when the two have different signs; hi > _m1 + lo
+    # says the same without it (lo is negative there, so _m1 + lo fits).
+    let too_wide = false
+    if lo < 0 and hi > 0
+        too_wide = hi > _m1 + lo
+    else
+        too_wide = hi - lo > _m1
+    if too_wide
+        fail("random.range(): hi - lo must be at most 4294967087")
+    return lo + _below(r, hi - lo)
+
+# true with probability p (a number from 0 to 1): 0 is never, 1 is always.
+fun chance(r, p)
+    _gen("chance", r)
+    if type(p) != "int" and type(p) != "float"
+        fail("random.chance(): p must be a number, got " + type(p))
+    if not (p >= 0 and p <= 1)
+        fail("random.chance(): p must be from 0 to 1, got " + str(p))
+    return _next(r) / 4294967088 < p
+
+# One item of a list, each equally likely.
+fun pick(r, xs)
+    _gen("pick", r)
+    _list("pick", xs)
+    if len(xs) == 0
+        fail("random.pick(): the list is empty")
+    if len(xs) > _m1
+        fail("random.pick(): the list has more than 4294967087 items")
+    return xs[_below(r, len(xs))]
+
+# A new list with the items of xs in a random order (Fisher-Yates); xs is left
+# as it is.
+fun shuffle(r, xs)
+    _gen("shuffle", r)
+    _list("shuffle", xs)
+    if len(xs) > _m1
+        fail("random.shuffle(): the list has more than 4294967087 items")
+    let out = slice(xs, 0, len(xs))
+    let i = len(out) - 1
+    while i > 0
+        let j = _below(r, i + 1)
+        let t = out[i]
+        out[i] = out[j]
+        out[j] = t
+        i = i - 1
+    return out
+
+# k different items of xs (different places, not different values), in the
+# order they were drawn; xs is left as it is.
+fun sample(r, xs, k)
+    _gen("sample", r)
+    _list("sample", xs)
+    _int("sample", "k", k)
+    if k < 0 or k > len(xs)
+        fail("random.sample(): k must be from 0 to " + str(len(xs)) + ", got " + str(k))
+    if len(xs) > _m1
+        fail("random.sample(): the list has more than 4294967087 items")
+    let pool = slice(xs, 0, len(xs))
+    let out = []
+    let n = len(pool)
+    for i in 0..k
+        let j = i + _below(r, n - i)
+        let t = pool[i]
+        pool[i] = pool[j]
+        pool[j] = t
+        append(out, pool[i])
+    return out
