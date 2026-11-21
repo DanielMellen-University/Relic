@@ -1,0 +1,44 @@
+# std/csv: errors give the line and column, or name the argument.
+use std/csv
+for text in ["a\"b", "\"a\"b", "x\n\"open", "ok,\"fine\"\nz,\"y\"z", "a,b\n\"x\ny\"q"]
+    try
+        csv.parse(text)
+    catch err
+        print(err.message)
+try
+    csv.records("a,a\n1,2")
+catch err
+    print(err.message)
+try
+    csv.records("a,b\n1,2\n3")
+catch err
+    print(err.message)
+try
+    csv.records("a,b\n1,2,3")
+catch err
+    print(err.message)
+for sep in [",,", "", "\"", "\n", 44]
+    try
+        csv.parse("a", sep)
+    catch err
+        print(err.message)
+try
+    csv.write([[{}]])
+catch err
+    print(err.message)
+try
+    csv.write(["a"])
+catch err
+    print(err.message)
+try
+    csv.write("a")
+catch err
+    print(err.message)
+try
+    csv.parse(5)
+catch err
+    print(err.message)
+try
+    csv.records(none)
+catch err
+    print(err.message)

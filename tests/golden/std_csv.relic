@@ -1,0 +1,29 @@
+# std/csv: RFC 4180 text in and out.
+use std/csv
+
+print(csv.parse("name,age\nAda,36\nLinus,54\n"))
+# quotes, doubled quotes, the separator and line breaks inside quotes, CRLF
+print(csv.parse("a,\"b,c\",\"say \"\"hi\"\"\"\u{d}\nx,\"two\nlines\",\n"))
+# empty text, an empty line, empty fields, no line break at the end
+print(csv.parse(""), csv.parse("\n"), csv.parse(",,"), csv.parse("a\n\nb"), csv.parse("\"\""))
+# a CR on its own is text; other separators; characters past ASCII
+print(len(csv.parse("a\u{d}b")[0][0]), csv.parse("a;b\n1;2", ";"), csv.parse("é\tü", "\t"))
+
+# records: maps from the header, empty lines skipped
+print(csv.records("name,age\nAda,36\n\nLinus,\"54\"\n\n"), csv.records(""), csv.records("only\n"))
+
+# write quotes only what needs it, and parse gives the rows back
+let rows = [["plain", "b,c", "q\"x", ""], [1, 2.5, true, none], [" pad", "line\nbreak", "tab\there"], [""], []]
+let text = csv.write(rows)
+print(text)
+print(csv.parse(text))
+print(csv.write([["a", "b;c", "d,e"]], ";"), csv.write([]) == "")
+let back = csv.parse(csv.write([["x", "\"", ",", "\n", "cr\u{d}", "crlf\u{d}\n"]]))
+print(back == [["x", "\"", ",", "\n", "cr\u{d}", "crlf\u{d}\n"]])
+
+# a long table is quick (pieces are joined in halves)
+let big = []
+for i in 0..2000
+    append(big, [str(i), "row {i}", "a,b"])
+let again = csv.parse(csv.write(big))
+print(len(again), again[1999])

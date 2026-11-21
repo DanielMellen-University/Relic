@@ -1,0 +1,18 @@
+csv.parse(): line 1, column 2: a quote inside an unquoted field; quote the whole field and write the quote twice
+csv.parse(): line 1, column 4: text after a closing quote; put a separator or a line break here
+csv.parse(): line 2, column 1: this quoted field is not closed
+csv.parse(): line 2, column 6: text after a closing quote; put a separator or a line break here
+csv.parse(): line 3, column 3: text after a closing quote; put a separator or a line break here
+csv.records(): the header has "a" twice
+csv.records(): row 3 has 1 field, the header has 2
+csv.records(): row 2 has 3 fields, the header has 2
+csv.parse(): sep must be one character, got ",,"
+csv.parse(): sep must be one character, got ""
+csv.parse(): sep cannot be a quote or a line break
+csv.parse(): sep cannot be a quote or a line break
+csv.parse(): sep must be one character, got int
+csv.write(): row 1, field 1 must be a string, number, bool or none, got map
+csv.write(): row 1 must be a list, got string
+csv.write(): rows must be a list, got string
+csv.parse(): text must be a string, got int
+csv.records(): text must be a string, got none
