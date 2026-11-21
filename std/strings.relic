@@ -288,11 +288,39 @@ fun _join(parts, sep, a, b)
     let m = a + int((b - a) / 2)
     return _join(parts, sep, a, m) + sep + _join(parts, sep, m, b)
 
-fun replace(s, old, new)
+fun replace(s, old, new, count = none)
     _text("replace", "text", s)
     _text("replace", "old text", old)
     _text("replace", "new text", new)
-    return join(split(s, old), new)
+    if count == none
+        return join(split(s, old), new)
+    if (type(count) != "int" and type(count) != "float") or count < 0 or count % 1 != 0
+        fail("strings.replace(): count must be a whole number, 0 or more, got " + str(count))
+    if count == 0
+        return s
+    if old == ""
+        let out = ""
+        let left = count
+        if left > 0
+            out = out + new
+            left = left - 1
+        for c in s
+            out = out + c
+            if left > 0
+                out = out + new
+                left = left - 1
+        return out
+    let parts = split(s, old)
+    let out = parts[0]
+    let i = 1
+    while i < len(parts)
+        if i <= count
+            out = out + new
+        else
+            out = out + old
+        out = out + parts[i]
+        i = i + 1
+    return out
 
 # The text on both sides of the first or last separator.
 fun partition(s, sep)

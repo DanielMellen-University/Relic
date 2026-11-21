@@ -1,0 +1,8 @@
+ba
+baa
+aaaa
+-a-b
+ab
+-a-b-
+strings.replace(): count must be a whole number, 0 or more, got -1
+strings.replace(): count must be a whole number, 0 or more, got 1.5

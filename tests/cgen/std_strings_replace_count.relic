@@ -1,0 +1,15 @@
+use std/strings
+print(strings.replace("aaa", "aa", "b"))
+print(strings.replace("aaaa", "aa", "b", 1))
+print(strings.replace("aaaa", "aa", "b", 0))
+print(strings.replace("ab", "", "-", 2))
+print(strings.replace("ab", "", "-", 0))
+print(strings.replace("ab", "", "-", 9))
+try
+    strings.replace("aaa", "a", "x", -1)
+catch e
+    print(e.message)
+try
+    strings.replace("aaa", "a", "x", 1.5)
+catch e
+    print(e.message)
