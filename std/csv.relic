@@ -1,0 +1,186 @@
+# std/csv: comma-separated text in and out, as RFC 4180 has it. A field may be
+# wrapped in double quotes; inside them a quote is written twice, and the
+# separator and line breaks are plain text. Lines end in LF or CRLF; a CR on
+# its own is kept as text. Errors give the line and column (characters from 1)
+# where the problem is.
+
+fun _sep(name, sep)
+    if type(sep) != "string" or len(sep) != 1
+        let got = type(sep)
+        if got == "string"
+            got = "\"" + sep + "\""
+        fail("csv." + name + "(): sep must be one character, got " + got)
+    if sep == "\"" or sep == "\n" or sep == chr(13)
+        fail("csv." + name + "(): sep cannot be a quote or a line break")
+
+fun _bad(line, column, message)
+    fail("csv.parse(): line " + str(line) + ", column " + str(column) + ": " + message)
+
+# The rows of text, each a list of strings. A line break after the last row
+# adds no row; an empty line in the middle is a row with one empty field.
+fun parse(text, sep = ",")
+    if type(text) != "string"
+        fail("csv.parse(): text must be a string, got " + type(text))
+    _sep("parse", sep)
+    let cr = chr(13)
+    let rows = []
+    let row = []
+    let value = ""
+    let mode = "start"   # start, plain, quoted or closed
+    let line = 1
+    let column = 1
+    let start_line = 1
+    let start_column = 1
+    let i = 0
+    let n = len(text)
+    while i < n
+        let c = text[i]
+        if mode == "quoted"
+            if c == "\""
+                if i + 1 < n and text[i + 1] == "\""
+                    value = value + "\""
+                    i = i + 1
+                    column = column + 1
+                else
+                    mode = "closed"
+            else
+                value = value + c
+                if c == "\n"
+                    line = line + 1
+                    column = 0
+            i = i + 1
+            column = column + 1
+        else if c == "\n" or (c == cr and i + 1 < n and text[i + 1] == "\n")
+            if c == cr
+                i = i + 1
+            append(row, value)
+            append(rows, row)
+            row = []
+            value = ""
+            mode = "start"
+            i = i + 1
+            line = line + 1
+            column = 1
+        else if c == sep
+            append(row, value)
+            value = ""
+            mode = "start"
+            i = i + 1
+            column = column + 1
+        else if mode == "closed"
+            _bad(line, column, "text after a closing quote; put a separator or a line break here")
+        else if c == "\""
+            if mode == "plain"
+                _bad(line, column, "a quote inside an unquoted field; quote the whole field and write the quote twice")
+            mode = "quoted"
+            start_line = line
+            start_column = column
+            i = i + 1
+            column = column + 1
+        else
+            value = value + c
+            mode = "plain"
+            i = i + 1
+            column = column + 1
+    if mode == "quoted"
+        _bad(start_line, start_column, "this quoted field is not closed")
+    if mode != "start" or len(row) > 0
+        append(row, value)
+        append(rows, row)
+    return rows
+
+# The rows after the first as maps from the first row's names: records of
+# "name,age\nAda,36\n" is [{name: "Ada", age: "36"}]. Every row must have as
+# many fields as the header, and the names must differ. Empty lines are
+# skipped, so a file that ends in blank lines still reads.
+fun records(text, sep = ",")
+    if type(text) != "string"
+        fail("csv.records(): text must be a string, got " + type(text))
+    _sep("records", sep)
+    let rows = parse(text, sep)
+    if len(rows) == 0
+        return []
+    let names = rows[0]
+    let seen = {}
+    for k in names
+        if k in seen
+            fail("csv.records(): the header has \"" + k + "\" twice")
+        seen[k] = true
+    let out = []
+    for r in 1..len(rows)
+        let row = rows[r]
+        if len(row) == 1 and row[0] == ""
+            next
+        if len(row) != len(names)
+            let word = " fields"
+            if len(row) == 1
+                word = " field"
+            fail("csv.records(): row " + str(r + 1) + " has " + str(len(row)) + word + ", the header has " + str(len(names)))
+        let m = {}
+        for j in 0..len(names)
+            m[names[j]] = row[j]
+        append(out, m)
+    return out
+
+# One field as text: quoted when it holds the separator, a quote, a CR or a
+# LF, or starts or ends with a space (so a reader that trims keeps them).
+fun _field(v, sep, r, j)
+    let t = type(v)
+    if t == "int" or t == "float" or t == "bool"
+        v = str(v)
+    else if t == "none"
+        v = ""
+    else if t != "string"
+        fail("csv.write(): row " + str(r + 1) + ", field " + str(j + 1) + " must be a string, number, bool or none, got " + t)
+    let needs = false
+    let n = len(v)
+    if n > 0 and (v[0] == " " or v[n - 1] == " ")
+        needs = true
+    let out = ""
+    for c in v
+        if c == "\""
+            needs = true
+            out = out + "\"\""
+        else
+            if c == sep or c == "\n" or c == chr(13)
+                needs = true
+            out = out + c
+    if needs
+        return "\"" + out + "\""
+    return v
+
+# The text of a list of rows, each a list of fields, with "\n" after every row.
+# Strings, numbers and bools are written as str() shows them, none as an empty
+# field. parse(write(rows)) gives the rows back as strings.
+fun write(rows, sep = ",")
+    if type(rows) != "list"
+        fail("csv.write(): rows must be a list, got " + type(rows))
+    _sep("write", sep)
+    let lines = []
+    let r = 0
+    for row in rows
+        if type(row) != "list"
+            fail("csv.write(): row " + str(r + 1) + " must be a list, got " + type(row))
+        let line = ""
+        let j = 0
+        for v in row
+            if j > 0
+                line = line + sep
+            line = line + _field(v, sep, r, j)
+            j = j + 1
+        # one empty field is written "" so it does not read as an empty line
+        if len(row) == 1 and line == ""
+            line = "\"\""
+        append(lines, line + "\n")
+        r = r + 1
+    return _join(lines, 0, len(lines))
+
+# The pieces joined in halves, so a long table takes time growing with its
+# length, not its square.
+fun _join(parts, a, b)
+    if b - a == 0
+        return ""
+    if b - a == 1
+        return parts[a]
+    let mid = a + int((b - a) / 2)
+    return _join(parts, a, mid) + _join(parts, mid, b)
