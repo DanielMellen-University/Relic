@@ -48,3 +48,168 @@ fun limit(t, fps)
     let left = 1 / fps - (host_clock() - t.last)
     if left > 0
         host_sleep(left * 1000)
+
+# Calendar dates, in UTC. Seconds count from 1970-01-01 00:00:00
+# UTC with no leap seconds, as time.now() does. Years 1 to 9999 are covered, so
+# every number stays below 2^53 and the arithmetic is exact. Days to a date and
+# back follow Howard Hinnant's civil_from_days and days_from_civil.
+
+let _min_secs = -62135596800   # 0001-01-01 00:00:00
+let _max_secs = 253402300799   # 9999-12-31 23:59:59
+
+# a / b rounded down, for ints well below 2^53: a - a % b is a multiple of b,
+# so the float division is exact.
+fun _fdiv(a, b) = int((a - a % b) / b)
+
+fun _whole(name, what, n)
+    if type(n) != "int"
+        let got = type(n)
+        if got == "float"
+            got = str(n)
+        fail("time." + name + "(): " + what + " must be an int, got " + got)
+
+fun _days_from_civil(y, m, d)
+    if m <= 2
+        y = y - 1
+    let era = _fdiv(y, 400)
+    let yoe = y - era * 400
+    let mp = m - 3
+    if m <= 2
+        mp = m + 9
+    let doy = _fdiv(153 * mp + 2, 5) + d - 1
+    let doe = yoe * 365 + _fdiv(yoe, 4) - _fdiv(yoe, 100) + doy
+    return era * 146097 + doe - 719468
+
+fun _civil_from_days(z)
+    z = z + 719468
+    let era = _fdiv(z, 146097)
+    let doe = z - era * 146097
+    let yoe = _fdiv(doe - _fdiv(doe, 1460) + _fdiv(doe, 36524) - _fdiv(doe, 146096), 365)
+    let y = yoe + era * 400
+    let doy = doe - (365 * yoe + _fdiv(yoe, 4) - _fdiv(yoe, 100))
+    let mp = _fdiv(5 * doy + 2, 153)
+    let d = doy - _fdiv(153 * mp + 2, 5) + 1
+    let m = mp + 3
+    if mp >= 10
+        m = mp - 9
+    if m <= 2
+        y = y + 1
+    return [y, m, d]
+
+# true for a leap year in the Gregorian calendar: every 4th year, but not
+# every 100th unless it is a 400th.
+fun is_leap(year)
+    _whole("is_leap", "year", year)
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+# 28 to 31.
+fun days_in_month(year, month)
+    _whole("days_in_month", "year", year)
+    _whole("days_in_month", "month", month)
+    if month < 1 or month > 12
+        fail("time.days_in_month(): month must be from 1 to 12, got " + str(month))
+    if month == 2
+        if is_leap(year)
+            return 29
+        return 28
+    if month == 4 or month == 6 or month == 9 or month == 11
+        return 30
+    return 31
+
+fun _secs(name, secs)
+    if type(secs) != "int" and type(secs) != "float"
+        fail("time." + name + "(): secs must be a number, got " + type(secs))
+    if not (secs >= _min_secs and secs < _max_secs + 1)
+        fail("time." + name + "(): secs must be in the years 1 to 9999, got " + str(secs))
+    if type(secs) == "float"
+        let f = host_floor(secs)
+        return int(f)
+    return secs
+
+# The UTC date and time of secs (an int or a float; a fraction is dropped,
+# rounding down): {year, month, day, hour, minute, second, weekday, yday}.
+# weekday is 1 for Monday to 7 for Sunday, as ISO 8601 has it, and yday is the
+# day of the year, 1 to 366.
+fun date(secs)
+    let s = _secs("date", secs)
+    let days = _fdiv(s, 86400)
+    let rest = s - days * 86400
+    let ymd = _civil_from_days(days)
+    let yday = days - _days_from_civil(ymd[0], 1, 1) + 1
+    return {year: ymd[0], month: ymd[1], day: ymd[2], hour: _fdiv(rest, 3600), minute: _fdiv(rest % 3600, 60), second: rest % 60, weekday: (days + 3) % 7 + 1, yday: yday}
+
+# Seconds since 1970 for a UTC date and time. Every part must be an int in its
+# range (no Feb 30, no second 60).
+fun from_date(year, month, day, hour = 0, minute = 0, second = 0)
+    _whole("from_date", "year", year)
+    _whole("from_date", "month", month)
+    _whole("from_date", "day", day)
+    _whole("from_date", "hour", hour)
+    _whole("from_date", "minute", minute)
+    _whole("from_date", "second", second)
+    if year < 1 or year > 9999
+        fail("time.from_date(): year must be from 1 to 9999, got " + str(year))
+    if month < 1 or month > 12
+        fail("time.from_date(): month must be from 1 to 12, got " + str(month))
+    let last = days_in_month(year, month)
+    if day < 1 or day > last
+        fail("time.from_date(): day must be from 1 to " + str(last) + " in " + _pad(year, 4) + "-" + _pad(month, 2) + ", got " + str(day))
+    if hour < 0 or hour > 23
+        fail("time.from_date(): hour must be from 0 to 23, got " + str(hour))
+    if minute < 0 or minute > 59
+        fail("time.from_date(): minute must be from 0 to 59, got " + str(minute))
+    if second < 0 or second > 59
+        fail("time.from_date(): second must be from 0 to 59, got " + str(second))
+    return _days_from_civil(year, month, day) * 86400 + hour * 3600 + minute * 60 + second
+
+fun _pad(n, width)
+    let s = str(n)
+    while len(s) < width
+        s = "0" + s
+    return s
+
+# secs as ISO 8601 text in UTC: "2026-11-21T18:01:00Z".
+fun iso(secs)
+    _secs("iso", secs)
+    let d = date(secs)
+    return _pad(d.year, 4) + "-" + _pad(d.month, 2) + "-" + _pad(d.day, 2) + "T" + _pad(d.hour, 2) + ":" + _pad(d.minute, 2) + ":" + _pad(d.second, 2) + "Z"
+
+# The digits text[a] to text[b - 1] as an int, or -1 when one is not a digit.
+fun _digits(text, a, b)
+    let n = 0
+    for i in a..b
+        let c = ord(text[i]) - 48
+        if c < 0 or c > 9
+            return -1
+        n = n * 10 + c
+    return n
+
+# Back from "2026-11-21T18:01:00Z" or a date alone, "2026-11-21" (midnight
+# UTC), to seconds since 1970. Only those two forms are read; anything else is
+# "time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got ...", and
+# a date that does not exist is the same error from_date gives.
+fun parse_iso(text)
+    if type(text) != "string"
+        fail("time.parse_iso(): text must be a string, got " + type(text))
+    let n = len(text)
+    let ok = (n == 10 or n == 20) and text[4] == "-" and text[7] == "-"
+    if ok and n == 20
+        ok = text[10] == "T" and text[13] == ":" and text[16] == ":" and text[19] == "Z"
+    let parts = []
+    if ok
+        let spans = [[0, 4], [5, 7], [8, 10]]
+        if n == 20
+            spans = spans + [[11, 13], [14, 16], [17, 19]]
+        for sp in spans
+            let v = _digits(text, sp[0], sp[1])
+            if v < 0
+                ok = false
+            append(parts, v)
+    if not ok
+        let shown = text
+        if len(shown) > 40
+            shown = slice(shown, 0, 40) + "..."
+        fail("time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got \"" + shown + "\"")
+    if n == 10
+        return from_date(parts[0], parts[1], parts[2])
+    return from_date(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])

@@ -17,7 +17,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/os](#stdos) | args, environment, current folder, exit |
-| [std/time](#stdtime) | clocks, sleep, a frame timer |
+| [std/time](#stdtime) | clocks, sleep, a frame timer, UTC calendar dates |
 | [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling and sampling |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
@@ -303,6 +303,23 @@ Frame timer: `let t = time.timer()`, then each frame `let dt = time.tick(t)`.
 window fills). Call `time.limit(t, 60)` at the end of a frame to cap the rate.
 `limit` measures from `t.last` (set by the last `tick`), so call `tick` then
 draw then `limit`.
+
+### Dates
+
+UTC only, years 1 to 9999, no leap seconds (as `now()` counts). `secs` is
+seconds since 1970-01-01 00:00:00 UTC, an int or a float; a float's fraction is
+dropped, rounding down.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `date(secs)` | map | `{year, month, day, hour, minute, second, weekday, yday}`; `weekday` is 1 (Monday) to 7 (Sunday), `yday` 1 to 366 |
+| `from_date(year, month, day, hour, minute, second)` | int | seconds since 1970; `hour`, `minute` and `second` default to 0; each part must be an int in range: `time.from_date(): day must be from 1 to 28 in 2023-02, got 29` |
+| `iso(secs)` | string | ISO 8601 in UTC: `iso(0)` → `"1970-01-01T00:00:00Z"` |
+| `parse_iso(text)` | int | reads `"YYYY-MM-DDTHH:MM:SSZ"` or `"YYYY-MM-DD"` (midnight); anything else is `time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "..."`, and a date that does not exist gets the `from_date` error |
+| `is_leap(year)` | bool | Gregorian: `is_leap(1900)` → `false`, `is_leap(2000)` → `true` |
+| `days_in_month(year, month)` | int | 28 to 31; `days_in_month(2024, 2)` → `29` |
+
+Outside the years 1 to 9999 is `time.date(): secs must be in the years 1 to 9999, got 253402300800`. Every number then stays below 2^53, so the arithmetic is exact on every engine. Local time zones are not covered.
 
 ## std/random
 

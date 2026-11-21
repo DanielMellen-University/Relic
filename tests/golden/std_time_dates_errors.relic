@@ -1,0 +1,67 @@
+# std/time dates: each bad argument names the call and what it got.
+use std/time
+try
+    time.date("0")
+catch err
+    print(err.message)
+try
+    time.date(253402300800)
+catch err
+    print(err.message)
+try
+    time.iso(-62135596801)
+catch err
+    print(err.message)
+try
+    time.date(float("nan"))
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 13, 1)
+catch err
+    print(err.message)
+try
+    time.from_date(2023, 2, 29)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 4, 31)
+catch err
+    print(err.message)
+try
+    time.from_date(0, 1, 1)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 1, 1, 24)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 1, 1, 0, 60)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 1, 1, 0, 0, 60)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 1.5, 1)
+catch err
+    print(err.message)
+try
+    time.from_date(2026, 1)
+catch err
+    print(err.message)
+try
+    time.days_in_month(2026, 0)
+catch err
+    print(err.message)
+try
+    time.is_leap("2024")
+catch err
+    print(err.message)
+for text in ["2026-11-21 18:01:00", "2026-11-21T18:01:00", "26-11-21", "2026-1-21", "2026-11-2x", "2026-02-30", "2026-11-21T25:00:00Z", 20261121]
+    try
+        time.parse_iso(text)
+    catch err
+        print(err.message)
