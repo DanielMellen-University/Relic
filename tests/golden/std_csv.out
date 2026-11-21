@@ -1,0 +1,17 @@
+[["name", "age"], ["Ada", "36"], ["Linus", "54"]]
+[["a", "b,c", "say \"hi\""], ["x", "two\nlines", ""]]
+[] [[""]] [["", "", ""]] [["a"], [""], ["b"]] [[""]]
+3 [["a", "b"], ["1", "2"]] [["é", "ü"]]
+[{name: "Ada", age: "36"}, {name: "Linus", age: "54"}] [] []
+plain,"b,c","q""x",
+1,2.5,true,
+" pad","line
+break",tab	here
+""
+
+
+[["plain", "b,c", "q\"x", ""], ["1", "2.5", "true", ""], [" pad", "line\nbreak", "tab\there"], [""], [""]]
+a;"b;c";d,e
+ true
+true
+2000 ["1999", "row 1999", "a,b"]
