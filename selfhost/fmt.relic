@@ -3,6 +3,8 @@
 # The atom and line rules mirror src/fmt/fmt.cpp.
 use lexer
 use parser
+use std/files
+use errfmt
 
 # Join source pieces in halves so long files do not repeatedly copy a growing
 # string. The scanner indexes the lexer's character list, not UTF-8 offsets.
@@ -304,3 +306,33 @@ fun format_source(source)
     let lines = scan(source)
     canon_indents(lines)
     return {out: print_lines(lines), err: none}
+
+fun format_file(path)
+    let source = none
+    try
+        source = files.read(path)
+    catch err
+        eprint("relic: cannot open {path}")
+        return 2
+    let result = format_source(source)
+    if result.err != none
+        errfmt.show(path, result.err)
+        return 1
+    if result.out != ""
+        print(slice(result.out, 0, len(result.out) - 1))
+    return 0
+
+fun main(argv)
+    if len(argv) == 0
+        eprint("usage: relic-fmt FILE...")
+        return 2
+    let code = 0
+    for path in argv
+        let r = format_file(path)
+        if r == 2 or (r == 1 and code == 0)
+            code = r
+    return code
+
+let status = main(args())
+if status != 0
+    host_exit(status)
