@@ -8,7 +8,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 
 | Module | For |
 |---|---|
-| [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
+| [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, partitioning, case, capitalizing and truncating, letters and digits, prefixes and suffixes, indentation, dedentation and wrapping, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
@@ -28,6 +28,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `contains(s, sub)` | bool | `find(s, sub) >= 0`, so lists work the same |
 | `count(s, sub)` | int | how many times `sub` is in `s`, not overlapping, left to right; an empty `sub` is `strings.count(): part must not be empty` (since 1.0.49) |
 | `find_last(s, sub)` | int | where the last `sub` starts, or `-1`; overlaps count (`find_last("aaa", "aa")` is `1`), an empty `sub` is at `len(s)`; linear time (since 1.0.49) |
+| `partition(s, sep)` / `rpartition(s, sep)` | list | `[head, sep, tail]` split at the first or last separator; when missing, return `[s, "", ""]` or `["", "", s]`; an empty separator names the function in an error |
 | `starts_with(s, pre)` | bool | strings, or two lists (a run of items); anything else is `strings.starts_with(): text must be a string, got int` (`prefix` for `pre`; since 1.0.52). A string paired with a list fails naming that side, `strings.starts_with(): prefix must be a string, got list` (`prefix must be a list` the other way; it returned false before) |
 | `ends_with(s, suf)` | bool | the same, `suffix` for `suf` |
 | `upper(s)` / `lower(s)` | string | ASCII letters only (290,000 characters: 250 ms in 1.0.45, 87 ms since 1.0.46) |
@@ -42,7 +43,10 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `split(s, sep)` | list | empty pieces stay (`split("a,,b", ",")` is `["a", "", "b"]`); an empty `sep` splits into characters. Time grows with the length of the text (20,000 lines: 270 ms in 1.0.45, 21 ms since 1.0.46) |
 | `lines(s)` | list | split at `"\n"`, with a carriage return (`"\u{d}"`, as Relic has no `\r` escape) before it dropped too, and no empty last line when the text ends with a newline: what `files.lines` gives for a file (since 1.0.49) |
 | `join(items, sep)` | string | each item through `str()`; `items` not a list, or `sep` not a string, is `strings.join(): separator must be a string, got int` (since 1.0.52) |
-| `replace(s, old, new)` | string | all non-overlapping, left to right (`replace("aaa", "aa", "b")` is `"ba"`); an empty `old` puts `new` between characters; an argument that is not a string is `strings.replace(): new text must be a string, got int` (`text`, `old text`; since 1.0.52) |
+| `replace(s, old, new, count = none)` | string | non-overlapping replacements from the left; omitted `count` replaces all, zero leaves `s` unchanged, a positive whole number limits replacements; an empty `old` puts `new` between characters. Bad text arguments name the part, such as `strings.replace(): new text must be a string, got int` (since 1.0.52); a bad count names `replace` |
+| `indent(s, prefix)` | string | prefixes each line, including blank lines; a final newline stays final |
+| `dedent(s)` | string | removes the largest common leading run of spaces and tabs from non-blank lines; blank lines stay blank |
+| `wrap(s, width)` | string | wraps each existing line on spaces; long words stay intact, newlines remain, and width must be a whole number of 1 or more |
 | `repeat(s, n)` | string | `n` a whole number; 0 or less gives `""` |
 | `pad_left(s, width, fill)` / `pad_right(...)` | string | adds `fill` whole until the string is at least `width` long (a longer `fill` can overshoot); an empty `fill` that would have to be added is an error, and so is a `width` of +infinity; a NaN width adds nothing |
 | `center(s, width, fill)` | string | `fill` on both sides, as many copies on each or one more on the right, with the checks `pad_left` makes (since 1.0.50) |

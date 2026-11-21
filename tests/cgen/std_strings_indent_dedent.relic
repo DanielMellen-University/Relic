@@ -1,6 +1,6 @@
 use std/strings
 print(strings.indent("one\ntwo\n", ">"))
-print(strings.indent("a\n\nb", "  "))
+print(strings.indent("a\n\nb", ">"))
 print(strings.indent("", ">"))
 print(strings.dedent("\t  one\n\t  two\n\t  \n"))
 print(strings.dedent("  one\n    two\n\n"))

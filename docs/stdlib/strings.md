@@ -1,6 +1,6 @@
 # std/strings
 
-Search, split, case and padding. `use std/strings`, then `strings.find(...)`.
+Search, split, case, indentation, wrapping and padding. `use std/strings`, then `strings.find(...)`.
 
 ## std/strings
 
@@ -33,6 +33,14 @@ A string argument that is not a string fails with the function's name, as in `st
 `find_last("aaa", "aa")` → `1`
 
 `find_last("hello", "z")` → `-1`
+
+`partition(s, sep)` splits at the first separator. `rpartition` uses the last. Both return `[head, sep, tail]`; when the separator is missing, `partition` returns `[s, "", ""]` and `rpartition` returns `["", "", s]`. An empty separator is an error.
+
+`partition("a:b:c", ":")` → `["a", ":", "b:c"]`
+
+`rpartition("a:b:c", ":")` → `["a:b", ":", "c"]`
+
+`partition("abc", ":")` → `["abc", "", ""]`
 
 Programs: [find.relic](../../examples/ref/strings/find.relic), [contains.relic](../../examples/ref/strings/contains.relic), [count.relic](../../examples/ref/strings/count.relic), [find_last.relic](../../examples/ref/strings/find_last.relic).
 
@@ -148,11 +156,29 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `replace("aaa", "aa", "b")` → `"ba"`
 
+An optional `count` limits replacements from the left. Zero leaves the text unchanged. An empty `old` replaces between characters, up to the count.
+
+`replace("aaaa", "aa", "b", 1)` → `"baa"`
+
+`replace("ab", "", "-", 2)` → `"-a-b"`
+
 `repeat` copies the text. A count of 0 or less gives `""`.
 
 `repeat("ab", 3)` → `"ababab"`
 
 `repeat("ab", 0)` → `""`
+
+### indent, dedent, wrap
+
+`indent` adds a prefix to each line, including blank lines. A final newline stays final without adding another prefixed line. `dedent` removes the largest common leading run of spaces and tabs from non-blank lines; blank lines remain blank.
+
+`indent("one\ntwo\n", ">")` → `">one\n>two\n"`
+
+`dedent("  one\n    two\n\n")` → `"one\n  two\n\n"`
+
+`wrap` wraps each existing line at spaces to fit `width` when possible. A word longer than the width stays intact, and existing newlines remain paragraph breaks. Width must be a whole number of at least 1.
+
+`wrap("one two three four", 7)` → `"one two\nthree\nfour"`
 
 ### pad_left, pad_right, center, truncate
 

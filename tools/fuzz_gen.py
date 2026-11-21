@@ -90,11 +90,15 @@ def new_std(t, d):
                          'math.dist(%s, %s, %s, %s)' % (gen('int', d + 1), gen(R.choice(['int', 'float']), d + 1), gen('int', d + 1), gen('int', d + 1))])
     if t == 'str':
         return R.choice(['strings.%s(%s)' % (R.choice(['trim_start', 'trim_end', 'reverse']), gen('str', d + 1)),
+                         'strings.indent(%s, %s)' % (gen('str', d + 1), gen('str', d + 1)),
+                         'strings.dedent(%s)' % gen('str', d + 1),
                          'strings.%s(%s, %s)' % (R.choice(['remove_prefix', 'remove_suffix']), gen('str', d + 1), gen('str', d + 1)),
                          'strings.center(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '5', gen('int', d + 1)]), R.choice(['"*"', '"ab"', gen('str', d + 1)])),
                          'paths.with_ext(%s, %s)' % (gen('path', d + 1), R.choice(['".md"', '""', gen('str', d + 1)])),
                          'paths.relative(%s, %s)' % (gen('path', d + 1), gen('path', d + 1)),
                          'strings.capitalize(%s)' % gen('str', d + 1),
+                         'strings.wrap(%s, %s)' % (gen('str', d + 1), R.choice(['1', '3', gen('int', d + 1)])),
+                         'strings.replace(%s, %s, %s, %s)' % (gen('str', d + 1), gen('str', d + 1), gen('str', d + 1), R.choice(['0', '2', gen('int', d + 1)])),
                          'strings.truncate(%s, %s, %s)' % (gen('str', d + 1), R.choice(['0', '3', gen('int', d + 1)]), R.choice(['"..."', '""', gen('str', d + 1)]))])
     if t == 'list':
         return R.choice(['strings.lines(%s)' % gen('str', d + 1),
@@ -103,6 +107,7 @@ def new_std(t, d):
                          'lists.chunk(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', '3', gen('int', d + 1)])),
                          'paths.parts(%s)' % gen('path', d + 1),
                          'strings.words(%s)' % gen('str', d + 1),
+                         'strings.%s(%s, %s)' % (R.choice(['partition', 'rpartition']), gen('str', d + 1), gen('str', d + 1)),
                          'lists.%s(%s, %s)' % (R.choice(['take', 'drop']), gen('list', d + 1), R.choice(['0', '2', gen('int', d + 1)])),
                          'lists.partition(%s, is_big)' % gen('list', d + 1),
                          'lists.windows(%s, %s)' % (gen('list', d + 1), R.choice(['1', '2', gen('int', d + 1)])),
