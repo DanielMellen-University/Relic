@@ -92,6 +92,30 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 
 `degrees(math.pi)` → `180.0`
 
+### Numbers as text
+
+`fixed(x, places)` writes `x` with exactly `places` digits after the point, from 0 to 15. Use it for money, sizes and frame times. An int is exact. A float rounds its exact value, with halves away from 0, so a float a little under the decimal it was written as rounds down. A result of 0 has no minus sign. [fixed.relic](../../examples/ref/math/fixed.relic) prints a few amounts.
+
+`fixed(3.14159, 2)` → `"3.14"`
+
+`fixed(2, 1)` → `"2.0"`
+
+`fixed(0.125, 2)` → `"0.13"`
+
+`fixed(2.675, 2)` → `"2.67"`
+
+`fixed(-0.001, 2)` → `"0.00"`
+
+`fixed(9.9999, 3)` → `"10.000"`
+
+`hex(n)` writes an int in base 16, lower case, with no `0x`. Every int works, `-2^63` too. `num("0x" + hex(n))` gives `n` back for `n` from 0 up. [hex.relic](../../examples/ref/math/hex.relic) prints a colour as hex.
+
+`hex(255)` → `"ff"`
+
+`hex(-255)` → `"-ff"`
+
+`hex(0)` → `"0"`
+
 ### Whole numbers and distance
 
 `gcd` and `lcm` want ints and are never negative. `gcd(0, 0)` is 0. `lcm` is 0 when either argument is 0. `is_even` and `is_odd` want ints. `lerp(a, b, t)` is `a + (b - a) * t` and is not clamped. `hypot(x, y)` is the distance from the origin. `dist` is the distance between two points.

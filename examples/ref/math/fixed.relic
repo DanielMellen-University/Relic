@@ -1,0 +1,6 @@
+# math.fixed: amounts with two decimals, and a frame time with one.
+use std/math
+for cents in [250000, -120050, 7]
+    print(math.fixed(cents / 100, 2))
+print(math.fixed(16.6667, 1) + " ms")
+print(math.fixed(3, 2))
