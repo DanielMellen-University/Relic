@@ -1,0 +1,15 @@
+use std/strings
+print(strings.indent("one\ntwo\n", ">"))
+print(strings.indent("a\n\nb", "  "))
+print(strings.indent("", ">"))
+print(strings.dedent("\t  one\n\t  two\n\t  \n"))
+print(strings.dedent("  one\n    two\n\n"))
+print(strings.dedent("plain\n  text"))
+try
+    strings.indent("x", 1)
+catch e
+    print(e.message)
+try
+    strings.dedent(1)
+catch e
+    print(e.message)

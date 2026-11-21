@@ -1,0 +1,19 @@
+>one
+>two
+
+  a
+  
+  b
+
+one
+two
+
+
+one
+  two
+
+
+plain
+  text
+strings.indent(): prefix must be a string, got int
+strings.dedent(): text must be a string, got int

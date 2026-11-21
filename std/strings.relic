@@ -315,6 +315,45 @@ fun rpartition(s, sep)
         return ["", "", s]
     return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
 
+# Add prefix to each line, including blank lines with a newline.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    let out = ""
+    let i = 0
+    while i < len(s)
+        out = out + prefix
+        while i < len(s) and s[i] != "\n"
+            out = out + s[i]
+            i = i + 1
+        if i < len(s)
+            out = out + "\n"
+            i = i + 1
+    return out
+
+fun dedent(s)
+    _text("dedent", "text", s)
+    let parts = split(s, "\n")
+    let margin = none
+    for line in parts
+        let i = 0
+        while i < len(line) and (line[i] == " " or line[i] == "\t")
+            i = i + 1
+        if i < len(line) and (margin == none or i < margin)
+            margin = i
+    if margin == none
+        margin = 0
+    let out = []
+    for line in parts
+        let i = 0
+        while i < len(line) and (line[i] == " " or line[i] == "\t")
+            i = i + 1
+        if i == len(line)
+            append(out, "")
+        else
+            append(out, slice(line, margin, len(line)))
+    return join(out, "\n")
+
 # How many times sub is in s, not overlapping, left to right (since 1.0.49).
 fun count(s, sub)
     _text("count", "text", s)
