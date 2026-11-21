@@ -1,0 +1,12 @@
+one two
+three
+four
+longword
+x y
+a b
+
+c d
+
+strings.wrap(): width must be a whole number, 1 or more, got 0
+strings.wrap(): width must be a whole number, 1 or more, got 1.5
+strings.wrap(): text must be a string, got int

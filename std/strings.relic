@@ -354,6 +354,27 @@ fun dedent(s)
             append(out, slice(line, margin, len(line)))
     return join(out, "\n")
 
+# Wrap each existing line independently, on spaces.
+fun wrap(s, width)
+    _text("wrap", "text", s)
+    if (type(width) != "int" and type(width) != "float") or width < 1 or width % 1 != 0
+        fail("strings.wrap(): width must be a whole number, 1 or more, got " + str(width))
+    let paragraphs = split(s, "\n")
+    let out = []
+    for paragraph in paragraphs
+        let ws = words(paragraph)
+        let line = ""
+        for word in ws
+            if line == ""
+                line = word
+            else if len(line) + 1 + len(word) <= width
+                line = line + " " + word
+            else
+                append(out, line)
+                line = word
+        append(out, line)
+    return join(out, "\n")
+
 # How many times sub is in s, not overlapping, left to right (since 1.0.49).
 fun count(s, sub)
     _text("count", "text", s)
