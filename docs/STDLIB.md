@@ -16,6 +16,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
+| [std/csv](#stdcsv) | comma-separated tables in and out (RFC 4180) |
 | [std/os](#stdos) | args, environment, current folder, exit |
 | [std/time](#stdtime) | clocks, sleep, a frame timer |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
@@ -229,6 +230,28 @@ Since 1.0.47, `decode(encode(v)) == v` for every value `encode` takes, floats
 included (before, a float that needs 16 or 17 digits, such as
 `-90071992547409.92`, came back as its 15-digit neighbor). `encode` always
 escapes control characters, so what it writes is still read back.
+
+## std/csv
+
+Comma-separated text as RFC 4180 has it. A field may be wrapped in double
+quotes; inside them a quote is written twice, and the separator and line breaks
+are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
+`sep` is one character, `","` when left out, and not a quote or a line break.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `parse(text, sep)` | list of rows | each row a list of strings; a line break after the last row adds no row, and an empty line in the middle is a row with one empty field: `parse("a\n\nb")` → `[["a"], [""], ["b"]]` |
+| `records(text, sep)` | list of maps | the rows after the first, keyed by the first row's names; empty lines are skipped; `csv.records(): row 3 has 1 field, the header has 2`; `csv.records(): the header has "a" twice` |
+| `write(rows, sep)` | string | each row's fields joined by `sep`, with `"\n"` after every row. A field is quoted when it holds `sep`, a quote, a CR or a LF, or starts or ends with a space; a row of one empty field is written `""`. Ints, floats and bools are written as `str()` shows them and `none` as an empty field; anything else is `csv.write(): row 1, field 1 must be a string, number, bool or none, got map` |
+
+- `parse` errors give the line and column (characters from 1):
+  `csv.parse(): line 1, column 2: a quote inside an unquoted field; quote the whole field and write the quote twice`,
+  `... text after a closing quote; put a separator or a line break here`, and
+  `... this quoted field is not closed` at the opening quote.
+- `parse(write(rows))` gives the rows back with every field a string. An empty
+  row comes back as one empty field.
+- Python's `csv` module reads what `write` writes and `parse` reads what Python
+  writes, CRLF included (checked on 300 random tables).
 
 ## std/os
 

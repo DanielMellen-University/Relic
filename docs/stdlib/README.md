@@ -14,6 +14,7 @@ A checked line shows a call, then an arrow, then the returned value. Strings are
 | [math](math.md) | rounding, roots, gcd, angles |
 | [paths](paths.md) | `/` paths |
 | [json](json.md) | JSON in and out |
+| [csv](csv.md) | comma-separated tables |
 | [files](files.md) | the host disk |
 | [vfs](vfs.md) | an in-memory disk |
 | [os](os.md) | arguments, environment, input |
