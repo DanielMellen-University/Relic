@@ -1,13 +1,15 @@
-# relic fmt
+# relic-fmt and relic fmt
 
-`relic fmt` rewrites Relic source into one canonical form. The language does not change: the same tokens, the same blocks, the same values. It is part of the C++ host, so build with `-DRELIC_BUILD_HOST=ON` first ([CLI.md](CLI.md)).
+`relic-fmt` rewrites Relic source into one canonical form. The language does not change: the same tokens, the same blocks, the same values. It is written in Relic in `selfhost/fmt.relic` and compiled by the default C-only build. The optional C++ host provides the same formatting rules as `relic fmt` ([CLI.md](CLI.md)).
 
 ## One file
 
-From the repository root:
+From the repository root, with only a C compiler and CMake:
 
-```
-./build/relic fmt tests/fmt/in/readme_example.relic
+```sh
+cmake -S . -B build
+cmake --build build --target relic-fmt
+./build/relic-fmt tests/fmt/in/readme_example.relic
 ```
 
 The input is `tests/fmt/in/readme_example.relic`. Stdout from that command (it ends with a newline):
@@ -32,15 +34,33 @@ hello Linus
 
 ## Commands
 
+Both entry points take the same files and flags. Use `./build/relic-fmt` with
+the default build, or `./build/relic fmt` when the host is built. With Visual
+Studio the compiled formatter is `build/Release/relic-fmt.exe`.
+
 | Command | Does | Exit |
 |---|---|---|
-| `relic fmt FILE...` | writes the canonical text of each file to stdout, one after another | 0, or 1 if a file does not parse |
-| `relic fmt --write FILE...` | updates each file in place. A file that is already canonical is not touched | 0, or 1 if a file does not parse |
-| `relic fmt --check FILE...` | prints each path that would change | 0 if nothing would change, 1 if something would or a file does not parse |
+| `relic-fmt FILE...` | writes the canonical text of each file to stdout, one after another | 0, or 1 if a file does not parse |
+| `relic-fmt --write FILE...` | updates each file in place. A file that is already canonical is not touched | 0, or 1 if a file does not parse |
+| `relic-fmt --check FILE...` | prints each path that would change | 0 if nothing would change, 1 if something would or a file does not parse |
 
-`--check` and `--write` together are a usage error (exit 2), as is `relic fmt` with no file. A missing file or a folder is `relic: cannot open FILE` and exit 2. A syntax error is printed like any other Relic error, and that file is not written.
+`--check` and `--write` together are a usage error (exit 2), as is `relic-fmt` with no file. A missing file or a folder is `relic: cannot open FILE` and exit 2. A syntax error is printed like any other Relic error, and that file is not written.
 
-`--write` uses LF line endings.
+`--write` uses LF line endings. A changed file is written through a sibling
+temporary file and replaced only after the write and close succeed. A write
+or replace failure is `relic: cannot write FILE` and exit 2. Other files are
+still processed; exit 2 takes priority over exit 1.
+
+The same Relic driver can also run on the optional host or through the
+Relic-written interpreter:
+
+```sh
+./build/relic selfhost/fmt.relic FILE...
+./build/relic selfhost/run.relic selfhost/fmt.relic FILE...
+```
+
+Its syntax diagnostics use the same errors and hints as the other self-hosted
+drivers.
 
 ## What it changes
 
@@ -62,11 +82,23 @@ String escapes stay as written (`"a\nb"`, `"\u{e9}"`, `"{{"`). Spaces inside `{ 
 
 ## Limits
 
-- `relic fmt` is the host command. The default build, which makes only `relicc`, does not include it.
 - A file the lexer or parser rejects is not formatted. Tabs, a bad indent, and other syntax errors stay errors. `relic fmt` does not repair them.
 - It does not join or split statements onto different lines, other than the blank-line rule and the indent of a wrapped line. A long line stays one line.
 - It does not walk a directory. Pass the files.
 - Column-aligned comments are pulled back to two spaces before `#`. The comment text is the same.
 - Two negations are written `- -x`, with a space, so they stay two minuses.
 
-The `fmt` test checks the golden pairs in `tests/fmt/in` and `tests/fmt/out`, checks that formatting twice is a no-op, and runs it on every `.relic` file in the tree. A file that does not parse must be rejected. A file that changes must still run with the same stdout, stderr and exit code. A file that does not change is already the canonical program.
+`compiled_fmt` checks the six golden pairs in `tests/fmt/in` and `tests/fmt/out`,
+idempotence, CLI modes, rejected inputs and write failures. These checks run
+without the host. `compiled_fmt_unreadable` checks unreadable input where file
+permissions can deny reads. `compiled_fmt_corpus` checks every `.relic` source
+outside build directories: invalid files are rejected, accepted files keep
+their tokens and still parse, and formatting twice changes nothing. With the
+host enabled it also compares the two formatters on that corpus.
+
+The host's `fmt` test uses the same goldens and CLI checks, then runs changed
+programs in an isolated copy of the tree and compares stdout, stderr and exit
+codes. `selfhost_fmt` and `selfhost_fmt_nested` run the Relic driver on the host
+and through `selfhost/run.relic`. Write, close and rename failures must keep
+the original file and remove the temporary file; the host also tests an
+explicit flush failure.

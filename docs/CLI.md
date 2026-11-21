@@ -1,6 +1,6 @@
 # Command line and REPL
 
-Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC_BUILD_HOST=ON` ([README](../README.md#the-c-host)); the program ends up at `build/relic` (or `build/Release/relic.exe` with Visual Studio). The default build makes only `relicc`, the compiler to C; its use is at the end of this page.
+Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC_BUILD_HOST=ON` ([README](../README.md#the-c-host)); the program ends up at `build/relic` (or `build/Release/relic.exe` with Visual Studio). The default build makes `relicc`, the compiler to C, and `relic-fmt`, the formatter written in Relic. Compiler usage is at the end of this page.
 
 ## Commands
 
@@ -30,7 +30,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`; a folder counts as not openable) |
 | any | the program called `os.exit(code)` |
 
-The self-hosted `run`, `tokens`, `ast` and `check` commands also report unreadable input as `relic: cannot open FILE` and exit 2. `relic selfhost/cgen.relic FILE -o OUT.c` and compiled `relicc FILE -o OUT.c` report an unreadable main input or imported module as `relicc: cannot open FILE` and exit 3.
+The self-hosted `run`, `tokens`, `ast`, `check` and `fmt` commands also report unreadable input as `relic: cannot open FILE` and exit 2. `relic selfhost/cgen.relic FILE -o OUT.c` and compiled `relicc FILE -o OUT.c` report an unreadable main input or imported module as `relicc: cannot open FILE` and exit 3.
 
 ## Output
 
@@ -60,6 +60,8 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 `selfhost/check.relic` is the same command written in Relic (`relic selfhost/check.relic a.relic b.relic`), with the same output and exit codes; it is a test of the self-hosted front end, not a replacement.
 
 ## relic fmt
+
+The default C-only build provides `relic-fmt [--check | --write] FILE...`, compiled from `selfhost/fmt.relic`. It takes the same files and flags as the host command below.
 
 `relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
 

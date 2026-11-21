@@ -1,6 +1,6 @@
 # Testing
 
-How Relic is tested, and how to run it. The default build (C only, no host) has 484 ctest cases: 438 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep` and `cgen_only_long_string`, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_runtime_hardening`, `c_runtime_input`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit`, `relicc_cli`, `doc_counts`, `method_hint_tables` and `golden_runner_mismatch` (a wrong stdout makes `tools/golden_runner.relic` exit nonzero). A host build (`-DRELIC_BUILD_HOST=ON`) has 984: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
+How Relic is tested, and how to run it. The default build (C only, no host) has 494 ctest cases: 438 compiled goldens (`cgen_*`), the compiled-only `cgen_only_json_deep`, `cgen_only_long_string` and seven `cgen_only_std_lists_*` cases, the 30 compiled example programs `cgen_only_learn_*` (`examples/learn/` and `examples/word_count.relic`, see [EXAMPLES.md](EXAMPLES.md)), `cgen_remove_tree_link` (since 1.0.52: `files.remove_tree` in a folder with links in it removes the links, not what they point at; skipped where links cannot be made), `c_runtime`, `c_runtime_hardening`, `c_runtime_input`, `c_demo`, `bootstrap_fresh`, `bootstrap_fixed_point`, `example_compiled`, `tablecheck_goldens`, `depth_limit`, `relicc_cli`, `doc_counts`, `method_hint_tables`, `compiled_fmt`, `compiled_fmt_unreadable`, `compiled_fmt_corpus` and `golden_runner_mismatch` (a wrong stdout makes `tools/golden_runner.relic` exit nonzero). A host build (`-DRELIC_BUILD_HOST=ON`) has 996: the host's golden, unit, self-host and VM cases come back, plus the cross-checks, `remove_tree_link` on the host and `guide_examples` (since 1.0.52: every example in [GUIDE.md](GUIDE.md) is run and must print the output block shown after it; `tools/doc_blocks.relic` splits the guide and `tools/check_guide.cmake` runs the blocks) and `stdlib_examples` (since 1.0.52: each `call(args)` → `value` example in a std section of [STDLIB.md](STDLIB.md) must give that value; `tools/check_stdlib_examples.cmake`. It also checks the same kind of line in [docs/stdlib](stdlib/README.md) and runs every program in `examples/learn/` and `examples/ref/` against its `.out`, through `tools/check_example_programs.cmake`). An SDL build with SDL2_image, SDL2_ttf and a TrueType font adds 8 more, and `-DRELIC_C_SDL=ON` adds 8 more compiled ones (`c_gfx_*`, `c_mini_desktop`).
 
 ## Running the tests
 
@@ -64,7 +64,7 @@ These check that different engines agree, byte for byte, on stdout and stderr:
 
 | Test | Compares | Files |
 |---|---|---|
-| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (498 today) |
+| `selfhost_lexer` | `selfhost/tokens.relic` against `relic --tokens` | every golden, helper, `std/`, `selfhost/` and `tests/check_cases/` file (499 today) |
 | `selfhost_parser` | `selfhost/ast.relic` against `relic --ast` | same set |
 | `selfhost_interp` | `selfhost/run.relic` against `relic` | goldens except `repl_*` (444 today) |
 | `vm_matches_tree_walker` | `relic` (VM) against `relic --tree` | goldens except `repl_*` (444 today) |
@@ -92,6 +92,21 @@ Three more self-host cases check the interpreter on real use:
 | `selfhost_check_unreadable` | `selfhost/check.relic` on the host VM, tree-walker and compiled copy when available | unreadable input gives exit 2, empty stdout and exactly `relic: cannot open FILE` |
 | `selfhost_unreadable_skip_failure` | `tools/check_unreadable_input.cmake` with simulated import skip and forced import failure | main-input failures remain visible, and both fixtures are readable after a pass and either failure; skips when unreadable-file checks are unavailable |
 | `selfhost_cgen_unreadable` | `selfhost/cgen.relic` on the host VM and tree-walker, plus compiled `relicc` when available | unreadable main input or imported module gives exit 3, empty stdout and exactly `relicc: cannot open FILE`; also checks `--stub` for the main input |
+
+The default build's `compiled_fmt` runs the six `tests/fmt` golden pairs,
+idempotence and the shared CLI checks in `tools/check_fmt_cli.cmake`: stdout
+concatenation, check/write, usage, error priority, rejected files, LF output,
+and unchanged-file timestamps. `tools/check_fmt_write.cmake` injects write,
+close and rename failures on Linux and checks the original and temporary
+files. `compiled_fmt_unreadable` uses the existing unreadable-input harness.
+`compiled_fmt_corpus` runs the compiled Relic verifier in
+`tests/selfhost/fmt_verify.relic` over every source outside build directories,
+checking acceptance, token preservation and idempotence. With the host enabled
+it also compares formatter output. The host's existing `fmt` and
+`fmt_isolation` keep their runtime-equivalence and isolation checks.
+`selfhost_fmt` and `selfhost_fmt_nested` run the shared checks on the host and
+through `selfhost/run.relic`; they also exercise the host file builtin's write
+and close error checks. See [FMT.md](FMT.md) for commands and rules.
 
 `selfhost_interp` and `vm_matches_tree_walker` compare exit codes as well as output. The `cli` case (`tools/check_cli.cmake`) runs the command line from [CLI.md](CLI.md): exit codes, usage errors, args passed through, `relic check` and the REPL on piped input.
 

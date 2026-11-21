@@ -9,7 +9,7 @@ This repo is the language only: the compiler to C and its C runtime, the C++ hos
 > - The language with modules, a standard library (strings, lists, maps, math, files, paths, json, os, time, an in-memory filesystem `std/vfs`, and graphics) and UTF-8 strings.
 > - A compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) that turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). It compiles itself, and its own C is committed in `bootstrap/`, so the default build needs only a C compiler.
 > - An optional C++ host with a tree-walker, a bytecode VM (the default engine), the REPL and SDL2 graphics. Compiled programs get the same graphics with `-DRELIC_C_SDL=ON`.
-> - A lexer, parser, interpreter, `relic check` and REPL written in Relic (`selfhost/`). The interpreter can run a program inside another, with its output captured, a step limit, refused built-ins, modules read from elsewhere and input fed line by line; MONOLITH 2's IDE runs programs that way (1.0.44 and 1.0.45).
+> - A lexer, parser, interpreter, formatter, `relic check` and REPL written in Relic (`selfhost/`). The interpreter can run a program inside another, with its output captured, a step limit, refused built-ins, modules read from elsewhere and input fed line by line; MONOLITH 2's IDE runs programs that way (1.0.44 and 1.0.45).
 > - Searching, building a string with `x = x + t` and taking items off the front of a list take time in line with their size, and sorting n log n, not the square of it (1.0.42 and 1.0.43).
 >
 > The [changelog](CHANGELOG.md) has every version and the [roadmap](docs/ROADMAP.md) what is next.
@@ -72,10 +72,10 @@ Run `./build/relic` alone for the REPL. For graphics add `-DRELIC_SDL=ON` (needs
 
 ## Format
 
-`relic fmt` prints a file in canonical form. It needs the C++ host (`-DRELIC_BUILD_HOST=ON`). One file:
+`relic-fmt` prints canonical source and is written in Relic. The default C-only build includes it. One file:
 
 ```
-./build/relic fmt tests/fmt/in/readme_example.relic
+./build/relic-fmt tests/fmt/in/readme_example.relic
 ```
 
 That command's stdout:
@@ -91,7 +91,7 @@ for name in names
         greet(name)
 ```
 
-`--write` updates the file. `--check` prints nothing and exits 0 when every file is already formatted, and exits 1 when one would change. Details, including what is left alone, are in [FMT.md](docs/FMT.md).
+The optional host still provides `relic fmt` with the same rules. `--write` updates the file. `--check` prints nothing and exits 0 when every file is already formatted, and exits 1 when one would change. Details, including what is left alone, are in [FMT.md](docs/FMT.md).
 
 ## Relic in five minutes
 
