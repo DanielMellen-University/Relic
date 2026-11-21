@@ -294,6 +294,27 @@ fun replace(s, old, new)
     _text("replace", "new text", new)
     return join(split(s, old), new)
 
+# The text on both sides of the first or last separator.
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("strings.partition(): separator must not be empty")
+    let i = find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+fun rpartition(s, sep)
+    _text("rpartition", "text", s)
+    _text("rpartition", "separator", sep)
+    if sep == ""
+        fail("strings.rpartition(): separator must not be empty")
+    let i = find_last(s, sep)
+    if i < 0
+        return ["", "", s]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
 # How many times sub is in s, not overlapping, left to right (since 1.0.49).
 fun count(s, sub)
     _text("count", "text", s)

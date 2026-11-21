@@ -1,0 +1,8 @@
+["a", ":", "b:c"]
+["a:b", ":", "c"]
+["abc", "", ""]
+["", "", "abc"]
+["", ":", "a"] ["a", ":", ""]
+strings.partition(): separator must not be empty
+strings.rpartition(): separator must not be empty
+strings.partition(): text must be a string, got int
