@@ -4,6 +4,17 @@
 use lexer
 use parser
 
+# Join source pieces in halves so long files do not repeatedly copy a growing
+# string. The scanner indexes the lexer's character list, not UTF-8 offsets.
+fun join_parts(parts, start, end)
+    if end - start <= 16
+        let out = ""
+        for i in start..end
+            out = out + parts[i]
+        return out
+    let mid = start + int((end - start) / 2)
+    return join_parts(parts, start, mid) + join_parts(parts, mid, end)
+
 fun atom(kind, text) = {kind: kind, text: text, unary: false, tight: false, comment: false}
 fun new_line(indent, depth) = {indent: indent, depth: depth, blank: false, comment_only: false, atoms: []}
 
@@ -53,7 +64,7 @@ fun comment(st)
     let end = st.pos
     while end > start and (st.chars[end - 1] == " " or st.chars[end - 1] == chr(9))
         end = end - 1
-    let a = atom("op", lexer._cat(st.chars, start, end))
+    let a = atom("op", join_parts(st.chars, start, end))
     a.comment = true
     return a
 
@@ -192,3 +203,104 @@ fun scan(source)
     if st.cur != none
         finish(st)
     return st.lines
+
+fun is_binop(t)
+    return t in ["+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">=", "and", "or", "in"]
+
+fun space_between(a, b)
+    let A = a.text
+    let B = b.text
+    # Adjacent interpolation and map braces must not become escaped braces.
+    if a.kind == "string" and len(A) > 0 and A[len(A) - 1] == "{{"
+        return len(B) > 0 and B[0] == "{{"
+    if b.kind == "string" and len(B) > 0 and B[0] == "}}"
+        return len(A) > 0 and A[len(A) - 1] == "}}"
+    if B in [".", ",", ":", ")", "]", "}}"]
+        return false
+    if B == ".."
+        return a.kind == "word" and space_kw(A)
+    if A in [".", "..", "(", "[", "{{"]
+        return false
+    if a.tight or b.tight
+        return false
+    if a.unary and A == "-"
+        return b.unary and B == "-"
+    if A in [",", ":", "="] or B == "="
+        return true
+    if is_binop(A) and not (a.unary and A == "-")
+        return true
+    if is_binop(B) and not (b.unary and B == "-")
+        return true
+    if b.unary and B == "-"
+        return not (A in ["(", "[", "{{"])
+    if a.kind == "word" and space_kw(A)
+        return true
+    if B == "(" or B == "["
+        return false
+    return true
+
+fun canon_indents(lines)
+    let stmt = 0
+    for i in 0..len(lines)
+        let ln = lines[i]
+        if ln.blank
+            next
+        if not ln.comment_only and ln.depth == 0
+            stmt = ln.indent
+        if ln.comment_only
+            let canon = stmt
+            for j in (i + 1)..len(lines)
+                let following = lines[j]
+                if following.blank or following.comment_only
+                    next
+                if following.depth == 0 or following.indent % 4 == 0
+                    canon = following.indent
+                else
+                    canon = stmt + 4
+                break
+            if ln.indent % 4 != 0 or ln.indent < canon
+                ln.indent = canon
+        else if ln.depth > 0 and ln.indent % 4 != 0
+            ln.indent = stmt + 4
+
+fun print_lines(lines)
+    let parts = []
+    let pending_blank = false
+    let any_line = false
+    for ln in lines
+        if ln.blank
+            if any_line
+                pending_blank = true
+            next
+        if pending_blank
+            append(parts, "\n")
+            pending_blank = false
+        any_line = true
+        for i in 0..ln.indent
+            append(parts, " ")
+        let prev = none
+        for a in ln.atoms
+            if a.comment
+                if prev != none
+                    append(parts, "  ")
+                append(parts, "#")
+                append(parts, a.text)
+            else
+                if prev != none and space_between(prev, a)
+                    append(parts, " ")
+                append(parts, a.text)
+                prev = a
+        append(parts, "\n")
+    return join_parts(parts, 0, len(parts))
+
+# No scan or rewrite takes place unless both language stages accept the file.
+fun format_source(source)
+    let lexed = lexer.lex(source)
+    if lexed.err != none
+        return {out: "", err: lexed.err}
+    let parsed = parser.parse(lexed.tokens)
+    if parsed.err != none
+        return {out: "", err: parsed.err}
+    let lines = scan(source)
+    canon_indents(lines)
+    return {out: print_lines(lines), err: none}
