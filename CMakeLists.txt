@@ -302,6 +302,15 @@ if(RELIC_BUILD_HOST)
       -DTMP=${CMAKE_CURRENT_BINARY_DIR}/fmt_test
       -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_fmt.cmake)
 
+  add_test(NAME selfhost_fmt
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/selfhost_fmt
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_selfhost_fmt.cmake)
+  add_test(NAME selfhost_fmt_nested
+    COMMAND ${CMAKE_COMMAND} -DRELIC=$<TARGET_FILE:relic> -DNESTED=1 -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+      -DTMP=${CMAKE_CURRENT_BINARY_DIR}/selfhost_fmt_nested
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_selfhost_fmt.cmake)
+
   # The formatter never writes into the source tree: parallel doc_counts and
   # a formatter killed mid-run both leave it untouched.
   add_test(NAME fmt_isolation
@@ -350,6 +359,26 @@ if(RELIC_C_RUNTIME)
   endif()
   if(RELIC_TOP_LEVEL)
     relic_add_program(relic-fmt selfhost/fmt.relic)
+    add_test(NAME compiled_fmt
+      COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relic-fmt> -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+        -DTMP=${CMAKE_CURRENT_BINARY_DIR}/compiled_fmt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_selfhost_fmt.cmake)
+    add_test(NAME compiled_fmt_unreadable
+      COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relic-fmt> -DDRIVER=fmt -DSRC=${CMAKE_CURRENT_SOURCE_DIR}
+        -DTMP=${CMAKE_CURRENT_BINARY_DIR}/compiled_fmt_unreadable
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_unreadable_input.cmake)
+    set_tests_properties(compiled_fmt_unreadable PROPERTIES SKIP_REGULAR_EXPRESSION "unreadable-skip:")
+    if(RELIC_CGEN_TESTS)
+      relic_add_program(fmt_verify tests/selfhost/fmt_verify.relic)
+      set(fmt_host)
+      if(RELIC_BUILD_HOST)
+        set(fmt_host -DRELIC=$<TARGET_FILE:relic>)
+      endif()
+      add_test(NAME compiled_fmt_corpus
+        COMMAND ${CMAKE_COMMAND} -DTOOL=$<TARGET_FILE:relic-fmt> -DVERIFY=$<TARGET_FILE:fmt_verify>
+          ${fmt_host} -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DTMP=${CMAKE_CURRENT_BINARY_DIR}/compiled_fmt_corpus
+          -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_fmt_corpus.cmake)
+    endif()
     add_subdirectory(examples/tablecheck)
     relic_add_program(example_compiled examples/compiled/main.relic)
     add_test(NAME example_compiled COMMAND example_compiled one two)

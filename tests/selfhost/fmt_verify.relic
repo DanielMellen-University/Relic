@@ -1,0 +1,51 @@
+# Token preservation and idempotence across the source corpus, without a host.
+use ../../selfhost/lexer
+use ../../selfhost/parser
+use std/files
+use std/os
+
+fun require(ok, message)
+    if not ok
+        fail(message)
+
+fun verify(tool, manifest, scratch, host)
+    let same = 0
+    let changed = 0
+    let rejected = 0
+    for path in files.lines(manifest)
+        if path == ""
+            next
+        let source = files.read(path)
+        let original = lexer.lex(source)
+        let err = original.err
+        if err == none
+            err = parser.parse(original.tokens).err
+        let once = os.run([tool, path], "", "", {})
+        if err != none
+            require(once.code == 1 and once.out == "" and ": error: " in once.err, "{path}: rejected input was formatted")
+            rejected = rejected + 1
+        else
+            require(once.code == 0 and once.err == "", "{path}: formatting failed: {once.err}")
+            let formatted = lexer.lex(once.out)
+            require(formatted.err == none, "{path}: formatted source does not lex")
+            require(parser.parse(formatted.tokens).err == none, "{path}: formatted source does not parse")
+            require(len(original.tokens) == len(formatted.tokens), "{path}: token count changed")
+            for i in 0..len(original.tokens)
+                let a = original.tokens[i]
+                let b = formatted.tokens[i]
+                require(a.kind == b.kind and a.text == b.text, "{path}: token {i} changed")
+            files.write(scratch, once.out)
+            let twice = os.run([tool, scratch], "", "", {})
+            require(twice.code == 0 and twice.err == "" and twice.out == once.out, "{path}: formatting twice changed the text")
+            if source == once.out
+                same = same + 1
+            else
+                changed = changed + 1
+        if host != ""
+            let want = os.run([host, "fmt", path], "", "", {})
+            require(once.code == want.code and once.out == want.out, "{path}: host formatter disagrees")
+        require(files.read(path) == source, "{path}: stdout formatting changed the input")
+    print("fmt corpus: {same} canonical, {changed} changed, {rejected} rejected; tokens and idempotence passed")
+
+let argv = args()
+verify(argv[0], argv[1], argv[2], argv[3])
