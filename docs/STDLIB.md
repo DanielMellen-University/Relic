@@ -18,6 +18,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/json](#stdjson) | JSON in and out |
 | [std/os](#stdos) | args, environment, current folder, exit |
 | [std/time](#stdtime) | clocks, sleep, a frame timer |
+| [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling and sampling |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
@@ -300,6 +301,36 @@ Frame timer: `let t = time.timer()`, then each frame `let dt = time.tick(t)`.
 window fills). Call `time.limit(t, 60)` at the end of a frame to cap the rate.
 `limit` measures from `t.last` (set by the last `tick`), so call `tick` then
 draw then `limit`.
+
+## std/random
+
+Seeded random numbers. A generator is a map from `new(seed)`; every other call
+takes it first and moves it on. The same seed gives the same numbers on the VM,
+the tree-walker, the self-hosted interpreter and compiled programs, so a run can
+be replayed. For numbers that differ each run, seed from the clock:
+`random.new(int(time.now() * 1000))`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `new(seed)` | generator (map) | `seed` is any int; `random.new(): seed must be an int, got float` |
+| `float(r)` | float | above 0 and below 1, never either end |
+| `below(r, n)` | int | from `0` to `n - 1`; `n` an int from 1 to 4294967087 (`random.below(): n must be from 1 to 4294967087, got 0`) |
+| `range(r, lo, hi)` | int | from `lo` to `hi - 1`, the numbers in `lo..hi`; `hi` must be above `lo` (`random.range(): hi must be above lo, got 5..5`) and `hi - lo` at most 4294967087 |
+| `chance(r, p)` | bool | `true` with probability `p`, a number from 0 to 1: `0` is never, `1` is always |
+| `pick(r, xs)` | any | one item of a list, each equally likely; `random.pick(): the list is empty` |
+| `shuffle(r, xs)` | list | a new list in a random order; `xs` is left as it is |
+| `sample(r, xs, k)` | list | `k` items from different places in `xs`, in the order drawn; `k` from 0 to `len(xs)` |
+
+- The generator is L'Ecuyer's MRG32k3a, with a period of about 2^191. Its
+  products stay below 2^53, so it is plain int arithmetic and needs no `host_*`
+  call. Ints are drawn again when they fall in the last partial block, so
+  `below`, `range`, `pick`, `shuffle` and `sample` favour no result.
+- Not for secrets: someone who sees enough numbers can work out the next ones.
+- `r` must come from `new` (`random.float(): r must be a generator from random.new(), got none`).
+  `xs` must be a list (`random.pick(): xs must be a list, got string`).
+- Two seeds give the same numbers only when they differ by a multiple of both
+  moduli (about 1.8e19). The first 16 numbers after seeding are dropped, so
+  seeds next to each other do not start alike.
 
 ## std/graphics
 

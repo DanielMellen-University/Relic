@@ -1,0 +1,8 @@
+# random.pick takes one item; an empty list is an error.
+use std/random
+let r = random.new(11)
+print(random.pick(r, ["rock", "paper", "scissors"]))
+try
+    random.pick(r, [])
+catch err
+    print(err.message)
