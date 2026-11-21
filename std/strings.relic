@@ -367,10 +367,17 @@ fun dedent(s)
         let i = 0
         while i < len(line) and (line[i] == " " or line[i] == "\t")
             i = i + 1
-        if i < len(line) and (margin == none or i < margin)
-            margin = i
+        if i < len(line)
+            let indent = slice(line, 0, i)
+            if margin == none
+                margin = indent
+            else
+                let common = 0
+                while common < len(margin) and common < len(indent) and margin[common] == indent[common]
+                    common = common + 1
+                margin = slice(margin, 0, common)
     if margin == none
-        margin = 0
+        margin = ""
     let out = []
     for line in parts
         let i = 0
@@ -379,7 +386,7 @@ fun dedent(s)
         if i == len(line)
             append(out, "")
         else
-            append(out, slice(line, margin, len(line)))
+            append(out, slice(line, len(margin), len(line)))
     return join(out, "\n")
 
 # Wrap each existing line independently, on spaces.
