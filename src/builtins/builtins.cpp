@@ -308,6 +308,10 @@ void Interpreter::install_builtins() {
         std::ofstream f(path, std::ios::binary | (app ? std::ios::app : std::ios::trunc));
         if (!f) throw std::string("cannot write ") + path;
         f << text;
+        f.flush();
+        bool failed = !f;
+        f.close();
+        if (failed || f.fail()) throw std::string("cannot write ") + path;
         return Value();
     });
     add("host_file_exists", 1, [str_arg](std::vector<Value>& a) {
