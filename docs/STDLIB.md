@@ -11,7 +11,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
-| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, constants |
+| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
@@ -139,6 +139,8 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `is_even(x)` / `is_odd(x)` | bool: for an int, negative ones too; `math.is_even(): argument must be an int, got float` otherwise (since 1.0.50) |
 | `lerp(a, b, t)` | number: `a + (b - a) * t`, so `t` of `0` is `a` and `1` is `b`; it is not clamped (since 1.0.50) |
 | `hypot(x, y)` | float: `sqrt(x * x + y * y)`, the distance from `(0, 0)` to `(x, y)` (since 1.0.50); since 1.0.52 without overflow or underflow on the way, so `hypot(1e200, 1e200)` is `1.4142135623731e+200`, not `inf` |
+| `fixed(x, places)` | string: `x` with exactly `places` digits after the point, `places` an int from 0 to 15; `fixed(3.14159, 2)` → `"3.14"`, `fixed(2, 1)` → `"2.0"`. An int is exact. A float rounds its exact value with halves away from 0, so `fixed(0.125, 2)` → `"0.13"` and `fixed(2.675, 2)` → `"2.67"` (the float is 2.67499999...). A result of 0 has no minus sign. nan, an infinity, a float of 2^63 or more in size and a bad `places` are errors: `math.fixed(): places must be an int from 0 to 15, got 16` |
+| `hex(n)` | string: an int in base 16, lower case, no prefix; `hex(255)` → `"ff"`, `hex(-255)` → `"-ff"`; every int works; anything else is `math.hex(): argument must be an int, got float` |
 | `dist(x1, y1, x2, y2)` | float: the distance from `(x1, y1)` to `(x2, y2)`, `hypot` of the differences (since 1.0.50) |
 | `radians(deg)` / `degrees(rad)` | float: an angle in degrees as radians, for `sin` and `cos`, and back (since 1.0.50) |
 | `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |

@@ -195,3 +195,106 @@ fun trunc(x)
     if x < 0
         return _int("trunc", 0.0 - host_floor(0.0 - x))
     return _int("trunc", host_floor(x))
+
+# What a bad count was, for the error: the number itself, or the type of
+# anything that is not one.
+fun _got(n)
+    if type(n) == "int" or type(n) == "float"
+        return str(n)
+    return type(n)
+
+# x as text with exactly `places` digits after the point (0 to 15), for money,
+# sizes and frame times: fixed(3.14159, 2) is "3.14", fixed(2, 1) is "2.0".
+# The float's exact value is rounded, with halves away from 0, as printf does
+# apart from the halves: fixed(0.125, 2) is "0.13", and fixed(2.675, 2) is
+# "2.67" because the float nearest 2.675 is 2.67499999... A result that rounds
+# to 0 has no minus sign. nan, an infinity and a float of 2^63 or more in size
+# are errors.
+fun fixed(x, places)
+    _number("fixed", x)
+    if type(places) != "int" or places < 0 or places > 15
+        fail("math.fixed(): places must be an int from 0 to 15, got " + _got(places))
+    if x != x or x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+        fail("math.fixed(): x must be finite, got " + str(x))
+    let whole = ""
+    let frac = 0
+    let scale = 1
+    for i in 0..places
+        scale = scale * 10
+    if type(x) == "int"
+        whole = str(x)
+        if x < 0
+            whole = slice(whole, 1, len(whole))
+    else
+        let ax = x
+        if ax < 0
+            ax = 0.0 - ax
+        if ax >= 9223372036854775808.0
+            fail("math.fixed(): x must be below 2^63 in size, got " + str(x))
+        let w = int(host_floor(ax))
+        frac = _round_scaled(ax - w, float(scale))
+        if frac == scale
+            frac = 0
+            w = w + 1
+        whole = str(w)
+    let digits = whole
+    if places > 0
+        let tail = str(frac)
+        while len(tail) < places
+            tail = "0" + tail
+        digits = whole + "." + tail
+    if x < 0
+        for c in digits
+            if c != "0" and c != "."
+                return "-" + digits
+    return digits
+
+# fr * scale rounded to an int, halves up, from the exact product: fr is in
+# [0, 1) and scale is 10^places, so the product is below 10^15. The float
+# product can round onto a half (2.675's fraction times 100 is 67.5 as a
+# float, but a little under it exactly), so its rounding error is found with
+# Dekker's two-product and decides those cases.
+fun _round_scaled(fr, scale)
+    let y = fr * scale
+    let f = host_floor(y)
+    let d = y - f
+    if d > 0.5
+        return int(f) + 1
+    if d < 0.5
+        return int(f)
+    let c = 134217729.0 * fr
+    let fh = c - (c - fr)
+    let fl = fr - fh
+    c = 134217729.0 * scale
+    let sh = c - (c - scale)
+    let sl = scale - sh
+    let err = ((fh * sh - y) + fh * sl + fl * sh) + fl * sl
+    if err < 0
+        return int(f)
+    return int(f) + 1
+
+# An int in base 16 with lower-case digits and no prefix: hex(255) is "ff",
+# hex(-255) is "-ff". Every int works, -2^63 too. num("0x" + hex(n)) gives n
+# back for n from 0 up.
+fun hex(n)
+    if type(n) != "int"
+        fail("math.hex(): argument must be an int, got " + type(n))
+    if n == 0
+        return "0"
+    # worked on the negatives, since -2^63 has no int on the plus side
+    let v = n
+    if v > 0
+        v = 0 - v
+    let out = ""
+    let p = 1152921504606846976  # 16^15
+    while p >= 1
+        let d = 0
+        while v <= 0 - p
+            v = v + p
+            d = d + 1
+        if d > 0 or out != ""
+            out = out + "0123456789abcdef"[d]
+        p = int(p / 16)
+    if n < 0
+        return "-" + out
+    return out

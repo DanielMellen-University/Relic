@@ -1,0 +1,9 @@
+# math.hex: a colour as #rrggbb, padding each channel to two digits.
+use std/math
+fun two(n)
+    let h = math.hex(n)
+    if len(h) < 2
+        return "0" + h
+    return h
+print("#" + two(255) + two(128) + two(0))
+print(math.hex(48879), num("0x" + math.hex(48879)))

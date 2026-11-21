@@ -1,0 +1,31 @@
+# math.fixed and math.hex: numbers as text.
+use std/math
+
+# fixed: ints are exact; floats round their exact value, halves away from 0
+print(math.fixed(3.14159, 2), math.fixed(3.14159, 0), math.fixed(2, 1), math.fixed(-2, 3))
+print(math.fixed(0.125, 2), math.fixed(-0.125, 2), math.fixed(0.5, 0), math.fixed(-2.5, 0))
+# 2.675 is 2.67499999... as a float, and 99.995 is 99.99500000000000455...
+print(math.fixed(2.675, 2), math.fixed(1.005, 2), math.fixed(99.995, 2), math.fixed(0.1 + 0.2, 2))
+# no minus sign on a result of 0; carries into the whole part
+print(math.fixed(-0.001, 2), math.fixed(-0.0, 1), math.fixed(9.9999, 3), math.fixed(-0.9996, 3))
+print(math.fixed(1e15, 5), math.fixed(123456.789, 15), math.fixed(1e-10, 12))
+print(math.fixed(9223372036854775807, 2), math.fixed(-9223372036854775807 - 1, 0), math.fixed(9.2e18, 1))
+let cents = -120050
+print("balance: " + math.fixed(cents / 100, 2))
+
+# hex: lower case, a minus sign for negatives, every int
+print(math.hex(0), math.hex(9), math.hex(10), math.hex(255), math.hex(-255), math.hex(4096))
+print(math.hex(9223372036854775807), math.hex(-9223372036854775807 - 1))
+print(num("0x" + math.hex(48879)) == 48879)
+
+# errors name the call
+for bad in [[1.0, 2.5], [1, -1], [1, 16], [float("nan"), 1], [float("-inf"), 1], [1e19, 2], ["1.5", 1], [none, 0]]
+    try
+        print(math.fixed(bad[0], bad[1]))
+    catch err
+        print(err.message)
+for bad in [1.0, "ff", none]
+    try
+        print(math.hex(bad))
+    catch err
+        print(err.message)
