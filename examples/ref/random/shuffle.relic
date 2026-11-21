@@ -1,0 +1,7 @@
+# random.shuffle and random.sample make new lists and leave the old one alone.
+use std/random
+let r = random.new(8)
+let deck = ["A", "K", "Q", "J", "10"]
+print(random.shuffle(r, deck))
+print(random.sample(r, deck, 2))
+print(deck)

@@ -330,7 +330,7 @@ print(lists.sort([3, 1, 2]))
 
 - Names starting with `_` stay private to their file. `mathx._calls` from outside is an error.
 - A module runs once, however many times it is used.
-- `std/...` is the standard library: strings, lists, maps, math, files, paths, json, os, time, vfs and graphics. See [STDLIB.md](STDLIB.md).
+- `std/...` is the standard library: strings, lists, maps, math, files, paths, json, os, time, random, vfs and graphics. See [STDLIB.md](STDLIB.md).
 
 The list helpers take a function by its name, and their results feed each other:
 

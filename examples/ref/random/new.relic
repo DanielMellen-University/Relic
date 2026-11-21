@@ -1,0 +1,6 @@
+# Two generators made with one seed give the same numbers.
+use std/random
+let a = random.new(7)
+let b = random.new(7)
+print(random.below(a, 100), random.below(a, 100), random.below(a, 100))
+print(random.below(b, 100), random.below(b, 100), random.below(b, 100))

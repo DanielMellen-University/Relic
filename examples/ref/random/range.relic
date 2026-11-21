@@ -1,0 +1,8 @@
+# Ten rolls of a die: random.range(r, 1, 7) is 1 to 6, like the numbers in 1..7.
+use std/random
+let r = random.new(2026)
+let rolls = []
+for i in 0..10
+    append(rolls, random.range(r, 1, 7))
+print(rolls)
+print(random.below(r, 1))

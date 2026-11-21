@@ -1,0 +1,10 @@
+# random.float is above 0 and below 1.
+use std/random
+let r = random.new(1)
+let ok = true
+for i in 0..1000
+    let f = random.float(r)
+    if not (f > 0 and f < 1)
+        ok = false
+print(ok)
+print(random.float(random.new(5)))

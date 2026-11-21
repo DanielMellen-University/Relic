@@ -1,0 +1,9 @@
+# random.chance(r, 0) is never true and random.chance(r, 1) always is.
+use std/random
+let r = random.new(3)
+let heads = 0
+for i in 0..1000
+    if random.chance(r, 0.5)
+        heads = heads + 1
+print(heads > 400 and heads < 600)
+print(random.chance(r, 0), random.chance(r, 1))
