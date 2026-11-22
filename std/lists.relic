@@ -711,3 +711,13 @@ fun compact(xs)
             append(out, x)
     return out
 
+# The items test(x) is not true for, in order. The opposite of filter.
+fun reject(xs, test)
+    _seq("reject", xs)
+    _fn("reject", "test", test)
+    let out = []
+    for x in xs
+        if not test(x)
+            append(out, x)
+    return out
+

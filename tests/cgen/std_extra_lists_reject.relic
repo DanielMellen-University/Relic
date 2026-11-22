@@ -1,0 +1,8 @@
+use std/lists
+fun big(x) = x > 1
+print(lists.reject([1, 2, 3, 4], big))
+print(lists.reject([], big))
+try
+    lists.reject([1], 1)
+catch e
+    print(e.message)

@@ -133,3 +133,7 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `compact(xs)` drops `none` and keeps `false`, `0` and `""`.
 
 `compact([1, none, false, 0, ""])` → `[1, false, 0, ""]`
+
+### reject
+
+`reject(xs, test)` is the items `test(x)` is not true for, in order. It is the opposite of `filter`.
