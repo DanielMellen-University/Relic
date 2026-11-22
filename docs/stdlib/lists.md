@@ -169,3 +169,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `split_at([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]`
 
 `split_at([1], 5)` → `[[1], []]`
+
+### take_last
+
+`take_last(xs, n)` is the last `n` items, or all of them when there are fewer.
+
+`take_last([1, 2, 3, 4], 2)` → `[3, 4]`
+
+`take_last([1, 2], 9)` → `[1, 2]`

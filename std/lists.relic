@@ -773,3 +773,13 @@ fun split_at(xs, n)
     _count_arg("split_at", n)
     return [take(xs, n), drop(xs, n)]
 
+# The last n items, or all of them when there are fewer.
+fun take_last(xs, n)
+    _seq("take_last", xs)
+    _count_arg("take_last", n)
+    let items = _items(xs)
+    let k = len(items) - n
+    if k < 0
+        k = 0
+    return slice(items, k, len(items))
+
