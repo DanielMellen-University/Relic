@@ -1,0 +1,15 @@
+use std/json
+print(json.at({a: {b: [10, 20]}}, ["a", "b", 1]))
+print(json.at(5, []))
+try
+    json.at({a: 1}, ["b"])
+catch e
+    print(e.message)
+try
+    json.at([10], [2])
+catch e
+    print(e.message)
+try
+    json.at({a: 1}, [1])
+catch e
+    print(e.message)
