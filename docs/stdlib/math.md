@@ -191,3 +191,9 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `is_prime(9)` → `false`
 
 `is_prime(1)` → `false`
+
+### log10
+
+`log10(x)` is the base-10 logarithm. Outside the domain it is `nan` or `-inf`, as `log` is, not an error.
+
+`log10(1)` → `0.0`

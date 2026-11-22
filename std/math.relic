@@ -501,3 +501,8 @@ fun is_prime(n)
             return false
     return true
 
+# log base 10. Outside the domain it is nan or -inf, as log is, not an error.
+fun log10(x)
+    _number("log10", x)
+    return host_log(x) / host_log(10)
+
