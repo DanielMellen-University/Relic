@@ -111,3 +111,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `enumerate([10, 20])` → `[[0, 10], [1, 20]]`
 
 `enumerate([])` → `[]`
+
+### concat
+
+`concat(parts)` joins a list of lists into one, in order. An item that is not a list is an error.
+
+`concat([[1, 2], [], [3]])` → `[1, 2, 3]`
+
+`concat([])` → `[]`

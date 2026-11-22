@@ -96,6 +96,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `insert_sorted(xs, item)` | list | a new sorted list with `item` after any equal items, so building a list one item at a time gives what `sort` gives; `xs` is unchanged. Same `item` rules as `bisect` |
 | `sort_by(xs, less)` | list | `less(a, b)` is bool. `sort` and `sort_by` take a string's characters or a map's keys too (since 1.0.52; both failed on a map, and `sort_by` on a string) |
 | `enumerate(xs)` | list | `[index, item]` pairs from 0; a string gives its characters and a map its keys |
+| `concat(parts)` | list | one list from a list of lists, in order; an item that is not a list is an error |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

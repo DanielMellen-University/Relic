@@ -1,0 +1,11 @@
+use std/lists
+print(lists.concat([[1, 2], [], [3]]))
+print(lists.concat([]))
+try
+    lists.concat([1])
+catch e
+    print(e.message)
+try
+    lists.concat(1)
+catch e
+    print(e.message)

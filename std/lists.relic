@@ -674,3 +674,18 @@ fun enumerate(xs)
         i = i + 1
     return out
 
+# One list from a list of lists, in order. An item that is not a list is an
+# error (flatten keeps those as they are; concat does not).
+fun concat(parts)
+    if type(parts) != "list"
+        fail("lists.concat(): parts must be a list, got " + type(parts))
+    let out = []
+    let i = 0
+    for p in parts
+        if type(p) != "list"
+            fail("lists.concat(): item " + str(i) + " must be a list, got " + type(p))
+        for x in p
+            append(out, x)
+        i = i + 1
+    return out
+
