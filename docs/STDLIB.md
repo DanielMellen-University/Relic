@@ -217,6 +217,7 @@ Always `/`. A `\` in input is read as `/`.
 | `relative(base, target)` | string | the path from the folder `base` to `target`, with `..` to go up: `relative("/a/b", "/a/c/d")` → `"../c/d"`, the same folder → `"."`; both absolute or both relative, else `paths.relative(): both paths must be absolute, or both relative, got /a and b`, and a `base` with `..` that climbs past its start is `paths.relative(): base must not go up past its start, got ../a` (since 1.0.50) |
 | `has_ext(p, e)` | bool | whether the extension is `e`, as `.txt` or `txt`; `""` means there is none |
 | `with_stem(p, stem)` | string | `p` with its stem replaced; the directory and the extension stay, and `stem` must not hold `/` |
+| `join_all(parts)` | string | `join` of every part, left to right; an absolute part replaces what came before it; an empty list is `""` |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 

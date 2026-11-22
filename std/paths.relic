@@ -213,3 +213,22 @@ fun with_stem(p, stem)
         return "/" + name
     return d + "/" + name
 
+# join of every part, left to right, with the same rule as join: an absolute
+# part replaces what came before it. An empty list is "".
+fun join_all(parts)
+    if type(parts) != "list"
+        fail("paths.join_all(): parts must be a list, got " + type(parts))
+    if len(parts) == 0
+        return ""
+    let out = parts[0]
+    if type(out) != "string"
+        fail("paths.join_all(): part 0 must be a string, got " + type(out))
+    let i = 1
+    while i < len(parts)
+        let part = parts[i]
+        if type(part) != "string"
+            fail("paths.join_all(): part " + str(i) + " must be a string, got " + type(part))
+        out = join(out, part)
+        i = i + 1
+    return out
+

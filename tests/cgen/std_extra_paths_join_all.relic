@@ -1,0 +1,13 @@
+use std/paths
+print(paths.join_all(["a", "b", "c"]))
+print(paths.join_all(["a", "/b", "c"]))
+print(paths.join_all([]))
+print(paths.join_all(["a"]))
+try
+    paths.join_all(1)
+catch e
+    print(e.message)
+try
+    paths.join_all(["a", 1])
+catch e
+    print(e.message)

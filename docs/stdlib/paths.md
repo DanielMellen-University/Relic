@@ -89,3 +89,13 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 `with_stem("/b.txt", "c")` → `"/c.txt"`
 
 `with_stem("a/.bashrc", "c")` → `"a/c"`
+
+### join_all
+
+`join_all(parts)` joins every part, left to right, with the same rule as `join`: an absolute part replaces what came before it. An empty list is `""`.
+
+`join_all(["a", "b", "c"])` → `"a/b/c"`
+
+`join_all(["a", "/b", "c"])` → `"/b/c"`
+
+`join_all([])` → `""`
