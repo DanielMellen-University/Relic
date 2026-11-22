@@ -24,3 +24,8 @@ fun is_ok(r)
     _result("is_ok", r)
     return r.kind == "ok"
 
+# true for a result from err().
+fun is_err(r)
+    _result("is_err", r)
+    return r.kind == "err"
+

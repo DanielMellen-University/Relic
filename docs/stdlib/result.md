@@ -24,3 +24,11 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `is_ok(result.ok(1))` → `true`
 
 `is_ok(result.err("no"))` → `false`
+
+### is_err
+
+`is_err(r)` is true for a result from `err`.
+
+`is_err(result.err("no"))` → `true`
+
+`is_err(result.ok(1))` → `false`
