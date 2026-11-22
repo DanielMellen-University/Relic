@@ -53,3 +53,11 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `with({a: 1, b: 2}, "b", 9)` → `{a: 1, b: 9}`
 
 `with({a: 1}, "c", 3)` → `{a: 1, c: 3}`
+
+### without
+
+`without(m, k)` is a new map without `k`. A missing key is not an error, and `m` is unchanged (`drop` removes the key from `m` itself).
+
+`without({a: 1, b: 2, c: 3}, "b")` → `{a: 1, c: 3}`
+
+`without({a: 1}, "z")` → `{a: 1}`

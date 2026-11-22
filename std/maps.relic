@@ -163,3 +163,14 @@ fun with(m, k, v)
         out[k] = v
     return out
 
+# A new map without k. A missing key is not an error, and m is unchanged
+# (drop removes the key from m itself).
+fun without(m, k)
+    _map("without", "m", m)
+    _key("without", "key", k)
+    let out = {}
+    for key in m
+        if key != k
+            out[key] = m[key]
+    return out
+

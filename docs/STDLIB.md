@@ -137,6 +137,7 @@ got int` (since 1.0.52; it was `cannot call an int`), and `filter`, `any`,
 | `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 must be a [string key, value] pair, got a list of length 3` (or `got a key of type int`, `got string`), counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
 | `with(m, k, v)` | map | a new map with `k` set to `v`; an existing key stays where it is and a new key goes at the end; `m` is unchanged |
+| `without(m, k)` | map | a new map without `k`; a missing key is not an error and `m` is unchanged |
 
 Each one fails with its own name when given something that is not a map: `maps.values(): m must be a map, got int` (since 1.0.49). Before, most failed inside with `cannot loop over an int`, and `get` on a list quietly gave back the fallback.
 `map_values` and `filter` check their function the same way: `maps.filter(): keep must be a function, got int` (since 1.0.52; it was `cannot call an int`, and an empty map let it through).
