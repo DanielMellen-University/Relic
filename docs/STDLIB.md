@@ -22,6 +22,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling, sampling, a fair coin flip and a weighted pick |
 | [std/text](#stdtext) | more text helpers on top of strings |
 | [std/io](#stdio) | small file helpers on top of files |
+| [std/result](#stdresult) | a success or a failure without try/catch |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
@@ -451,6 +452,13 @@ Small file helpers on top of `std/files`. Paths are relative to where the progra
 | `is_file(path)` | bool | true when `path` is a file; a missing path and a folder are false |
 | `copy(from, to)` | none | copy the text of one file onto another; `from` must be a file and `to` is created or replaced |
 | `write_lines(path, lines)` | none | each string as its own line, with a newline after every one; an empty list writes an empty file |
+## std/result
+
+A value that is either a success or a failure, so a caller can pass the failure on without `try` / `catch`. `ok(value)` holds a value. `err(message)` holds a string. `kind` is `"ok"` or `"err"`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `ok(value)` | map | a success holding `value` |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C

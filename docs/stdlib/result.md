@@ -1,0 +1,12 @@
+# std/result
+
+A value that is either a success or a failure, so a caller can pass the failure on without `try` / `catch`. `ok(value)` holds a value. `err(message)` holds a string. `kind` is `"ok"` or `"err"`. `use std/result`.
+
+## std/result
+
+
+### ok
+
+`ok(value)` is a success holding `value`. `value` may be anything, including `none`.
+
+`ok(1)` → `{kind: "ok", value: 1}`

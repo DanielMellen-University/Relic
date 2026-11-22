@@ -1,0 +1,15 @@
+# std/result: a value that is either a success or a failure, so a caller can
+# pass the failure on without try/catch. A result is a map from ok() or err().
+# kind is "ok" or "err". An ok result holds value. An err result holds message,
+# a string.
+
+fun _result(name, r)
+    if type(r) != "map" or not "kind" in r or (r.kind != "ok" and r.kind != "err")
+        let got = type(r)
+        if got == "map"
+            got = "a map that is not a result"
+        fail("result." + name + "(): r must be a result from result.ok or result.err, got " + got)
+
+# A success holding value. value may be anything, including none.
+fun ok(value) = {kind: "ok", value: value}
+
