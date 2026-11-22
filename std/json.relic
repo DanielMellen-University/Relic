@@ -493,3 +493,20 @@ fun at(v, path)
         i = i + 1
     return cur
 
+# The JSON kind of a value encode can write: "null", "bool", "number",
+# "string", "array" or "object". A function or a module is an error.
+fun kind(v)
+    let t = type(v)
+    if t == "none"
+        return "null"
+    if t == "bool"
+        return "bool"
+    if t == "int" or t == "float"
+        return "number"
+    if t == "string"
+        return "string"
+    if t == "list"
+        return "array"
+    if t == "map"
+        return "object"
+    fail("json.kind(): cannot describe a " + t)

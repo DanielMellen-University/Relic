@@ -45,3 +45,17 @@ JSON in and out. `use std/json`. Objects become maps and keep key order. Arrays 
 `at({a: {b: 1}}, ["a", "b"])` → `1`
 
 `at(5, [])` → `5`
+
+### kind
+
+`kind(v)` is the JSON kind of a value `encode` can write: `"null"`, `"bool"`, `"number"`, `"string"`, `"array"` or `"object"`.
+
+`kind(none)` → `"null"`
+
+`kind(false)` → `"bool"`
+
+`kind(1.5)` → `"number"`
+
+`kind([1])` → `"array"`
+
+`kind({a: 1})` → `"object"`
