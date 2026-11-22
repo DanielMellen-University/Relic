@@ -98,6 +98,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `enumerate(xs)` | list | `[index, item]` pairs from 0; a string gives its characters and a map its keys |
 | `concat(parts)` | list | one list from a list of lists, in order; an item that is not a list is an error |
 | `intersperse(xs, sep)` | list | `sep` between the items, not before the first or after the last; an empty list stays empty |
+| `compact(xs)` | list | the items that are not `none`, in order; `false`, `0` and `""` stay |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

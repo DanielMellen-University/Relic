@@ -127,3 +127,9 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `intersperse([1, 2, 3], 0)` → `[1, 0, 2, 0, 3]`
 
 `intersperse([1], 0)` → `[1]`
+
+### compact
+
+`compact(xs)` drops `none` and keeps `false`, `0` and `""`.
+
+`compact([1, none, false, 0, ""])` → `[1, false, 0, ""]`

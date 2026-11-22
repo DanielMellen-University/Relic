@@ -702,3 +702,12 @@ fun intersperse(xs, sep)
         append(out, x)
     return out
 
+# The items that are not none, in order. false, 0 and "" stay.
+fun compact(xs)
+    _seq("compact", xs)
+    let out = []
+    for x in xs
+        if x != none
+            append(out, x)
+    return out
+
