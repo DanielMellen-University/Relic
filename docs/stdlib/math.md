@@ -225,3 +225,13 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `approx(1, 1, 0)` → `true`
 
 `approx(1, 2, 0.5)` → `false`
+
+### fract
+
+`fract(x)` is the fractional part of `x` in the range from 0 up to but not including 1, `x - floor(x)`. An int is `0.0`. A float at 2^53 or past has no bits left for a fraction, so it is `0.0` too.
+
+`fract(2.75)` → `0.75`
+
+`fract(-1.25)` → `0.75`
+
+`fract(4)` → `0.0`

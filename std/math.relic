@@ -540,3 +540,17 @@ fun approx(a, b, eps)
         d = 0.0 - d
     return d <= eps
 
+# The fractional part of x in [0, 1): x - floor(x). An int is 0.0. A float
+# at 2^53 or past has no bits left for a fraction, so it is 0.0 too.
+fun fract(x)
+    _number("fract", x)
+    if type(x) == "int"
+        return 0.0
+    if x != x or x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+        fail("math.fract(): argument must be finite, got " + str(x))
+    let ax = x
+    if ax < 0
+        ax = 0.0 - ax
+    if ax >= 9007199254740992.0
+        return 0.0
+    return x - floor(x)

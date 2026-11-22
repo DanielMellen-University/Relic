@@ -11,7 +11,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted, enumerate, concat, intersperse, compact, reject, find_last, count_if, without, dedupe, split_at, take_last, drop_last, flat_map |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value, with, without, omit, compact, map_keys, rename |
-| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants |
+| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants, floor division, factorial, binomial coefficients, primes, log10, finite and nan checks, fractional part |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
@@ -175,6 +175,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `is_nan(x)` | bool | true only for `nan`; an infinity is not `nan` |
 | `is_inf(x)` | bool | true for `+inf` and `-inf`; `nan` is not an infinity |
 | `approx(a, b, eps)` | bool | whether `a` and `b` differ by at most `eps`; `eps` must be finite and 0 or more; `nan` and infinities are not close |
+| `fract(x)` | float | the fractional part in `[0, 1)`, `x - floor(x)`; an int is `0.0`, and so is a float at 2^53 or past |
 
 `abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number, and `abs` of the int `-2^63`, which has no int on the plus side, is `math.abs(): the result, 2^63, is out of the int range` (since 1.0.52; it was `int overflow`). `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
 
