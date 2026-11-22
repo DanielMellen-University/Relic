@@ -247,6 +247,7 @@ A first argument that is not a vfs is `vfs.read(): fs must be a vfs from vfs.new
 | `remove_tree(fs, path)` | none | folder and contents, or one file; **missing path is a no-op** (except `/`) |
 | `rename(fs, from, to)` | none | `cannot rename {from}`, also when `to` exists or is inside `from` |
 | `size(fs, path)` | int | length of the file text; `cannot get the size of {path}` |
+| `is_file(fs, path)` | bool | true when `path` is a file; a missing path and a folder are false |
 
 ## std/json
 

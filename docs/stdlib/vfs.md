@@ -44,3 +44,7 @@ These need more than one call, so the checked programs are the examples:
 | `remove` | [remove.relic](../../examples/ref/vfs/remove.relic) | `false` |
 | `remove_tree` | [remove_tree.relic](../../examples/ref/vfs/remove_tree.relic) | `false` |
 | `rename` | [rename.relic](../../examples/ref/vfs/rename.relic) | `hi` then `false` |
+
+### is_file
+
+`is_file(fs, path)` is true when `path` is a file. A missing path and a folder are false.
