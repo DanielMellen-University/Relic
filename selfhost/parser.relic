@@ -231,6 +231,12 @@ fun type_extra(name)
 
 fun fail_expected(p, what)
     let got = peek(p)
+    # `a::b` fails on the first colon. The next token is the second one.
+    if what == "end of line" and got.kind == "COLON" and p.pos + 1 < len(p.toks)
+        let nxt = p.toks[p.pos + 1]
+        if nxt.kind == "COLON" and nxt.line == got.line
+            fail_span(p, got, nxt.col, "Relic has no '::'", "a field is written a.b")
+            return
     let msg = "expected " + what + ", got " + describe(got)
     let extra = expect_extra(p, what)
     if extra != none

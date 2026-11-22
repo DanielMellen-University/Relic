@@ -1,0 +1,4 @@
+colon_colon.relic:1:2: error: Relic has no '::'
+    a::b
+     ^^
+hint: a field is written a.b
