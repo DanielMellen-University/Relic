@@ -30,8 +30,8 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 
 | Code | When |
 |---|---|
-| 0 | the program ran to the end, or the REPL was left |
-| 1 | a syntax or runtime error nobody caught, or `relic check` found something |
+| 0 | the program ran to the end, or every REPL input ran |
+| 1 | a syntax or runtime error nobody caught, or `relic check` found something, or a REPL input failed |
 | 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`; a folder counts as not openable) |
 | any | the program called `os.exit(code)` |
 
@@ -100,9 +100,9 @@ hello Daniel
 - An open `(`, `[` or `{` keeps reading lines until it closes. That includes the header of a block, so `fun add(` with its parameters on the next lines, then the closing `)`, still reads an indented body (before 1.0.29 it ran the header alone and failed).
 - An error prints `<repl>:line:col: error: ...`, then the source line and a caret when that line is part of the input that just ran, and the REPL keeps going. An error inside a function defined by an earlier input still names that function's line and column, without the source line. Line numbers count from the start of the input that defined the code.
 - `use` paths are relative to the current folder.
-- Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 0 even if a chunk failed.
+- Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 1 if any chunk failed, and 0 if every chunk ran. A person at the terminal gets the same code.
 - The REPL runs on the tree-walker.
-- `selfhost/repl.relic` is the same REPL written in Relic (`relic selfhost/repl.relic`, since 1.0.31). Same values, errors, blocks, multi-line headers and exit code on every script in the tests (`selfhost_repl`); it is a test of the self-hosted front end, not a replacement. Two differences, both for a person at a terminal: its banner has no version number, and `:quit` does not print an extra empty line. A program run inside it can read the same standard input (`os.read_line()`).
+- `selfhost/repl.relic` is the same REPL written in Relic (`relic selfhost/repl.relic`, since 1.0.31). Same values, errors, blocks, multi-line headers and exit code on every script in the tests (`selfhost_repl`); it is a test of the self-hosted front end, not a replacement. Two differences, both for a person at a terminal: its banner has no version number, and `:quit` does not print an extra empty line. The exit code matches: 1 if any input failed. A program run inside it can read the same standard input (`os.read_line()`).
 
 ## Environment
 

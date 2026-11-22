@@ -235,6 +235,7 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         out << version_string() << ". Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.\n";
     std::string chunk;
     bool block = false;
+    bool failed = false;
     std::string line;
     while (true) {
         if (interactive) out << (chunk.empty() ? "> " : "... ") << std::flush;
@@ -270,15 +271,17 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         RunResult r = session.run("<repl>", chunk, true);
         out << std::flush;
         err << r.err << std::flush;
+        if (r.exit_code) failed = true;
         chunk.clear();
         block = false;
     }
     if (!chunk.empty()) {  // input ended in the middle of a block
         RunResult r = session.run("<repl>", chunk, true);
         err << r.err;
+        if (r.exit_code) failed = true;
     }
     if (interactive) out << "\n";
-    return 0;
+    return failed ? 1 : 0;
 }
 
 }  // namespace relic

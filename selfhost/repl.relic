@@ -10,7 +10,8 @@
 #     too, also in the header of a block
 #   - an error prints `<repl>:line:col: error: ...`, then the source line and a
 #     caret, and the REPL goes on
-#   - `:quit`, or the end of the input, leaves it; the exit code is 0
+#   - `:quit`, or the end of the input, leaves it. The exit code is 1 if any
+#     input failed, and 0 if every input ran
 # Prompts (and a banner before the first one) are shown only when stdin is a
 # terminal, so piped input (`relic selfhost/repl.relic < script.relic`) runs
 # chunk by chunk with no prompts, like the host's.
@@ -105,6 +106,8 @@ fun run_chunk(rt, text)
                 eprint("hint: {err.hint}")
         else
             errfmt.show(path, err)
+        return true
+    return false
 
 fun main()
     let rt = interp.new_runtime()
@@ -112,6 +115,7 @@ fun main()
     let chunk = ""
     let block = false
     let first = true
+    let failed = false
     while true
         let ask = "> "
         if chunk != ""
@@ -159,11 +163,15 @@ fun main()
             more = not blank
         if more
             next
-        run_chunk(rt, chunk)
+        if run_chunk(rt, chunk)
+            failed = true
         chunk = ""
         block = false
     if chunk != ""
         # input ended in the middle of a block
-        run_chunk(rt, chunk)
+        if run_chunk(rt, chunk)
+            failed = true
+    if failed
+        host_exit(1)
 
 main()

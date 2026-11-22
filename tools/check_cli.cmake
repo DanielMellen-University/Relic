@@ -156,5 +156,5 @@ expect_exact("check file and finding order" 1 "" "${check_order_error}" check wa
 
 # The REPL on piped input: no prompts, an error does not stop it, exit 0
 set(stdin_file ${TMP}/chunks.relic)
-expect("repl pipe" 0 "^still here\n$" "<repl>:1:9: error: division by zero" )
+expect("repl pipe" 1 "^still here\n$" "<repl>:1:9: error: division by zero" )
 message("command line matches CLI.md")
