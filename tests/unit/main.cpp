@@ -504,7 +504,7 @@ static void test_repl() {
     std::ostringstream out, err;
     CHECK(relic::repl(in, out, err, false) == 0);
     CHECK(out.str() == "2\n20\n[1, 2]\n");
-    CHECK(err.str() == "<repl>:1:1: error: 'nope' is not defined\n");
+    CHECK(err.str() == "<repl>:1:1: error: 'nope' is not defined\n    nope\n    ^\n");
 
     // a session keeps globals across runs, like the REPL does
     std::ostringstream o2;
@@ -533,8 +533,12 @@ static void test_repl_details() {
     CHECK(repl("let a = 1\nlet b =\n\nfun g()\n    return nope\n\ng()\nlen(1, 2)\na\n", out, err) == 0);
     CHECK(out == "1\n");
     CHECK(err == "<repl>:1:8: error: expected an expression, got end of line\n"
+                 "    let b =\n"
+                 "           ^\n"
                  "<repl>:2:12: error: 'nope' is not defined\n"
-                 "<repl>:1:4: error: len() takes 1 argument, got 2\n");
+                 "<repl>:1:4: error: len() takes 1 argument, got 2\n"
+                 "    len(1, 2)\n"
+                 "       ^\n");
     // :quit stops reading; blank lines and comments run nothing
     CHECK(repl("\n  \n# note\n5\n:quit\n6\n", out, err) == 0);
     CHECK(out == "5\n" && err.empty());
@@ -542,7 +546,7 @@ static void test_repl_details() {
     CHECK(repl("[1,\n2]\ntry\n    fail(\"x\")\ncatch e\n    print(e.message)\n\n", out, err) == 0);
     CHECK(out == "[1, 2]\nx\n" && err.empty());
     CHECK(repl("let l = [1]\nl[5]\nl\n", out, err) == 0);
-    CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n");
+    CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n    l[5]\n      ^\n");
 }
 
 // String values share one buffer between copies and keep its character count.

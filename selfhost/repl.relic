@@ -8,8 +8,8 @@
 #   - a line that opens a block (`fun`, `if`, `else`, `while`, `for`, `try`,
 #     `catch`) reads lines until an empty one; an open ( [ or { keeps reading
 #     too, also in the header of a block
-#   - an error prints `<repl>:line:col: error: ...` without the source line,
-#     and the REPL goes on
+#   - an error prints `<repl>:line:col: error: ...`, then the source line and a
+#     caret, and the REPL goes on
 #   - `:quit`, or the end of the input, leaves it; the exit code is 0
 # Prompts (and a banner before the first one) are shown only when stdin is a
 # terminal, so piped input (`relic selfhost/repl.relic < script.relic`) runs
@@ -21,6 +21,7 @@ use parser
 use interp
 use errfmt
 use std/os
+use std/strings
 
 let banner = "relic REPL written in Relic. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n"
 
@@ -92,7 +93,18 @@ fun run_chunk(rt, text)
         let path = "<repl>"
         if "file" in err and err.file != ""
             path = err.file
-        errfmt.show(path, err)
+        if path == "<repl>"
+            eprint("{path}:{err.line}:{err.col}: error: {err.msg}")
+            let end = err.col
+            if "end" in err and err.end != none and err.end >= err.col
+                end = err.end
+            let s = errfmt.snippet_in(strings.split(text, "\n"), err.line, err.col, end)
+            if s != ""
+                eprint(slice(s, 0, len(s) - 1))
+            if "hint" in err and err.hint != none and err.hint != ""
+                eprint("hint: {err.hint}")
+        else
+            errfmt.show(path, err)
 
 fun main()
     let rt = interp.new_runtime()

@@ -48,6 +48,14 @@ std::string format_noted(const std::string& path, const E& e) {
     return diag::format(path, e.line, e.col, e.what(), n);
 }
 
+std::string format_repl(const std::string& source, int line, int col, int end_col, const std::string& hint,
+                       const std::string& msg) {
+    diag::Note note;
+    note.end_col = end_col;
+    note.hint = hint;
+    return diag::format_text("<repl>", source, line, col, msg, note);
+}
+
 std::string format_runtime(const std::string& path, const RuntimeError& e) {
     diag::Note note;
     note.end_col = e.end_col;
@@ -103,13 +111,17 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         if (echo && !last.is<NoneV>()) out_ << repr(last) << "\n";
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = format_noted(path, e);
+        r.err = path == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.what())
+                                 : format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = format_noted(path, e);
+        r.err = path == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.what())
+                                 : format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = format_runtime(path, e);
+        std::string where = e.file.empty() ? path : e.file;
+        r.err = where == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.message())
+                                  : format_runtime(path, e);
     }
     return r;
 }

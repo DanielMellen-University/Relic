@@ -35,15 +35,10 @@ bool valid_utf8_continuation(const std::string& text, size_t at) {
 //     print(cuont)
 //           ^
 // end_col draws through that column (one caret when it is col).
-// Empty when the file cannot be read or the line is not there.
-std::string snippet(const std::string& path, int line, int col, int end_col = 0) {
-    if (line < 1 || col < 1) return "";
+// Empty when the line is blank or not there.
+std::string snippet_line(std::string text, int col, int end_col) {
+    if (col < 1) return "";
     if (end_col < col) end_col = col;
-    std::ifstream f(path, std::ios::binary);
-    if (!f) return "";
-    std::string text;
-    for (int i = 0; i < line; ++i)
-        if (!std::getline(f, text)) return "";
     if (!text.empty() && text.back() == '\r') text.pop_back();
     if (text.find_first_not_of(" \t") == std::string::npos) return "";
     // Very long lines are cut to a window around the column. Columns count
@@ -78,6 +73,32 @@ std::string snippet(const std::string& path, int line, int col, int end_col = 0)
     return "    " + text + "\n    " + pad + std::string(static_cast<size_t>(marks), '^') + "\n";
 }
 
+// Empty when the file cannot be read or the line is not there.
+std::string snippet(const std::string& path, int line, int col, int end_col = 0) {
+    if (line < 1 || col < 1) return "";
+    std::ifstream f(path, std::ios::binary);
+    if (!f) return "";
+    std::string text;
+    for (int i = 0; i < line; ++i)
+        if (!std::getline(f, text)) return "";
+    return snippet_line(text, col, end_col);
+}
+
+// Line `line` of text (1-based), without its newline. Empty when that line was not started.
+std::string line_of(const std::string& text, int line) {
+    if (line < 1) return "";
+    int n = 1;
+    size_t i = 0;
+    while (n < line && i < text.size()) {
+        if (text[i] == '\n') ++n;
+        ++i;
+    }
+    if (n != line || i == text.size()) return "";
+    size_t end = text.find('\n', i);
+    if (end == std::string::npos) end = text.size();
+    return text.substr(i, end - i);
+}
+
 std::string format(const std::string& path, int line, int col, const std::string& msg, const Note& note,
                    const char* kind) {
     std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
@@ -88,6 +109,14 @@ std::string format(const std::string& path, int line, int col, const std::string
 
 std::string format(const std::string& path, int line, int col, const std::string& msg, const char* kind) {
     return format(path, line, col, msg, Note{}, kind);
+}
+
+std::string format_text(const std::string& path, const std::string& text, int line, int col, const std::string& msg,
+                        const Note& note, const char* kind) {
+    std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
+                      "\n" + snippet_line(line_of(text, line), col, note.end_col);
+    if (!note.hint.empty()) out += "hint: " + note.hint + "\n";
+    return out;
 }
 
 namespace {

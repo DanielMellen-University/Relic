@@ -1,2 +1,6 @@
 <repl>:1:7: error: 'nope' is not defined
+    print(nope)
+          ^
 <repl>:1:4: error: expected an expression, got end of line
+    1 +
+       ^
