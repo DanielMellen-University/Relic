@@ -97,6 +97,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `sort_by(xs, less)` | list | `less(a, b)` is bool. `sort` and `sort_by` take a string's characters or a map's keys too (since 1.0.52; both failed on a map, and `sort_by` on a string) |
 | `enumerate(xs)` | list | `[index, item]` pairs from 0; a string gives its characters and a map its keys |
 | `concat(parts)` | list | one list from a list of lists, in order; an item that is not a list is an error |
+| `intersperse(xs, sep)` | list | `sep` between the items, not before the first or after the last; an empty list stays empty |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

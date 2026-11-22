@@ -689,3 +689,16 @@ fun concat(parts)
         i = i + 1
     return out
 
+# sep between the items, not before the first or after the last. An empty
+# list stays empty, and a one-item list is that item alone.
+fun intersperse(xs, sep)
+    _seq("intersperse", xs)
+    let out = []
+    let first = true
+    for x in xs
+        if not first
+            append(out, sep)
+        first = false
+        append(out, x)
+    return out
+

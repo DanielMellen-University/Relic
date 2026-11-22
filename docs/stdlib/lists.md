@@ -119,3 +119,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `concat([[1, 2], [], [3]])` → `[1, 2, 3]`
 
 `concat([])` → `[]`
+
+### intersperse
+
+`intersperse(xs, sep)` puts `sep` between the items, not before the first or after the last.
+
+`intersperse([1, 2, 3], 0)` → `[1, 0, 2, 0, 3]`
+
+`intersperse([1], 0)` → `[1]`
