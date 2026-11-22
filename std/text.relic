@@ -26,3 +26,16 @@ fun partition(s, sep)
         return [s, "", ""]
     return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
 
+# s with the first old replaced by new. No match leaves s as it is. An empty
+# old is an error (replace puts the new text between every character).
+fun replace_first(s, old, new)
+    _text("replace_first", "text", s)
+    _text("replace_first", "old text", old)
+    _text("replace_first", "new text", new)
+    if old == ""
+        fail("text.replace_first(): old text must not be empty")
+    let i = strings.find(s, old)
+    if i < 0
+        return s
+    return slice(s, 0, i) + new + slice(s, i + len(old), len(s))
+

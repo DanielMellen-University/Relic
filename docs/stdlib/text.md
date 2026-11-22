@@ -22,3 +22,11 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 `partition("a=b=c", "=")` → `["a", "=", "b=c"]`
 
 `partition("abc", "=")` → `["abc", "", ""]`
+
+### replace_first
+
+`replace_first(s, old, new)` replaces the first `old` with `new`. No match leaves `s` as it is. An empty `old` is an error.
+
+`replace_first("aaa", "a", "b")` → `"baa"`
+
+`replace_first("abc", "z", "q")` → `"abc"`

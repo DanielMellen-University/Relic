@@ -1,0 +1,7 @@
+use std/text
+print(text.replace_first("aaa", "a", "b"))
+print(text.replace_first("abc", "z", "q"))
+try
+    text.replace_first("a", "", "b")
+catch e
+    print(e.message)
