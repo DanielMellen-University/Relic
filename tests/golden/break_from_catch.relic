@@ -1,0 +1,16 @@
+# break inside a catch leaves the loop. The catch is part of the loop body,
+# so the break is in the loop.
+fun run()
+    let n = 0
+    let seen = []
+    while n < 5
+        n = n + 1
+        try
+            if n == 3
+                fail("x")
+            append(seen, n)
+        catch e
+            append(seen, 0)
+            break
+    print(seen, n)
+run()
