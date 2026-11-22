@@ -68,3 +68,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `hms.relic` | seconds as hours, minutes and seconds |
 | `bfs.relic` | distances on a small graph |
 | `vigenere.relic` | a Vigenère cipher |
+| `kadane.relic` | largest sum of a contiguous run |
