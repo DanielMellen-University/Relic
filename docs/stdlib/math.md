@@ -179,3 +179,15 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `comb(5, 0)` → `1`
 
 `comb(66, 33)` → `7219428434016265740`
+
+### is_prime
+
+`is_prime(n)` is whether an int is prime. Negative numbers, 0 and 1 are not. The test is Miller-Rabin with a fixed set of bases that is enough for every int, so it does not search up to the square root.
+
+`is_prime(2)` → `true`
+
+`is_prime(97)` → `true`
+
+`is_prime(9)` → `false`
+
+`is_prime(1)` → `false`

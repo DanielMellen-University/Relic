@@ -398,3 +398,106 @@ fun comb(n, k)
             fail(e.message)
     return r
 
+# (a + b) mod n, with a and b already in 0 .. n - 1. The sum is taken apart
+# when it would pass n, so it never passes the int range either.
+fun _addmod(a, b, n)
+    if a >= n - b
+        return a - (n - b)
+    return a + b
+
+# floor(b / 2) for a non-negative int, exact past 2^53. The low bit is
+# dropped first so the value being halved is even and at most 2^63-2, and
+# the quotient is capped at 2^62-1 before it is doubled back, which would
+# not fit.
+fun _half(b)
+    let even = b - b % 2
+    if even < 9007199254740992
+        return int(even / 2)
+    let q = int(even / 2)
+    if q > 4611686018427387903
+        q = 4611686018427387903
+    while q * 2 > even
+        q = q - 1
+    while even - q * 2 >= 2
+        q = q + 1
+    return q
+
+# (a * b) mod n, by doubling, so the product never has to fit in an int.
+fun _modmul(a, b, n)
+    let r = 0
+    a = a % n
+    if a < 0
+        a = a + n
+    b = b % n
+    if b < 0
+        b = b + n
+    while b > 0
+        if b % 2 == 1
+            r = _addmod(r, a, n)
+        a = _addmod(a, a, n)
+        b = _half(b)
+    return r
+
+fun _modpow(base, exp, n)
+    let r = 1
+    base = base % n
+    while exp > 0
+        if exp % 2 == 1
+            r = _modmul(r, base, n)
+        base = _modmul(base, base, n)
+        exp = _half(exp)
+    return r
+
+# true when a is a Miller-Rabin witness that n is composite. d is odd and
+# n - 1 = d * 2^s.
+fun _mr_witness(n, a, d, s)
+    let x = _modpow(a, d, n)
+    if x == 1 or x == n - 1
+        return false
+    for r in 1..s
+        x = _modmul(x, x, n)
+        if x == n - 1
+            return false
+    return true
+
+# Whether n is a prime, for every int. Negative numbers, 0 and 1 are not.
+# The test is Miller-Rabin with a fixed set of bases that is known to be
+# enough below 2^64, so there is no chance and no slow search up to the root.
+fun is_prime(n)
+    if type(n) != "int"
+        fail("math.is_prime(): argument must be an int, got " + type(n))
+    if n < 2
+        return false
+    if n == 2 or n == 3
+        return true
+    if n % 2 == 0
+        return false
+    let d = n - 1
+    let s = 0
+    while d % 2 == 0
+        d = _half(d)
+        s = s + 1
+    let witnesses = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+    if n < 2047
+        witnesses = [2]
+    else if n < 1373653
+        witnesses = [2, 3]
+    else if n < 25326001
+        witnesses = [2, 3, 5]
+    else if n < 3215031751
+        witnesses = [2, 3, 5, 7]
+    else if n < 2152302898747
+        witnesses = [2, 3, 5, 7, 11]
+    else if n < 3474749660383
+        witnesses = [2, 3, 5, 7, 11, 13]
+    else if n < 341550071728321
+        witnesses = [2, 3, 5, 7, 11, 13, 17]
+    else if n < 3825123056546413051
+        witnesses = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+    for a in witnesses
+        if a >= n
+            next
+        if _mr_witness(n, a, d, s)
+            return false
+    return true
+
