@@ -98,6 +98,8 @@ RunResult dump_tree(const std::string& path, const std::string& source) {
 Session::Session(std::ostream& out) : out_(out), interp_(std::make_unique<Interpreter>(out)) {}
 Session::~Session() = default;
 
+void Session::reset() { interp_->reset_repl(); }
+
 RunResult Session::run(const std::string& path, const std::string& source, bool echo) {
     RunResult r;
     try {
@@ -242,8 +244,14 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
             if (line == ":quit") break;
             if (line == ":help") {
                 out << ":help   show this help\n"
+                       ":reset  clear the names defined here\n"
                        ":quit   leave\n"
                        "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n";
+                continue;
+            }
+            if (line == ":reset") {
+                session.reset();
+                out << "names cleared\n";
                 continue;
             }
             if (line.find_first_not_of(' ') == std::string::npos) continue;

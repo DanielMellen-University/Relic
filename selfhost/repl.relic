@@ -129,8 +129,14 @@ fun main()
                 break
             if line == ":help"
                 print(":help   show this help")
+                print(":reset  clear the names defined here")
                 print(":quit   leave")
                 print("Blocks end with an empty line. A line stays open while (, [ or {{ is unclosed.")
+                next
+            if line == ":reset"
+                rt.globals = interp.new_env(rt.builtins)
+                rt.modules = {}
+                print("names cleared")
                 next
             if only_spaces(line)
                 next

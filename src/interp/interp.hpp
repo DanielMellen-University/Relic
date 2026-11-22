@@ -54,6 +54,8 @@ public:
     // The file being run. `use` paths resolve against its folder; "<repl>"
     // or empty means the current directory.
     void set_main_file(const std::string& path);
+    // Drops names and loaded modules defined in this session. Built-ins stay.
+    void reset_repl();
     // Built-in functions, shared with the bytecode VM.
     const std::shared_ptr<Env>& builtins() const { return builtins_; }
 

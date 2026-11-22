@@ -540,8 +540,12 @@ static void test_repl_details() {
                  "    len(1, 2)\n"
                  "       ^\n");
     // :quit stops reading; blank lines and comments run nothing
+    CHECK(repl("let x = 4\nx\n:reset\nx\nprint(1)\n", out, err) == 0);
+    CHECK(out == "4\nnames cleared\n1\n");
+    CHECK(err == "<repl>:1:1: error: 'x' is not defined\n    x\n    ^\n");
     CHECK(repl(":help\n:quit\n", out, err) == 0);
     CHECK(out == ":help   show this help\n"
+                 ":reset  clear the names defined here\n"
                  ":quit   leave\n"
                  "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n" &&
           err.empty());

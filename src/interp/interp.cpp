@@ -642,6 +642,12 @@ Interpreter::Interpreter(std::ostream& out)
     install_builtins();
 }
 
+void Interpreter::reset_repl() {
+    globals_ = std::make_shared<Env>(builtins_);
+    modules_.clear();
+    module_trees_.clear();
+}
+
 namespace fs = std::filesystem;
 
 // Folder that `use` paths in `file` resolve against.
