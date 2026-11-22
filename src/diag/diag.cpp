@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"lambda", "a function is written 'fun name() = ...'"},
     {"throw", "raise an error with fail(message)"},
     {"raise", "raise an error with fail(message)"},
     {"quit", "leave with os.exit(code), from std/os"},
