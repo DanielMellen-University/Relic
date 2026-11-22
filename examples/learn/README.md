@@ -52,3 +52,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `queens.relic` | how many ways N queens fit on a board |
 | `coins.relic` | US coins for an amount in cents |
 | `rle.relic` | run-length encoding |
+| `palindrome.relic` | palindromes, ignoring case and punctuation |
