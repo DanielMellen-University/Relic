@@ -27,3 +27,7 @@ In a module, prefer `os.args()` to the built-in `args()`. They are the same list
 `read_line()` returns the next line without its line end (`"\n"` or a carriage return followed by `"\n"`), and `none` once the input has run out. An empty line is `""`, so `none` only means the end. [read_line.relic](../../examples/ref/os/read_line.relic) is fed two lines and prints `alpha`, `beta`, then `true`.
 
 `prompt(text)` is `read_line` after showing `text`, and only when stdin is a terminal. A pipe or a file skips the prompt, so the program prints the same answer either way. `text` must be a string. [prompt.relic](../../examples/ref/os/prompt.relic) reads one piped line and prints `Ada`.
+
+### env_or
+
+`env_or(name, fallback)` is the value of `name`, or `fallback` when it is not set. An empty value is kept: only a missing name uses `fallback`.

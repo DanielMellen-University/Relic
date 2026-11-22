@@ -313,6 +313,7 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 | `run(argv, cwd, stdin, env)` | map | starts a program and waits; `argv` is the program and its arguments (a list of strings, not a shell command); `cwd` is the working folder or `""` for this one; `stdin` is the bytes on standard input (`""` is empty, not the terminal); `env` is extra variables, a map of strings. Returns `{code, out, err}`: the exit code and the bytes written. `code` is 0 to 255 on Linux and macOS. A bad argument is `os.run(): argv must be a list, got int` (and the same shape for `cwd`, `stdin`, `env`, and `argv item 0`). A program that cannot be started is `os.run(): cannot run PATH`; a missing folder is `os.run(): cannot use folder PATH` |
 | `read_line()` | string or `none` | the next line of standard input (see below) |
 | `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
+| `env_or(name, fallback)` | any | the value of `name`, or `fallback` when it is not set; an empty value is kept |
 
 `os.args()` is the same list as the built-in `args()`. Prefer `os.args()` in
 modules; `args()` is also fine at the top level of a script.

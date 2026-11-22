@@ -1,0 +1,11 @@
+use std/os
+print(os.env_or("RELIC_NOT_A_REAL_ENV_NAME_22", "fallback"))
+let path = os.env("PATH")
+if path == none
+    print(os.env_or("PATH", "no") == "no")
+else
+    print(os.env_or("PATH", "no") == path)
+try
+    os.env_or(1, "x")
+catch e
+    print(e.message)
