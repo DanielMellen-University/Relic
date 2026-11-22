@@ -138,6 +138,9 @@ fun main()
                 rt.modules = {}
                 print("names cleared")
                 next
+            if len(line) > 0 and line[0] == ":" and not (" " in line)
+                eprint("unknown command '{line}'; type :help")
+                next
             if only_spaces(line)
                 next
             block = opens_block(line)

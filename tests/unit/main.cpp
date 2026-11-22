@@ -543,6 +543,8 @@ static void test_repl_details() {
     CHECK(repl("let x = 4\nx\n:reset\nx\nprint(1)\n", out, err) == 0);
     CHECK(out == "4\nnames cleared\n1\n");
     CHECK(err == "<repl>:1:1: error: 'x' is not defined\n    x\n    ^\n");
+    CHECK(repl(":foo\n1\n", out, err) == 0);
+    CHECK(out == "1\n" && err == "unknown command ':foo'; type :help\n");
     CHECK(repl(":help\n:quit\n", out, err) == 0);
     CHECK(out == ":help   show this help\n"
                  ":reset  clear the names defined here\n"

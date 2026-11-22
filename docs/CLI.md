@@ -93,6 +93,7 @@ hello Daniel
 
 - `:help` prints the commands and how a block ends, then the REPL waits for the next line.
 - `:reset` drops the names defined so far and says `names cleared`. Built-ins stay. A loaded module is loaded again the next time it is used.
+- A line that is only `:something`, with no space, and is not one of those commands, prints `unknown command ':something'; type :help` and does not run it. `:quit ` with a trailing space is still source, as is ` :quit`.
 - Names stay defined until you leave.
 - A bare expression prints its value. `none` is not printed.
 - A line starting with `fun`, `if`, `else`, `while`, `for`, `try` or `catch` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.

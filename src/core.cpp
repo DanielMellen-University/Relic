@@ -254,6 +254,10 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
                 out << "names cleared\n";
                 continue;
             }
+            if (!line.empty() && line[0] == ':' && line.find(' ') == std::string::npos) {
+                err << "unknown command '" << line << "'; type :help\n";
+                continue;
+            }
             if (line.find_first_not_of(' ') == std::string::npos) continue;
             block = opens_block(line);
         }
