@@ -1,0 +1,18 @@
+# A default expression runs at the call, so it sees the global as it is then.
+let k = 1
+fun inc(x = k)
+    return x
+print(inc())
+k = 5
+print(inc())
+print(inc(9))
+
+fun make()
+    let n = 2
+    fun bump(step = n)
+        return step
+    n = 8
+    return bump
+
+let bump = make()
+print(bump(), bump(3))
