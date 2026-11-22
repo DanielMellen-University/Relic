@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"filter", "filter is lists.filter, from std/lists"},
     {"pass", "Relic has no pass; leave the block empty"},
     {"include", "modules are loaded with 'use', not 'include'"},
     {"require", "modules are loaded with 'use', not 'require'"},
