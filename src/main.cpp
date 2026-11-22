@@ -26,7 +26,7 @@ static bool is_folder(const std::string& path) {
 }
 
 static void usage(std::ostream& to) {
-    to << "usage: relic [--help | --version | help | version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
+    to << "usage: relic [-h | --help | help | -V | --version | version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
           "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
           "       relic fmt [--check | --write] file.relic...   (canonical format; --check exits 1 if a file would change)\n"
           "       relic                       (no file: starts the REPL)\n";
@@ -148,8 +148,8 @@ static int cmd_fmt(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     std::string arg1 = argc >= 2 ? argv[1] : "";
-    bool help_word = arg1 == "--help" || arg1 == "help";
-    bool version_word = arg1 == "--version" || arg1 == "version";
+    bool help_word = arg1 == "--help" || arg1 == "-h" || arg1 == "help";
+    bool version_word = arg1 == "--version" || arg1 == "-V" || arg1 == "version";
     if (argc == 2 && version_word) {
         std::cout << relic::version_string() << "\n";
         return 0;

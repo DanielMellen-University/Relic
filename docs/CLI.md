@@ -15,13 +15,15 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | `relic --ast FILE` | prints the syntax tree |
 | `relic --bytecode FILE` | prints the compiled bytecode |
 | `relic --version` | prints `relic 1.0.53` |
+| `relic -V` | same as `--version` |
 | `relic version` | same as `--version` |
 | `relic --help` | prints the usage lines on stdout |
+| `relic -h` | same as `--help` |
 | `relic help` | same as `--help` |
 
 - `--vm` is still accepted and means the same as the default.
 - The flag must come first, before the file.
-- `help` and `version` are commands, so a file with one of those names is run as `./help` or `./version`.
+- `help` and `version` are commands, and `-h` and `-V` are flags, so a file with one of those names is run as `./help`, `./version`, `./-h` or `./-V`.
 - Anything after the file name goes to the program, including words that start with `--`.
 
 ## Exit codes
