@@ -1,0 +1,5 @@
+a/c.txt
+/c.txt
+c.txt
+a/c
+paths.with_stem(): stem must not hold /, got "b/c"

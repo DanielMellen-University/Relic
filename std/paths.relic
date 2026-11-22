@@ -197,3 +197,19 @@ fun has_ext(p, e)
         return true
     return false
 
+# p with its stem (the base, minus the ext) replaced by stem. stem must not
+# hold a slash. The directory and the extension stay.
+fun with_stem(p, stem)
+    let x = _fix(p, "with_stem")
+    if type(stem) != "string"
+        fail("paths.with_stem(): stem must be a string, got " + type(stem))
+    if host_find(stem, "/") >= 0 or host_find(stem, "\\") >= 0
+        fail("paths.with_stem(): stem must not hold /, got \"" + stem + "\"")
+    let d = dir(x)
+    let name = stem + ext(x)
+    if d == ""
+        return name
+    if d == "/"
+        return "/" + name
+    return d + "/" + name
+

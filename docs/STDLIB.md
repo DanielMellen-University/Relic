@@ -216,6 +216,7 @@ Always `/`. A `\` in input is read as `/`.
 | `with_ext(p, e)` | string | `p` with its `ext` swapped for `e`: `with_ext("a/b.txt", ".md")` → `"a/b.md"`; `".hidden"` gets one added, and `""` takes it off (since 1.0.50); since 1.0.52 an `e` that is not `""` must start with a dot and hold no `/` or `\`: `with_ext("a.md", "txt")` is `paths.with_ext(): ext must be "" or start with a dot and hold no /, got "txt"` (it gave `"atxt"`) |
 | `relative(base, target)` | string | the path from the folder `base` to `target`, with `..` to go up: `relative("/a/b", "/a/c/d")` → `"../c/d"`, the same folder → `"."`; both absolute or both relative, else `paths.relative(): both paths must be absolute, or both relative, got /a and b`, and a `base` with `..` that climbs past its start is `paths.relative(): base must not go up past its start, got ../a` (since 1.0.50) |
 | `has_ext(p, e)` | bool | whether the extension is `e`, as `.txt` or `txt`; `""` means there is none |
+| `with_stem(p, stem)` | string | `p` with its stem replaced; the directory and the extension stay, and `stem` must not hold `/` |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 

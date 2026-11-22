@@ -79,3 +79,13 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 `has_ext("a/b.txt", "txt")` → `true`
 
 `has_ext("Makefile", "")` → `true`
+
+### with_stem
+
+`with_stem(p, stem)` replaces the file name and keeps the directory and the extension. `stem` must not hold a slash. A dotfile has no extension, so the whole name is replaced.
+
+`with_stem("a/b.txt", "c")` → `"a/c.txt"`
+
+`with_stem("/b.txt", "c")` → `"/c.txt"`
+
+`with_stem("a/.bashrc", "c")` → `"a/c"`
