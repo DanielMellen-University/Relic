@@ -1,0 +1,3 @@
+name_require.relic:1:7: warning: 'require' is not defined (modules are loaded with 'use', not 'require')
+    print(require)
+          ^

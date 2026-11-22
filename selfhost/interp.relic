@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "require"
+        return "modules are loaded with 'use', not 'require'"
     if name == "lambda"
         return "a function is written 'fun name() = ...'"
     if name == "throw"
