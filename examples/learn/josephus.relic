@@ -1,0 +1,22 @@
+# Seats 0 to n-1. Counting starts at 0 and every k-th remaining seat is
+# removed. The last seat left is the survivor.
+#   relic examples/learn/josephus.relic
+
+fun josephus(n, k)
+    let xs = []
+    for i in 0..n
+        append(xs, i)
+    let i = 0
+    let order = []
+    while len(xs) > 1
+        i = (i + k - 1) % len(xs)
+        append(order, xs[i])
+        remove(xs, i)
+        if i == len(xs)
+            i = 0
+    return {last: xs[0], order: order}
+
+let a = josephus(5, 2)
+print(a.order, a.last)
+let b = josephus(10, 3)
+print(b.order, b.last)
