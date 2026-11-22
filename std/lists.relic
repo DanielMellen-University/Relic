@@ -783,3 +783,13 @@ fun take_last(xs, n)
         k = 0
     return slice(items, k, len(items))
 
+# The items with the last n dropped, or [] when n is at least the length.
+fun drop_last(xs, n)
+    _seq("drop_last", xs)
+    _count_arg("drop_last", n)
+    let items = _items(xs)
+    let k = len(items) - n
+    if k < 0
+        return []
+    return slice(items, 0, k)
+

@@ -106,6 +106,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `dedupe(xs)` | list | consecutive duplicates removed; items match by `==`, and a later copy that is not adjacent stays |
 | `split_at(xs, n)` | list | `[the first n items, the rest]`; `n` past the end takes everything and leaves the rest empty |
 | `take_last(xs, n)` | list | the last `n` items, or all of them when there are fewer |
+| `drop_last(xs, n)` | list | the items with the last `n` dropped, or `[]` when `n` is at least the length |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

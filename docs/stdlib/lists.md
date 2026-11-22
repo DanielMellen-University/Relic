@@ -177,3 +177,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `take_last([1, 2, 3, 4], 2)` → `[3, 4]`
 
 `take_last([1, 2], 9)` → `[1, 2]`
+
+### drop_last
+
+`drop_last(xs, n)` is the items with the last `n` dropped, or `[]` when `n` is at least the length.
+
+`drop_last([1, 2, 3, 4], 2)` → `[1, 2]`
+
+`drop_last([1], 3)` → `[]`
