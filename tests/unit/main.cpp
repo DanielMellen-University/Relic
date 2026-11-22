@@ -540,6 +540,11 @@ static void test_repl_details() {
                  "    len(1, 2)\n"
                  "       ^\n");
     // :quit stops reading; blank lines and comments run nothing
+    CHECK(repl(":help\n:quit\n", out, err) == 0);
+    CHECK(out == ":help   show this help\n"
+                 ":quit   leave\n"
+                 "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n" &&
+          err.empty());
     CHECK(repl("\n  \n# note\n5\n:quit\n6\n", out, err) == 0);
     CHECK(out == "5\n" && err.empty());
     // an open bracket keeps reading, a try block runs as one chunk

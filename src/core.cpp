@@ -230,7 +230,7 @@ bool unclosed(const std::string& text) {
 int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactive) {
     Session session(out);
     if (interactive)
-        out << version_string() << ". Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n";
+        out << version_string() << ". Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.\n";
     std::string chunk;
     bool block = false;
     std::string line;
@@ -240,6 +240,12 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         if (!line.empty() && line.back() == '\r') line.pop_back();
         if (chunk.empty()) {
             if (line == ":quit") break;
+            if (line == ":help") {
+                out << ":help   show this help\n"
+                       ":quit   leave\n"
+                       "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n";
+                continue;
+            }
             if (line.find_first_not_of(' ') == std::string::npos) continue;
             block = opens_block(line);
         }

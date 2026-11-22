@@ -80,7 +80,7 @@ A syntax error is printed the same way as any other Relic error, and that file i
 
 ```
 $ ./build/relic
-relic 1.0.53. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.53. Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42
@@ -91,6 +91,7 @@ relic 1.0.53. Blocks end with an empty line. Type :quit or press Ctrl-D to leave
 hello Daniel
 ```
 
+- `:help` prints the commands and how a block ends, then the REPL waits for the next line.
 - Names stay defined until you leave.
 - A bare expression prints its value. `none` is not printed.
 - A line starting with `fun`, `if`, `else`, `while`, `for`, `try` or `catch` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.

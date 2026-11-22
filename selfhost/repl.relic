@@ -23,7 +23,7 @@ use errfmt
 use std/os
 use std/strings
 
-let banner = "relic REPL written in Relic. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n"
+let banner = "relic REPL written in Relic. Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.\n"
 
 # The name the value of an input's last expression is kept under while it runs.
 # It cannot be typed, so it never meets a name of the program.
@@ -127,6 +127,11 @@ fun main()
         if chunk == ""
             if line == ":quit"
                 break
+            if line == ":help"
+                print(":help   show this help")
+                print(":quit   leave")
+                print("Blocks end with an empty line. A line stays open while (, [ or {{ is unclosed.")
+                next
             if only_spaces(line)
                 next
             block = opens_block(line)
