@@ -54,3 +54,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `rle.relic` | run-length encoding |
 | `palindrome.relic` | palindromes, ignoring case and punctuation |
 | `isbn.relic` | an ISBN-10 check digit |
+| `ipv4.relic` | four numbers of an IPv4 address |
