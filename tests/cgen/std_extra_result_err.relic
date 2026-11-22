@@ -1,0 +1,6 @@
+use std/result
+print(result.err("no"))
+try
+    result.err(1)
+catch e
+    print(e.message)

@@ -13,3 +13,9 @@ fun _result(name, r)
 # A success holding value. value may be anything, including none.
 fun ok(value) = {kind: "ok", value: value}
 
+# A failure. message must be a string, the same rule fail() has.
+fun err(message)
+    if type(message) != "string"
+        fail("result.err(): message must be a string, got " + type(message))
+    return {kind: "err", message: message}
+

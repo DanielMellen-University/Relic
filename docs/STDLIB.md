@@ -459,6 +459,7 @@ A value that is either a success or a failure, so a caller can pass the failure 
 | Call | Returns | Notes |
 |---|---|---|
 | `ok(value)` | map | a success holding `value` |
+| `err(message)` | map | a failure; `message` must be a string |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C

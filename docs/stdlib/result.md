@@ -10,3 +10,9 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `ok(value)` is a success holding `value`. `value` may be anything, including `none`.
 
 `ok(1)` → `{kind: "ok", value: 1}`
+
+### err
+
+`err(message)` is a failure. `message` must be a string, the same rule `fail` has.
+
+`err("no")` → `{kind: "err", message: "no"}`
