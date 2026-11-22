@@ -14,3 +14,15 @@ fun is_blank(s)
             return false
     return true
 
+# [the text before sep, sep, the text after] for the first sep. When sep is
+# not there, the result is [s, "", ""]. An empty sep is an error.
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("text.partition(): separator must not be empty")
+    let i = strings.find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+

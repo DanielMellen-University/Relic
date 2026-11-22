@@ -436,6 +436,7 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 | Call | Returns | Notes |
 |---|---|---|
 | `is_blank(s)` | bool | true when `s` is empty or only space, tab, newline or CR |
+| `partition(s, sep)` | list | `[before, sep, after]` for the first `sep`, or `[s, "", ""]` when it is not there; an empty `sep` is an error |
 
 ## std/graphics
 
