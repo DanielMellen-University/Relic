@@ -153,3 +153,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `without([1, 1.0, 2, 1], 1)` → `[2]`
 
 `without([1, 2], 9)` → `[1, 2]`
+
+### dedupe
+
+`dedupe(xs)` drops items that are `==` the one just before them. A later copy that is not next to the first stays.
+
+`dedupe([1, 1.0, 2, 2, 1])` → `[1, 2, 1]`
+
+`dedupe([])` → `[]`

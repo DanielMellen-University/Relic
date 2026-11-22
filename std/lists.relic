@@ -752,3 +752,17 @@ fun without(xs, item)
             append(out, x)
     return out
 
+# A new list with consecutive duplicates removed. Items match by ==, so
+# [1, 1.0, 2] is [1, 2]. A later copy that is not next to the first stays.
+fun dedupe(xs)
+    _seq("dedupe", xs)
+    let out = []
+    let started = false
+    let prev = none
+    for x in xs
+        if not started or x != prev
+            append(out, x)
+            prev = x
+            started = true
+    return out
+
