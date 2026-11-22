@@ -15,7 +15,7 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | `relic --ast FILE` | prints the syntax tree |
 | `relic --bytecode FILE` | prints the compiled bytecode |
 | `relic --version` | prints `relic 1.0.53` |
-| `relic --help` | prints the usage lines |
+| `relic --help` | prints the usage lines on stdout |
 
 - `--vm` is still accepted and means the same as the default.
 - The flag must come first, before the file.

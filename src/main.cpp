@@ -25,11 +25,11 @@ static bool is_folder(const std::string& path) {
     return std::filesystem::is_directory(path, ec);
 }
 
-static void usage() {
-    std::cerr << "usage: relic [--help | --version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
-                 "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
-                 "       relic fmt [--check | --write] file.relic...   (canonical format; --check exits 1 if a file would change)\n"
-                 "       relic                       (no file: starts the REPL)\n";
+static void usage(std::ostream& to) {
+    to << "usage: relic [--help | --version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
+          "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
+          "       relic fmt [--check | --write] file.relic...   (canonical format; --check exits 1 if a file would change)\n"
+          "       relic                       (no file: starts the REPL)\n";
 }
 
 // A sibling temp name that is unique per process and per call, so two
@@ -103,11 +103,11 @@ static int cmd_fmt(int argc, char** argv) {
         ++i;
     }
     if (i < argc && std::string(argv[i]).rfind("--", 0) == 0) {
-        usage();
+        usage(std::cerr);
         return 2;
     }
     if (i >= argc) {
-        usage();
+        usage(std::cerr);
         return 2;
     }
     int code = 0;
@@ -152,11 +152,11 @@ int main(int argc, char** argv) {
         return 0;
     }
     if (argc == 2 && std::string(argv[1]) == "--help") {
-        usage();
+        usage(std::cout);
         return 0;
     }
     if (argc == 2 && std::string(argv[1]) == "check") {
-        usage();
+        usage(std::cerr);
         return 2;
     }
     if (argc >= 2 && std::string(argv[1]) == "fmt") return cmd_fmt(argc, argv);
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     bool bytecode = argc == 3 && std::string(argv[1]) == "--bytecode";
     if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
     if (argc < 2 || (!tokens && !ast && !vm && !tree && !bytecode && std::string(argv[1]).rfind("--", 0) == 0)) {
-        usage();
+        usage(std::cerr);
         return 2;
     }
     bool flag = tokens || ast || vm || tree || bytecode;
