@@ -73,3 +73,7 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `compact(m)` is a new map without the keys whose value is `none`. `false`, `0` and `""` stay.
 
 `compact({a: 1, b: none, c: 0})` → `{a: 1, c: 0}`
+
+### map_keys
+
+`map_keys(m, f)` is a new map with each key put through `f`. `f` must give a string, and two keys must not land on one string.

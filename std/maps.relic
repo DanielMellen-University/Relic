@@ -201,3 +201,18 @@ fun compact(m)
             out[k] = m[k]
     return out
 
+# A new map with each key put through f. f must give a string, and two keys
+# must not land on one string. Values stay with their keys, in the same order.
+fun map_keys(m, f)
+    _map("map_keys", "m", m)
+    _fn("map_keys", "f", f)
+    let out = {}
+    for k in m
+        let nk = f(k)
+        if type(nk) != "string"
+            fail("maps.map_keys(): f must give a string, got " + type(nk))
+        if nk in out
+            fail("maps.map_keys(): f gave \"" + nk + "\" for two keys")
+        out[nk] = m[k]
+    return out
+

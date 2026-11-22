@@ -1,0 +1,13 @@
+use std/maps
+use std/strings
+fun up(k) = strings.upper(k)
+fun same(k) = "x"
+print(maps.map_keys({a: 1, b: 2}, up))
+try
+    maps.map_keys({a: 1, b: 2}, same)
+catch e
+    print(e.message)
+try
+    maps.map_keys({a: 1}, 1)
+catch e
+    print(e.message)
