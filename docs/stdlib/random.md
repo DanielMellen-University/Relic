@@ -35,3 +35,7 @@ The generator is L'Ecuyer's MRG32k3a. Its period is about 2^191 and its arithmet
 ### boolean
 
 `boolean(r)` is `true` or `false`, each half the time. The same seed gives the same flips.
+
+### weighted
+
+`weighted(r, items, weights)` picks one item with probability proportional to the matching weight. Every weight is an int above 0, and `items` and `weights` are the same length.

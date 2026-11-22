@@ -155,3 +155,35 @@ fun boolean(r)
     _gen("boolean", r)
     return _below(r, 2) == 1
 
+# One item of items, with probability proportional to the matching weight.
+# Every weight is an int above 0, and the weights add up to at most
+# 4294967087, the same limit as below. items and weights are the same length.
+fun weighted(r, items, weights)
+    _gen("weighted", r)
+    _list("weighted", items)
+    if type(weights) != "list"
+        fail("random.weighted(): weights must be a list, got " + type(weights))
+    if len(items) == 0
+        fail("random.weighted(): the list is empty")
+    if len(weights) != len(items)
+        fail("random.weighted(): weights must have " + str(len(items)) + " items, got " + str(len(weights)))
+    let total = 0
+    let i = 0
+    for w in weights
+        if type(w) != "int" or w < 1
+            let got = type(w)
+            if got == "int" or got == "float"
+                got = str(w)
+            fail("random.weighted(): weight " + str(i) + " must be an int above 0, got " + got)
+        total = total + w
+        i = i + 1
+    if total > _m1
+        fail("random.weighted(): the weights add up to more than 4294967087")
+    let pick = _below(r, total)
+    i = 0
+    for w in weights
+        if pick < w
+            return items[i]
+        pick = pick - w
+        i = i + 1
+    return items[len(items) - 1]
