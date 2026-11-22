@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "sort", 0, NULL, NULL), "'sort' is not defined (sort a list with lists.sort, from std/lists)");
     ERR(rl_fail_undefined(&cx, "reduce", 0, NULL, NULL), "'reduce' is not defined (reduce is lists.reduce, from std/lists)");
     ERR(rl_fail_undefined(&cx, "filter", 0, NULL, NULL), "'filter' is not defined (filter is lists.filter, from std/lists)");
     ERR(rl_fail_undefined(&cx, "pass", 0, NULL, NULL), "'pass' is not defined (Relic has no pass; leave the block empty)");
