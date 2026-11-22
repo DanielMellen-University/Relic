@@ -205,3 +205,9 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `is_finite(1)` → `true`
 
 `is_finite(1.5)` → `true`
+
+### is_nan
+
+`is_nan(x)` is true only for `nan`. An infinity is not `nan`.
+
+`is_nan(1)` → `false`

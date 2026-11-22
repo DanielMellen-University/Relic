@@ -515,3 +515,8 @@ fun is_finite(x)
         return false
     return true
 
+# true only for nan. An infinity is not nan.
+fun is_nan(x)
+    _number("is_nan", x)
+    return x != x
+
