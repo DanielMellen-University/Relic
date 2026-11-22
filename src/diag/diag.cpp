@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"Infinity", "an infinite float is float('inf')"},
     {"nan", "a non-number is float('nan')"},
     {"NaN", "a non-number is float('nan')"},
     {"PI", "pi is math.pi, from std/math"},

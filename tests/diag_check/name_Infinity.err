@@ -1,0 +1,3 @@
+name_Infinity.relic:1:7: warning: 'Infinity' is not defined (an infinite float is float('inf'))
+    print(Infinity)
+          ^
