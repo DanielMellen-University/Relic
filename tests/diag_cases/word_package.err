@@ -1,0 +1,4 @@
+word_package.relic:1:9: error: expected end of line, got name 'foo'
+    package foo
+            ^^^
+hint: Relic has no packages; load a file with 'use'

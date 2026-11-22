@@ -215,6 +215,7 @@ const Pair kWords[] = {
     {"bool", "write 'let name as bool = ...'"},
     {"float", "write 'let name as float = ...'"},
     {"import", "modules are loaded with 'use', not 'import'"},
+    {"package", "Relic has no packages; load a file with 'use'"},
     {"print", "call it as print(...); the parentheses are required"},
     {"len", "call it as len(...); the parentheses are required"},
     {"class", "Relic has no classes; use a map or a module"},
