@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "Null"
+        return "the empty value is 'none', not 'Null'"
     if name == "NULL"
         return "the empty value is 'none', not 'NULL'"
     return ""
