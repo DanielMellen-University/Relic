@@ -1,0 +1,5 @@
+use std/time
+print(time.days_between(3600, 86400 + 10))
+print(time.days_between(3600, 86399))
+print(time.days_between(86400, 0))
+print(time.days_between(0, 0))

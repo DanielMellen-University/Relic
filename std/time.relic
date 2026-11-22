@@ -226,3 +226,11 @@ fun add_days(secs, days)
         fail("time.add_days(): the result is outside the years 1 to 9999")
     return out
 
+# Whole UTC days from a to b: the day number of b minus the day number of a.
+# A time of day does not count, so days_between(3600, 86399) is 0, and a
+# later a gives a negative result.
+fun days_between(a, b)
+    let sa = _secs("days_between", a)
+    let sb = _secs("days_between", b)
+    return _fdiv(sb, 86400) - _fdiv(sa, 86400)
+
