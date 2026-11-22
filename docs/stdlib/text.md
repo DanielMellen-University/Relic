@@ -38,3 +38,9 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 `title("hELLO  world")` → `"Hello  World"`
 
 `title("a")` → `"A"`
+
+### indent
+
+`indent(s, prefix)` puts `prefix` at the start of every line. A final newline is kept, and a blank line in the middle gets the prefix too. An empty text stays empty. `indent("a\nb\n", "  ")` is two lines, each starting with two spaces.
+
+`indent("", ">")` → `""`

@@ -439,6 +439,7 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 | `partition(s, sep)` | list | `[before, sep, after]` for the first `sep`, or `[s, "", ""]` when it is not there; an empty `sep` is an error |
 | `replace_first(s, old, new)` | string | `s` with the first `old` replaced by `new`; no match leaves `s` as it is; an empty `old` is an error |
 | `title(s)` | string | each word with an ASCII capital first letter and the rest lower case; spaces stay, including runs of them |
+| `indent(s, prefix)` | string | `prefix` at the start of every line; a final newline is kept and an empty text stays empty |
 
 ## std/graphics
 

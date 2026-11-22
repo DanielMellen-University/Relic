@@ -56,3 +56,22 @@ fun title(s)
             word = true
     return out
 
+# prefix at the start of every line. A final newline is kept, and a blank
+# line in the middle gets the prefix too. An empty text stays empty.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    if s == ""
+        return ""
+    let ended = strings.ends_with(s, "\n")
+    let ls = strings.lines(s)
+    let out = ""
+    let i = 0
+    for line in ls
+        if i > 0
+            out = out + "\n"
+        out = out + prefix + line
+        i = i + 1
+    if ended
+        out = out + "\n"
+    return out
