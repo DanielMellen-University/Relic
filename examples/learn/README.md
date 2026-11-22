@@ -45,3 +45,4 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `rationals.relic` | fractions reduced with `math.gcd` |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
+| `fib.relic` | the first Fibonacci numbers |
