@@ -743,3 +743,12 @@ fun count_if(xs, test)
             n = n + 1
     return n
 
+# A new list without the items == item, so 1 and 1.0 both go. xs is unchanged.
+fun without(xs, item)
+    _seq("without", xs)
+    let out = []
+    for x in xs
+        if x != item
+            append(out, x)
+    return out
+

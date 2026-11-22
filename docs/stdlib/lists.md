@@ -145,3 +145,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 ### count_if
 
 `count_if(xs, test)` is how many items `test(x)` is true for. An empty list is 0.
+
+### without
+
+`without(xs, item)` is a new list with every item `==` `item` removed, so `1` and `1.0` both go. `xs` is unchanged.
+
+`without([1, 1.0, 2, 1], 1)` → `[2]`
+
+`without([1, 2], 9)` → `[1, 2]`
