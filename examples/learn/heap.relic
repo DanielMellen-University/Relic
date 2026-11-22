@@ -1,0 +1,50 @@
+# A binary min-heap on a list. push keeps the smallest at the front, and pop
+# gives the values back in order.
+#   relic examples/learn/heap.relic
+
+fun up(xs, i)
+    while i > 0
+        let p = int((i - 1) / 2)
+        if xs[p] <= xs[i]
+            return
+        let tmp = xs[p]
+        xs[p] = xs[i]
+        xs[i] = tmp
+        i = p
+
+fun down(xs, i)
+    while true
+        let left = i * 2 + 1
+        if left >= len(xs)
+            return
+        let small = left
+        let right = left + 1
+        if right < len(xs) and xs[right] < xs[left]
+            small = right
+        if xs[i] <= xs[small]
+            return
+        let tmp = xs[i]
+        xs[i] = xs[small]
+        xs[small] = tmp
+        i = small
+
+fun push(xs, x)
+    append(xs, x)
+    up(xs, len(xs) - 1)
+
+fun pop_min(xs)
+    let top = xs[0]
+    let last = pop(xs)
+    if len(xs) > 0
+        xs[0] = last
+        down(xs, 0)
+    return top
+
+let h = []
+for x in [5, 1, 4, 2, 3, 1]
+    push(h, x)
+print(h)
+let out = []
+while len(h) > 0
+    append(out, pop_min(h))
+print(out)
