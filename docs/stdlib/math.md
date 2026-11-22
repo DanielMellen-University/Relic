@@ -147,3 +147,15 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `dist(0, 0, 3, 4)` → `5.0`
 
 `dist(1, 1, 1, 1)` → `0.0`
+
+### div_floor
+
+`div_floor(a, b)` is `a / b` rounded down, as an int, for every int. `/` gives a float, and past 2^53 that float is not exact.
+
+`div_floor(7, 3)` → `2`
+
+`div_floor(-7, 3)` → `-3`
+
+`div_floor(7, -3)` → `-3`
+
+`div_floor(-7, -3)` → `2`

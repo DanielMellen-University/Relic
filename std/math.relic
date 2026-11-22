@@ -298,3 +298,59 @@ fun hex(n)
     if n < 0
         return "-" + out
     return out
+
+# floor(num / b) for num >= 0 and b > 0, exact past 2^53. Doubling the
+# divisor, not multiplying, so a quotient near 2^63 does not overflow on the way.
+fun _quot(num, b)
+    if num < b
+        return 0
+    if num < 9007199254740992 and b < 9007199254740992
+        return int(num / b)
+    let q = 0
+    let rest = num
+    while rest >= b
+        let acc = b
+        let bit = 1
+        while rest - acc >= acc
+            acc = acc + acc
+            bit = bit + bit
+        rest = rest - acc
+        q = q + bit
+    return q
+
+# a / b rounded down, as an int, for every int (not the float / gives).
+# b of 0 is an error. floor of -2^63 / -1 does not fit in an int.
+fun div_floor(a, b)
+    _ints("div_floor", a, b)
+    if b == 0
+        fail("math.div_floor(): b must not be 0")
+    let min_int = -9223372036854775807 - 1
+    if b == min_int
+        if a == min_int
+            return 1
+        if a > 0
+            return -1
+        return 0
+    if a == min_int
+        if b == -1
+            fail("math.div_floor(): the result, 2^63, is out of the int range")
+        if b > 0
+            return div_floor(a + b, b) - 1
+        return div_floor(a - b, b) + 1
+    let r = a % b
+    let num = a - r
+    if num == 0
+        return 0
+    let neg = false
+    if num < 0
+        num = -num
+        neg = true
+    let db = b
+    if db < 0
+        db = -db
+        neg = not neg
+    let q = _quot(num, db)
+    if neg
+        return -q
+    return q
+
