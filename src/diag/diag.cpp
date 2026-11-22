@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"prompt", "read a line with os.prompt, from std/os"},
     {"math", "math functions are in std/math"},
     {"json", "parse and write text with std/json"},
     {"sort", "sort a list with lists.sort, from std/lists"},
