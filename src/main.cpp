@@ -27,6 +27,9 @@ static bool is_folder(const std::string& path) {
 
 static const char kCheckHelp[] =
     "usage: relic check FILE...\n"
+    "       relic check -\n"
+    "\n"
+    "- reads the program from stdin and reports it as <stdin>.\n"
     "\n"
     "Finds mistakes without running: syntax errors, names that are never defined,\n"
     "a top-level name used before its fun or let, and break, next or return in the wrong place.\n"
@@ -208,17 +211,45 @@ int main(int argc, char** argv) {
     }
     if (argc >= 2 && std::string(argv[1]) == "fmt") return cmd_fmt(argc, argv);
     if (argc >= 3 && std::string(argv[1]) == "check") {
-        int code = 0;
+        int dashes = 0;
         for (int i = 2; i < argc; ++i) {
-            std::ifstream f(argv[i], std::ios::binary);
-            if (!f || is_folder(argv[i])) {
-                std::cerr << "relic: cannot open " << argv[i] << "\n";
-                code = 2;
+            std::string path = argv[i];
+            if (path == "-") {
+                ++dashes;
                 continue;
             }
-            std::stringstream ss;
-            ss << f.rdbuf();
-            relic::RunResult r = relic::check_source(argv[i], ss.str());
+            // A flag here is a mistake, not a file named --bogus. Help was handled above.
+            if (!path.empty() && path[0] == '-') {
+                usage(std::cerr);
+                return 2;
+            }
+        }
+        if (dashes > 1) {
+            usage(std::cerr);
+            return 2;
+        }
+        int code = 0;
+        for (int i = 2; i < argc; ++i) {
+            std::string path = argv[i];
+            std::string shown = path;
+            std::string src;
+            if (path == "-") {
+                std::stringstream ss;
+                ss << std::cin.rdbuf();
+                src = ss.str();
+                shown = "<stdin>";
+            } else {
+                std::ifstream f(path, std::ios::binary);
+                if (!f || is_folder(path)) {
+                    std::cerr << "relic: cannot open " << path << "\n";
+                    code = 2;
+                    continue;
+                }
+                std::stringstream ss;
+                ss << f.rdbuf();
+                src = ss.str();
+            }
+            relic::RunResult r = relic::check_source(shown, src);
             std::cerr << r.err;
             if (r.exit_code && !code) code = r.exit_code;
         }

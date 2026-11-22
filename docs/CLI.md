@@ -45,7 +45,7 @@ The self-hosted `run`, `tokens`, `ast` and `check` commands also report unreadab
 
 ## relic check
 
-`relic check --help` prints the command's usage and exit codes on stdout and exits 0. `relic check a.relic b.relic` reads each file and reports, without running it:
+`relic check --help` prints the command's usage and exit codes on stdout and exits 0. `relic check -` reads the program from stdin and reports it as `<stdin>`. One `-` is allowed. An argument that starts with `-`, other than that stdin mark and the help flags, is a usage error (exit 2), not a missing file. `relic check a.relic b.relic` reads each file and reports, without running it:
 
 - syntax errors
 - names that are never defined, with a "did you mean" hint (for the first 50 in a file; the rest are listed without one, so a file full of typos stays quick)
