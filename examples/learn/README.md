@@ -58,3 +58,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `heap.relic` | a binary min-heap |
 | `perms.relic` | every order of a list |
 | `lcs.relic` | longest common subsequence |
+| `raindrops.relic` | Pling, Plang and Plong |
