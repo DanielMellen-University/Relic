@@ -1,0 +1,16 @@
+# A number of seconds as hours, minutes and seconds.
+#   relic examples/learn/hms.relic
+
+fun two(n)
+    if n < 10
+        return "0" + str(n)
+    return str(n)
+
+fun hms(s)
+    let h = int(s / 3600)
+    let m = int((s % 3600) / 60)
+    let sec = s % 60
+    return str(h) + ":" + two(m) + ":" + two(sec)
+
+for s in [0, 5, 65, 3600, 3661, 86399]
+    print(s, hms(s))

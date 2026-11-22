@@ -65,3 +65,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `happy.relic` | happy numbers |
 | `life.relic` | one generation of Life |
 | `say.relic` | numbers from 0 to 99 in words |
+| `hms.relic` | seconds as hours, minutes and seconds |
