@@ -75,3 +75,11 @@ Calendar dates in UTC, for years 1 to 9999, with no leap seconds. `secs` counts 
 `start_of_day(86400 + 5)` → `86400`
 
 `start_of_day(100)` → `0`
+
+### weekday_name
+
+`weekday_name(day)` is the English name of a weekday number from `date`: 1 is Monday and 7 is Sunday.
+
+`weekday_name(1)` → `"Monday"`
+
+`weekday_name(7)` → `"Sunday"`

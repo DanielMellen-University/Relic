@@ -239,3 +239,10 @@ fun start_of_day(secs)
     let s = _secs("start_of_day", secs)
     return _fdiv(s, 86400) * 86400
 
+# The English name of a weekday number from date(): 1 is Monday, 7 is Sunday.
+fun weekday_name(day)
+    _whole("weekday_name", "day", day)
+    if day < 1 or day > 7
+        fail("time.weekday_name(): day must be from 1 to 7, got " + str(day))
+    return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][day - 1]
+
