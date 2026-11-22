@@ -46,3 +46,7 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `unwrap_or(result.err("no"), 9)` → `9`
 
 `unwrap_or(result.ok(3), 9)` → `3`
+
+### try_call
+
+`try_call(f)` is `ok(f())` when `f` returns, or `err` of the message when `f` fails. `f` is called with no arguments.

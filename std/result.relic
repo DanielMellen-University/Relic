@@ -43,3 +43,13 @@ fun unwrap_or(r, fallback)
         return fallback
     return r.value
 
+# ok(f()) when f returns, or err(the message) when f fails. f must be a
+# function and is called with no arguments. The result of f is wrapped even
+# when that result is itself a result.
+fun try_call(f)
+    if type(f) != "function"
+        fail("result.try_call(): f must be a function, got " + type(f))
+    try
+        return ok(f())
+    catch e
+        return err(e.message)

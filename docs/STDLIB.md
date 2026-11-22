@@ -464,6 +464,7 @@ A value that is either a success or a failure, so a caller can pass the failure 
 | `is_err(r)` | bool | true for a result from `err` |
 | `unwrap(r)` | any | the value of an ok result; an err result fails with its message |
 | `unwrap_or(r, fallback)` | any | the value of an ok result, or `fallback` when it is an err |
+| `try_call(f)` | map | `ok(f())` when `f` returns, or `err` of the message when `f` fails; `f` is called with no arguments |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C
