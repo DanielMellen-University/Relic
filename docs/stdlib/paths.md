@@ -99,3 +99,11 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 `join_all(["a", "/b", "c"])` → `"/b/c"`
 
 `join_all([])` → `""`
+
+### split_ext
+
+`split_ext(p)` is `[p without its extension, the extension]`. The extension keeps the dot, or is `""` when there is none. A dotfile stays in one piece.
+
+`split_ext("a/b.tar.gz")` → `["a/b.tar", ".gz"]`
+
+`split_ext(".bashrc")` → `[".bashrc", ""]`

@@ -232,3 +232,9 @@ fun join_all(parts)
         i = i + 1
     return out
 
+# [p without its extension, the extension]. The extension keeps the dot, or
+# is "" when there is none, as ext() has it. ".bashrc" stays in one piece.
+fun split_ext(p)
+    let x = _fix(p, "split_ext")
+    let e = ext(x)
+    return [slice(x, 0, len(x) - len(e)), e]

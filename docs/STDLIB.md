@@ -13,7 +13,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value, with, without, omit, compact, map_keys, rename |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants, floor division, factorial, binomial coefficients, primes, log10, finite and nan checks, fractional part |
 | [std/files](#stdfiles) | text files and folders on the host disk |
-| [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
+| [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another, testing and swapping the extension, replacing the stem, joining a list of parts |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/csv](#stdcsv) | comma-separated tables in and out (RFC 4180) |
@@ -218,6 +218,7 @@ Always `/`. A `\` in input is read as `/`.
 | `has_ext(p, e)` | bool | whether the extension is `e`, as `.txt` or `txt`; `""` means there is none |
 | `with_stem(p, stem)` | string | `p` with its stem replaced; the directory and the extension stay, and `stem` must not hold `/` |
 | `join_all(parts)` | string | `join` of every part, left to right; an absolute part replaces what came before it; an empty list is `""` |
+| `split_ext(p)` | list | `[p without its extension, the extension]`; the dot stays on the extension, and a dotfile stays in one piece |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 
