@@ -159,3 +159,13 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `div_floor(7, -3)` → `-3`
 
 `div_floor(-7, -3)` → `2`
+
+### factorial
+
+`factorial(n)` is `n!` for an int `n` from 0 to 20. `0!` is 1. `21!` does not fit in an int.
+
+`factorial(0)` → `1`
+
+`factorial(5)` → `120`
+
+`factorial(20)` → `2432902008176640000`

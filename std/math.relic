@@ -354,3 +354,14 @@ fun div_floor(a, b)
         return -q
     return q
 
+# n! for an int n from 0 to 20 (21! does not fit in an int). 0! is 1.
+fun factorial(n)
+    if type(n) != "int"
+        fail("math.factorial(): n must be an int, got " + type(n))
+    if n < 0 or n > 20
+        fail("math.factorial(): n must be from 0 to 20, got " + str(n))
+    let r = 1
+    for i in 1..n + 1
+        r = r * i
+    return r
+

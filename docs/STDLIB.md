@@ -167,6 +167,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `is_whole(x)` | bool: an int, or a float with nothing after the point (`2.0`, `1e300`); an infinity counts, since it equals its own floor, and nan does not; not a number is an error |
 | `pi` `e` | float constants |
 | `div_floor(a, b)` | int | `a / b` rounded down, for every int, including past 2^53 where `/` is not exact; `b` of 0 is an error, and `-2^63 / -1` does not fit |
+| `factorial(n)` | int | `n!` for an int from 0 to 20 (`0!` is 1); `21!` does not fit |
 
 `abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number, and `abs` of the int `-2^63`, which has no int on the plus side, is `math.abs(): the result, 2^63, is out of the int range` (since 1.0.52; it was `int overflow`). `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
 
