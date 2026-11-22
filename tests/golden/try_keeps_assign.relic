@@ -1,0 +1,14 @@
+# An assignment made before a failure stays made. Code after the failure
+# in the same try does not run.
+let x = 1
+let xs = [0]
+try
+    x = 2
+    append(xs, x)
+    fail("stop")
+    x = 3
+    append(xs, 9)
+catch e
+    print(e.message)
+print(x)
+print(xs)
