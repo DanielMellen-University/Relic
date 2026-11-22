@@ -185,3 +185,7 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `drop_last([1, 2, 3, 4], 2)` → `[1, 2]`
 
 `drop_last([1], 3)` → `[]`
+
+### flat_map
+
+`flat_map(xs, f)` calls `f(x)` for each item and joins the lists it returns. `f` must give a list.

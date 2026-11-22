@@ -793,3 +793,18 @@ fun drop_last(xs, n)
         return []
     return slice(items, 0, k)
 
+# f(x) for each item, and the lists f returns joined into one. f must give a
+# list; a string or a map is an error, not its characters or keys.
+fun flat_map(xs, f)
+    _seq("flat_map", xs)
+    _fn("flat_map", "f", f)
+    let out = []
+    let i = 0
+    for x in xs
+        let v = f(x)
+        if type(v) != "list"
+            fail("lists.flat_map(): f gave " + type(v) + " for item " + str(i) + ", not a list")
+        for y in v
+            append(out, y)
+        i = i + 1
+    return out

@@ -9,7 +9,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted, enumerate, concat, intersperse, compact, reject, find_last, count_if, without, dedupe, split_at, take_last, drop_last, flat_map |
 | [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
@@ -107,6 +107,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `split_at(xs, n)` | list | `[the first n items, the rest]`; `n` past the end takes everything and leaves the rest empty |
 | `take_last(xs, n)` | list | the last `n` items, or all of them when there are fewer |
 | `drop_last(xs, n)` | list | the items with the last `n` dropped, or `[]` when `n` is at least the length |
+| `flat_map(xs, f)` | list | the lists `f(x)` returns, joined into one; `f` must give a list |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.
