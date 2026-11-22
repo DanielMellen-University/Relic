@@ -246,3 +246,10 @@ fun weekday_name(day)
         fail("time.weekday_name(): day must be from 1 to 7, got " + str(day))
     return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][day - 1]
 
+# The English name of a month number, 1 to 12.
+fun month_name(month)
+    _whole("month_name", "month", month)
+    if month < 1 or month > 12
+        fail("time.month_name(): month must be from 1 to 12, got " + str(month))
+    let names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return names[month - 1]

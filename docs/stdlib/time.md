@@ -83,3 +83,11 @@ Calendar dates in UTC, for years 1 to 9999, with no leap seconds. `secs` counts 
 `weekday_name(1)` → `"Monday"`
 
 `weekday_name(7)` → `"Sunday"`
+
+### month_name
+
+`month_name(month)` is the English name of a month number from 1 to 12.
+
+`month_name(1)` → `"January"`
+
+`month_name(12)` → `"December"`
