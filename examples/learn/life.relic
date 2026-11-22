@@ -1,0 +1,57 @@
+# One generation of Conway's Life. A blinker flips; a block stays.
+#   relic examples/learn/life.relic
+
+fun neighbors(g, r, c)
+    let n = 0
+    for dr in -1..2
+        for dc in -1..2
+            if dr != 0 or dc != 0
+                let rr = r + dr
+                let cc = c + dc
+                if rr >= 0 and rr < len(g) and cc >= 0 and cc < len(g[0])
+                    n = n + g[rr][cc]
+    return n
+
+fun step(g)
+    let out = []
+    for r in 0..len(g)
+        let row = []
+        for c in 0..len(g[0])
+            let n = neighbors(g, r, c)
+            let cell = 0
+            if g[r][c] == 1 and (n == 2 or n == 3)
+                cell = 1
+            if g[r][c] == 0 and n == 3
+                cell = 1
+            append(row, cell)
+        append(out, row)
+    return out
+
+fun show(g)
+    for row in g
+        let s = ""
+        for cell in row
+            if cell == 1
+                s = s + "#"
+            else
+                s = s + "."
+        print(s)
+
+let blinker = [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+]
+show(blinker)
+print("---")
+show(step(blinker))
+print("---")
+let block = [
+    [0, 0, 0, 0],
+    [0, 1, 1, 0],
+    [0, 1, 1, 0],
+    [0, 0, 0, 0]
+]
+show(step(block))

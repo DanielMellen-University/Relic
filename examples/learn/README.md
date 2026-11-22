@@ -63,3 +63,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `soundex.relic` | American Soundex codes |
 | `armstrong.relic` | numbers equal to the sum of the cubes of their digits |
 | `happy.relic` | happy numbers |
+| `life.relic` | one generation of Life |
