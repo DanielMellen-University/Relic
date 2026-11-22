@@ -1,0 +1,13 @@
+# The default runs before the body, so a later write to an earlier
+# parameter does not change the value the default already took.
+fun f(a, b = a)
+    a = 100
+    return [a, b]
+
+print(f(4))
+print(f(4, 9))
+
+fun g(a, b = a + 1)
+    a = 0
+    return b
+print(g(3), g(3, 8))
