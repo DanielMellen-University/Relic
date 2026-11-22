@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "exit", 0, NULL, NULL), "'exit' is not defined (leave with os.exit(code), from std/os)");
     ERR(rl_fail_undefined(&cx, "push", 0, NULL, NULL), "'push' is not defined (add an item with append(list, item))");
     ERR(rl_fail_undefined(&cx, "cls", 0, NULL, NULL), "'cls' is not defined (Relic has no cls; pass the value as a parameter)");
     ERR(rl_fail_undefined(&cx, "super", 0, NULL, NULL), "'super' is not defined (Relic has no super; pass the outer value as a parameter)");
