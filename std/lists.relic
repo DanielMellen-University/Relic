@@ -733,3 +733,13 @@ fun find_last(xs, test)
         i = i - 1
     return none
 
+# How many items test(x) is true for. An empty list is 0.
+fun count_if(xs, test)
+    _seq("count_if", xs)
+    _fn("count_if", "test", test)
+    let n = 0
+    for x in xs
+        if test(x)
+            n = n + 1
+    return n
+

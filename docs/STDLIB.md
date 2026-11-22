@@ -101,6 +101,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `compact(xs)` | list | the items that are not `none`, in order; `false`, `0` and `""` stay |
 | `reject(xs, test)` | list | the items `test(x)` is not true for, in order |
 | `find_last(xs, test)` | any | the last item `test(x)` is true for, or `none` |
+| `count_if(xs, test)` | int | how many items `test(x)` is true for; an empty list is 0 |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.
