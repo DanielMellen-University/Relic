@@ -1,0 +1,5 @@
+(empty) ->  true
+a -> a1 true
+aaabbc -> a3b2c1 true
+abba -> a1b2a1 true
+ééé! -> é3!1 true
