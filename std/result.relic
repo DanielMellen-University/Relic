@@ -29,3 +29,10 @@ fun is_err(r)
     _result("is_err", r)
     return r.kind == "err"
 
+# The value of an ok result. An err result fails with its message.
+fun unwrap(r)
+    _result("unwrap", r)
+    if r.kind == "err"
+        fail(r.message)
+    return r.value
+

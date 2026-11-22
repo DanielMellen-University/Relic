@@ -462,6 +462,7 @@ A value that is either a success or a failure, so a caller can pass the failure 
 | `err(message)` | map | a failure; `message` must be a string |
 | `is_ok(r)` | bool | true for a result from `ok` |
 | `is_err(r)` | bool | true for a result from `err` |
+| `unwrap(r)` | any | the value of an ok result; an err result fails with its message |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C

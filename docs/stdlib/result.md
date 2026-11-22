@@ -32,3 +32,9 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `is_err(result.err("no"))` → `true`
 
 `is_err(result.ok(1))` → `false`
+
+### unwrap
+
+`unwrap(r)` is the value of an ok result. An err result fails with its message.
+
+`unwrap(result.ok(3))` → `3`
