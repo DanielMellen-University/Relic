@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "nullptr", 0, NULL, NULL), "'nullptr' is not defined (the empty value is 'none', not 'nullptr')");
     ERR(rl_fail_undefined(&cx, "Null", 0, NULL, NULL), "'Null' is not defined (the empty value is 'none', not 'Null')");
     ERR(rl_fail_undefined(&cx, "NULL", 0, NULL, NULL), "'NULL' is not defined (the empty value is 'none', not 'NULL')");
     /* string interpolation joins shown values */
