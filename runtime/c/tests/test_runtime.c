@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "include", 0, NULL, NULL), "'include' is not defined (modules are loaded with 'use', not 'include')");
     ERR(rl_fail_undefined(&cx, "require", 0, NULL, NULL), "'require' is not defined (modules are loaded with 'use', not 'require')");
     ERR(rl_fail_undefined(&cx, "lambda", 0, NULL, NULL), "'lambda' is not defined (a function is written 'fun name() = ...')");
     ERR(rl_fail_undefined(&cx, "throw", 0, NULL, NULL), "'throw' is not defined (raise an error with fail(message))");
