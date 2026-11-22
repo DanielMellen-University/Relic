@@ -234,3 +234,8 @@ fun days_between(a, b)
     let sb = _secs("days_between", b)
     return _fdiv(sb, 86400) - _fdiv(sa, 86400)
 
+# Midnight at the start of the UTC day that holds secs.
+fun start_of_day(secs)
+    let s = _secs("start_of_day", secs)
+    return _fdiv(s, 86400) * 86400
+

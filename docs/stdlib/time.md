@@ -67,3 +67,11 @@ Calendar dates in UTC, for years 1 to 9999, with no leap seconds. `secs` counts 
 `days_between(3600, 86399)` → `0`
 
 `days_between(86400, 0)` → `-1`
+
+### start_of_day
+
+`start_of_day(secs)` is midnight at the start of the UTC day that holds `secs`.
+
+`start_of_day(86400 + 5)` → `86400`
+
+`start_of_day(100)` → `0`

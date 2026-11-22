@@ -376,6 +376,7 @@ dropped, rounding down.
 | `days_in_month(year, month)` | int | 28 to 31; `days_in_month(2024, 2)` → `29` |
 | `add_days(secs, days)` | int | `secs` moved by whole UTC days; `days` may be negative; a result outside years 1 to 9999 is an error |
 | `days_between(a, b)` | int | whole UTC days from `a` to `b` (day numbers, so the time of day does not count); a later `a` is negative |
+| `start_of_day(secs)` | int | midnight UTC at the start of the day that holds `secs` |
 
 Outside the years 1 to 9999 is `time.date(): secs must be in the years 1 to 9999, got 253402300800`. Every number then stays below 2^53, so the arithmetic is exact on every engine. Local time zones are not covered.
 
