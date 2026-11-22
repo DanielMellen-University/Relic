@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "this"
+        return "Relic has no this; pass the value as a parameter"
     if name == "self"
         return "Relic has no self; pass the value as a parameter"
     if name == "sizeof"
