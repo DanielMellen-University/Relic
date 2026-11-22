@@ -45,3 +45,11 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `map_values(m, f)` keeps the keys and sets each value to `f(value)`. [map_values.relic](../../examples/ref/maps/map_values.relic) prints `{a: 2, b: 4}`.
 
 `filter(m, keep)` keeps entries where `keep(key, value)` is true. [filter.relic](../../examples/ref/maps/filter.relic) prints `{b: 3, c: 2}`.
+
+### with
+
+`with(m, k, v)` is a new map with `k` set to `v`. An existing key stays where it is. `m` is unchanged.
+
+`with({a: 1, b: 2}, "b", 9)` → `{a: 1, b: 9}`
+
+`with({a: 1}, "c", 3)` → `{a: 1, c: 3}`

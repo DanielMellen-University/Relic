@@ -145,3 +145,21 @@ fun has_value(m, v)
         if m[k] == v
             return true
     return false
+
+# A new map with k set to v. An existing key stays where it is; a new key
+# goes at the end. m is left as it is (unlike m[k] = v, which changes m).
+fun with(m, k, v)
+    _map("with", "m", m)
+    _key("with", "key", k)
+    let out = {}
+    let seen = false
+    for key in m
+        if key == k
+            out[key] = v
+            seen = true
+        else
+            out[key] = m[key]
+    if not seen
+        out[k] = v
+    return out
+
