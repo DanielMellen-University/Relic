@@ -209,3 +209,12 @@ fun column(rows, index)
         r = r + 1
     return out
 
+# The first row of text, the names records() would key by. An empty text
+# has no header. sep is the same as for parse.
+fun headers(text, sep = ",")
+    if type(text) != "string"
+        fail("csv.headers(): text must be a string, got " + type(text))
+    let rows = parse(text, sep)
+    if len(rows) == 0
+        fail("csv.headers(): the text has no row")
+    return rows[0]

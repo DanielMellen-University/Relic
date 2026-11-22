@@ -295,6 +295,7 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 | Call | Returns | Notes |
 |---|---|---|
 | `column(rows, index)` | list | the values in column `index` (from 0), top to bottom; a short row is an error |
+| `headers(text, sep)` | list | the first row, the names `records` keys by; an empty text is an error |
 
 ## std/os
 

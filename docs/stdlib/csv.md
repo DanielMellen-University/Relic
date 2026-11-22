@@ -33,3 +33,7 @@ So `write([["a", "b,c"]])` is the text `a,"b,c"` and a line break.
 `column(rows, index)` is the values in one column, top to bottom. `index` counts from 0. A short row is an error.
 
 `column([["a", "b"], ["c", "d"]], 1)` → `["b", "d"]`
+
+### headers
+
+`headers(text, sep)` is the first row, the names `records` would key by. `sep` defaults to `","`. An empty text has no header. A first row of name,age comes back as those two names.
