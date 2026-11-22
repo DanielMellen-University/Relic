@@ -59,3 +59,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `perms.relic` | every order of a list |
 | `lcs.relic` | longest common subsequence |
 | `raindrops.relic` | Pling, Plang and Plong |
+| `acronym.relic` | initials of a phrase |
