@@ -1,0 +1,5 @@
+use std/math
+print(math.is_inf(math.log(0)))
+print(math.is_inf(math.exp(1000)))
+print(math.is_inf(1))
+print(math.is_inf(math.sqrt(-1)))

@@ -211,3 +211,9 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `is_nan(x)` is true only for `nan`. An infinity is not `nan`.
 
 `is_nan(1)` → `false`
+
+### is_inf
+
+`is_inf(x)` is true for `+inf` and `-inf`. `nan` is not an infinity.
+
+`is_inf(1)` → `false`

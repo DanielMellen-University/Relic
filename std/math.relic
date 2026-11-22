@@ -520,3 +520,10 @@ fun is_nan(x)
     _number("is_nan", x)
     return x != x
 
+# true for +inf and -inf. nan is not an infinity.
+fun is_inf(x)
+    _number("is_inf", x)
+    if x != x
+        return false
+    return x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+
