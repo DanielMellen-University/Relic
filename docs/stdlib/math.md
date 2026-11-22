@@ -217,3 +217,11 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `is_inf(x)` is true for `+inf` and `-inf`. `nan` is not an infinity.
 
 `is_inf(1)` → `false`
+
+### approx
+
+`approx(a, b, eps)` is whether `a` and `b` differ by at most `eps`. `eps` must be finite and 0 or more. `nan` is never close, and neither is an infinity.
+
+`approx(1, 1, 0)` → `true`
+
+`approx(1, 2, 0.5)` → `false`

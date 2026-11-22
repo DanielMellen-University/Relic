@@ -527,3 +527,16 @@ fun is_inf(x)
         return false
     return x > 1.7976931348623157e308 or x < -1.7976931348623157e308
 
+# Whether a and b differ by at most eps. eps must be finite and 0 or more.
+# nan is never close, and neither is an infinity (inf - inf is nan).
+fun approx(a, b, eps)
+    _number("approx", a)
+    _number("approx", b)
+    _number("approx", eps)
+    if not (eps >= 0) or eps > 1.7976931348623157e308
+        fail("math.approx(): eps must be a finite number, 0 or more, got " + str(eps))
+    let d = a - b
+    if d < 0
+        d = 0.0 - d
+    return d <= eps
+

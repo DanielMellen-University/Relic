@@ -174,6 +174,7 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `is_finite(x)` | bool | true for an int, or a float that is not `nan` and not an infinity |
 | `is_nan(x)` | bool | true only for `nan`; an infinity is not `nan` |
 | `is_inf(x)` | bool | true for `+inf` and `-inf`; `nan` is not an infinity |
+| `approx(a, b, eps)` | bool | whether `a` and `b` differ by at most `eps`; `eps` must be finite and 0 or more; `nan` and infinities are not close |
 
 `abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number, and `abs` of the int `-2^63`, which has no int on the plus side, is `math.abs(): the result, 2^63, is out of the int range` (since 1.0.52; it was `int overflow`). `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
 

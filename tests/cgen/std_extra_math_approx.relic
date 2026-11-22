@@ -1,0 +1,8 @@
+use std/math
+print(math.approx(0.1 + 0.2, 0.3, 0.0001))
+print(math.approx(1, 2, 0.5))
+print(math.approx(math.sqrt(-1), 1, 1))
+try
+    math.approx(1, 2, -1)
+catch e
+    print(e.message)
