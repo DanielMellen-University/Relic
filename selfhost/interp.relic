@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "reduce"
+        return "reduce is lists.reduce, from std/lists"
     if name == "filter"
         return "filter is lists.filter, from std/lists"
     if name == "pass"

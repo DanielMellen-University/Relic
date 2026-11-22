@@ -1,0 +1,3 @@
+name_reduce.relic:1:7: error: 'reduce' is not defined (reduce is lists.reduce, from std/lists)
+    print(reduce)
+          ^
