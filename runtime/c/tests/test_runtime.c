@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "size", 0, NULL, NULL), "'size' is not defined (the length of a value is len(value))");
     ERR(rl_fail_undefined(&cx, "console", 0, NULL, NULL), "'console' is not defined (printing is print(...))");
     ERR(rl_fail_undefined(&cx, "cout", 0, NULL, NULL), "'cout' is not defined (printing is print(...))");
     ERR(rl_fail_undefined(&cx, "puts", 0, NULL, NULL), "'puts' is not defined (printing is print(...))");
