@@ -1,0 +1,28 @@
+# The greatest common divisor, by Euclid's algorithm, and the least common
+# multiple that goes with it.
+#   relic examples/learn/euclid.relic
+
+fun gcd(a, b)
+    if a < 0
+        a = 0 - a
+    if b < 0
+        b = 0 - b
+    while b != 0
+        let r = a % b
+        a = b
+        b = r
+    return a
+
+fun lcm(a, b)
+    if a < 0
+        a = 0 - a
+    if b < 0
+        b = 0 - b
+    if a == 0 or b == 0
+        return 0
+    return int(a / gcd(a, b)) * b
+
+for pair in [[48, 18], [7, 1], [0, 5], [12, 18], [-8, 12]]
+    let a = pair[0]
+    let b = pair[1]
+    print(a, b, gcd(a, b), lcm(a, b))

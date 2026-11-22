@@ -1,0 +1,26 @@
+# A palindrome when letters and digits are kept and case is ignored.
+#   relic examples/learn/palindrome.relic
+
+fun norm(s)
+    let out = ""
+    for c in s
+        if c >= "A" and c <= "Z"
+            out = out + chr(ord(c) + 32)
+        else if (c >= "a" and c <= "z") or (c >= "0" and c <= "9")
+            out = out + c
+    return out
+
+fun is_pal(s)
+    let t = norm(s)
+    let i = 0
+    while i < len(t) / 2
+        if t[i] != t[len(t) - 1 - i]
+            return false
+        i = i + 1
+    return true
+
+for s in ["A man, a plan, a canal: Panama", "race car", "race a car", "hello", "", "No lemon, no melon"]
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print(label, is_pal(s))

@@ -1,0 +1,18 @@
+# A function returned from inside an if keeps the names of that branch
+# after the branch has ended.
+fun make(mode)
+    if mode == "a"
+        let n = 1
+        fun inner()
+            n = n + 1
+            return n
+        return inner
+    let n = 100
+    fun inner()
+        n = n + 1
+        return n
+    return inner
+
+let a = make("a")
+let b = make("b")
+print(a(), a(), b(), a())

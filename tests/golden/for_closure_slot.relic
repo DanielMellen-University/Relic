@@ -1,0 +1,10 @@
+# Each turn of a for has its own name, so a closure keeps that turn's value
+# and writes to it do not show up in the other turns.
+let fs = []
+for i in 0..3
+    fun bump()
+        i = i + 100
+        return i
+    append(fs, bump)
+for f in fs
+    print(f(), f())

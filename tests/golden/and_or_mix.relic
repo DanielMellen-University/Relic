@@ -1,0 +1,21 @@
+# and binds tighter than or, and both stop early. The log is the names of
+# the calls that actually ran.
+let log = ""
+fun t(name)
+    log = log + name
+    return true
+fun f(name)
+    log = log + name
+    return false
+
+print(f("a") and t("b"))
+print(log)
+log = ""
+print(t("a") or f("b"))
+print(log)
+log = ""
+print(f("a") or t("b") and f("c"))
+print(log)
+print(false or true and false)
+print(true or false and false)
+print(not false and true)

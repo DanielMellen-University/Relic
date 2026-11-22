@@ -1,0 +1,20 @@
+# A let of a built-in name hides it in that function, including in a nested
+# function. Outside, the built-in is still the built-in.
+let n = len("hi")
+fun make()
+    let len = 5
+    fun g()
+        return len
+    return g()
+print(n, make(), len("ab"))
+
+fun keep()
+    fun g()
+        return len("abcd")
+    print(g())
+    let len = 1
+    try
+        print(g())
+    catch e
+        print(e.message)
+keep()

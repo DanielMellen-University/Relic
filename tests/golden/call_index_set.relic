@@ -1,0 +1,13 @@
+# An index or a field can be assigned through a call. The call's value is
+# the list or the map that changes.
+let xs = [1, 2, 3]
+fun get()
+    return xs
+get()[1] = 9
+print(xs)
+
+let row = {n: 1}
+fun holder()
+    return row
+holder().n = 4
+print(row.n, row)

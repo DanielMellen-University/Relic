@@ -45,3 +45,34 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `rationals.relic` | fractions reduced with `math.gcd` |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
+| `fib.relic` | the first Fibonacci numbers |
+| `pascal.relic` | rows of Pascal's triangle |
+| `insertion_sort.relic` | insertion sort |
+| `merge_sort.relic` | merge sort |
+| `queens.relic` | how many ways N queens fit on a board |
+| `coins.relic` | US coins for an amount in cents |
+| `rle.relic` | run-length encoding |
+| `palindrome.relic` | palindromes, ignoring case and punctuation |
+| `isbn.relic` | an ISBN-10 check digit |
+| `ipv4.relic` | four numbers of an IPv4 address |
+| `heap.relic` | a binary min-heap |
+| `perms.relic` | every order of a list |
+| `lcs.relic` | longest common subsequence |
+| `raindrops.relic` | Pling, Plang and Plong |
+| `acronym.relic` | initials of a phrase |
+| `soundex.relic` | American Soundex codes |
+| `armstrong.relic` | numbers equal to the sum of the cubes of their digits |
+| `happy.relic` | happy numbers |
+| `life.relic` | one generation of Life |
+| `say.relic` | numbers from 0 to 99 in words |
+| `hms.relic` | seconds as hours, minutes and seconds |
+| `bfs.relic` | distances on a small graph |
+| `vigenere.relic` | a Vigenère cipher |
+| `kadane.relic` | largest sum of a contiguous run |
+| `powerset.relic` | every subset of a list |
+| `weekday.relic` | the weekday of a Gregorian date |
+| `base_convert.relic` | an integer in another base |
+| `josephus.relic` | the last seat left in a counting-out |
+| `hamming.relic` | how many characters differ |
+| `factorial.relic` | factorials, and the overflow past 20 |
+| `euclid.relic` | greatest common divisor and least common multiple |

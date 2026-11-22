@@ -1,0 +1,16 @@
+# Every subset, built by adding the next element to each subset so far.
+#   relic examples/learn/powerset.relic
+
+fun powerset(xs)
+    let out = [[]]
+    for x in xs
+        let add = []
+        for s in out
+            append(add, s + [x])
+        for s in add
+            append(out, s)
+    return out
+
+for s in powerset([1, 2, 3])
+    print(s)
+print(len(powerset(["a", "b", "c", "d"])))

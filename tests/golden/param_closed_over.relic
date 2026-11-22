@@ -1,0 +1,10 @@
+# A nested function shares the parameter. Changing it does not change the
+# caller's own name, even when the spellings match.
+let n = 7
+fun f(n)
+    fun g()
+        n = n + 1
+        return n
+    return g
+let g = f(3)
+print(g(), g(), n)

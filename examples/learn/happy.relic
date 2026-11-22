@@ -1,0 +1,19 @@
+# A happy number reaches 1 by repeatedly replacing it with the sum of the
+# squares of its digits. The others loop.
+#   relic examples/learn/happy.relic
+
+fun happy(n)
+    let seen = {}
+    while not (str(n) in seen) and n != 1
+        seen[str(n)] = true
+        let s = 0
+        let x = n
+        while x > 0
+            let d = x % 10
+            s = s + d * d
+            x = int(x / 10)
+        n = s
+    return n == 1
+
+for n in [1, 2, 7, 10, 19, 20]
+    print(n, happy(n))

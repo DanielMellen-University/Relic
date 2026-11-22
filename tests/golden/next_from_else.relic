@@ -1,0 +1,12 @@
+# next in an else branch skips the rest of the turn, including code after
+# the if.
+let s = ""
+for c in "abcd"
+    if c == "b"
+        s = s + "B"
+    else
+        if c == "c"
+            next
+        s = s + c
+    s = s + "."
+print(s)
