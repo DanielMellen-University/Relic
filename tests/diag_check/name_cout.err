@@ -1,0 +1,3 @@
+name_cout.relic:1:7: warning: 'cout' is not defined (printing is print(...))
+    print(cout)
+          ^
