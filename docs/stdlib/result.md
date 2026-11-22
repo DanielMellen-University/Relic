@@ -38,3 +38,11 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `unwrap(r)` is the value of an ok result. An err result fails with its message.
 
 `unwrap(result.ok(3))` → `3`
+
+### unwrap_or
+
+`unwrap_or(r, fallback)` is the value of an ok result, or `fallback` when it is an err.
+
+`unwrap_or(result.err("no"), 9)` → `9`
+
+`unwrap_or(result.ok(3), 9)` → `3`

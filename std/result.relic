@@ -36,3 +36,10 @@ fun unwrap(r)
         fail(r.message)
     return r.value
 
+# The value of an ok result, or fallback when it is an err.
+fun unwrap_or(r, fallback)
+    _result("unwrap_or", r)
+    if r.kind == "err"
+        return fallback
+    return r.value
+
