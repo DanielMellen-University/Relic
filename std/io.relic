@@ -12,3 +12,12 @@ fun is_file(path)
     _path("is_file", "path", path)
     return files.exists(path) and not files.is_dir(path)
 
+# Copy the text of one file onto another. from must be a file, not a folder.
+# to is created or replaced. A missing from fails as files.read does.
+fun copy(from, to)
+    _path("copy", "from", from)
+    _path("copy", "to", to)
+    if files.is_dir(from)
+        fail("io.copy(): cannot copy a folder, got " + from)
+    files.write(to, files.read(from))
+
