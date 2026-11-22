@@ -130,6 +130,7 @@ struct LexRow {
 };
 const LexRow kLex[] = {
     {"&", '&', "unexpected '&&'", "Relic uses 'and', not '&&'", 1},
+    {"$", '\0', "unexpected character '$'", "Relic names have no '$' in front", 0},
     {"&", '\0', "unexpected character '&'", "Relic uses 'and', not '&'", 0},
     {"|", '|', "unexpected '||'", "Relic uses 'or', not '||'", 1},
     {"|", '\0', "unexpected character '|'", "Relic uses 'or', not '|'", 0},
