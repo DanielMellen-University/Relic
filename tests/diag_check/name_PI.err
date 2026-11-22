@@ -1,0 +1,3 @@
+name_PI.relic:1:7: warning: 'PI' is not defined (pi is math.pi, from std/math)
+    print(PI)
+          ^

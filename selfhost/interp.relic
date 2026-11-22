@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "PI"
+        return "pi is math.pi, from std/math"
     if name == "pi"
         return "pi is math.pi, from std/math"
     if name == "open"
