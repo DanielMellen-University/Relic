@@ -333,6 +333,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
     if (strcmp(name, "foreach") == 0) return "loops are written 'for name in list'";
     if (strcmp(name, "nil") == 0) return "the empty value is 'none', not 'nil'";
+    if (strcmp(name, "open") == 0) return "read or write a file with std/files";
     if (strcmp(name, "prompt") == 0) return "read a line with os.prompt, from std/os";
     if (strcmp(name, "math") == 0) return "math functions are in std/math";
     if (strcmp(name, "json") == 0) return "parse and write text with std/json";

@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "open", 0, NULL, NULL), "'open' is not defined (read or write a file with std/files)");
     ERR(rl_fail_undefined(&cx, "prompt", 0, NULL, NULL), "'prompt' is not defined (read a line with os.prompt, from std/os)");
     ERR(rl_fail_undefined(&cx, "math", 0, NULL, NULL), "'math' is not defined (math functions are in std/math)");
     ERR(rl_fail_undefined(&cx, "json", 0, NULL, NULL), "'json' is not defined (parse and write text with std/json)");
