@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "throw", 0, NULL, NULL), "'throw' is not defined (raise an error with fail(message))");
     ERR(rl_fail_undefined(&cx, "raise", 0, NULL, NULL), "'raise' is not defined (raise an error with fail(message))");
     ERR(rl_fail_undefined(&cx, "quit", 0, NULL, NULL), "'quit' is not defined (leave with os.exit(code), from std/os)");
     ERR(rl_fail_undefined(&cx, "exit", 0, NULL, NULL), "'exit' is not defined (leave with os.exit(code), from std/os)");
