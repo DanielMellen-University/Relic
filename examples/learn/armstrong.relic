@@ -1,0 +1,15 @@
+# Three-digit numbers that equal the sum of the cubes of their digits.
+#   relic examples/learn/armstrong.relic
+
+fun sum_cubes(n)
+    let s = 0
+    let x = n
+    while x > 0
+        let d = x % 10
+        s = s + d * d * d
+        x = int(x / 10)
+    return s
+
+for n in 100..1000
+    if sum_cubes(n) == n
+        print(n)
