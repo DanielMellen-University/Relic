@@ -94,6 +94,8 @@ fun name_note(name)
         return "loops are written 'for name in list'"
     if name == "nil"
         return "the empty value is 'none', not 'nil'"
+    if name == "pass"
+        return "Relic has no pass; leave the block empty"
     if name == "include"
         return "modules are loaded with 'use', not 'include'"
     if name == "require"
