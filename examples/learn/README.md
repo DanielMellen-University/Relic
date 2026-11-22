@@ -70,3 +70,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `vigenere.relic` | a Vigenère cipher |
 | `kadane.relic` | largest sum of a contiguous run |
 | `powerset.relic` | every subset of a list |
+| `weekday.relic` | the weekday of a Gregorian date |
