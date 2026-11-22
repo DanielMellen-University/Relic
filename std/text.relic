@@ -39,3 +39,20 @@ fun replace_first(s, old, new)
         return s
     return slice(s, 0, i) + new + slice(s, i + len(old), len(s))
 
+# Each word with its first ASCII letter in upper case and the rest of the
+# word in lower case. Spaces stay as they are, including runs of them.
+fun title(s)
+    _text("title", "argument", s)
+    let out = ""
+    let word = false
+    for c in s
+        if strings.is_space(c)
+            out = out + c
+            word = false
+        else if word
+            out = out + strings.lower(c)
+        else
+            out = out + strings.upper(c)
+            word = true
+    return out
+
