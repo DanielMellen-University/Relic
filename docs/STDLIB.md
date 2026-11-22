@@ -104,6 +104,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `count_if(xs, test)` | int | how many items `test(x)` is true for; an empty list is 0 |
 | `without(xs, item)` | list | a new list without the items `==` `item` (`1` and `1.0` both go); `xs` is unchanged |
 | `dedupe(xs)` | list | consecutive duplicates removed; items match by `==`, and a later copy that is not adjacent stays |
+| `split_at(xs, n)` | list | `[the first n items, the rest]`; `n` past the end takes everything and leaves the rest empty |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

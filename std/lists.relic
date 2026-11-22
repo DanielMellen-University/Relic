@@ -766,3 +766,10 @@ fun dedupe(xs)
             started = true
     return out
 
+# [the first n items, the rest]. n past the end takes everything and leaves
+# the rest empty. n must be a whole number, 0 or more, as for take.
+fun split_at(xs, n)
+    _seq("split_at", xs)
+    _count_arg("split_at", n)
+    return [take(xs, n), drop(xs, n)]
+

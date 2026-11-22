@@ -161,3 +161,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 `dedupe([1, 1.0, 2, 2, 1])` → `[1, 2, 1]`
 
 `dedupe([])` → `[]`
+
+### split_at
+
+`split_at(xs, n)` is `[the first n items, the rest]`. `n` past the end takes everything and leaves the rest empty.
+
+`split_at([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]`
+
+`split_at([1], 5)` → `[[1], []]`
