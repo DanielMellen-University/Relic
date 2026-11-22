@@ -1,0 +1,3 @@
+name_puts.relic:1:7: error: 'puts' is not defined (printing is print(...))
+    print(puts)
+          ^
