@@ -10,7 +10,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
 | [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted, enumerate, concat, intersperse, compact, reject, find_last, count_if, without, dedupe, split_at, take_last, drop_last, flat_map |
-| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value, with, without, omit, compact, map_keys, rename |
 | [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants |
 | [std/files](#stdfiles) | text files and folders on the host disk |
 | [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
@@ -141,6 +141,7 @@ got int` (since 1.0.52; it was `cannot call an int`), and `filter`, `any`,
 | `omit(m, keys)` | map | a new map without every key in the list; a missing key is skipped and the rest stay in order |
 | `compact(m)` | map | a new map without the keys whose value is `none`; `false`, `0` and `""` stay |
 | `map_keys(m, f)` | map | a new map with each key put through `f`; `f` must give a string, and two keys must not land on one |
+| `rename(m, old, new)` | map | a new map with `old` renamed to `new` in the same place; `old` must be there and `new` must not, unless the names are the same |
 
 Each one fails with its own name when given something that is not a map: `maps.values(): m must be a map, got int` (since 1.0.49). Before, most failed inside with `cannot loop over an int`, and `get` on a list quietly gave back the fallback.
 `map_values` and `filter` check their function the same way: `maps.filter(): keep must be a function, got int` (since 1.0.52; it was `cannot call an int`, and an empty map let it through).

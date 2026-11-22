@@ -77,3 +77,9 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 ### map_keys
 
 `map_keys(m, f)` is a new map with each key put through `f`. `f` must give a string, and two keys must not land on one string.
+
+### rename
+
+`rename(m, old, new)` is a new map with `old` renamed to `new`, in the same place. `old` must be there, and `new` must not be, unless the two names are the same.
+
+`rename({a: 1, b: 2}, "a", "z")` → `{z: 1, b: 2}`

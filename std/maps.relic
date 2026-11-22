@@ -216,3 +216,20 @@ fun map_keys(m, f)
         out[nk] = m[k]
     return out
 
+# A new map with the key old renamed to new, in the same place. old must be
+# there, and new must not be, unless the two names are the same.
+fun rename(m, old, new)
+    _map("rename", "m", m)
+    _key("rename", "old", old)
+    _key("rename", "new", new)
+    if not old in m
+        fail("maps.rename(): no key \"" + old + "\"")
+    if old != new and new in m
+        fail("maps.rename(): \"" + new + "\" is already a key")
+    let out = {}
+    for k in m
+        if k == old
+            out[new] = m[k]
+        else
+            out[k] = m[k]
+    return out
