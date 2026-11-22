@@ -6,7 +6,7 @@ This repo is the language only: the compiler to C and its C runtime, the C++ hos
 
 > Status: **1.0.53**. Relic 1.0 was tagged `v1.0.0` (MIT). What it has now:
 >
-> - The language with modules, a standard library (strings, lists, maps, math, files, paths, json, csv, os, time, seeded random numbers `std/random`, an in-memory filesystem `std/vfs`, graphics and text) and UTF-8 strings.
+> - The language with modules, a standard library (strings, lists, maps, math, files, paths, json, csv, os, time, seeded random numbers `std/random`, an in-memory filesystem `std/vfs`, graphics, text and io) and UTF-8 strings.
 > - A compiler written in Relic (`selfhost/cgen.relic`, [CGEN.md](docs/CGEN.md)) that turns Relic into C for the runtime in `runtime/c/` ([C-RUNTIME.md](docs/C-RUNTIME.md)). It compiles itself, and its own C is committed in `bootstrap/`, so the default build needs only a C compiler.
 > - An optional C++ host with a tree-walker, a bytecode VM (the default engine), the REPL and SDL2 graphics. Compiled programs get the same graphics with `-DRELIC_C_SDL=ON`.
 > - A lexer, parser, interpreter, `relic check` and REPL written in Relic (`selfhost/`). The interpreter can run a program inside another, with its output captured, a step limit, refused built-ins, modules read from elsewhere and input fed line by line; MONOLITH 2's IDE runs programs that way (1.0.44 and 1.0.45).
@@ -140,7 +140,7 @@ print(box.title, box["version"])
 - Conditions must be `true` or `false`. `if 1` is an error. `if` always takes an indented block (no one-line `if`).
 - A `fun` or `let` name exists only after that line has run. Put definitions above the top-level code that calls them (or call them from another function).
 - Modules: `use lib/mathx` loads `lib/mathx.relic` next to your file; then call `mathx.square(3)`. Names starting with `_` stay private to their file.
-- Standard library: `use std/strings`, then `strings.split("a,b", ",")`. Modules: strings, lists, maps, math, files, paths, json, csv, os, time, random, vfs, graphics, text ([STDLIB.md](docs/STDLIB.md)).
+- Standard library: `use std/strings`, then `strings.split("a,b", ",")`. Modules: strings, lists, maps, math, files, paths, json, csv, os, time, random, vfs, graphics, text, io ([STDLIB.md](docs/STDLIB.md)).
 - Errors: `try` / `catch err` catches any runtime error (`err.message`); `fail("why")` raises one. `relic check FILE` finds mistakes without running.
 - The sample above is checked by the `readme_sample` golden test.
 

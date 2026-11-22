@@ -1,0 +1,14 @@
+# std/io: small file helpers on top of std/files. Paths are relative to
+# where relic runs, the same as files.
+use std/files
+use std/strings
+
+fun _path(name, what, path)
+    if type(path) != "string"
+        fail("io." + name + "(): " + what + " must be a string, got " + type(path))
+
+# true when path is a file. A missing path and a folder are false.
+fun is_file(path)
+    _path("is_file", "path", path)
+    return files.exists(path) and not files.is_dir(path)
+

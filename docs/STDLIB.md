@@ -21,6 +21,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/time](#stdtime) | clocks, sleep, a frame timer, UTC calendar dates |
 | [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling, sampling, a fair coin flip and a weighted pick |
 | [std/text](#stdtext) | more text helpers on top of strings |
+| [std/io](#stdio) | small file helpers on top of files |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
@@ -441,6 +442,13 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 | `title(s)` | string | each word with an ASCII capital first letter and the rest lower case; spaces stay, including runs of them |
 | `indent(s, prefix)` | string | `prefix` at the start of every line; a final newline is kept and an empty text stays empty |
 
+## std/io
+
+Small file helpers on top of `std/files`. Paths are relative to where the program runs, the same as `files`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `is_file(path)` | bool | true when `path` is a file; a missing path and a folder are false |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C
