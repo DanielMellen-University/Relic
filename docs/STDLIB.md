@@ -17,7 +17,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/csv](#stdcsv) | comma-separated tables in and out (RFC 4180) |
-| [std/os](#stdos) | args, environment, current folder, exit |
+| [std/os](#stdos) | args, environment, current folder, exit, a fallback for a missing variable |
 | [std/time](#stdtime) | clocks, sleep, a frame timer, UTC calendar dates |
 | [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling, sampling, a fair coin flip and a weighted pick |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
@@ -314,6 +314,7 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 | `read_line()` | string or `none` | the next line of standard input (see below) |
 | `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
 | `env_or(name, fallback)` | any | the value of `name`, or `fallback` when it is not set; an empty value is kept |
+| `has_env(name)` | bool | whether `name` is set, even when the value is empty |
 
 `os.args()` is the same list as the built-in `args()`. Prefer `os.args()` in
 modules; `args()` is also fine at the top level of a script.

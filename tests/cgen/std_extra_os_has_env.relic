@@ -1,0 +1,8 @@
+use std/os
+print(os.has_env("RELIC_NOT_A_REAL_ENV_NAME_22"))
+let path = os.env("PATH")
+print(os.has_env("PATH") == (path != none))
+try
+    os.has_env(1)
+catch e
+    print(e.message)

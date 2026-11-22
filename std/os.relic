@@ -33,3 +33,8 @@ fun env_or(name, fallback)
         return fallback
     return v
 
+# Whether name is set in the environment, even when the value is empty.
+fun has_env(name)
+    if type(name) != "string"
+        fail("os.has_env(): name must be a string, got " + type(name))
+    return env(name) != none

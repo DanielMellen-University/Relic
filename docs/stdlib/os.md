@@ -31,3 +31,7 @@ In a module, prefer `os.args()` to the built-in `args()`. They are the same list
 ### env_or
 
 `env_or(name, fallback)` is the value of `name`, or `fallback` when it is not set. An empty value is kept: only a missing name uses `fallback`.
+
+### has_env
+
+`has_env(name)` is whether `name` is set, even when the value is empty.
