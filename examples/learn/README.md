@@ -75,3 +75,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `josephus.relic` | the last seat left in a counting-out |
 | `hamming.relic` | how many characters differ |
 | `factorial.relic` | factorials, and the overflow past 20 |
+| `euclid.relic` | greatest common divisor and least common multiple |
