@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"console", "printing is print(...)"},
     {"cout", "printing is print(...)"},
     {"puts", "printing is print(...)"},
     {"Nil", "the empty value is 'none', not 'Nil'"},
