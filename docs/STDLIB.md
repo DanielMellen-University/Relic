@@ -374,6 +374,7 @@ dropped, rounding down.
 | `parse_iso(text)` | int | reads `"YYYY-MM-DDTHH:MM:SSZ"` or `"YYYY-MM-DD"` (midnight); anything else is `time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "..."`, and a date that does not exist gets the `from_date` error |
 | `is_leap(year)` | bool | Gregorian: `is_leap(1900)` → `false`, `is_leap(2000)` → `true` |
 | `days_in_month(year, month)` | int | 28 to 31; `days_in_month(2024, 2)` → `29` |
+| `add_days(secs, days)` | int | `secs` moved by whole UTC days; `days` may be negative; a result outside years 1 to 9999 is an error |
 
 Outside the years 1 to 9999 is `time.date(): secs must be in the years 1 to 9999, got 253402300800`. Every number then stays below 2^53, so the arithmetic is exact on every engine. Local time zones are not covered.
 

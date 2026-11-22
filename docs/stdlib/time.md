@@ -49,3 +49,11 @@ Calendar dates in UTC, for years 1 to 9999, with no leap seconds. `secs` counts 
 `is_leap(2024)` → `true`
 
 `days_in_month(2023, 2)` → `28`
+
+### add_days
+
+`add_days(secs, days)` moves a UTC timestamp by whole days. `days` may be negative. A result outside the years 1 to 9999 is an error.
+
+`add_days(0, 1)` → `86400`
+
+`add_days(86400, -1)` → `0`

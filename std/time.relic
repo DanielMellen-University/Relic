@@ -213,3 +213,16 @@ fun parse_iso(text)
     if n == 10
         return from_date(parts[0], parts[1], parts[2])
     return from_date(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])
+
+# secs moved by whole UTC days. days may be negative. A result outside the
+# years 1 to 9999 is an error, as date() refuses those.
+fun add_days(secs, days)
+    let s = _secs("add_days", secs)
+    _whole("add_days", "days", days)
+    if days > 4000000 or days < -4000000
+        fail("time.add_days(): the result is outside the years 1 to 9999")
+    let out = s + days * 86400
+    if out < _min_secs or out > _max_secs
+        fail("time.add_days(): the result is outside the years 1 to 9999")
+    return out
+
