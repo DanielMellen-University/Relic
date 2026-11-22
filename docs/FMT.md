@@ -32,6 +32,8 @@ hello Linus
 
 ## Commands
 
+`relic fmt --help` and `relic fmt -h` print this command's usage and exit codes on stdout and exit 0. Extra words after the help flag are a usage error (exit 2).
+
 | Command | Does | Exit |
 |---|---|---|
 | `relic fmt FILE...` | writes the canonical text of each file to stdout, one after another | 0, or 1 if a file does not parse |

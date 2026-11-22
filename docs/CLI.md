@@ -45,7 +45,7 @@ The self-hosted `run`, `tokens`, `ast` and `check` commands also report unreadab
 
 ## relic check
 
-`relic check a.relic b.relic` reads each file and reports, without running it:
+`relic check --help` prints the command's usage and exit codes on stdout and exits 0. `relic check a.relic b.relic` reads each file and reports, without running it:
 
 - syntax errors
 - names that are never defined, with a "did you mean" hint (for the first 50 in a file; the rest are listed without one, so a file full of typos stays quick)
@@ -66,7 +66,7 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 
 ## relic fmt
 
-`relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
+`relic fmt --help` prints the command's usage and exit codes on stdout and exits 0. `relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
 
 | Code | When |
 |---|---|
