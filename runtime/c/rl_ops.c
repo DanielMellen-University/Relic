@@ -333,6 +333,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
     if (strcmp(name, "foreach") == 0) return "loops are written 'for name in list'";
     if (strcmp(name, "nil") == 0) return "the empty value is 'none', not 'nil'";
+    if (strcmp(name, "super") == 0) return "Relic has no super; pass the outer value as a parameter";
     if (strcmp(name, "this") == 0) return "Relic has no this; pass the value as a parameter";
     if (strcmp(name, "self") == 0) return "Relic has no self; pass the value as a parameter";
     if (strcmp(name, "sizeof") == 0) return "the length of a value is len(value)";
