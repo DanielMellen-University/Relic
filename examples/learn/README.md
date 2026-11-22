@@ -56,3 +56,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `isbn.relic` | an ISBN-10 check digit |
 | `ipv4.relic` | four numbers of an IPv4 address |
 | `heap.relic` | a binary min-heap |
+| `perms.relic` | every order of a list |
