@@ -20,6 +20,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | [std/os](#stdos) | args, environment, current folder, exit, a fallback for a missing variable |
 | [std/time](#stdtime) | clocks, sleep, a frame timer, UTC calendar dates |
 | [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling, sampling, a fair coin flip and a weighted pick |
+| [std/text](#stdtext) | more text helpers on top of strings |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
@@ -427,6 +428,14 @@ be replayed. For numbers that differ each run, seed from the clock:
 - Two seeds give the same numbers only when they differ by a multiple of both
   moduli (about 1.8e19). The first 16 numbers after seeding are dropped, so
   seeds next to each other do not start alike.
+
+## std/text
+
+More text helpers on top of `std/strings`. Case that looks at words, splitting once, and indent.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `is_blank(s)` | bool | true when `s` is empty or only space, tab, newline or CR |
 
 ## std/graphics
 

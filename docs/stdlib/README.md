@@ -20,6 +20,7 @@ A checked line shows a call, then an arrow, then the returned value. Strings are
 | [os](os.md) | arguments, environment, input |
 | [time](time.md) | clocks and a frame timer |
 | [random](random.md) | seeded random numbers |
+| [text](text.md) | more text helpers on top of strings |
 | [graphics](graphics.md) | a window, drawing, input |
 
 Runnable programs that use several modules together are in [examples/learn](../../examples/learn/README.md).

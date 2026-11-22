@@ -1,0 +1,16 @@
+# std/text: more text helpers, on top of std/strings. Case and splitting
+# that look at words, and a few tests strings does not have.
+use std/strings
+
+fun _text(name, what, s)
+    if type(s) != "string"
+        fail("text." + name + "(): " + what + " must be a string, got " + type(s))
+
+# true when s is empty or every character is space, tab, newline or CR.
+fun is_blank(s)
+    _text("is_blank", "argument", s)
+    for c in s
+        if not strings.is_space(c)
+            return false
+    return true
+
