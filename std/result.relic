@@ -19,3 +19,8 @@ fun err(message)
         fail("result.err(): message must be a string, got " + type(message))
     return {kind: "err", message: message}
 
+# true for a result from ok().
+fun is_ok(r)
+    _result("is_ok", r)
+    return r.kind == "ok"
+

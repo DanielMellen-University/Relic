@@ -16,3 +16,11 @@ A value that is either a success or a failure, so a caller can pass the failure 
 `err(message)` is a failure. `message` must be a string, the same rule `fail` has.
 
 `err("no")` → `{kind: "err", message: "no"}`
+
+### is_ok
+
+`is_ok(r)` is true for a result from `ok`.
+
+`is_ok(result.ok(1))` → `true`
+
+`is_ok(result.err("no"))` → `false`
