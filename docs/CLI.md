@@ -129,7 +129,10 @@ The default build (no C++ host) makes `build/relicc`, cgen compiled to C:
 
 ```
 relicc FILE -o OUT.c [--stub] [--root DIR]
+relicc --help
 ```
+
+`relicc --help` and `relicc -h` print the usage line on stdout and exit 0. Extra words with the help flag are a usage error (exit 3, on stderr).
 
 It writes one C99 file for `FILE` and every module it uses, to be built with `runtime/c/` (see the [README](../README.md#build)). Exit codes: 0 written, 1 a lex or parse error (printed like the host prints it), 2 something not supported, 3 bad usage or a file that cannot be opened (`relicc: cannot open FILE`; a folder counts). `--stub` writes a small C program in place of a refused file, so a build can compile every file. `--root DIR` writes file names inside `DIR` relative to it, which is how `bootstrap/cgen.c` is made. Details are in [CGEN.md](CGEN.md).
 

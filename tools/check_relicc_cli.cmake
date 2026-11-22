@@ -18,6 +18,23 @@ function(expect label code err_re)
 endfunction()
 
 expect("no arguments" 3 "^usage: " )
+execute_process(COMMAND ${RELICC} --help
+  OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE got)
+string(REPLACE "\r\n" "\n" out "${out}")
+if(NOT got STREQUAL "0" OR NOT err STREQUAL "" OR NOT out STREQUAL "usage: relic selfhost/cgen.relic FILE -o OUT.c [--stub] [--root DIR]\n")
+  message(FATAL_ERROR "relicc --help: exit ${got}\n${out}${err}")
+endif()
+execute_process(COMMAND ${RELICC} -h
+  OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE got)
+string(REPLACE "\r\n" "\n" out "${out}")
+if(NOT got STREQUAL "0" OR NOT err STREQUAL "" OR NOT out MATCHES "^usage: ")
+  message(FATAL_ERROR "relicc -h: exit ${got}\n${out}${err}")
+endif()
+execute_process(COMMAND ${RELICC} --help -o x.c
+  OUTPUT_VARIABLE out ERROR_VARIABLE err RESULT_VARIABLE got)
+if(NOT got STREQUAL "3" OR NOT out STREQUAL "" OR NOT err MATCHES "^usage: ")
+  message(FATAL_ERROR "relicc --help with -o: exit ${got}\n${out}${err}")
+endif()
 expect("no -o" 3 "^usage: " ok.relic)
 expect("clean file" 0 "^$" ok.relic -o ok.c)
 expect("syntax error" 1 "bad.relic:" bad.relic -o bad.c)
