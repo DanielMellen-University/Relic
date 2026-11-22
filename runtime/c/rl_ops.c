@@ -333,6 +333,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "continue") == 0) return "the loop keyword is 'next', not 'continue'";
     if (strcmp(name, "foreach") == 0) return "loops are written 'for name in list'";
     if (strcmp(name, "nil") == 0) return "the empty value is 'none', not 'nil'";
+    if (strcmp(name, "quit") == 0) return "leave with os.exit(code), from std/os";
     if (strcmp(name, "exit") == 0) return "leave with os.exit(code), from std/os";
     if (strcmp(name, "push") == 0) return "add an item with append(list, item)";
     if (strcmp(name, "cls") == 0) return "Relic has no cls; pass the value as a parameter";
