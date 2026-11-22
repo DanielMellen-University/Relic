@@ -37,10 +37,11 @@ hello Linus
 | Command | Does | Exit |
 |---|---|---|
 | `relic fmt FILE...` | writes the canonical text of each file to stdout, one after another | 0, or 1 if a file does not parse |
+| `relic fmt -` | same, reading stdin and reporting a syntax error as `<stdin>` | 0, or 1 if it does not parse |
 | `relic fmt --write FILE...` | updates each file in place. A file that is already canonical is not touched | 0, or 1 if a file does not parse |
 | `relic fmt --check FILE...` | prints each path that would change | 0 if nothing would change, 1 if something would or a file does not parse |
 
-`--check` and `--write` together are a usage error (exit 2), as is `relic fmt` with no file. A missing file or a folder is `relic: cannot open FILE` and exit 2. A syntax error is printed like any other Relic error, and that file is not written.
+`--check` and `--write` together are a usage error (exit 2), as is `relic fmt` with no file. `--check -` and `--write -` are usage errors (`relic: fmt --check does not read stdin`, or `--write`). A missing file or a folder is `relic: cannot open FILE` and exit 2. An argument that starts with `-` after the mode flag, other than one `-` for stdin, is a usage error. A syntax error is printed like any other Relic error, and that file is not written.
 
 `--write` uses LF line endings.
 

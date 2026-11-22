@@ -66,7 +66,7 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 
 ## relic fmt
 
-`relic fmt --help` prints the command's usage and exit codes on stdout and exits 0. `relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
+`relic fmt --help` prints the command's usage and exit codes on stdout and exits 0. `relic fmt -` reads source from stdin and writes the canonical text to stdout. `--check` and `--write` do not read stdin. A later argument that starts with `-` is a usage error, not a missing file. `relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
 
 | Code | When |
 |---|---|

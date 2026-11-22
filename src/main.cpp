@@ -40,6 +40,10 @@ static const char kCheckHelp[] =
 
 static const char kFmtHelp[] =
     "usage: relic fmt [--check | --write] FILE...\n"
+    "       relic fmt -\n"
+    "\n"
+    "- reads source from stdin and writes the canonical text to stdout.\n"
+    "--check and --write do not read stdin.\n"
     "\n"
     "Writes each file in canonical form. --check prints paths that would change.\n"
     "--write updates files in place. --check and --write do not combine.\n"
@@ -135,27 +139,46 @@ static int cmd_fmt(int argc, char** argv) {
         write = !check;
         ++i;
     }
-    if (i < argc && std::string(argv[i]).rfind("--", 0) == 0) {
-        usage(std::cerr);
-        return 2;
+    int dashes = 0;
+    for (int j = i; j < argc; ++j) {
+        std::string path = argv[j];
+        if (path == "-") {
+            ++dashes;
+            continue;
+        }
+        // Flags belong before the files. A later one is not a file named --bogus.
+        if (!path.empty() && path[0] == '-') {
+            usage(std::cerr);
+            return 2;
+        }
     }
-    if (i >= argc) {
+    if (i >= argc || dashes > 1 || (dashes > 0 && (check || write))) {
+        if (dashes > 0 && (check || write))
+            std::cerr << "relic: fmt " << (write ? "--write" : "--check") << " does not read stdin\n";
         usage(std::cerr);
         return 2;
     }
     int code = 0;
     for (; i < argc; ++i) {
         std::string path = argv[i];
-        std::ifstream f(path, std::ios::binary);
-        if (!f || is_folder(path)) {
-            std::cerr << "relic: cannot open " << path << "\n";
-            code = 2;
-            continue;
+        std::string src;
+        if (path == "-") {
+            std::stringstream ss;
+            ss << std::cin.rdbuf();
+            src = ss.str();
+            path = "<stdin>";
+        } else {
+            std::ifstream f(path, std::ios::binary);
+            if (!f || is_folder(path)) {
+                std::cerr << "relic: cannot open " << path << "\n";
+                code = 2;
+                continue;
+            }
+            std::stringstream ss;
+            ss << f.rdbuf();
+            f.close();
+            src = ss.str();
         }
-        std::stringstream ss;
-        ss << f.rdbuf();
-        f.close();
-        std::string src = ss.str();
         relic::FmtResult r = relic::format_source(path, src);
         if (r.exit_code) {
             std::cerr << r.err;
