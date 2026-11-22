@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"cls", "Relic has no cls; pass the value as a parameter"},
     {"super", "Relic has no super; pass the outer value as a parameter"},
     {"this", "Relic has no this; pass the value as a parameter"},
     {"self", "Relic has no self; pass the value as a parameter"},
