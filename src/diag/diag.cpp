@@ -182,6 +182,7 @@ const ExpectRow kExpect[] = {
     {"end of line", (int)relic::Tok::Colon, "", -1, "", "", "Relic statements do not end with a colon", 0, 1},
     {"an expression", (int)relic::Tok::Slash, "", (int)relic::Tok::Slash, "", "comments start with '#'", "a comment runs from '#' to the end of the line", 1, 1},
     {"an expression", (int)relic::Tok::Star, "", (int)relic::Tok::Slash, "", "Relic comments start with '#', not '/*'", "delete the '/*'", 1, 1},
+    {"an expression", (int)relic::Tok::Star, "", (int)relic::Tok::Star, "", "Relic has no '**'", "write it out, as in x * x", 1, 1},
     {"an expression", (int)relic::Tok::Plus, "", (int)relic::Tok::Plus, "", "Relic has no '++'", "write the new value out, as in n = n + 1", 1, 1},
     {"end of line before the block", (int)relic::Tok::Colon, "", -1, "", "", "Relic headers do not end with a colon; indent the next line 4 spaces", 0, 1},
     {"end of line before the block", (int)relic::Tok::Assign, "", -1, "", "", "compare with '=='; a single '=' assigns", 0, 1},
