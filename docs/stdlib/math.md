@@ -169,3 +169,13 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `factorial(5)` → `120`
 
 `factorial(20)` → `2432902008176640000`
+
+### comb
+
+`comb(n, k)` is the binomial coefficient `C(n, k)`. `n` is 0 or more and `k` is from 0 to `n`. A result that does not fit is an error.
+
+`comb(10, 3)` → `120`
+
+`comb(5, 0)` → `1`
+
+`comb(66, 33)` → `7219428434016265740`

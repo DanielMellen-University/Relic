@@ -365,3 +365,36 @@ fun factorial(n)
         r = r * i
     return r
 
+# The binomial coefficient C(n, k), an int. n is 0 or more and k is from 0
+# to n. A result that does not fit is an error (C(67, 33) is the first that
+# does not). C(n, 0) and C(n, n) are 1.
+fun comb(n, k)
+    if type(n) != "int"
+        fail("math.comb(): n must be an int, got " + type(n))
+    if type(k) != "int"
+        fail("math.comb(): k must be an int, got " + type(k))
+    if n < 0
+        fail("math.comb(): n must be 0 or more, got " + str(n))
+    if k < 0 or k > n
+        fail("math.comb(): k must be from 0 to " + str(n) + ", got " + str(k))
+    if k > n - k
+        k = n - k
+    let r = 1
+    for i in 1..k + 1
+        let mul = n - k + i
+        let g = gcd(r, i)
+        r = _quot(r, g)
+        let i2 = _quot(i, g)
+        g = gcd(mul, i2)
+        mul = _quot(mul, g)
+        i2 = _quot(i2, g)
+        if i2 != 1
+            fail("math.comb(): the result is out of the int range")
+        try
+            r = r * mul
+        catch e
+            if e.message == "int overflow"
+                fail("math.comb(): the result is out of the int range")
+            fail(e.message)
+    return r
+
