@@ -27,3 +27,9 @@ Bad text is an error with the line and column, such as `csv.parse(): line 1, col
 `write(rows, sep)` joins each row's fields with `sep` and ends every row with `"\n"`. Only fields that need quotes get them: ones holding `sep`, a quote, a CR or a LF, or starting or ending with a space. Numbers and bools are written as `str()` shows them, and `none` as an empty field. [write.relic](../../examples/ref/csv/write.relic) writes a small table and reads it back.
 
 So `write([["a", "b,c"]])` is the text `a,"b,c"` and a line break.
+
+### column
+
+`column(rows, index)` is the values in one column, top to bottom. `index` counts from 0. A short row is an error.
+
+`column([["a", "b"], ["c", "d"]], 1)` → `["b", "d"]`

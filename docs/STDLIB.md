@@ -289,6 +289,13 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 - Python's `csv` module reads what `write` writes and `parse` reads what Python
   writes, CRLF included (checked on 300 random tables).
 
+
+### Column and header
+
+| Call | Returns | Notes |
+|---|---|---|
+| `column(rows, index)` | list | the values in column `index` (from 0), top to bottom; a short row is an error |
+
 ## std/os
 
 | Call | Returns | Notes |
