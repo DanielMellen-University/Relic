@@ -30178,8 +30178,32 @@ static int rlc_mod_0(rl_ctx *cx, rl_scope *top) {
     }
     }
     if (!fi_433) {
-    T[0] = rl_bool(rl_equal(top->slots[103], rl_none()));
-    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1593, 17, 1593, 17, 1593, 17, fail);
+    T[1] = rl_bool(rl_equal(top->slots[103], rl_none()));
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 1593, 17, 1593, 17, 1593, 17, fail);
+    RLC_DROP(T[1]);
+    if (!c_) T[0] = rl_bool(0);
+    else {
+    T[4] = rl_retain(S[1]->slots[0]);
+    if (rl_call(cx, B[4], 1, &T[4], &T[3])) { rl_std_boundary(cx, B[4]); RLC_ERR(0, 1593, 33, 1593, 33, 1593, 33, fail); }
+    RLC_DROP(T[4]);
+    T[2] = rl_bool(rl_equal(T[3], rl_int(0LL)));
+    RLC_DROP(T[3]);
+    if (rl_cond(cx, T[2], "'or' operand", &c_)) RLC_ERR(0, 1593, 37, 1593, 37, 1593, 37, fail);
+    RLC_DROP(T[2]);
+    if (c_) T[1] = rl_bool(1);
+    else {
+    if (rl_index(cx, S[1]->slots[0], rl_int(0LL), &T[3])) RLC_ERR(0, 1593, 46, 1593, 45, 1593, 47, fail);
+    T[2] = rl_bool(!rl_equal(T[3], K[43]));
+    RLC_DROP(T[3]);
+    if (rl_cond(cx, T[2], "'or' operand", &c_)) RLC_ERR(0, 1593, 50, 1593, 50, 1593, 50, fail);
+    T[1] = rl_bool(c_);
+    RLC_DROP(T[2]);
+    }
+    if (rl_cond(cx, T[1], "'and' operand", &c_)) RLC_ERR(0, 1593, 42, 1593, 42, 1593, 42, fail);
+    T[0] = rl_bool(c_);
+    RLC_DROP(T[1]);
+    }
+    if (rl_cond(cx, T[0], "'if' condition", &c_)) RLC_ERR(0, 1593, 25, 1593, 25, 1593, 25, fail);
     RLC_DROP(T[0]);
     if (c_) { fi_433 = 1;
     T[0] = rl_retain(S[1]->slots[0]);

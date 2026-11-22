@@ -1590,7 +1590,7 @@ while i < len(argv)
         i = i + 1
     else if a == "--help" or a == "-h"
         help = true
-    else if src == none
+    else if src == none and (len(a) == 0 or a[0] != "-")
         src = a
     else
         usage = true
