@@ -1,0 +1,12 @@
+# A string has no index assignment. The string is unchanged.
+let s = "ab"
+try
+    s[0] = "z"
+catch e
+    print(e.message)
+print(s)
+try
+    s[1] = "y"
+catch e
+    print(e.message)
+print(s, len(s))
