@@ -682,6 +682,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "continue", 0, NULL, NULL), "'continue' is not defined (the loop keyword is 'next', not 'continue')");
     ERR(rl_fail_undefined(&cx, "foreach", 0, NULL, NULL), "'foreach' is not defined (loops are written 'for name in list')");
     ERR(rl_fail_undefined(&cx, "nil", 0, NULL, NULL), "'nil' is not defined (the empty value is 'none', not 'nil')");
+    ERR(rl_fail_undefined(&cx, "finally", 0, NULL, NULL), "'finally' is not defined (Relic has no finally; put that code after try and catch)");
     ERR(rl_fail_undefined(&cx, "Infinity", 0, NULL, NULL), "'Infinity' is not defined (an infinite float is float('inf'))");
     ERR(rl_fail_undefined(&cx, "nan", 0, NULL, NULL), "'nan' is not defined (a non-number is float('nan'))");
     ERR(rl_fail_undefined(&cx, "NaN", 0, NULL, NULL), "'NaN' is not defined (a non-number is float('nan'))");

@@ -214,6 +214,7 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"finally", "Relic has no finally; put that code after try and catch"},
     {"Infinity", "an infinite float is float('inf')"},
     {"nan", "a non-number is float('nan')"},
     {"NaN", "a non-number is float('nan')"},
