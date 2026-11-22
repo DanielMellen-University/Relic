@@ -174,3 +174,21 @@ fun without(m, k)
             out[key] = m[key]
     return out
 
+# A new map without every key in the list. A key that m does not have is
+# skipped. Keys stay in their old order.
+fun omit(m, keys)
+    _map("omit", "m", m)
+    if type(keys) != "list"
+        fail("maps.omit(): keys must be a list, got " + type(keys))
+    let gone = {}
+    let i = 0
+    for k in keys
+        _key("omit", "key " + str(i), k)
+        gone[k] = true
+        i = i + 1
+    let out = {}
+    for k in m
+        if not k in gone
+            out[k] = m[k]
+    return out
+

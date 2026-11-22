@@ -61,3 +61,9 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `without({a: 1, b: 2, c: 3}, "b")` → `{a: 1, c: 3}`
 
 `without({a: 1}, "z")` → `{a: 1}`
+
+### omit
+
+`omit(m, keys)` is a new map without every key in the list. A key that is not there is skipped.
+
+`omit({a: 1, b: 2, c: 3}, ["c", "a", "z"])` → `{b: 2}`
