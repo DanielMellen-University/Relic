@@ -662,3 +662,15 @@ fun sort(xs)
     if r == none
         return sort_by(ys, natural)
     return r
+
+# [index, item] pairs from 0, in order. A string gives its characters and a
+# map its keys, as the other helpers do.
+fun enumerate(xs)
+    _seq("enumerate", xs)
+    let out = []
+    let i = 0
+    for x in xs
+        append(out, [i, x])
+        i = i + 1
+    return out
+

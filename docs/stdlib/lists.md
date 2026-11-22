@@ -103,3 +103,11 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 [map.relic](../../examples/ref/lists/map.relic) prints `[2, 4, 6]`. [filter.relic](../../examples/ref/lists/filter.relic) prints `[2, 4]`. [reduce.relic](../../examples/ref/lists/reduce.relic) prints `10` and then `10` for an empty list started at 10. [partition.relic](../../examples/ref/lists/partition.relic) prints `[[2, 4], [1, 3, 5]]`. [group_by.relic](../../examples/ref/lists/group_by.relic) prints `{a: ["ant", "asp"], b: ["bee"], c: ["cow"]}`. [sort_by.relic](../../examples/ref/lists/sort_by.relic) prints `["a", "d", "cc", "bbb"]`.
 
 `fun_add` and `natural` are helpers behind `sum` and `sort`. They are not part of the call list above.
+
+### enumerate
+
+`enumerate(xs)` is `[index, item]` pairs from 0. A string is its characters.
+
+`enumerate([10, 20])` → `[[0, 10], [1, 20]]`
+
+`enumerate([])` → `[]`
