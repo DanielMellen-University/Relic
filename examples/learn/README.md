@@ -73,3 +73,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `weekday.relic` | the weekday of a Gregorian date |
 | `base_convert.relic` | an integer in another base |
 | `josephus.relic` | the last seat left in a counting-out |
+| `hamming.relic` | how many characters differ |
