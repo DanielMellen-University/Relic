@@ -506,3 +506,12 @@ fun log10(x)
     _number("log10", x)
     return host_log(x) / host_log(10)
 
+# true for an int, or a float that is not nan and not an infinity.
+fun is_finite(x)
+    _number("is_finite", x)
+    if x != x
+        return false
+    if x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+        return false
+    return true
+

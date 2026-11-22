@@ -197,3 +197,11 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `log10(x)` is the base-10 logarithm. Outside the domain it is `nan` or `-inf`, as `log` is, not an error.
 
 `log10(1)` → `0.0`
+
+### is_finite
+
+`is_finite(x)` is true for an int, or a float that is not `nan` and not an infinity.
+
+`is_finite(1)` → `true`
+
+`is_finite(1.5)` → `true`
