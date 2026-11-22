@@ -53,3 +53,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `coins.relic` | US coins for an amount in cents |
 | `rle.relic` | run-length encoding |
 | `palindrome.relic` | palindromes, ignoring case and punctuation |
+| `isbn.relic` | an ISBN-10 check digit |
