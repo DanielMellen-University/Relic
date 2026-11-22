@@ -100,6 +100,7 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `intersperse(xs, sep)` | list | `sep` between the items, not before the first or after the last; an empty list stays empty |
 | `compact(xs)` | list | the items that are not `none`, in order; `false`, `0` and `""` stay |
 | `reject(xs, test)` | list | the items `test(x)` is not true for, in order |
+| `find_last(xs, test)` | any | the last item `test(x)` is true for, or `none` |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.

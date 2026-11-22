@@ -721,3 +721,15 @@ fun reject(xs, test)
             append(out, x)
     return out
 
+# The last item test(x) is true for, or none. test is called on every item.
+fun find_last(xs, test)
+    _seq("find_last", xs)
+    _fn("find_last", "test", test)
+    let items = _items(xs)
+    let i = len(items) - 1
+    while i >= 0
+        if test(items[i])
+            return items[i]
+        i = i - 1
+    return none
+

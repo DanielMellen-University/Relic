@@ -137,3 +137,7 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 ### reject
 
 `reject(xs, test)` is the items `test(x)` is not true for, in order. It is the opposite of `filter`.
+
+### find_last
+
+`find_last(xs, test)` is the last item `test(x)` is true for, or `none`. `test` is called on every item.
