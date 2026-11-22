@@ -67,3 +67,9 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `omit(m, keys)` is a new map without every key in the list. A key that is not there is skipped.
 
 `omit({a: 1, b: 2, c: 3}, ["c", "a", "z"])` → `{b: 2}`
+
+### compact
+
+`compact(m)` is a new map without the keys whose value is `none`. `false`, `0` and `""` stay.
+
+`compact({a: 1, b: none, c: 0})` → `{a: 1, c: 0}`

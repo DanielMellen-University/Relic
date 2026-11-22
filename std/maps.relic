@@ -192,3 +192,12 @@ fun omit(m, keys)
             out[k] = m[k]
     return out
 
+# A new map without the keys whose value is none. false, 0 and "" stay.
+fun compact(m)
+    _map("compact", "m", m)
+    let out = {}
+    for k in m
+        if m[k] != none
+            out[k] = m[k]
+    return out
+
