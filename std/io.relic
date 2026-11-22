@@ -21,3 +21,19 @@ fun copy(from, to)
         fail("io.copy(): cannot copy a folder, got " + from)
     files.write(to, files.read(from))
 
+# Write each string as its own line, with a newline after every one, including
+# the last. An empty list writes an empty file. A line that is not a string
+# is an error (it is not passed through str).
+fun write_lines(path, lines)
+    _path("write_lines", "path", path)
+    if type(lines) != "list"
+        fail("io.write_lines(): lines must be a list, got " + type(lines))
+    let i = 0
+    for line in lines
+        if type(line) != "string"
+            fail("io.write_lines(): line " + str(i) + " must be a string, got " + type(line))
+        i = i + 1
+    if len(lines) == 0
+        files.write(path, "")
+        return
+    files.write(path, strings.join(lines, "\n") + "\n")

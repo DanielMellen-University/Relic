@@ -450,6 +450,7 @@ Small file helpers on top of `std/files`. Paths are relative to where the progra
 |---|---|---|
 | `is_file(path)` | bool | true when `path` is a file; a missing path and a folder are false |
 | `copy(from, to)` | none | copy the text of one file onto another; `from` must be a file and `to` is created or replaced |
+| `write_lines(path, lines)` | none | each string as its own line, with a newline after every one; an empty list writes an empty file |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C
