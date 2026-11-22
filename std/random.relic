@@ -148,3 +148,10 @@ fun sample(r, xs, k)
         pool[j] = t
         append(out, pool[i])
     return out
+
+# true or false, each half the time. Fairer than chance(r, 0.5), which goes
+# through a float and can be a hair off a half.
+fun boolean(r)
+    _gen("boolean", r)
+    return _below(r, 2) == 1
+

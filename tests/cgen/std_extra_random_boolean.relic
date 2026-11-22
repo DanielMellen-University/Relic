@@ -1,0 +1,17 @@
+use std/random
+fun bits(seed)
+    let r = random.new(seed)
+    let s = ""
+    for i in 0..8
+        if random.boolean(r)
+            s = s + "1"
+        else
+            s = s + "0"
+    return s
+print(bits(1))
+print(bits(1) == bits(1))
+let r = random.new(1)
+try
+    random.boolean(1)
+catch e
+    print(e.message)

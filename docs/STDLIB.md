@@ -410,6 +410,7 @@ be replayed. For numbers that differ each run, seed from the clock:
 | `pick(r, xs)` | any | one item of a list, each equally likely; `random.pick(): the list is empty` |
 | `shuffle(r, xs)` | list | a new list in a random order; `xs` is left as it is |
 | `sample(r, xs, k)` | list | `k` items from different places in `xs`, in the order drawn; `k` from 0 to `len(xs)` |
+| `boolean(r)` | bool | `true` or `false`, each half the time; fairer than `chance(r, 0.5)`, which goes through a float |
 
 - The generator is L'Ecuyer's MRG32k3a, with a period of about 2^191. Its
   products stay below 2^53, so it is plain int arithmetic and needs no `host_*`
