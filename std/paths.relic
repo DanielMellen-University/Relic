@@ -184,3 +184,16 @@ fun _join_names(names)
     for k in 1..len(names)
         s = s + "/" + names[k]
     return s
+
+# Whether p's extension is e. e may be ".txt" or "txt"; "" means p has none.
+fun has_ext(p, e)
+    _fix(p, "has_ext")
+    if type(e) != "string"
+        fail("paths.has_ext(): ext must be a string, got " + type(e))
+    let got = ext(p)
+    if e == got
+        return true
+    if e != "" and slice(e, 0, 1) != "." and "." + e == got
+        return true
+    return false
+

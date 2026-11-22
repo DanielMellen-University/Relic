@@ -69,3 +69,13 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 `relative("/a/b", "/a/b")` → `"."`
 
 `relative("a/b", "a/c")` → `"../c"`
+
+### has_ext
+
+`has_ext(p, e)` is whether `p` ends with the extension `e`. `e` may be `".txt"` or `"txt"`. `""` means `p` has no extension.
+
+`has_ext("a/b.txt", ".txt")` → `true`
+
+`has_ext("a/b.txt", "txt")` → `true`
+
+`has_ext("Makefile", "")` → `true`

@@ -1,0 +1,7 @@
+use std/paths
+print(paths.has_ext("a/b.txt", ".txt"))
+print(paths.has_ext("a/b.txt", "txt"))
+print(paths.has_ext("a/b.txt", ".md"))
+print(paths.has_ext("Makefile", ""))
+print(paths.has_ext("a/b.txt", ""))
+print(paths.has_ext(".bashrc", ""))
