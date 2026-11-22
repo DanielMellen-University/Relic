@@ -265,3 +265,11 @@ fun is_file(fs, path)
         return false
     return not n.dir
 
+# Copy the text of one file onto another. from must be a file. to is created
+# or replaced, and must not be a folder. Folders are not copied.
+fun copy(fs, from, to)
+    _fs("copy", fs)
+    _path("copy", "from", from)
+    _path("copy", "to", to)
+    let text = read(fs, from)
+    write(fs, to, text)

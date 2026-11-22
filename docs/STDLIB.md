@@ -248,6 +248,7 @@ A first argument that is not a vfs is `vfs.read(): fs must be a vfs from vfs.new
 | `rename(fs, from, to)` | none | `cannot rename {from}`, also when `to` exists or is inside `from` |
 | `size(fs, path)` | int | length of the file text; `cannot get the size of {path}` |
 | `is_file(fs, path)` | bool | true when `path` is a file; a missing path and a folder are false |
+| `copy(fs, from, to)` | none | copy the text of one file onto another; `from` must be a file and folders are not copied |
 
 ## std/json
 

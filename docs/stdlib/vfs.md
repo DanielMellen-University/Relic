@@ -48,3 +48,7 @@ These need more than one call, so the checked programs are the examples:
 ### is_file
 
 `is_file(fs, path)` is true when `path` is a file. A missing path and a folder are false.
+
+### copy
+
+`copy(fs, from, to)` copies the text of one file onto another. `from` must be a file. `to` is created or replaced. Folders are not copied.
