@@ -48,3 +48,4 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `fib.relic` | the first Fibonacci numbers |
 | `pascal.relic` | rows of Pascal's triangle |
 | `insertion_sort.relic` | insertion sort |
+| `merge_sort.relic` | merge sort |

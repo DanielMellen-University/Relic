@@ -1,0 +1,32 @@
+# Merge sort. Split, sort the halves, then merge them in order.
+#   relic examples/learn/merge_sort.relic
+
+fun merge(a, b)
+    let out = []
+    let i = 0
+    let j = 0
+    while i < len(a) and j < len(b)
+        if a[i] <= b[j]
+            append(out, a[i])
+            i = i + 1
+        else
+            append(out, b[j])
+            j = j + 1
+    while i < len(a)
+        append(out, a[i])
+        i = i + 1
+    while j < len(b)
+        append(out, b[j])
+        j = j + 1
+    return out
+
+fun mergesort(xs)
+    if len(xs) < 2
+        return xs
+    let mid = int(len(xs) / 2)
+    return merge(mergesort(slice(xs, 0, mid)), mergesort(slice(xs, mid, len(xs))))
+
+print(mergesort([5, 2, 8, 2, 1, 9, 4]))
+print(mergesort([1]))
+print(mergesort([]))
+print(mergesort(["c", "a", "b", "a"]))

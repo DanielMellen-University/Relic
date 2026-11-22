@@ -1,0 +1,2 @@
+# Compiled run of examples/learn/merge_sort.relic. Stdout must match that program.
+use ../../examples/learn/merge_sort
