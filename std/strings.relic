@@ -251,6 +251,23 @@ fun trim_end(s)
         b = b - 1
     return slice(s, 0, b)
 
+# Strip any character listed in chars from both ends of s.
+fun trim_chars(s, chars)
+    _text("trim_chars", "text", s)
+    _text("trim_chars", "chars", chars)
+    if s == "" or chars == ""
+        return s
+    let drop = {}
+    for c in chars
+        drop[c] = true
+    let a = 0
+    let b = len(s)
+    while a < b and s[a] in drop
+        a = a + 1
+    while b > a and s[b - 1] in drop
+        b = b - 1
+    return slice(s, a, b)
+
 fun split(s, sep)
     # split("a,b", ",") is ["a", "b"]; an empty sep splits into characters
     _text("split", "text", s)

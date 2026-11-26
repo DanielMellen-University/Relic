@@ -66,7 +66,7 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 
 `swapcase("Relic 2!")` → `"rELIC 2!"`
 
-### trim, trim_start, trim_end
+### trim, trim_start, trim_end, trim_chars
 
 Space, tab, newline and carriage return. `trim` looks at both ends. The other two look at one end.
 
@@ -75,6 +75,12 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `trim_start("  hi  ")` → `"hi  "`
 
 `trim_end("  hi  ")` → `"  hi"`
+
+`trim_chars` removes any character in `chars` from both ends.
+
+`trim_chars("..hi..", ".")` → `"hi"`
+
+`trim_chars("/a/b/", "/")` → `"a/b"`
 
 ### Tests on characters
 

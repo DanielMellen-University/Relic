@@ -1,0 +1,9 @@
+hi
+a/b
+hello
+
+
+  hi  
+Relic
+strings.trim_chars(): text must be a string, got int
+strings.trim_chars(): chars must be a string, got int
