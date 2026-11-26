@@ -1,0 +1,29 @@
+# std/strings.indent and dedent: multiline indentation helpers.
+use std/strings
+
+print(strings.indent("a\n\nb\n", "  "))
+print(strings.indent("one\n  \ntwo", "> "))
+print(strings.indent("", "  ") == "")
+print(strings.indent("keep", "") == "keep")
+
+print(strings.dedent("    a\n      b\n\n    c"))
+print(strings.dedent("\t\tx\n\t\t\ty"))
+print(strings.dedent("  a\n\tb") == "  a\n\tb")
+print(strings.dedent("   \n  ") == "   \n  ")
+print(strings.dedent("") == "")
+print(strings.dedent("    a\n  \n    b") == "a\n\nb")
+
+try
+    strings.indent(1, "  ")
+catch e
+    print(e.message)
+
+try
+    strings.indent("a", 1)
+catch e
+    print(e.message)
+
+try
+    strings.dedent(1)
+catch e
+    print(e.message)

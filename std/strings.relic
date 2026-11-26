@@ -499,3 +499,59 @@ fun rpartition(s, sep)
     if i < 0
         return ["", "", s]
     return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+# Prefix every non-blank line with prefix; blank lines and line endings stay.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    if s == "" or prefix == ""
+        return s
+    let out = []
+    for line in split(s, "\n")
+        if trim(line) == ""
+            append(out, line)
+        else
+            append(out, prefix + line)
+    return join(out, "\n")
+
+# Remove common leading spaces or tabs from every non-blank line.
+fun dedent(s)
+    _text("dedent", "argument", s)
+    if s == ""
+        return s
+    let parts = split(s, "\n")
+    let margin = none
+    for line in parts
+        if trim(line) == ""
+            next
+        let i = 0
+        let n = len(line)
+        while i < n and (line[i] == " " or line[i] == "\t")
+            i = i + 1
+        let lead = slice(line, 0, i)
+        if margin == none
+            margin = lead
+        else
+            let k = 0
+            let lim = len(margin)
+            if len(lead) < lim
+                lim = len(lead)
+            while k < lim and margin[k] == lead[k]
+                k = k + 1
+            margin = slice(margin, 0, k)
+    if margin == none or margin == ""
+        return s
+    let m = len(margin)
+    let cr = chr(13)
+    let out = []
+    for line in parts
+        if starts_with(line, margin)
+            append(out, slice(line, m, len(line)))
+        else if trim(line) == ""
+            if ends_with(line, cr)
+                append(out, cr)
+            else
+                append(out, "")
+        else
+            append(out, line)
+    return join(out, "\n")

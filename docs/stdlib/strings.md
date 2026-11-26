@@ -182,7 +182,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `repeat("ab", 0)` → `""`
 
-### pad_left, pad_right, center, truncate
+### pad_left, pad_right, center, truncate, indent, dedent
 
 `pad_left` and `pad_right` add copies of `fill` until the text is at least `width` long. `center` puts the spare copy on the right. `truncate` cuts to `width` and ends a cut string with `tail`.
 
@@ -199,3 +199,11 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `truncate("abcdef", 2, "...")` → `".."`
 
 `truncate("hi", 4, "...")` → `"hi"`
+
+`indent` adds `prefix` to every non-blank line and leaves blank lines as they are. `dedent` removes common leading spaces or tabs from every non-blank line.
+
+`indent("hi", "  ")` → `"  hi"`
+
+`indent("", "  ")` → `""`
+
+`dedent("  hi")` → `"hi"`
