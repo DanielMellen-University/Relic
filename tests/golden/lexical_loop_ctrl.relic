@@ -1,0 +1,19 @@
+# break, next and return belong to the function they are written in.
+# A nested function called from a loop does not break or skip that loop,
+# and its return comes back to the caller.
+fun demo()
+    let out = []
+    for i in 0..4
+        fun step()
+            if i == 0
+                break
+            if i == 1
+                next
+            return i
+        try
+            append(out, step())
+        catch e
+            append(out, e.message)
+    return out
+
+print(demo())

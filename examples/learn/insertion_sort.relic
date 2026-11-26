@@ -1,0 +1,16 @@
+# Insertion sort. Each new value is placed into the sorted prefix.
+#   relic examples/learn/insertion_sort.relic
+
+fun insertion(xs)
+    let out = []
+    for x in xs
+        let i = 0
+        while i < len(out) and out[i] < x
+            i = i + 1
+        insert(out, i, x)
+    return out
+
+print(insertion([3, 1, 4, 1, 5, 9, 2]))
+print(insertion([]))
+print(insertion([2, 1]))
+print(insertion(["pear", "apple", "plum"]))

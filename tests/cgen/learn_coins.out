@@ -1,0 +1,5 @@
+0 []
+1 ["penny 1"]
+30 ["quarter 1", "nickel 1"]
+41 ["quarter 1", "dime 1", "nickel 1", "penny 1"]
+93 ["quarter 3", "dime 1", "nickel 1", "penny 3"]

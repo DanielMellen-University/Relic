@@ -1,0 +1,36 @@
+# std/strings.partition and rpartition: first/last split into 3 parts.
+use std/strings
+
+print(strings.partition("a=b=c", "="))
+print(strings.partition("abc", "="))
+print(strings.partition("=abc", "="))
+print(strings.partition("abc=", "="))
+print(strings.partition("a::b::c", "::"))
+print(strings.partition("café=latte=mochá", "="))
+
+print(strings.rpartition("a=b=c", "="))
+print(strings.rpartition("abc", "="))
+print(strings.rpartition("=abc", "="))
+print(strings.rpartition("abc=", "="))
+print(strings.rpartition("a::b::c", "::"))
+print(strings.rpartition("café=latte=mochá", "="))
+
+try
+    strings.partition("abc", "")
+catch e
+    print(e.message)
+
+try
+    strings.rpartition("abc", "")
+catch e
+    print(e.message)
+
+try
+    strings.partition(1, "=")
+catch e
+    print(e.message)
+
+try
+    strings.rpartition("a", 1)
+catch e
+    print(e.message)

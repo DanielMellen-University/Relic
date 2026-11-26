@@ -121,6 +121,14 @@ fun _case_table(first, shift)
 let _to_upper = _case_table(97, -32)
 let _to_lower = _case_table(65, 32)
 
+fun _swap_table()
+    let t = _case_table(97, -32)
+    for k in 65..91
+        t[chr(k)] = chr(k + 32)
+    return t
+
+let _swap_case = _swap_table()
+
 fun _case(s, table)
     let out = ""
     for c in s
@@ -137,6 +145,11 @@ fun upper(s)
 fun lower(s)
     _text("lower", "argument", s)
     return _case(s, _to_lower)
+
+# ASCII letters swapped between upper and lower case; other characters stay as they are.
+fun swapcase(s)
+    _text("swapcase", "argument", s)
+    return _case(s, _swap_case)
 
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
@@ -159,6 +172,16 @@ fun is_alpha(s)
         return false
     for c in s
         if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
+            return false
+    return true
+
+# Whether s has at least one character and all are ASCII letters or digits.
+fun is_alnum(s)
+    _text("is_alnum", "argument", s)
+    if s == ""
+        return false
+    for c in s
+        if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or (c >= "0" and c <= "9"))
             return false
     return true
 
@@ -227,6 +250,23 @@ fun trim_end(s)
     while b > 0 and is_space(s[b - 1])
         b = b - 1
     return slice(s, 0, b)
+
+# Strip any character listed in chars from both ends of s.
+fun trim_chars(s, chars)
+    _text("trim_chars", "text", s)
+    _text("trim_chars", "chars", chars)
+    if s == "" or chars == ""
+        return s
+    let drop = {}
+    for c in chars
+        drop[c] = true
+    let a = 0
+    let b = len(s)
+    while a < b and s[a] in drop
+        a = a + 1
+    while b > a and s[b - 1] in drop
+        b = b - 1
+    return slice(s, a, b)
 
 fun split(s, sep)
     # split("a,b", ",") is ["a", "b"]; an empty sep splits into characters
@@ -437,3 +477,81 @@ fun _cased(name, s, lo, hi, other_lo, other_hi)
 
 fun is_upper(s) = _cased("is_upper", s, "A", "Z", "a", "z")
 fun is_lower(s) = _cased("is_lower", s, "a", "z", "A", "Z")
+
+# Split s around the first or last sep into [before, sep, after].
+# When sep is absent: partition returns [s, "", ""], rpartition ["", "", s].
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("strings.partition(): separator must not be empty")
+    let i = find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+fun rpartition(s, sep)
+    _text("rpartition", "text", s)
+    _text("rpartition", "separator", sep)
+    if sep == ""
+        fail("strings.rpartition(): separator must not be empty")
+    let i = find_last(s, sep)
+    if i < 0
+        return ["", "", s]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+# Prefix every non-blank line with prefix; blank lines and line endings stay.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    if s == "" or prefix == ""
+        return s
+    let out = []
+    for line in split(s, "\n")
+        if trim(line) == ""
+            append(out, line)
+        else
+            append(out, prefix + line)
+    return join(out, "\n")
+
+# Remove common leading spaces or tabs from every non-blank line.
+fun dedent(s)
+    _text("dedent", "argument", s)
+    if s == ""
+        return s
+    let parts = split(s, "\n")
+    let margin = none
+    for line in parts
+        if trim(line) == ""
+            next
+        let i = 0
+        let n = len(line)
+        while i < n and (line[i] == " " or line[i] == "\t")
+            i = i + 1
+        let lead = slice(line, 0, i)
+        if margin == none
+            margin = lead
+        else
+            let k = 0
+            let lim = len(margin)
+            if len(lead) < lim
+                lim = len(lead)
+            while k < lim and margin[k] == lead[k]
+                k = k + 1
+            margin = slice(margin, 0, k)
+    if margin == none or margin == ""
+        return s
+    let m = len(margin)
+    let cr = chr(13)
+    let out = []
+    for line in parts
+        if starts_with(line, margin)
+            append(out, slice(line, m, len(line)))
+        else if trim(line) == ""
+            if ends_with(line, cr)
+                append(out, cr)
+            else
+                append(out, "")
+        else
+            append(out, line)
+    return join(out, "\n")

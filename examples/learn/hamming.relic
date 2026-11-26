@@ -1,0 +1,19 @@
+# How many characters differ between two strings of the same length.
+# A different length is -1.
+#   relic examples/learn/hamming.relic
+
+fun hamming(a, b)
+    if len(a) != len(b)
+        return -1
+    let n = 0
+    for i in 0..len(a)
+        if a[i] != b[i]
+            n = n + 1
+    return n
+
+print(hamming("karolin", "kathrin"))
+print(hamming("karolin", "kerstin"))
+print(hamming("1011101", "1001001"))
+print(hamming("abc", "ab"))
+print(hamming("", ""))
+print(hamming("éé", "éà"))

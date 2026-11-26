@@ -1,0 +1,14 @@
+# Factorials that fit in an int, and the overflow past 20.
+#   relic examples/learn/factorial.relic
+
+fun fact(n)
+    if n <= 1
+        return 1
+    return n * fact(n - 1)
+
+for n in [0, 1, 5, 10, 20]
+    print(n, fact(n))
+try
+    print(fact(21))
+catch e
+    print(e.message)

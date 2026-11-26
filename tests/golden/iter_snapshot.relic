@@ -1,0 +1,17 @@
+# for walks a copy of the list, so popping during the loop does not drop a
+# later turn. keys() is its own list, so later map edits do not change it.
+let xs = [1, 2, 3, 4]
+let seen = []
+for x in xs
+    append(seen, x)
+    if x == 2
+        pop(xs)
+print(seen)
+print(xs)
+
+let m = {a: 1, b: 2}
+let ks = keys(m)
+remove(m, "a")
+m.c = 3
+print(ks)
+print(keys(m))

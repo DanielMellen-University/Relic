@@ -1,0 +1,23 @@
+# Every order of a list. The search swaps each remaining item into place.
+#   relic examples/learn/perms.relic
+
+fun perms(xs)
+    let out = []
+    fun walk(i)
+        if i == len(xs)
+            append(out, xs + [])
+            return
+        for j in i..len(xs)
+            let tmp = xs[i]
+            xs[i] = xs[j]
+            xs[j] = tmp
+            walk(i + 1)
+            xs[j] = xs[i]
+            xs[i] = tmp
+    walk(0)
+    return out
+
+for p in perms([1, 2, 3])
+    print(p)
+print(len(perms(["a", "b"])))
+print(len(perms([])))

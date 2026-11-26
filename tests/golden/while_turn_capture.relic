@@ -1,0 +1,18 @@
+# The while name itself is one binding, but a let inside the body is a new
+# binding every turn. A closure made there keeps that turn's let.
+let shared = []
+let fresh = []
+let j = 0
+while j < 3
+    fun see()
+        return j
+    append(shared, see)
+    let snap = j
+    fun keep()
+        return snap
+    append(fresh, keep)
+    j = j + 1
+for f in shared
+    print(f())
+for f in fresh
+    print(f())

@@ -1,0 +1,15 @@
+# Writing the for-name changes it for the rest of this turn only.
+# The next turn takes the next value from the list, not from that write.
+let seen = []
+for i in 0..4
+    append(seen, i)
+    i = i + 10
+    append(seen, i)
+print(seen)
+
+let word = ""
+for c in "ab"
+    word = word + c
+    c = "z"
+    word = word + c
+print(word)

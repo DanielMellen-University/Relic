@@ -1,0 +1,39 @@
+# Run-length encoding. A run of the same character becomes that character
+# and how many times it occurred.
+#   relic examples/learn/rle.relic
+
+fun rle(s)
+    if s == ""
+        return ""
+    let out = ""
+    let cur = s[0]
+    let n = 1
+    for i in 1..len(s)
+        if s[i] == cur
+            n = n + 1
+        else
+            out = out + cur + str(n)
+            cur = s[i]
+            n = 1
+    return out + cur + str(n)
+
+fun expand(s)
+    let out = ""
+    let i = 0
+    while i < len(s)
+        let c = s[i]
+        i = i + 1
+        let n = 0
+        while i < len(s) and s[i] >= "0" and s[i] <= "9"
+            n = n * 10 + ord(s[i]) - ord("0")
+            i = i + 1
+        for k in 0..n
+            out = out + c
+    return out
+
+for s in ["", "a", "aaabbc", "abba", "ééé!"]
+    let coded = rle(s)
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print(label, "->", coded, expand(coded) == s)

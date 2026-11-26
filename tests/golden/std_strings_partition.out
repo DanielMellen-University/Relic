@@ -1,0 +1,16 @@
+["a", "=", "b=c"]
+["abc", "", ""]
+["", "=", "abc"]
+["abc", "=", ""]
+["a", "::", "b::c"]
+["café", "=", "latte=mochá"]
+["a=b", "=", "c"]
+["", "", "abc"]
+["", "=", "abc"]
+["abc", "=", ""]
+["a::b", "::", "c"]
+["café=latte", "=", "mochá"]
+strings.partition(): separator must not be empty
+strings.rpartition(): separator must not be empty
+strings.partition(): text must be a string, got int
+strings.rpartition(): separator must be a string, got int

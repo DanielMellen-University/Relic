@@ -1,0 +1,18 @@
+# The weekday of a Gregorian date, by Zeller's congruence. January and
+# February are treated as months of the previous year.
+#   relic examples/learn/weekday.relic
+
+fun weekday(y, m, d)
+    let names = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    if m < 3
+        m = m + 12
+        y = y - 1
+    let year = y % 100
+    let century = int(y / 100)
+    let h = (d + int(13 * (m + 1) / 5) + year + int(year / 4) + int(century / 4) - 2 * century) % 7
+    return names[h]
+
+print(weekday(2000, 1, 1))
+print(weekday(1776, 7, 4))
+print(weekday(1969, 7, 20))
+print(weekday(2026, 11, 22))

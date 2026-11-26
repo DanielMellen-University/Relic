@@ -1,0 +1,15 @@
+# US coins for an amount in cents, fewest first: quarters, dimes, nickels, pennies.
+#   relic examples/learn/coins.relic
+
+fun change(cents)
+    let coins = [["quarter", 25], ["dime", 10], ["nickel", 5], ["penny", 1]]
+    let out = []
+    for coin in coins
+        let k = int(cents / coin[1])
+        if k > 0
+            append(out, coin[0] + " " + str(k))
+            cents = cents - k * coin[1]
+    return out
+
+for cents in [0, 1, 30, 41, 93]
+    print(cents, change(cents))

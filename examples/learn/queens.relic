@@ -1,0 +1,31 @@
+# How many ways N queens can stand on an N by N board so that none attacks
+# another. The search writes the column of each row and counts the leaves.
+#   relic examples/learn/queens.relic
+
+fun queens(n)
+    let count = 0
+    let col = []
+    for i in 0..n
+        append(col, 0)
+    fun free(r, c)
+        for i in 0..r
+            if col[i] == c
+                return false
+            if col[i] - i == c - r
+                return false
+            if col[i] + i == c + r
+                return false
+        return true
+    fun place(r)
+        if r == n
+            count = count + 1
+            return
+        for c in 0..n
+            if free(r, c)
+                col[r] = c
+                place(r + 1)
+    place(0)
+    return count
+
+for n in 1..9
+    print(n, queens(n))

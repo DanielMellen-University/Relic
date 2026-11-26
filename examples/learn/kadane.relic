@@ -1,0 +1,19 @@
+# The largest sum of a contiguous run of numbers.
+#   relic examples/learn/kadane.relic
+
+fun kadane(xs)
+    let best = xs[0]
+    let cur = xs[0]
+    for i in 1..len(xs)
+        if cur + xs[i] > xs[i]
+            cur = cur + xs[i]
+        else
+            cur = xs[i]
+        if cur > best
+            best = cur
+    return best
+
+print(kadane([-2, 1, -3, 4, -1, 2, 1, -5, 4]))
+print(kadane([-5, -2, -8]))
+print(kadane([3]))
+print(kadane([1, 2, 3, -10, 5]))

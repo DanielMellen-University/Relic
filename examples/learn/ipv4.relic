@@ -1,0 +1,30 @@
+# An IPv4 address is four numbers from 0 to 255, separated by dots.
+#   relic examples/learn/ipv4.relic
+
+fun ipv4(s)
+    let parts = []
+    let cur = ""
+    for c in s + "."
+        if c == "."
+            if cur == ""
+                return none
+            let n = 0
+            for d in cur
+                if d < "0" or d > "9"
+                    return none
+                n = n * 10 + ord(d) - ord("0")
+            if n > 255
+                return none
+            append(parts, n)
+            cur = ""
+        else
+            cur = cur + c
+    if len(parts) != 4
+        return none
+    return parts
+
+for s in ["127.0.0.1", "0.0.0.0", "255.255.255.255", "1.2.3", "1.2.3.256", "1.2.3.4.5", "01.2.3.4", "a.b.c.d", ""]
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print(label, ipv4(s))

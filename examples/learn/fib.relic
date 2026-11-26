@@ -1,0 +1,17 @@
+# The first Fibonacci numbers, from a loop, checked against a recursive call.
+#   relic examples/learn/fib.relic
+
+fun fib_list(n)
+    let xs = [0, 1]
+    while len(xs) < n
+        append(xs, xs[len(xs) - 1] + xs[len(xs) - 2])
+    return xs
+
+fun fib(n)
+    if n < 2
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+let xs = fib_list(12)
+print(xs)
+print(fib(11))
