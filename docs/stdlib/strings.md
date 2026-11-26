@@ -134,7 +134,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `remove_suffix("file.txt", ".md")` → `"file.txt"`
 
-### words, split, lines, join, replace, repeat
+### words, split, partition, rpartition, lines, join, replace, repeat
 
 `words` splits on runs of space and never returns an empty piece.
 
@@ -145,6 +145,16 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `split("a,,b", ",")` → `["a", "", "b"]`
 
 `split("ab", "")` → `["a", "b"]`
+
+`partition` splits around the first match of `sep` into `[before, sep, after]`, or `[s, "", ""]` when `sep` is not there. `rpartition` splits around the last match, or returns `["", "", s]`. An empty `sep` is an error.
+
+`partition("a=b=c", "=")` → `["a", "=", "b=c"]`
+
+`partition("abc", "=")` → `["abc", "", ""]`
+
+`rpartition("a=b=c", "=")` → `["a=b", "=", "c"]`
+
+`rpartition("abc", "=")` → `["", "", "abc"]`
 
 `lines` splits on newlines, drops a carriage return before a newline, and drops an empty last line when the text ends with a newline.
 

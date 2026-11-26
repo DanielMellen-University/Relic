@@ -460,3 +460,25 @@ fun _cased(name, s, lo, hi, other_lo, other_hi)
 
 fun is_upper(s) = _cased("is_upper", s, "A", "Z", "a", "z")
 fun is_lower(s) = _cased("is_lower", s, "a", "z", "A", "Z")
+
+# Split s around the first or last sep into [before, sep, after].
+# When sep is absent: partition returns [s, "", ""], rpartition ["", "", s].
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("strings.partition(): separator must not be empty")
+    let i = find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+fun rpartition(s, sep)
+    _text("rpartition", "text", s)
+    _text("rpartition", "separator", sep)
+    if sep == ""
+        fail("strings.rpartition(): separator must not be empty")
+    let i = find_last(s, sep)
+    if i < 0
+        return ["", "", s]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
