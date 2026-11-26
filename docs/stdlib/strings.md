@@ -88,6 +88,14 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `is_alpha("R2")` → `false`
 
+`is_alnum` is true for ASCII letters and digits.
+
+`is_alnum("Relic2")` → `true`
+
+`is_alnum("R-2")` → `false`
+
+`is_alnum("")` → `false`
+
 `is_upper` is true when there is at least one ASCII letter and none are lower case. Digits do not count against it. `is_lower` is the other way round.
 
 `is_upper("A1")` → `true`

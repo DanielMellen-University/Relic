@@ -162,6 +162,16 @@ fun is_alpha(s)
             return false
     return true
 
+# Whether s has at least one character and all are ASCII letters or digits.
+fun is_alnum(s)
+    _text("is_alnum", "argument", s)
+    if s == ""
+        return false
+    for c in s
+        if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or (c >= "0" and c <= "9"))
+            return false
+    return true
+
 # Since 1.0.50: s without pre at its start, or s as it is when it does not
 # start with pre; and the same for suf at the end.
 fun remove_prefix(s, pre)
