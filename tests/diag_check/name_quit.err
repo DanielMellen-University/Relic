@@ -1,0 +1,3 @@
+name_quit.relic:1:7: warning: 'quit' is not defined (leave with os.exit(code), from std/os)
+    print(quit)
+          ^

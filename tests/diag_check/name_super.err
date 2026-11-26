@@ -1,0 +1,3 @@
+name_super.relic:1:7: warning: 'super' is not defined (Relic has no super; pass the outer value as a parameter)
+    print(super)
+          ^

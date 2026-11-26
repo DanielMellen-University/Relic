@@ -111,6 +111,11 @@ private:
     }
     [[noreturn]] void fail_expected(const std::string& what) {
         const Token& got = peek();
+        // `a::b` fails on the first colon. The next token is the second one.
+        if (what == "end of line" && got.kind == Tok::Colon && pos_ + 1 < toks_.size() &&
+            toks_[pos_ + 1].kind == Tok::Colon && toks_[pos_ + 1].line == got.line) {
+            throw ParseError(got.line, got.col, "Relic has no '::'", toks_[pos_ + 1].col, "a field is written a.b");
+        }
         const bool has_prev = pos_ > 0;
         const Token* prev = has_prev ? &toks_[pos_ - 1] : nullptr;
         std::string msg = "expected " + what + ", got " + describe(got);

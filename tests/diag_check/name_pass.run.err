@@ -1,0 +1,3 @@
+name_pass.relic:1:7: error: 'pass' is not defined (Relic has no pass; leave the block empty)
+    print(pass)
+          ^

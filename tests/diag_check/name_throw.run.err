@@ -1,0 +1,3 @@
+name_throw.relic:1:7: error: 'throw' is not defined (raise an error with fail(message))
+    print(throw)
+          ^

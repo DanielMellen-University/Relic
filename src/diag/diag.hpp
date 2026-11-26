@@ -18,6 +18,11 @@ std::string format(const std::string& path, int line, int col, const std::string
 std::string format(const std::string& path, int line, int col, const std::string& msg,
                    const Note& note, const char* kind = "error");
 
+// The same text, but the source line comes from `text` instead of a file.
+// The REPL uses this: its input is not a file on disk.
+std::string format_text(const std::string& path, const std::string& text, int line, int col,
+                        const std::string& msg, const Note& note, const char* kind = "error");
+
 // A character that is not a token, when it is a common mistake from another
 // language. extra is how many columns past the first the span covers.
 // next is the following source byte, or 0. Returns null when nothing matches.

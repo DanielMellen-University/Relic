@@ -1,0 +1,4 @@
+dollar.relic:1:9: error: unexpected character '$'
+    let a = $b
+            ^
+hint: Relic names have no '$' in front

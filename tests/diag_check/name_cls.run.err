@@ -1,0 +1,3 @@
+name_cls.relic:1:7: error: 'cls' is not defined (Relic has no cls; pass the value as a parameter)
+    print(cls)
+          ^

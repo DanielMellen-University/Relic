@@ -139,6 +139,12 @@ fun expect_extra(p, what)
         return {msg: "comments start with '#'", hint: "a comment runs from '#' to the end of the line", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "STAR" and prev != none and prev.kind == "SLASH"
         return {msg: "Relic comments start with '#', not '/*'", hint: "delete the '/*'", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "GREATER" and prev != none and prev.kind == "GREATER"
+        return {msg: "Relic has no '>>'", hint: "Relic has no bit shift; write the number you mean", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "LESS" and prev != none and prev.kind == "LESS"
+        return {msg: "Relic has no '<<'", hint: "Relic has no bit shift; write the number you mean", cover_prev: true, cover_got: true}
+    if what == "an expression" and got.kind == "STAR" and prev != none and prev.kind == "STAR"
+        return {msg: "Relic has no '**'", hint: "write it out, as in x * x", cover_prev: true, cover_got: true}
     if what == "an expression" and got.kind == "PLUS" and prev != none and prev.kind == "PLUS"
         return {msg: "Relic has no '++'", hint: "write the new value out, as in n = n + 1", cover_prev: true, cover_got: true}
     if what == "end of line before the block" and got.kind == "COLON"
@@ -186,6 +192,8 @@ fun word_extra(word)
         return "write 'let name as float = ...'"
     if word == "import"
         return "modules are loaded with 'use', not 'import'"
+    if word == "package"
+        return "Relic has no packages; load a file with 'use'"
     if word == "print"
         return "call it as print(...); the parentheses are required"
     if word == "len"
@@ -202,6 +210,8 @@ fun word_extra(word)
 
 fun type_extra(name)
     if name == "integer"
+        return "did you mean 'int'?"
+    if name == "uint"
         return "did you mean 'int'?"
     if name == "str"
         return "did you mean 'string'?"
@@ -225,6 +235,12 @@ fun type_extra(name)
 
 fun fail_expected(p, what)
     let got = peek(p)
+    # `a::b` fails on the first colon. The next token is the second one.
+    if what == "end of line" and got.kind == "COLON" and p.pos + 1 < len(p.toks)
+        let nxt = p.toks[p.pos + 1]
+        if nxt.kind == "COLON" and nxt.line == got.line
+            fail_span(p, got, nxt.col, "Relic has no '::'", "a field is written a.b")
+            return
     let msg = "expected " + what + ", got " + describe(got)
     let extra = expect_extra(p, what)
     if extra != none

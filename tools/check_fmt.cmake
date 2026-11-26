@@ -28,6 +28,35 @@ execute_process(COMMAND ${RELIC} fmt --bogus ${SRC}/tests/fmt/in/comments.relic
 if(NOT code EQUAL 2 OR NOT err MATCHES "^usage: relic ")
   message(FATAL_ERROR "fmt --bogus: exit ${code}\n${out}${err}")
 endif()
+execute_process(COMMAND ${RELIC} fmt ${SRC}/tests/fmt/in/comments.relic --write
+  RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
+if(NOT code EQUAL 2 OR NOT out STREQUAL "" OR NOT err MATCHES "^usage: relic ")
+  message(FATAL_ERROR "fmt flag after a file: exit ${code}\n${out}${err}")
+endif()
+file(WRITE ${TMP}/stdin_fmt.relic "print( 1 )\n")
+execute_process(COMMAND ${RELIC} fmt - INPUT_FILE ${TMP}/stdin_fmt.relic
+  RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
+string(REPLACE "\r\n" "\n" out "${out}")
+if(NOT code EQUAL 0 OR NOT out STREQUAL "print(1)\n" OR NOT err STREQUAL "")
+  message(FATAL_ERROR "fmt stdin: exit ${code}\n${out}${err}")
+endif()
+execute_process(COMMAND ${RELIC} fmt --write - INPUT_FILE ${TMP}/stdin_fmt.relic
+  RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
+if(NOT code EQUAL 2 OR NOT out STREQUAL "" OR NOT err MATCHES "^relic: fmt --write does not read stdin\nusage: relic ")
+  message(FATAL_ERROR "fmt --write stdin: exit ${code}\n${out}${err}")
+endif()
+execute_process(COMMAND ${RELIC} fmt --check - INPUT_FILE ${TMP}/stdin_fmt.relic
+  RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
+if(NOT code EQUAL 2 OR NOT err MATCHES "^relic: fmt --check does not read stdin\n")
+  message(FATAL_ERROR "fmt --check stdin: exit ${code}\n${out}${err}")
+endif()
+file(WRITE ${TMP}/stdin_bad.relic "let x =\n")
+execute_process(COMMAND ${RELIC} fmt - INPUT_FILE ${TMP}/stdin_bad.relic
+  RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
+string(REPLACE "\r\n" "\n" err "${err}")
+if(NOT code EQUAL 1 OR NOT out STREQUAL "" OR NOT err MATCHES "^<stdin>:")
+  message(FATAL_ERROR "fmt stdin syntax: exit ${code}\n${out}${err}")
+endif()
 execute_process(COMMAND ${RELIC} fmt no-such-file.relic
   WORKING_DIRECTORY ${TMP} RESULT_VARIABLE code ERROR_VARIABLE err OUTPUT_VARIABLE out)
 if(NOT code EQUAL 2 OR NOT err STREQUAL "relic: cannot open no-such-file.relic\n")

@@ -204,8 +204,8 @@ area.relic:2:20: error: 'hieght' is not defined (did you mean 'height'?)
 
 - The first line is always `file:line:col: error: message`, so tools can match it. The file is the one the error happened in, which may be a module.
 - An unterminated string points at its opening quote, including after an interpolation.
-- Under it come the source line and a caret under the column. Long lines are cut around the caret. The REPL leaves these two lines out.
-- Unknown names, missing map keys, and missing members of a module that has finished loading get a "did you mean" hint when a name one or two typos away exists.
+- Under it come the source line and a caret under the column. Long lines are cut around the caret. The REPL shows those two lines when the line is part of the input that just ran.
+- Unknown names, missing map keys, and missing members of a module that has finished loading get a "did you mean" hint when a name one or two typos away exists. When nothing is that close, some names taken from other languages say what to write instead.
 - A call written like a method (`items.append(x)`, `text.trim()`, `row.keys()`) is an error. When the name is a built-in, or a function in `std/lists`, `std/strings`, or `std/maps`, that takes that value first, the message shows the call: `cannot read a field of a list (write append(items, x))`, `cannot read a field of a string (write strings.trim(text))`, `map has no key 'keys' (write keys(row))`. Any other name stays the plain field or key error.
 - Output printed before the error is kept.
 

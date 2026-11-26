@@ -1,0 +1,3 @@
+name_nan.relic:1:7: error: 'nan' is not defined (a non-number is float('nan'))
+    print(nan)
+          ^

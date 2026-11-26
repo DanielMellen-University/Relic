@@ -371,6 +371,8 @@ fun token(st)
 # extra is how many columns past the first the span covers. Keep in step with
 # kLex in src/diag/diag.cpp.
 fun lex_extra(ch, nxt)
+    if ch == "$"
+        return {msg: "unexpected character '$'", hint: "Relic names have no '$' in front", extra: 0}
     if ch == "&" and nxt == "&"
         return {msg: "unexpected '&&'", hint: "Relic uses 'and', not '&&'", extra: 1}
     if ch == "&"

@@ -15,18 +15,23 @@ Everything the `relic` program (the C++ host) does. Build it first with `-DRELIC
 | `relic --ast FILE` | prints the syntax tree |
 | `relic --bytecode FILE` | prints the compiled bytecode |
 | `relic --version` | prints `relic 1.0.53` |
-| `relic --help` | prints the usage lines |
+| `relic -V` | same as `--version` |
+| `relic version` | same as `--version` |
+| `relic --help` | prints the usage lines on stdout |
+| `relic -h` | same as `--help` |
+| `relic help` | same as `--help` |
 
 - `--vm` is still accepted and means the same as the default.
 - The flag must come first, before the file.
+- `help` and `version` are commands, and `-h` and `-V` are flags, so a file with one of those names is run as `./help`, `./version`, `./-h` or `./-V`.
 - Anything after the file name goes to the program, including words that start with `--`.
 
 ## Exit codes
 
 | Code | When |
 |---|---|
-| 0 | the program ran to the end, or the REPL was left |
-| 1 | a syntax or runtime error nobody caught, or `relic check` found something |
+| 0 | the program ran to the end, or every REPL input ran |
+| 1 | a syntax or runtime error nobody caught, or `relic check` found something, or a REPL input failed |
 | 2 | bad usage (an unknown flag, `relic check` with no file), or a file could not be opened (`relic: cannot open x.relic`; a folder counts as not openable) |
 | any | the program called `os.exit(code)` |
 
@@ -40,7 +45,7 @@ The self-hosted `run`, `tokens`, `ast` and `check` commands also report unreadab
 
 ## relic check
 
-`relic check a.relic b.relic` reads each file and reports, without running it:
+`relic check --help` prints the command's usage and exit codes on stdout and exits 0. `relic check -` reads the program from stdin and reports it as `<stdin>`. One `-` is allowed. An argument that starts with `-`, other than that stdin mark and the help flags, is a usage error (exit 2), not a missing file. `relic check a.relic b.relic` reads each file and reports, without running it:
 
 - syntax errors
 - names that are never defined, with a "did you mean" hint (for the first 50 in a file; the rest are listed without one, so a file full of typos stays quick)
@@ -61,7 +66,7 @@ The exit code is 1 if anything was found, 0 if every file is clean. Graphics pro
 
 ## relic fmt
 
-`relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
+`relic fmt --help` prints the command's usage and exit codes on stdout and exits 0. `relic fmt -` reads source from stdin and writes the canonical text to stdout. `--check` and `--write` do not read stdin. A later argument that starts with `-` is a usage error, not a missing file. `relic fmt FILE` reads one or more files and writes each one to stdout in canonical form. `relic fmt --write FILE...` updates the files in place. `relic fmt --check FILE...` prints each path that would change and exits 1 if any would; it exits 0 when they are all already formatted. `--check` and `--write` do not combine. The rules, a worked example, and the limits are in [FMT.md](FMT.md).
 
 | Code | When |
 |---|---|
@@ -75,7 +80,7 @@ A syntax error is printed the same way as any other Relic error, and that file i
 
 ```
 $ ./build/relic
-relic 1.0.53. Blocks end with an empty line. Type :quit or press Ctrl-D to leave.
+relic 1.0.53. Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.
 > let x = 6
 > x * 7
 42
@@ -86,15 +91,18 @@ relic 1.0.53. Blocks end with an empty line. Type :quit or press Ctrl-D to leave
 hello Daniel
 ```
 
+- `:help` prints the commands and how a block ends, then the REPL waits for the next line.
+- `:reset` drops the names defined so far and says `names cleared`. Built-ins stay. A loaded module is loaded again the next time it is used.
+- A line that is only `:something`, with no space, and is not one of those commands, prints `unknown command ':something'; type :help` and does not run it. `:quit ` with a trailing space is still source, as is ` :quit`.
 - Names stay defined until you leave.
 - A bare expression prints its value. `none` is not printed.
 - A line starting with `fun`, `if`, `else`, `while`, `for`, `try` or `catch` opens a block: type the body indented, then an empty line to run it. The one-line `fun f(x) = ...` runs right away.
 - An open `(`, `[` or `{` keeps reading lines until it closes. That includes the header of a block, so `fun add(` with its parameters on the next lines, then the closing `)`, still reads an indented body (before 1.0.29 it ran the header alone and failed).
-- An error prints `<repl>:line:col: error: ...` without the source line, and the REPL keeps going. Line numbers count from the start of that input.
+- An error prints `<repl>:line:col: error: ...`, then the source line and a caret when that line is part of the input that just ran, and the REPL keeps going. An error inside a function defined by an earlier input still names that function's line and column, without the source line. Line numbers count from the start of the input that defined the code.
 - `use` paths are relative to the current folder.
-- Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 0 even if a chunk failed.
+- Piped input works too: `relic < script.relic` runs it chunk by chunk, without prompts. The exit code is 1 if any chunk failed, and 0 if every chunk ran. A person at the terminal gets the same code.
 - The REPL runs on the tree-walker.
-- `selfhost/repl.relic` is the same REPL written in Relic (`relic selfhost/repl.relic`, since 1.0.31). Same values, errors, blocks, multi-line headers and exit code on every script in the tests (`selfhost_repl`); it is a test of the self-hosted front end, not a replacement. Two differences, both for a person at a terminal: its banner has no version number, and `:quit` does not print an extra empty line. A program run inside it can read the same standard input (`os.read_line()`).
+- `selfhost/repl.relic` is the same REPL written in Relic (`relic selfhost/repl.relic`, since 1.0.31). Same values, errors, blocks, multi-line headers and exit code on every script in the tests (`selfhost_repl`); it is a test of the self-hosted front end, not a replacement. Two differences, both for a person at a terminal: its banner has no version number, and `:quit` does not print an extra empty line. The exit code matches: 1 if any input failed. A program run inside it can read the same standard input (`os.read_line()`).
 
 ## Environment
 
@@ -121,7 +129,10 @@ The default build (no C++ host) makes `build/relicc`, cgen compiled to C:
 
 ```
 relicc FILE -o OUT.c [--stub] [--root DIR]
+relicc --help
 ```
+
+`relicc --help` and `relicc -h` print the usage line on stdout and exit 0. Extra words with the help flag are a usage error (exit 3, on stderr). An argument that starts with `-` and is not `-o`, `--stub`, `--root`, `--help` or `-h` is a usage error, not a missing file. A file of that shape is passed as `./-name.relic`.
 
 It writes one C99 file for `FILE` and every module it uses, to be built with `runtime/c/` (see the [README](../README.md#build)). Exit codes: 0 written, 1 a lex or parse error (printed like the host prints it), 2 something not supported, 3 bad usage or a file that cannot be opened (`relicc: cannot open FILE`; a folder counts). `--stub` writes a small C program in place of a refused file, so a build can compile every file. `--root DIR` writes file names inside `DIR` relative to it, which is how `bootstrap/cgen.c` is made. Details are in [CGEN.md](CGEN.md).
 

@@ -1,0 +1,3 @@
+name_include.relic:1:7: error: 'include' is not defined (modules are loaded with 'use', not 'include')
+    print(include)
+          ^

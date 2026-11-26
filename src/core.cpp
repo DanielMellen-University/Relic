@@ -48,6 +48,14 @@ std::string format_noted(const std::string& path, const E& e) {
     return diag::format(path, e.line, e.col, e.what(), n);
 }
 
+std::string format_repl(const std::string& source, int line, int col, int end_col, const std::string& hint,
+                       const std::string& msg) {
+    diag::Note note;
+    note.end_col = end_col;
+    note.hint = hint;
+    return diag::format_text("<repl>", source, line, col, msg, note);
+}
+
 std::string format_runtime(const std::string& path, const RuntimeError& e) {
     diag::Note note;
     note.end_col = e.end_col;
@@ -90,6 +98,8 @@ RunResult dump_tree(const std::string& path, const std::string& source) {
 Session::Session(std::ostream& out) : out_(out), interp_(std::make_unique<Interpreter>(out)) {}
 Session::~Session() = default;
 
+void Session::reset() { interp_->reset_repl(); }
+
 RunResult Session::run(const std::string& path, const std::string& source, bool echo) {
     RunResult r;
     try {
@@ -103,13 +113,17 @@ RunResult Session::run(const std::string& path, const std::string& source, bool 
         if (echo && !last.is<NoneV>()) out_ << repr(last) << "\n";
     } catch (const LexError& e) {
         r.exit_code = 1;
-        r.err = format_noted(path, e);
+        r.err = path == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.what())
+                                 : format_noted(path, e);
     } catch (const ParseError& e) {
         r.exit_code = 1;
-        r.err = format_noted(path, e);
+        r.err = path == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.what())
+                                 : format_noted(path, e);
     } catch (const RuntimeError& e) {
         r.exit_code = 1;
-        r.err = format_runtime(path, e);
+        std::string where = e.file.empty() ? path : e.file;
+        r.err = where == "<repl>" ? format_repl(source, e.line, e.col, e.end_col, e.hint, e.message())
+                                  : format_runtime(path, e);
     }
     return r;
 }
@@ -218,9 +232,10 @@ bool unclosed(const std::string& text) {
 int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactive) {
     Session session(out);
     if (interactive)
-        out << version_string() << ". Blocks end with an empty line. Type :quit or press Ctrl-D to leave.\n";
+        out << version_string() << ". Blocks end with an empty line. Type :help, :quit or press Ctrl-D to leave.\n";
     std::string chunk;
     bool block = false;
+    bool failed = false;
     std::string line;
     while (true) {
         if (interactive) out << (chunk.empty() ? "> " : "... ") << std::flush;
@@ -228,6 +243,22 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         if (!line.empty() && line.back() == '\r') line.pop_back();
         if (chunk.empty()) {
             if (line == ":quit") break;
+            if (line == ":help") {
+                out << ":help   show this help\n"
+                       ":reset  clear the names defined here\n"
+                       ":quit   leave\n"
+                       "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n";
+                continue;
+            }
+            if (line == ":reset") {
+                session.reset();
+                out << "names cleared\n";
+                continue;
+            }
+            if (!line.empty() && line[0] == ':' && line.find(' ') == std::string::npos) {
+                err << "unknown command '" << line << "'; type :help\n";
+                continue;
+            }
             if (line.find_first_not_of(' ') == std::string::npos) continue;
             block = opens_block(line);
         }
@@ -240,15 +271,17 @@ int repl(std::istream& in, std::ostream& out, std::ostream& err, bool interactiv
         RunResult r = session.run("<repl>", chunk, true);
         out << std::flush;
         err << r.err << std::flush;
+        if (r.exit_code) failed = true;
         chunk.clear();
         block = false;
     }
     if (!chunk.empty()) {  // input ended in the middle of a block
         RunResult r = session.run("<repl>", chunk, true);
         err << r.err;
+        if (r.exit_code) failed = true;
     }
     if (interactive) out << "\n";
-    return 0;
+    return failed ? 1 : 0;
 }
 
 }  // namespace relic

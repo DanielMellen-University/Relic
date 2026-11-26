@@ -1,0 +1,3 @@
+name_lambda.relic:1:7: error: 'lambda' is not defined (a function is written 'fun name() = ...')
+    print(lambda)
+          ^

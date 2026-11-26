@@ -35,15 +35,10 @@ bool valid_utf8_continuation(const std::string& text, size_t at) {
 //     print(cuont)
 //           ^
 // end_col draws through that column (one caret when it is col).
-// Empty when the file cannot be read or the line is not there.
-std::string snippet(const std::string& path, int line, int col, int end_col = 0) {
-    if (line < 1 || col < 1) return "";
+// Empty when the line is blank or not there.
+std::string snippet_line(std::string text, int col, int end_col) {
+    if (col < 1) return "";
     if (end_col < col) end_col = col;
-    std::ifstream f(path, std::ios::binary);
-    if (!f) return "";
-    std::string text;
-    for (int i = 0; i < line; ++i)
-        if (!std::getline(f, text)) return "";
     if (!text.empty() && text.back() == '\r') text.pop_back();
     if (text.find_first_not_of(" \t") == std::string::npos) return "";
     // Very long lines are cut to a window around the column. Columns count
@@ -78,6 +73,32 @@ std::string snippet(const std::string& path, int line, int col, int end_col = 0)
     return "    " + text + "\n    " + pad + std::string(static_cast<size_t>(marks), '^') + "\n";
 }
 
+// Empty when the file cannot be read or the line is not there.
+std::string snippet(const std::string& path, int line, int col, int end_col = 0) {
+    if (line < 1 || col < 1) return "";
+    std::ifstream f(path, std::ios::binary);
+    if (!f) return "";
+    std::string text;
+    for (int i = 0; i < line; ++i)
+        if (!std::getline(f, text)) return "";
+    return snippet_line(text, col, end_col);
+}
+
+// Line `line` of text (1-based), without its newline. Empty when that line was not started.
+std::string line_of(const std::string& text, int line) {
+    if (line < 1) return "";
+    int n = 1;
+    size_t i = 0;
+    while (n < line && i < text.size()) {
+        if (text[i] == '\n') ++n;
+        ++i;
+    }
+    if (n != line || i == text.size()) return "";
+    size_t end = text.find('\n', i);
+    if (end == std::string::npos) end = text.size();
+    return text.substr(i, end - i);
+}
+
 std::string format(const std::string& path, int line, int col, const std::string& msg, const Note& note,
                    const char* kind) {
     std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
@@ -88,6 +109,14 @@ std::string format(const std::string& path, int line, int col, const std::string
 
 std::string format(const std::string& path, int line, int col, const std::string& msg, const char* kind) {
     return format(path, line, col, msg, Note{}, kind);
+}
+
+std::string format_text(const std::string& path, const std::string& text, int line, int col, const std::string& msg,
+                        const Note& note, const char* kind) {
+    std::string out = path + ":" + std::to_string(line) + ":" + std::to_string(col) + ": " + kind + ": " + msg +
+                      "\n" + snippet_line(line_of(text, line), col, note.end_col);
+    if (!note.hint.empty()) out += "hint: " + note.hint + "\n";
+    return out;
 }
 
 namespace {
@@ -101,6 +130,7 @@ struct LexRow {
 };
 const LexRow kLex[] = {
     {"&", '&', "unexpected '&&'", "Relic uses 'and', not '&&'", 1},
+    {"$", '\0', "unexpected character '$'", "Relic names have no '$' in front", 0},
     {"&", '\0', "unexpected character '&'", "Relic uses 'and', not '&'", 0},
     {"|", '|', "unexpected '||'", "Relic uses 'or', not '||'", 1},
     {"|", '\0', "unexpected character '|'", "Relic uses 'or', not '|'", 0},
@@ -152,6 +182,9 @@ const ExpectRow kExpect[] = {
     {"end of line", (int)relic::Tok::Colon, "", -1, "", "", "Relic statements do not end with a colon", 0, 1},
     {"an expression", (int)relic::Tok::Slash, "", (int)relic::Tok::Slash, "", "comments start with '#'", "a comment runs from '#' to the end of the line", 1, 1},
     {"an expression", (int)relic::Tok::Star, "", (int)relic::Tok::Slash, "", "Relic comments start with '#', not '/*'", "delete the '/*'", 1, 1},
+    {"an expression", (int)relic::Tok::Greater, "", (int)relic::Tok::Greater, "", "Relic has no '>>'", "Relic has no bit shift; write the number you mean", 1, 1},
+    {"an expression", (int)relic::Tok::Less, "", (int)relic::Tok::Less, "", "Relic has no '<<'", "Relic has no bit shift; write the number you mean", 1, 1},
+    {"an expression", (int)relic::Tok::Star, "", (int)relic::Tok::Star, "", "Relic has no '**'", "write it out, as in x * x", 1, 1},
     {"an expression", (int)relic::Tok::Plus, "", (int)relic::Tok::Plus, "", "Relic has no '++'", "write the new value out, as in n = n + 1", 1, 1},
     {"end of line before the block", (int)relic::Tok::Colon, "", -1, "", "", "Relic headers do not end with a colon; indent the next line 4 spaces", 0, 1},
     {"end of line before the block", (int)relic::Tok::Assign, "", -1, "", "", "compare with '=='; a single '=' assigns", 0, 1},
@@ -182,6 +215,7 @@ const Pair kWords[] = {
     {"bool", "write 'let name as bool = ...'"},
     {"float", "write 'let name as float = ...'"},
     {"import", "modules are loaded with 'use', not 'import'"},
+    {"package", "Relic has no packages; load a file with 'use'"},
     {"print", "call it as print(...); the parentheses are required"},
     {"len", "call it as len(...); the parentheses are required"},
     {"class", "Relic has no classes; use a map or a module"},
@@ -192,6 +226,7 @@ const Pair kWords[] = {
 };
 const Pair kTypes[] = {
     {"integer", "did you mean 'int'?"},
+    {"uint", "did you mean 'int'?"},
     {"str", "did you mean 'string'?"},
     {"boolean", "did you mean 'bool'?"},
     {"dict", "did you mean 'map'?"},
@@ -214,6 +249,41 @@ const Pair kNames[] = {
     {"continue", "the loop keyword is 'next', not 'continue'"},
     {"foreach", "loops are written 'for name in list'"},
     {"nil", "the empty value is 'none', not 'nil'"},
+    {"finally", "Relic has no finally; put that code after try and catch"},
+    {"Infinity", "an infinite float is float('inf')"},
+    {"nan", "a non-number is float('nan')"},
+    {"NaN", "a non-number is float('nan')"},
+    {"PI", "pi is math.pi, from std/math"},
+    {"pi", "pi is math.pi, from std/math"},
+    {"open", "read or write a file with std/files"},
+    {"prompt", "read a line with os.prompt, from std/os"},
+    {"math", "math functions are in std/math"},
+    {"json", "parse and write text with std/json"},
+    {"sort", "sort a list with lists.sort, from std/lists"},
+    {"reduce", "reduce is lists.reduce, from std/lists"},
+    {"filter", "filter is lists.filter, from std/lists"},
+    {"pass", "Relic has no pass; leave the block empty"},
+    {"include", "modules are loaded with 'use', not 'include'"},
+    {"require", "modules are loaded with 'use', not 'require'"},
+    {"lambda", "a function is written 'fun name() = ...'"},
+    {"throw", "raise an error with fail(message)"},
+    {"raise", "raise an error with fail(message)"},
+    {"quit", "leave with os.exit(code), from std/os"},
+    {"exit", "leave with os.exit(code), from std/os"},
+    {"push", "add an item with append(list, item)"},
+    {"cls", "Relic has no cls; pass the value as a parameter"},
+    {"super", "Relic has no super; pass the outer value as a parameter"},
+    {"this", "Relic has no this; pass the value as a parameter"},
+    {"self", "Relic has no self; pass the value as a parameter"},
+    {"sizeof", "the length of a value is len(value)"},
+    {"size", "the length of a value is len(value)"},
+    {"console", "printing is print(...)"},
+    {"cout", "printing is print(...)"},
+    {"puts", "printing is print(...)"},
+    {"Nil", "the empty value is 'none', not 'Nil'"},
+    {"nullptr", "the empty value is 'none', not 'nullptr'"},
+    {"Null", "the empty value is 'none', not 'Null'"},
+    {"NULL", "the empty value is 'none', not 'NULL'"},
     {nullptr, nullptr},
 };
 

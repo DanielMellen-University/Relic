@@ -1,0 +1,3 @@
+name_this.relic:1:7: warning: 'this' is not defined (Relic has no this; pass the value as a parameter)
+    print(this)
+          ^

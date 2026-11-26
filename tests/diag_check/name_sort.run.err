@@ -1,0 +1,3 @@
+name_sort.relic:1:7: error: 'sort' is not defined (sort a list with lists.sort, from std/lists)
+    print(sort)
+          ^

@@ -1,0 +1,3 @@
+name_filter.relic:1:7: warning: 'filter' is not defined (filter is lists.filter, from std/lists)
+    print(filter)
+          ^

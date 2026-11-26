@@ -1,0 +1,4 @@
+type_uint.relic:1:10: error: unknown type 'uint'; use any, none, bool, int, float, number, string, list, map, function or module
+    let x as uint = 1
+             ^^^^
+hint: did you mean 'int'?
