@@ -50,7 +50,7 @@ Both take two strings, or two lists.
 
 `ends_with([1, 2, 3], [2, 3])` → `true`
 
-### upper, lower, capitalize
+### upper, lower, capitalize, swapcase
 
 ASCII letters only. Other characters stay as they are. `capitalize` changes the first character and leaves the rest.
 
@@ -61,6 +61,10 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 `capitalize("hello")` → `"Hello"`
 
 `capitalize("relic lang")` → `"Relic lang"`
+
+`swapcase` flips ASCII upper case to lower and lower to upper.
+
+`swapcase("Relic 2!")` → `"rELIC 2!"`
 
 ### trim, trim_start, trim_end
 

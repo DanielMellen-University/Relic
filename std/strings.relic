@@ -121,6 +121,14 @@ fun _case_table(first, shift)
 let _to_upper = _case_table(97, -32)
 let _to_lower = _case_table(65, 32)
 
+fun _swap_table()
+    let t = _case_table(97, -32)
+    for k in 65..91
+        t[chr(k)] = chr(k + 32)
+    return t
+
+let _swap_case = _swap_table()
+
 fun _case(s, table)
     let out = ""
     for c in s
@@ -137,6 +145,11 @@ fun upper(s)
 fun lower(s)
     _text("lower", "argument", s)
     return _case(s, _to_lower)
+
+# ASCII letters swapped between upper and lower case; other characters stay as they are.
+fun swapcase(s)
+    _text("swapcase", "argument", s)
+    return _case(s, _swap_case)
 
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
