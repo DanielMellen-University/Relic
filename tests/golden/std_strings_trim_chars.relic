@@ -1,0 +1,20 @@
+# std/strings.trim_chars: strip a set of characters from both ends.
+use std/strings
+
+print(strings.trim_chars("..hi..", "."))
+print(strings.trim_chars("/a/b/", "/"))
+print(strings.trim_chars("xyxhelloyxy", "xy"))
+print(strings.trim_chars("xxxx", "x"))
+print(strings.trim_chars("", "x"))
+print(strings.trim_chars("  hi  ", ""))
+print(strings.trim_chars("ééRelicé", "é"))
+
+try
+    strings.trim_chars(123, ".")
+catch e
+    print(e.message)
+
+try
+    strings.trim_chars("hi", 123)
+catch e
+    print(e.message)

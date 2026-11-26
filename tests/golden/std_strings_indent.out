@@ -1,0 +1,22 @@
+  a
+
+  b
+
+> one
+  
+> two
+true
+true
+a
+  b
+
+c
+x
+	y
+true
+true
+true
+true
+strings.indent(): text must be a string, got int
+strings.indent(): prefix must be a string, got int
+strings.dedent(): argument must be a string, got int

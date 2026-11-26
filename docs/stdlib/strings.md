@@ -50,7 +50,7 @@ Both take two strings, or two lists.
 
 `ends_with([1, 2, 3], [2, 3])` → `true`
 
-### upper, lower, capitalize
+### upper, lower, capitalize, swapcase
 
 ASCII letters only. Other characters stay as they are. `capitalize` changes the first character and leaves the rest.
 
@@ -62,7 +62,11 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 
 `capitalize("relic lang")` → `"Relic lang"`
 
-### trim, trim_start, trim_end
+`swapcase` flips ASCII upper case to lower and lower to upper.
+
+`swapcase("Relic 2!")` → `"rELIC 2!"`
+
+### trim, trim_start, trim_end, trim_chars
 
 Space, tab, newline and carriage return. `trim` looks at both ends. The other two look at one end.
 
@@ -71,6 +75,12 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `trim_start("  hi  ")` → `"hi  "`
 
 `trim_end("  hi  ")` → `"  hi"`
+
+`trim_chars` removes any character in `chars` from both ends.
+
+`trim_chars("..hi..", ".")` → `"hi"`
+
+`trim_chars("/a/b/", "/")` → `"a/b"`
 
 ### Tests on characters
 
@@ -87,6 +97,14 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `is_alpha("Relic")` → `true`
 
 `is_alpha("R2")` → `false`
+
+`is_alnum` is true for ASCII letters and digits.
+
+`is_alnum("Relic2")` → `true`
+
+`is_alnum("R-2")` → `false`
+
+`is_alnum("")` → `false`
 
 `is_upper` is true when there is at least one ASCII letter and none are lower case. Digits do not count against it. `is_lower` is the other way round.
 
@@ -122,7 +140,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `remove_suffix("file.txt", ".md")` → `"file.txt"`
 
-### words, split, lines, join, replace, repeat
+### words, split, partition, rpartition, lines, join, replace, repeat
 
 `words` splits on runs of space and never returns an empty piece.
 
@@ -133,6 +151,16 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `split("a,,b", ",")` → `["a", "", "b"]`
 
 `split("ab", "")` → `["a", "b"]`
+
+`partition` splits around the first match of `sep` into `[before, sep, after]`, or `[s, "", ""]` when `sep` is not there. `rpartition` splits around the last match, or returns `["", "", s]`. An empty `sep` is an error.
+
+`partition("a=b=c", "=")` → `["a", "=", "b=c"]`
+
+`partition("abc", "=")` → `["abc", "", ""]`
+
+`rpartition("a=b=c", "=")` → `["a=b", "=", "c"]`
+
+`rpartition("abc", "=")` → `["", "", "abc"]`
 
 `lines` splits on newlines, drops a carriage return before a newline, and drops an empty last line when the text ends with a newline.
 
@@ -154,7 +182,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `repeat("ab", 0)` → `""`
 
-### pad_left, pad_right, center, truncate
+### pad_left, pad_right, center, truncate, indent, dedent
 
 `pad_left` and `pad_right` add copies of `fill` until the text is at least `width` long. `center` puts the spare copy on the right. `truncate` cuts to `width` and ends a cut string with `tail`.
 
@@ -171,3 +199,11 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `truncate("abcdef", 2, "...")` → `".."`
 
 `truncate("hi", 4, "...")` → `"hi"`
+
+`indent` adds `prefix` to every non-blank line and leaves blank lines as they are. `dedent` removes common leading spaces or tabs from every non-blank line.
+
+`indent("hi", "  ")` → `"  hi"`
+
+`indent("", "  ")` → `""`
+
+`dedent("  hi")` → `"hi"`
