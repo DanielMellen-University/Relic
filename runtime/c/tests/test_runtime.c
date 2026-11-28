@@ -717,6 +717,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "nullptr", 0, NULL, NULL), "'nullptr' is not defined (the empty value is 'none', not 'nullptr')");
     ERR(rl_fail_undefined(&cx, "Null", 0, NULL, NULL), "'Null' is not defined (the empty value is 'none', not 'Null')");
     ERR(rl_fail_undefined(&cx, "NULL", 0, NULL, NULL), "'NULL' is not defined (the empty value is 'none', not 'NULL')");
+    ERR(rl_fail_undefined(&cx, "sqrt", 0, NULL, NULL), "'sqrt' is not defined (sqrt is math.sqrt, from std/math)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

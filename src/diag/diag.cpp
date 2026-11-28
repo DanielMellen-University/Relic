@@ -284,6 +284,7 @@ const Pair kNames[] = {
     {"nullptr", "the empty value is 'none', not 'nullptr'"},
     {"Null", "the empty value is 'none', not 'Null'"},
     {"NULL", "the empty value is 'none', not 'NULL'"},
+    {"sqrt", "sqrt is math.sqrt, from std/math"},
     {nullptr, nullptr},
 };
 

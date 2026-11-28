@@ -164,6 +164,8 @@ fun name_note(name)
         return "the empty value is 'none', not 'Null'"
     if name == "NULL"
         return "the empty value is 'none', not 'NULL'"
+    if name == "sqrt"
+        return "sqrt is math.sqrt, from std/math"
     return ""
 
 fun edit_distance(a, b)

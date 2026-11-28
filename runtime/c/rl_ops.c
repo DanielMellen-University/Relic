@@ -368,6 +368,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "nullptr") == 0) return "the empty value is 'none', not 'nullptr'";
     if (strcmp(name, "Null") == 0) return "the empty value is 'none', not 'Null'";
     if (strcmp(name, "NULL") == 0) return "the empty value is 'none', not 'NULL'";
+    if (strcmp(name, "sqrt") == 0) return "sqrt is math.sqrt, from std/math";
     return NULL;
 }
 
