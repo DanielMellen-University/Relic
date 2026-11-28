@@ -1,0 +1,29 @@
+# Finding words in a letter grid, reading in any of the eight directions.
+# Each hit gives the start square and the direction.
+#   relic examples/learn/word_search.relic
+
+let dirs = {E: [0, 1], W: [0, -1], S: [1, 0], N: [-1, 0], SE: [1, 1], NW: [-1, -1], NE: [-1, 1], SW: [1, -1]}
+
+fun fits(grid, word, r, c, d)
+    for i in 0..len(word)
+        let rr = r + d[0] * i
+        let cc = c + d[1] * i
+        if rr < 0 or rr >= len(grid) or cc < 0 or cc >= len(grid[0])
+            return false
+        if grid[rr][cc] != word[i]
+            return false
+    return true
+
+fun find(grid, word)
+    for r in 0..len(grid)
+        for c in 0..len(grid[0])
+            for name in dirs
+                if fits(grid, word, r, c, dirs[name])
+                    return "row {r}, col {c}, going {name}"
+    return "not found"
+
+let grid = ["RELICX", "AMOSRL", "TKOWAE", "SDPHFX", "QENOTI", "HBYJUP"]
+for row in grid
+    print(row)
+for w in ["RELIC", "RATS", "LOOP", "TONE", "PIXEL", "IRE", "ROBOT"]
+    print("{w}: {find(grid, w)}")

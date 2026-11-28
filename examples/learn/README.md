@@ -115,5 +115,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `pythagorean.relic` | Pythagorean triples and Euclid's formula |
 | `amicable.relic` | amicable pairs below 10,000 |
 | `minesweeper.relic` | the numbers on a minesweeper board |
+| `word_search.relic` | words in a letter grid, in eight directions |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
