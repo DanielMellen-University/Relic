@@ -686,3 +686,26 @@ fun slug(s)
         else
             gap = true
     return join(out, "")
+
+# The words of s laid out in lines of at most width characters, as a list.
+# A word longer than width gets a line to itself. Words are split as words does.
+fun wrap(s, width)
+    _text("wrap", "text", s)
+    if type(width) != "int" or width < 1
+        let got = type(width)
+        if got == "float" or got == "int"
+            got = str(width)
+        fail("strings.wrap(): width must be a whole number, 1 or more, got " + got)
+    let lines_out = []
+    let line = ""
+    for w in words(s)
+        if line == ""
+            line = w
+        else if len(line) + 1 + len(w) <= width
+            line = line + " " + w
+        else
+            append(lines_out, line)
+            line = w
+    if line != ""
+        append(lines_out, line)
+    return lines_out

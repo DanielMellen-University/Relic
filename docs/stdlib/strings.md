@@ -174,7 +174,7 @@ Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 
 `remove_suffix("file.txt", ".md")` → `"file.txt"`
 
-### words, split, partition, rpartition, lines, join, replace, repeat
+### words, split, partition, rpartition, lines, join, replace, repeat, wrap
 
 `words` splits on runs of space and never returns an empty piece.
 
@@ -215,6 +215,14 @@ Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 `repeat("ab", 3)` → `"ababab"`
 
 `repeat("ab", 0)` → `""`
+
+`wrap(s, width)` lays the words of `s` out in lines of at most `width` characters and gives the lines as a list. A word longer than `width` gets a line of its own.
+
+`wrap("the quick brown fox", 10)` → `["the quick", "brown fox"]`
+
+`wrap("", 5)` → `[]`
+
+Program: [wrap.relic](../../examples/ref/strings/wrap.relic).
 
 ### pad_left, pad_right, center, truncate, indent, dedent, zfill, expand_tabs
 
