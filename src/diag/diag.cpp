@@ -291,6 +291,7 @@ const Pair kNames[] = {
     {"lower", "lower is strings.lower, from std/strings"},
     {"split", "split is strings.split, from std/strings"},
     {"join", "join is strings.join, from std/strings"},
+    {"map", "map is lists.map, from std/lists"},
     {nullptr, nullptr},
 };
 
