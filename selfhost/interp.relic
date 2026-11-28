@@ -232,6 +232,8 @@ fun name_note(name)
         return "turn text into a number with num(text) or float(text)"
     if name == "Object"
         return "a map is written with braces around key: value pairs"
+    if name == "Array"
+        return "a list is written with square brackets around the items"
     return ""
 
 fun edit_distance(a, b)

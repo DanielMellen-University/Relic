@@ -1,0 +1,3 @@
+name_Array.relic:1:10: warning: 'Array' is not defined (a list is written with square brackets around the items)
+    let xs = Array()
+             ^
