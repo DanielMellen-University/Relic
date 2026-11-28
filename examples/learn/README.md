@@ -93,5 +93,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `gray.relic` | Gray codes |
 | `bowling.relic` | ten-pin bowling scores |
 | `triangle.relic` | naming a triangle from its sides |
+| `perfect.relic` | perfect, abundant and deficient numbers |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
