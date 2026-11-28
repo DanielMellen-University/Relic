@@ -1,0 +1,44 @@
+# Shortest paths on a weighted graph with Dijkstra's algorithm. The graph is
+# small, so the next node is found with a plain scan instead of a heap.
+#   relic examples/learn/dijkstra.relic
+
+fun dijkstra(graph, start)
+    let dist = {}
+    let prev = {}
+    let done = {}
+    dist[start] = 0
+    while true
+        let cur = none
+        for node in dist
+            if not (node in done) and (cur == none or dist[node] < dist[cur])
+                cur = node
+        if cur == none
+            break
+        done[cur] = true
+        for edge in graph[cur]
+            let to = edge[0]
+            let d = dist[cur] + edge[1]
+            if not (to in dist) or d < dist[to]
+                dist[to] = d
+                prev[to] = cur
+    return {dist: dist, prev: prev}
+
+fun path(prev, start, goal)
+    let steps = [goal]
+    let cur = goal
+    while cur != start
+        cur = prev[cur]
+        insert(steps, 0, cur)
+    return steps
+
+let g = {
+    a: [["b", 7], ["c", 9], ["f", 14]],
+    b: [["a", 7], ["c", 10], ["d", 15]],
+    c: [["a", 9], ["b", 10], ["d", 11], ["f", 2]],
+    d: [["b", 15], ["c", 11], ["e", 6]],
+    e: [["d", 6], ["f", 9]],
+    f: [["a", 14], ["c", 2], ["e", 9]]
+}
+let r = dijkstra(g, "a")
+for node in ["b", "c", "d", "e", "f"]
+    print("{node}: {r.dist[node]} via {path(r.prev, "a", node)}")

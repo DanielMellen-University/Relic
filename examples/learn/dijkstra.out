@@ -1,0 +1,5 @@
+b: 7 via ["a", "b"]
+c: 9 via ["a", "c"]
+d: 20 via ["a", "c", "d"]
+e: 20 via ["a", "c", "f", "e"]
+f: 11 via ["a", "c", "f"]
