@@ -384,6 +384,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "toString") == 0) return "turn a value into text with str(value)";
     if (strcmp(name, "String") == 0) return "turn a value into text with str(value)";
     if (strcmp(name, "isinstance") == 0) return "the type of a value is type(value)";
+    if (strcmp(name, "min") == 0) return "min is math.min for two numbers, or lists.min for a list";
     return NULL;
 }
 

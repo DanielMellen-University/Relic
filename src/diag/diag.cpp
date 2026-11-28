@@ -300,6 +300,7 @@ const Pair kNames[] = {
     {"toString", "turn a value into text with str(value)"},
     {"String", "turn a value into text with str(value)"},
     {"isinstance", "the type of a value is type(value)"},
+    {"min", "min is math.min for two numbers, or lists.min for a list"},
     {nullptr, nullptr},
 };
 

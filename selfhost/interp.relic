@@ -196,6 +196,8 @@ fun name_note(name)
         return "turn a value into text with str(value)"
     if name == "isinstance"
         return "the type of a value is type(value)"
+    if name == "min"
+        return "min is math.min for two numbers, or lists.min for a list"
     return ""
 
 fun edit_distance(a, b)
