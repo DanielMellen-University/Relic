@@ -229,6 +229,7 @@ const Pair kWords[] = {
     {"local", "bindings start with 'let', not 'local'"},
     {"auto", "bindings start with 'let', not 'auto'"},
     {"until", "loop with 'while not (...)'; Relic has no until"},
+    {"unless", "branch with 'if not (...)'; Relic has no unless"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {
