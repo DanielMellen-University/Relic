@@ -412,6 +412,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "forEach") == 0) return "loops are written 'for name in list'";
     if (strcmp(name, "values") == 0) return "values is maps.values, from std/maps";
     if (strcmp(name, "items") == 0) return "items is maps.items, from std/maps";
+    if (strcmp(name, "unshift") == 0) return "put an item at the front with insert(list, 0, item)";
     return NULL;
 }
 

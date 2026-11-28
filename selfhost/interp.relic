@@ -252,6 +252,8 @@ fun name_note(name)
         return "values is maps.values, from std/maps"
     if name == "items"
         return "items is maps.items, from std/maps"
+    if name == "unshift"
+        return "put an item at the front with insert(list, 0, item)"
     return ""
 
 fun edit_distance(a, b)
