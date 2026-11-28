@@ -248,6 +248,8 @@ fun name_note(name)
         return "part of a text is slice(text, start, end)"
     if name == "forEach"
         return "loops are written 'for name in list'"
+    if name == "values"
+        return "values is maps.values, from std/maps"
     return ""
 
 fun edit_distance(a, b)

@@ -1,0 +1,3 @@
+name_values.relic:1:7: warning: 'values' is not defined (values is maps.values, from std/maps)
+    print(values({a: 1}))
+          ^

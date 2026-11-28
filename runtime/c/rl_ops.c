@@ -410,6 +410,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "time") == 0) return "clocks and dates are in std/time; add 'use std/time' first";
     if (strcmp(name, "substring") == 0) return "part of a text is slice(text, start, end)";
     if (strcmp(name, "forEach") == 0) return "loops are written 'for name in list'";
+    if (strcmp(name, "values") == 0) return "values is maps.values, from std/maps";
     return NULL;
 }
 
