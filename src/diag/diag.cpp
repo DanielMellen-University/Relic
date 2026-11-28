@@ -327,6 +327,7 @@ const Pair kNames[] = {
     {"toUpperCase", "toUpperCase is strings.upper, from std/strings"},
     {"toLowerCase", "toLowerCase is strings.lower, from std/strings"},
     {"parseFloat", "turn text into a number with num(text) or float(text)"},
+    {"Object", "a map is written with braces around key: value pairs"},
     {nullptr, nullptr},
 };
 

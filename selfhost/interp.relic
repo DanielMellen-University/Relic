@@ -230,6 +230,8 @@ fun name_note(name)
         return "toLowerCase is strings.lower, from std/strings"
     if name == "parseFloat"
         return "turn text into a number with num(text) or float(text)"
+    if name == "Object"
+        return "a map is written with braces around key: value pairs"
     return ""
 
 fun edit_distance(a, b)

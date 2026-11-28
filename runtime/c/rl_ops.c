@@ -401,6 +401,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "toUpperCase") == 0) return "toUpperCase is strings.upper, from std/strings";
     if (strcmp(name, "toLowerCase") == 0) return "toLowerCase is strings.lower, from std/strings";
     if (strcmp(name, "parseFloat") == 0) return "turn text into a number with num(text) or float(text)";
+    if (strcmp(name, "Object") == 0) return "a map is written with braces around key: value pairs";
     return NULL;
 }
 
