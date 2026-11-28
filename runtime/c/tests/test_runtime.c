@@ -763,6 +763,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "items", 0, NULL, NULL), "'items' is not defined (items is maps.items, from std/maps)");
     ERR(rl_fail_undefined(&cx, "unshift", 0, NULL, NULL), "'unshift' is not defined (put an item at the front with insert(list, 0, item))");
     ERR(rl_fail_undefined(&cx, "isdigit", 0, NULL, NULL), "'isdigit' is not defined (isdigit is strings.is_digits, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "hasOwnProperty", 0, NULL, NULL), "'hasOwnProperty' is not defined (test for a key with 'key in map')");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

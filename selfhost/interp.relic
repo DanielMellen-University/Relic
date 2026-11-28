@@ -256,6 +256,8 @@ fun name_note(name)
         return "put an item at the front with insert(list, 0, item)"
     if name == "isdigit"
         return "isdigit is strings.is_digits, from std/strings"
+    if name == "hasOwnProperty"
+        return "test for a key with 'key in map'"
     return ""
 
 fun edit_distance(a, b)
