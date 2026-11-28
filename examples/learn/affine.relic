@@ -1,0 +1,39 @@
+# The affine cipher: each letter x becomes (a * x + b) mod 26. Decoding uses
+# the inverse of a mod 26, so a must share no factor with 26.
+#   relic examples/learn/affine.relic
+
+fun inverse(a)
+    for x in 1..26
+        if a * x % 26 == 1
+            return x
+    return none
+
+fun shift(text, f)
+    let out = ""
+    for c in text
+        let base = 0
+        if c >= "a" and c <= "z"
+            base = ord("a")
+        else if c >= "A" and c <= "Z"
+            base = ord("A")
+        if base == 0
+            out = out + c
+        else
+            out = out + chr(base + f(ord(c) - base))
+    return out
+
+fun encode(text, a, b)
+    fun f(x) = (a * x + b) % 26
+    return shift(text, f)
+
+fun decode(text, a, b)
+    let ai = inverse(a)
+    fun f(x) = ai * (x - b) % 26
+    return shift(text, f)
+
+let msg = "Affine Cipher, 2 keys!"
+for key in [[5, 8], [7, 3], [25, 0]]
+    let secret = encode(msg, key[0], key[1])
+    print("a={key[0]} b={key[1]}: {secret} -> {decode(secret, key[0], key[1])}")
+for a in [2, 13, 17]
+    print("a={a}: inverse {inverse(a)}")
