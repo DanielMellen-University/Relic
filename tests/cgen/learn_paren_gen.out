@@ -1,0 +1,7 @@
+1: ["()"]
+2: ["(())", "()()"]
+3: ["((()))", "(()())", "(())()", "()(())", "()()()"]
+4 pairs: 14 strings
+5 pairs: 42 strings
+6 pairs: 132 strings
+7 pairs: 429 strings
