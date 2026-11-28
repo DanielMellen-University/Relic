@@ -370,6 +370,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "NULL") == 0) return "the empty value is 'none', not 'NULL'";
     if (strcmp(name, "sqrt") == 0) return "sqrt is math.sqrt, from std/math";
     if (strcmp(name, "abs") == 0) return "abs is math.abs, from std/math";
+    if (strcmp(name, "round") == 0) return "round is math.round, from std/math";
     return NULL;
 }
 
