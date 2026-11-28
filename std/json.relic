@@ -465,3 +465,48 @@ fun decode(text)
     if p.i != p.n
         _bad(p, "extra text")
     return v
+
+# The value at the end of path, which is a list of string keys and int
+# indexes, walked from the outside. A missing key or an index past the end
+# is an error. An empty path gives v back.
+fun at(v, path)
+    if type(path) != "list"
+        fail("json.at(): path must be a list, got " + type(path))
+    let cur = v
+    let i = 0
+    for step in path
+        let t = type(cur)
+        if t == "map"
+            if type(step) != "string"
+                fail("json.at(): step " + str(i) + " must be a string key, got " + type(step))
+            if not step in cur
+                fail("json.at(): missing key \"" + step + "\"")
+            cur = cur[step]
+        else if t == "list"
+            if type(step) != "int"
+                fail("json.at(): step " + str(i) + " must be an int index, got " + type(step))
+            if step < 0 or step >= len(cur)
+                fail("json.at(): index " + str(step) + " is outside a list of length " + str(len(cur)))
+            cur = cur[step]
+        else
+            fail("json.at(): step " + str(i) + " needs a list or a map, got " + t)
+        i = i + 1
+    return cur
+
+# The JSON kind of a value encode can write: "null", "bool", "number",
+# "string", "array" or "object". A function or a module is an error.
+fun kind(v)
+    let t = type(v)
+    if t == "none"
+        return "null"
+    if t == "bool"
+        return "bool"
+    if t == "int" or t == "float"
+        return "number"
+    if t == "string"
+        return "string"
+    if t == "list"
+        return "array"
+    if t == "map"
+        return "object"
+    fail("json.kind(): cannot describe a " + t)

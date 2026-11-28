@@ -662,3 +662,149 @@ fun sort(xs)
     if r == none
         return sort_by(ys, natural)
     return r
+
+# [index, item] pairs from 0, in order. A string gives its characters and a
+# map its keys, as the other helpers do.
+fun enumerate(xs)
+    _seq("enumerate", xs)
+    let out = []
+    let i = 0
+    for x in xs
+        append(out, [i, x])
+        i = i + 1
+    return out
+
+# One list from a list of lists, in order. An item that is not a list is an
+# error (flatten keeps those as they are; concat does not).
+fun concat(parts)
+    if type(parts) != "list"
+        fail("lists.concat(): parts must be a list, got " + type(parts))
+    let out = []
+    let i = 0
+    for p in parts
+        if type(p) != "list"
+            fail("lists.concat(): item " + str(i) + " must be a list, got " + type(p))
+        for x in p
+            append(out, x)
+        i = i + 1
+    return out
+
+# sep between the items, not before the first or after the last. An empty
+# list stays empty, and a one-item list is that item alone.
+fun intersperse(xs, sep)
+    _seq("intersperse", xs)
+    let out = []
+    let first = true
+    for x in xs
+        if not first
+            append(out, sep)
+        first = false
+        append(out, x)
+    return out
+
+# The items that are not none, in order. false, 0 and "" stay.
+fun compact(xs)
+    _seq("compact", xs)
+    let out = []
+    for x in xs
+        if x != none
+            append(out, x)
+    return out
+
+# The items test(x) is not true for, in order. The opposite of filter.
+fun reject(xs, test)
+    _seq("reject", xs)
+    _fn("reject", "test", test)
+    let out = []
+    for x in xs
+        if not test(x)
+            append(out, x)
+    return out
+
+# The last item test(x) is true for, or none. test is called on every item.
+fun find_last(xs, test)
+    _seq("find_last", xs)
+    _fn("find_last", "test", test)
+    let items = _items(xs)
+    let i = len(items) - 1
+    while i >= 0
+        if test(items[i])
+            return items[i]
+        i = i - 1
+    return none
+
+# How many items test(x) is true for. An empty list is 0.
+fun count_if(xs, test)
+    _seq("count_if", xs)
+    _fn("count_if", "test", test)
+    let n = 0
+    for x in xs
+        if test(x)
+            n = n + 1
+    return n
+
+# A new list without the items == item, so 1 and 1.0 both go. xs is unchanged.
+fun without(xs, item)
+    _seq("without", xs)
+    let out = []
+    for x in xs
+        if x != item
+            append(out, x)
+    return out
+
+# A new list with consecutive duplicates removed. Items match by ==, so
+# [1, 1.0, 2] is [1, 2]. A later copy that is not next to the first stays.
+fun dedupe(xs)
+    _seq("dedupe", xs)
+    let out = []
+    let started = false
+    let prev = none
+    for x in xs
+        if not started or x != prev
+            append(out, x)
+            prev = x
+            started = true
+    return out
+
+# [the first n items, the rest]. n past the end takes everything and leaves
+# the rest empty. n must be a whole number, 0 or more, as for take.
+fun split_at(xs, n)
+    _seq("split_at", xs)
+    _count_arg("split_at", n)
+    return [take(xs, n), drop(xs, n)]
+
+# The last n items, or all of them when there are fewer.
+fun take_last(xs, n)
+    _seq("take_last", xs)
+    _count_arg("take_last", n)
+    let items = _items(xs)
+    let k = len(items) - n
+    if k < 0
+        k = 0
+    return slice(items, k, len(items))
+
+# The items with the last n dropped, or [] when n is at least the length.
+fun drop_last(xs, n)
+    _seq("drop_last", xs)
+    _count_arg("drop_last", n)
+    let items = _items(xs)
+    let k = len(items) - n
+    if k < 0
+        return []
+    return slice(items, 0, k)
+
+# f(x) for each item, and the lists f returns joined into one. f must give a
+# list; a string or a map is an error, not its characters or keys.
+fun flat_map(xs, f)
+    _seq("flat_map", xs)
+    _fn("flat_map", "f", f)
+    let out = []
+    let i = 0
+    for x in xs
+        let v = f(x)
+        if type(v) != "list"
+            fail("lists.flat_map(): f gave " + type(v) + " for item " + str(i) + ", not a list")
+        for y in v
+            append(out, y)
+        i = i + 1
+    return out

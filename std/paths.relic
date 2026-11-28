@@ -184,3 +184,57 @@ fun _join_names(names)
     for k in 1..len(names)
         s = s + "/" + names[k]
     return s
+
+# Whether p's extension is e. e may be ".txt" or "txt"; "" means p has none.
+fun has_ext(p, e)
+    _fix(p, "has_ext")
+    if type(e) != "string"
+        fail("paths.has_ext(): ext must be a string, got " + type(e))
+    let got = ext(p)
+    if e == got
+        return true
+    if e != "" and slice(e, 0, 1) != "." and "." + e == got
+        return true
+    return false
+
+# p with its stem (the base, minus the ext) replaced by stem. stem must not
+# hold a slash. The directory and the extension stay.
+fun with_stem(p, stem)
+    let x = _fix(p, "with_stem")
+    if type(stem) != "string"
+        fail("paths.with_stem(): stem must be a string, got " + type(stem))
+    if host_find(stem, "/") >= 0 or host_find(stem, "\\") >= 0
+        fail("paths.with_stem(): stem must not hold /, got \"" + stem + "\"")
+    let d = dir(x)
+    let name = stem + ext(x)
+    if d == ""
+        return name
+    if d == "/"
+        return "/" + name
+    return d + "/" + name
+
+# join of every part, left to right, with the same rule as join: an absolute
+# part replaces what came before it. An empty list is "".
+fun join_all(parts)
+    if type(parts) != "list"
+        fail("paths.join_all(): parts must be a list, got " + type(parts))
+    if len(parts) == 0
+        return ""
+    let out = parts[0]
+    if type(out) != "string"
+        fail("paths.join_all(): part 0 must be a string, got " + type(out))
+    let i = 1
+    while i < len(parts)
+        let part = parts[i]
+        if type(part) != "string"
+            fail("paths.join_all(): part " + str(i) + " must be a string, got " + type(part))
+        out = join(out, part)
+        i = i + 1
+    return out
+
+# [p without its extension, the extension]. The extension keeps the dot, or
+# is "" when there is none, as ext() has it. ".bashrc" stays in one piece.
+fun split_ext(p)
+    let x = _fix(p, "split_ext")
+    let e = ext(x)
+    return [slice(x, 0, len(x) - len(e)), e]

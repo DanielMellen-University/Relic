@@ -37,3 +37,25 @@ JSON in and out. `use std/json`. Objects become maps and keep key order. Arrays 
 `decode("null")` → `none`
 
 `decode(encode(v)) == v` for every value `encode` accepts. [decode.relic](../../examples/ref/json/decode.relic) decodes `[1, 2, true, null]` as `[1, 2, true, none]` and checks the round trip.
+
+### at
+
+`at(v, path)` walks a list of string keys and int indexes from the outside. A missing key or an index past the end is an error. An empty path gives `v` back.
+
+`at({a: {b: 1}}, ["a", "b"])` → `1`
+
+`at(5, [])` → `5`
+
+### kind
+
+`kind(v)` is the JSON kind of a value `encode` can write: `"null"`, `"bool"`, `"number"`, `"string"`, `"array"` or `"object"`.
+
+`kind(none)` → `"null"`
+
+`kind(false)` → `"bool"`
+
+`kind(1.5)` → `"number"`
+
+`kind([1])` → `"array"`
+
+`kind({a: 1})` → `"object"`

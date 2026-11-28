@@ -1,0 +1,3 @@
+use std/result
+print(result.unwrap_or(result.err("no"), 9))
+print(result.unwrap_or(result.ok(3), 9))

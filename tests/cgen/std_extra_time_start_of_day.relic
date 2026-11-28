@@ -1,0 +1,4 @@
+use std/time
+print(time.start_of_day(0))
+print(time.start_of_day(86400 + 5))
+print(time.start_of_day(100))

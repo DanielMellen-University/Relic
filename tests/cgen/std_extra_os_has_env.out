@@ -1,0 +1,3 @@
+false
+true
+os.has_env(): name must be a string, got int

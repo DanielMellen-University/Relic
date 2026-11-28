@@ -145,3 +145,91 @@ fun has_value(m, v)
         if m[k] == v
             return true
     return false
+
+# A new map with k set to v. An existing key stays where it is; a new key
+# goes at the end. m is left as it is (unlike m[k] = v, which changes m).
+fun with(m, k, v)
+    _map("with", "m", m)
+    _key("with", "key", k)
+    let out = {}
+    let seen = false
+    for key in m
+        if key == k
+            out[key] = v
+            seen = true
+        else
+            out[key] = m[key]
+    if not seen
+        out[k] = v
+    return out
+
+# A new map without k. A missing key is not an error, and m is unchanged
+# (drop removes the key from m itself).
+fun without(m, k)
+    _map("without", "m", m)
+    _key("without", "key", k)
+    let out = {}
+    for key in m
+        if key != k
+            out[key] = m[key]
+    return out
+
+# A new map without every key in the list. A key that m does not have is
+# skipped. Keys stay in their old order.
+fun omit(m, keys)
+    _map("omit", "m", m)
+    if type(keys) != "list"
+        fail("maps.omit(): keys must be a list, got " + type(keys))
+    let gone = {}
+    let i = 0
+    for k in keys
+        _key("omit", "key " + str(i), k)
+        gone[k] = true
+        i = i + 1
+    let out = {}
+    for k in m
+        if not k in gone
+            out[k] = m[k]
+    return out
+
+# A new map without the keys whose value is none. false, 0 and "" stay.
+fun compact(m)
+    _map("compact", "m", m)
+    let out = {}
+    for k in m
+        if m[k] != none
+            out[k] = m[k]
+    return out
+
+# A new map with each key put through f. f must give a string, and two keys
+# must not land on one string. Values stay with their keys, in the same order.
+fun map_keys(m, f)
+    _map("map_keys", "m", m)
+    _fn("map_keys", "f", f)
+    let out = {}
+    for k in m
+        let nk = f(k)
+        if type(nk) != "string"
+            fail("maps.map_keys(): f must give a string, got " + type(nk))
+        if nk in out
+            fail("maps.map_keys(): f gave \"" + nk + "\" for two keys")
+        out[nk] = m[k]
+    return out
+
+# A new map with the key old renamed to new, in the same place. old must be
+# there, and new must not be, unless the two names are the same.
+fun rename(m, old, new)
+    _map("rename", "m", m)
+    _key("rename", "old", old)
+    _key("rename", "new", new)
+    if not old in m
+        fail("maps.rename(): no key \"" + old + "\"")
+    if old != new and new in m
+        fail("maps.rename(): \"" + new + "\" is already a key")
+    let out = {}
+    for k in m
+        if k == old
+            out[new] = m[k]
+        else
+            out[k] = m[k]
+    return out

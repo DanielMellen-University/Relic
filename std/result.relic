@@ -1,0 +1,55 @@
+# std/result: a value that is either a success or a failure, so a caller can
+# pass the failure on without try/catch. A result is a map from ok() or err().
+# kind is "ok" or "err". An ok result holds value. An err result holds message,
+# a string.
+
+fun _result(name, r)
+    if type(r) != "map" or not "kind" in r or (r.kind != "ok" and r.kind != "err")
+        let got = type(r)
+        if got == "map"
+            got = "a map that is not a result"
+        fail("result." + name + "(): r must be a result from result.ok or result.err, got " + got)
+
+# A success holding value. value may be anything, including none.
+fun ok(value) = {kind: "ok", value: value}
+
+# A failure. message must be a string, the same rule fail() has.
+fun err(message)
+    if type(message) != "string"
+        fail("result.err(): message must be a string, got " + type(message))
+    return {kind: "err", message: message}
+
+# true for a result from ok().
+fun is_ok(r)
+    _result("is_ok", r)
+    return r.kind == "ok"
+
+# true for a result from err().
+fun is_err(r)
+    _result("is_err", r)
+    return r.kind == "err"
+
+# The value of an ok result. An err result fails with its message.
+fun unwrap(r)
+    _result("unwrap", r)
+    if r.kind == "err"
+        fail(r.message)
+    return r.value
+
+# The value of an ok result, or fallback when it is an err.
+fun unwrap_or(r, fallback)
+    _result("unwrap_or", r)
+    if r.kind == "err"
+        return fallback
+    return r.value
+
+# ok(f()) when f returns, or err(the message) when f fails. f must be a
+# function and is called with no arguments. The result of f is wrapped even
+# when that result is itself a result.
+fun try_call(f)
+    if type(f) != "function"
+        fail("result.try_call(): f must be a function, got " + type(f))
+    try
+        return ok(f())
+    catch e
+        return err(e.message)

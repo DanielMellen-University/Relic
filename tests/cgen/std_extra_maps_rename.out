@@ -1,0 +1,4 @@
+{z: 1, b: 2}
+{a: 1}
+maps.rename(): no key "z"
+maps.rename(): "b" is already a key

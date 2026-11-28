@@ -1,0 +1,2 @@
+{kind: "err", message: "no"}
+result.err(): message must be a string, got int

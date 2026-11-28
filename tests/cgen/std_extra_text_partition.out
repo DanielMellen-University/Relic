@@ -1,0 +1,3 @@
+["a", "=", "b=c"]
+["abc", "", ""]
+text.partition(): separator must not be empty

@@ -1,0 +1,12 @@
+use std/time
+print(time.add_days(0, 1))
+print(time.add_days(86400, -1))
+print(time.add_days(100, 0))
+try
+    time.add_days(0, 4000001)
+catch e
+    print(e.message)
+try
+    time.add_days("a", 1)
+catch e
+    print(e.message)

@@ -1,0 +1,4 @@
+true
+true
+false
+text.is_blank(): argument must be a string, got int

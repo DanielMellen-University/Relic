@@ -1,0 +1,13 @@
+use std/io
+use std/files
+let a = "_io_copy_a.tmp"
+let b = "_io_copy_b.tmp"
+files.write(a, "hello")
+io.copy(a, b)
+print(files.read(b))
+files.remove(a)
+files.remove(b)
+try
+    io.copy(".", "x")
+catch e
+    print(e.message)

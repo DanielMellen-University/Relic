@@ -1,0 +1,8 @@
+use std/math
+print(math.log10(1))
+print(math.log10(1000) > 2.999 and math.log10(1000) < 3.001)
+print(math.log10(0) < 0)
+try
+    math.log10("a")
+catch e
+    print(e.message)

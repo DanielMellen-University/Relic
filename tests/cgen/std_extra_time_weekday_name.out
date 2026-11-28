@@ -1,0 +1,4 @@
+Monday
+Sunday
+Thursday
+time.weekday_name(): day must be from 1 to 7, got 0

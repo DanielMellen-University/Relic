@@ -1,0 +1,17 @@
+use std/math
+print(math.comb(10, 3))
+print(math.comb(5, 0))
+print(math.comb(5, 5))
+print(math.comb(66, 33))
+try
+    math.comb(3, 4)
+catch e
+    print(e.message)
+try
+    math.comb(67, 33)
+catch e
+    print(e.message)
+try
+    math.comb(1.5, 1)
+catch e
+    print(e.message)

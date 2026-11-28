@@ -1,0 +1,9 @@
+use std/maps
+let box = {a: 1, b: 2}
+print(maps.with(box, "b", 9))
+print(box)
+print(maps.with(box, "c", 3))
+try
+    maps.with(box, 1, 2)
+catch e
+    print(e.message)

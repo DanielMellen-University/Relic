@@ -69,3 +69,41 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 `relative("/a/b", "/a/b")` → `"."`
 
 `relative("a/b", "a/c")` → `"../c"`
+
+### has_ext
+
+`has_ext(p, e)` is whether `p` ends with the extension `e`. `e` may be `".txt"` or `"txt"`. `""` means `p` has no extension.
+
+`has_ext("a/b.txt", ".txt")` → `true`
+
+`has_ext("a/b.txt", "txt")` → `true`
+
+`has_ext("Makefile", "")` → `true`
+
+### with_stem
+
+`with_stem(p, stem)` replaces the file name and keeps the directory and the extension. `stem` must not hold a slash. A dotfile has no extension, so the whole name is replaced.
+
+`with_stem("a/b.txt", "c")` → `"a/c.txt"`
+
+`with_stem("/b.txt", "c")` → `"/c.txt"`
+
+`with_stem("a/.bashrc", "c")` → `"a/c"`
+
+### join_all
+
+`join_all(parts)` joins every part, left to right, with the same rule as `join`: an absolute part replaces what came before it. An empty list is `""`.
+
+`join_all(["a", "b", "c"])` → `"a/b/c"`
+
+`join_all(["a", "/b", "c"])` → `"/b/c"`
+
+`join_all([])` → `""`
+
+### split_ext
+
+`split_ext(p)` returns `[p without its extension, the extension]`. The extension keeps the dot, or is `""` when there is none. A dotfile stays in one piece.
+
+`split_ext("a/b.tar.gz")` → `["a/b.tar", ".gz"]`
+
+`split_ext(".bashrc")` → `[".bashrc", ""]`

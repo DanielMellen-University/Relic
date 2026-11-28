@@ -1,0 +1,77 @@
+# std/text: more text helpers, on top of std/strings. Case and splitting
+# that look at words, and a few tests strings does not have.
+use std/strings
+
+fun _text(name, what, s)
+    if type(s) != "string"
+        fail("text." + name + "(): " + what + " must be a string, got " + type(s))
+
+# true when s is empty or every character is space, tab, newline or CR.
+fun is_blank(s)
+    _text("is_blank", "argument", s)
+    for c in s
+        if not strings.is_space(c)
+            return false
+    return true
+
+# [the text before sep, sep, the text after] for the first sep. When sep is
+# not there, the result is [s, "", ""]. An empty sep is an error.
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("text.partition(): separator must not be empty")
+    let i = strings.find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+# s with the first old replaced by new. No match leaves s as it is. An empty
+# old is an error (replace puts the new text between every character).
+fun replace_first(s, old, new)
+    _text("replace_first", "text", s)
+    _text("replace_first", "old text", old)
+    _text("replace_first", "new text", new)
+    if old == ""
+        fail("text.replace_first(): old text must not be empty")
+    let i = strings.find(s, old)
+    if i < 0
+        return s
+    return slice(s, 0, i) + new + slice(s, i + len(old), len(s))
+
+# Each word with its first ASCII letter in upper case and the rest of the
+# word in lower case. Spaces stay as they are, including runs of them.
+fun title(s)
+    _text("title", "argument", s)
+    let out = ""
+    let word = false
+    for c in s
+        if strings.is_space(c)
+            out = out + c
+            word = false
+        else if word
+            out = out + strings.lower(c)
+        else
+            out = out + strings.upper(c)
+            word = true
+    return out
+
+# prefix at the start of every line. A final newline is kept, and a blank
+# line in the middle gets the prefix too. An empty text stays empty.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    if s == ""
+        return ""
+    let ended = strings.ends_with(s, "\n")
+    let ls = strings.lines(s)
+    let out = ""
+    let i = 0
+    for line in ls
+        if i > 0
+            out = out + "\n"
+        out = out + prefix + line
+        i = i + 1
+    if ended
+        out = out + "\n"
+    return out

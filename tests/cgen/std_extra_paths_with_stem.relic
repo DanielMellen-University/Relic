@@ -1,0 +1,9 @@
+use std/paths
+print(paths.with_stem("a/b.txt", "c"))
+print(paths.with_stem("/b.txt", "c"))
+print(paths.with_stem("b.txt", "c"))
+print(paths.with_stem("a/.bashrc", "c"))
+try
+    paths.with_stem("a", "b/c")
+catch e
+    print(e.message)

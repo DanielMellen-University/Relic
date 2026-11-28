@@ -31,3 +31,11 @@ Make a generator with `new(seed)` and pass it first to every other call. The sam
 ### How it works
 
 The generator is L'Ecuyer's MRG32k3a. Its period is about 2^191 and its arithmetic fits in an int, so it is plain Relic with no `host_*` call. Ints are drawn again when they land in the last partial block, so no result is favoured. It is not for secrets: someone who sees enough numbers can work out the next ones.
+
+### boolean
+
+`boolean(r)` returns `true` or `false`, each half the time. The same seed gives the same flips.
+
+### weighted
+
+`weighted(r, items, weights)` picks one item with probability proportional to the matching weight. Every weight is an int above 0, and `items` and `weights` are the same length.

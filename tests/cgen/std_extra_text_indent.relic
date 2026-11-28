@@ -1,0 +1,4 @@
+use std/text
+print(text.indent("a\nb\n", "  "))
+print(text.indent("", ">"))
+print(text.indent("a\n\nb", ">"))

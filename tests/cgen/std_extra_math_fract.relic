@@ -1,0 +1,9 @@
+use std/math
+print(math.fract(2.75))
+print(math.fract(-1.25))
+print(math.fract(4))
+print(math.fract(1e20))
+try
+    math.fract(math.log(0))
+catch e
+    print(e.message)

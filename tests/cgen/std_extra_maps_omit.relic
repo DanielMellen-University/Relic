@@ -1,0 +1,7 @@
+use std/maps
+print(maps.omit({a: 1, b: 2, c: 3}, ["c", "a", "z"]))
+print(maps.omit({a: 1}, []))
+try
+    maps.omit({a: 1}, [1])
+catch e
+    print(e.message)

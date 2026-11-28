@@ -1,0 +1,11 @@
+use std/result
+print(result.is_ok(result.ok(1)))
+print(result.is_ok(result.err("no")))
+try
+    result.is_ok({})
+catch e
+    print(e.message)
+try
+    result.is_ok(1)
+catch e
+    print(e.message)

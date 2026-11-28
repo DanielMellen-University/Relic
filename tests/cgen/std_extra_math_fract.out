@@ -1,0 +1,5 @@
+0.75
+0.75
+0.0
+0.0
+math.fract(): argument must be finite, got -inf

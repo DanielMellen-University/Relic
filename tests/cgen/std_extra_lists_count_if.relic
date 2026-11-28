@@ -1,0 +1,4 @@
+use std/lists
+fun big(x) = x > 1
+print(lists.count_if([1, 2, 3, 4], big))
+print(lists.count_if([], big))

@@ -1,0 +1,7 @@
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/a.txt", "hello")
+print(vfs.is_file(fs, "/tmp/a.txt"))
+print(vfs.is_file(fs, "/tmp"))
+print(vfs.is_file(fs, "/nope"))
+print(vfs.is_file(fs, "/"))

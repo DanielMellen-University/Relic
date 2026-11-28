@@ -1,0 +1,4 @@
+true
+false
+result.is_ok(): r must be a result from result.ok or result.err, got a map that is not a result
+result.is_ok(): r must be a result from result.ok or result.err, got int
