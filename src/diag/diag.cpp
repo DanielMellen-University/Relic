@@ -225,6 +225,7 @@ const Pair kWords[] = {
     {"struct", "Relic has no structs; use a map"},
     {"enum", "Relic has no enums; use strings, or a map of names"},
     {"interface", "Relic has no interfaces; use a map or a module"},
+    {"from", "modules are loaded with 'use', not 'from'"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {
