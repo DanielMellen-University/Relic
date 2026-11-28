@@ -108,5 +108,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `look_and_say.relic` | the look-and-say sequence |
 | `floyd_cycle.relic` | the tortoise and the hare on a looping walk |
 | `bezout.relic` | the extended Euclidean algorithm and modular inverses |
+| `modpow.relic` | modular powers by repeated squaring |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
