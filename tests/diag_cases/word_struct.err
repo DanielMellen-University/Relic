@@ -1,0 +1,4 @@
+word_struct.relic:1:8: error: expected end of line, got name 'Point'
+    struct Point
+           ^^^^^
+hint: Relic has no structs; use a map

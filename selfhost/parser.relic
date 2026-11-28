@@ -206,6 +206,8 @@ fun word_extra(word)
         return "write 'fun name() = ...'"
     if word == "except"
         return "catch an error with try and catch"
+    if word == "struct"
+        return "Relic has no structs; use a map"
     return ""
 
 fun type_extra(name)

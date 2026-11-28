@@ -222,6 +222,7 @@ const Pair kWords[] = {
     {"switch", "branch with if and else if"},
     {"lambda", "write 'fun name() = ...'"},
     {"except", "catch an error with try and catch"},
+    {"struct", "Relic has no structs; use a map"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {
