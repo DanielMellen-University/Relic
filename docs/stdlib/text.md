@@ -17,7 +17,7 @@ More text helpers on top of `std/strings`. Case that looks at words, splitting o
 
 ### partition
 
-`partition(s, sep)` is `[the text before sep, sep, the text after]` for the first `sep`. When `sep` is not there, the result is `[s, "", ""]`.
+`partition(s, sep)` returns `[the text before sep, sep, the text after]` for the first `sep`. When `sep` is not there, the result is `[s, "", ""]`.
 
 `partition("a=b=c", "=")` → `["a", "=", "b=c"]`
 

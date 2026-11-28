@@ -102,7 +102,7 @@ Paths always use `/`. A backslash in the input is read as `/`. `use std/paths`. 
 
 ### split_ext
 
-`split_ext(p)` is `[p without its extension, the extension]`. The extension keeps the dot, or is `""` when there is none. A dotfile stays in one piece.
+`split_ext(p)` returns `[p without its extension, the extension]`. The extension keeps the dot, or is `""` when there is none. A dotfile stays in one piece.
 
 `split_ext("a/b.tar.gz")` → `["a/b.tar", ".gz"]`
 

@@ -34,7 +34,7 @@ The generator is L'Ecuyer's MRG32k3a. Its period is about 2^191 and its arithmet
 
 ### boolean
 
-`boolean(r)` is `true` or `false`, each half the time. The same seed gives the same flips.
+`boolean(r)` returns `true` or `false`, each half the time. The same seed gives the same flips.
 
 ### weighted
 

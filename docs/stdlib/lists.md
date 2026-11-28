@@ -106,7 +106,7 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 ### enumerate
 
-`enumerate(xs)` is `[index, item]` pairs from 0. A string is its characters.
+`enumerate(xs)` makes `[index, item]` pairs from 0. A string is its characters.
 
 `enumerate([10, 20])` → `[[0, 10], [1, 20]]`
 
@@ -164,7 +164,7 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 
 ### split_at
 
-`split_at(xs, n)` is `[the first n items, the rest]`. `n` past the end takes everything and leaves the rest empty.
+`split_at(xs, n)` returns `[the first n items, the rest]`. `n` past the end takes everything and leaves the rest empty.
 
 `split_at([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]`
 
