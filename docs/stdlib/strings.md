@@ -190,7 +190,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `repeat("ab", 0)` → `""`
 
-### pad_left, pad_right, center, truncate, indent, dedent
+### pad_left, pad_right, center, truncate, indent, dedent, zfill
 
 `pad_left` and `pad_right` add copies of `fill` until the text is at least `width` long. `center` puts the spare copy on the right. `truncate` cuts to `width` and ends a cut string with `tail`.
 
@@ -215,3 +215,13 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `indent("", "  ")` → `""`
 
 `dedent("  hi")` → `"hi"`
+
+`zfill` pads with zeros on the left, after a leading `+` or `-`.
+
+`zfill("42", 5)` → `"00042"`
+
+`zfill("-42", 5)` → `"-0042"`
+
+`zfill("12345", 3)` → `"12345"`
+
+Program: [zfill.relic](../../examples/ref/strings/zfill.relic).
