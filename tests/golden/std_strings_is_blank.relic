@@ -1,0 +1,12 @@
+# std/strings.is_blank: true for empty text or text made only of the characters is_space accepts, so a reader can skip blank lines without trimming first.
+use std/strings
+
+print(strings.is_blank(""))
+print(strings.is_blank("   "))
+print(strings.is_blank("\t\n" + chr(13) + " "))
+print(strings.is_blank(" a "))
+print(strings.is_blank("\u{a0}"))
+try
+    strings.is_blank(none)
+catch e
+    print(e.message)

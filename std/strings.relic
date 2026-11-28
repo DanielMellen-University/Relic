@@ -589,3 +589,11 @@ fun zfill(s, width)
     if s != "" and (s[0] == "-" or s[0] == "+")
         return s[0] + zeros + slice(s, 1, len(s))
     return zeros + s
+
+# Whether s is empty or holds only spaces, tabs, line feeds and carriage returns.
+fun is_blank(s)
+    _text("is_blank", "argument", s)
+    for c in s
+        if not is_space(c)
+            return false
+    return true

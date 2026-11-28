@@ -130,6 +130,16 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `is_space("a")` → `false`
 
+`is_blank` gives `true` for empty text, or text that holds only spaces, tabs, line feeds and carriage returns.
+
+`is_blank("")` → `true`
+
+`is_blank(" \t\n")` → `true`
+
+`is_blank(" x ")` → `false`
+
+Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
+
 ### reverse, remove_prefix, remove_suffix
 
 `reverse` flips code points, so a character past ASCII stays one character.
