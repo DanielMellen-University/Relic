@@ -318,6 +318,7 @@ const Pair kNames[] = {
     {"enumerate", "loop over indexes with 'for i in 0..len(items)'"},
     {"ceil", "ceil is math.ceil, from std/math"},
     {"trim", "trim is strings.trim, from std/strings"},
+    {"replace", "replace is strings.replace, from std/strings"},
     {nullptr, nullptr},
 };
 

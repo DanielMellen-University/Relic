@@ -212,6 +212,8 @@ fun name_note(name)
         return "ceil is math.ceil, from std/math"
     if name == "trim"
         return "trim is strings.trim, from std/strings"
+    if name == "replace"
+        return "replace is strings.replace, from std/strings"
     return ""
 
 fun edit_distance(a, b)
