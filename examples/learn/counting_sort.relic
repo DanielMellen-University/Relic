@@ -1,0 +1,21 @@
+# Counting sort for small whole numbers: count each value, then write the
+# values back out in order. No two items are ever compared.
+#   relic examples/learn/counting_sort.relic
+
+fun counting_sort(xs, top)
+    let counts = []
+    for v in 0..(top + 1)
+        append(counts, 0)
+    for x in xs
+        counts[x] = counts[x] + 1
+    let out = []
+    for v in 0..(top + 1)
+        for k in 0..counts[v]
+            append(out, v)
+    return out
+
+let scores = [3, 7, 1, 0, 7, 3, 9, 2, 3, 0]
+print("sorting {scores}")
+print(counting_sort(scores, 9))
+print(counting_sort([5, 5, 5], 5))
+print(counting_sort([], 4))
