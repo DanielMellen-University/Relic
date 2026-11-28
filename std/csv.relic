@@ -184,3 +184,37 @@ fun _join(parts, a, b)
         return parts[a]
     let mid = a + int((b - a) / 2)
     return _join(parts, a, mid) + _join(parts, mid, b)
+
+# The values in one column, top to bottom. index counts from 0. A row that
+# is shorter than that is an error, and so is a row that is not a list.
+fun column(rows, index)
+    if type(rows) != "list"
+        fail("csv.column(): rows must be a list, got " + type(rows))
+    if type(index) != "int" or index < 0
+        let got = type(index)
+        if got == "int" or got == "float"
+            got = str(index)
+        fail("csv.column(): index must be a whole number, 0 or more, got " + got)
+    let out = []
+    let r = 0
+    for row in rows
+        if type(row) != "list"
+            fail("csv.column(): row " + str(r + 1) + " must be a list, got " + type(row))
+        if index >= len(row)
+            let word = " fields"
+            if len(row) == 1
+                word = " field"
+            fail("csv.column(): row " + str(r + 1) + " has " + str(len(row)) + word + ", no index " + str(index))
+        append(out, row[index])
+        r = r + 1
+    return out
+
+# The first row of text, the names records() would key by. An empty text
+# has no header. sep is the same as for parse.
+fun headers(text, sep = ",")
+    if type(text) != "string"
+        fail("csv.headers(): text must be a string, got " + type(text))
+    let rows = parse(text, sep)
+    if len(rows) == 0
+        fail("csv.headers(): the text has no row")
+    return rows[0]

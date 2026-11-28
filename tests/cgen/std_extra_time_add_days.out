@@ -1,0 +1,5 @@
+86400
+0
+100
+time.add_days(): the result is outside the years 1 to 9999
+time.add_days(): secs must be a number, got string

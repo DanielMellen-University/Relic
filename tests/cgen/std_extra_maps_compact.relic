@@ -1,0 +1,3 @@
+use std/maps
+print(maps.compact({a: 1, b: none, c: 0, d: false}))
+print(maps.compact({}))

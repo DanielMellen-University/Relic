@@ -1,0 +1,11 @@
+use std/csv
+print(csv.column([["a", "b"], ["c", "d"]], 1))
+print(csv.column([["a", "b"], ["c", "d"]], 0))
+try
+    csv.column([["a"]], 1)
+catch e
+    print(e.message)
+try
+    csv.column([["a"]], -1)
+catch e
+    print(e.message)

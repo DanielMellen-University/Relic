@@ -1,0 +1,23 @@
+use std/math
+print(math.div_floor(7, 3))
+print(math.div_floor(-7, 3))
+print(math.div_floor(7, -3))
+print(math.div_floor(-7, -3))
+print(math.div_floor(0, 5))
+print(math.div_floor(9223372036854775806, 3))
+print(math.div_floor(-9223372036854775807 - 1, 2))
+print(math.div_floor(-9223372036854775807 - 1, -2))
+print(math.div_floor(5, -9223372036854775807 - 1))
+print(math.div_floor(-9223372036854775807 - 1, -9223372036854775807 - 1))
+try
+    math.div_floor(1, 0)
+catch e
+    print(e.message)
+try
+    math.div_floor(-9223372036854775807 - 1, -1)
+catch e
+    print(e.message)
+try
+    math.div_floor(1.5, 2)
+catch e
+    print(e.message)

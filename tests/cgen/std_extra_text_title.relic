@@ -1,0 +1,4 @@
+use std/text
+print(text.title("hELLO  world"))
+print(text.title(""))
+print(text.title("a"))

@@ -22,3 +22,19 @@ fun run(argv, cwd, stdin, env) = host_run(argv, cwd, stdin, env)
 # stdin is a terminal (nothing is shown into a pipe or from a file).
 fun read_line() = host_read_line("")
 fun prompt(text) = host_read_line(text)
+
+# The value of name, or fallback when it is not set. An empty value is kept:
+# only a missing name uses fallback.
+fun env_or(name, fallback)
+    if type(name) != "string"
+        fail("os.env_or(): name must be a string, got " + type(name))
+    let v = env(name)
+    if v == none
+        return fallback
+    return v
+
+# Whether name is set in the environment, even when the value is empty.
+fun has_env(name)
+    if type(name) != "string"
+        fail("os.has_env(): name must be a string, got " + type(name))
+    return env(name) != none

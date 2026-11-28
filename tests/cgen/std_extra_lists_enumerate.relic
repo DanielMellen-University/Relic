@@ -1,0 +1,8 @@
+use std/lists
+print(lists.enumerate([10, 20]))
+print(lists.enumerate([]))
+print(lists.enumerate("ab"))
+try
+    lists.enumerate(1)
+catch e
+    print(e.message)

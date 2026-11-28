@@ -1,0 +1,8 @@
+use std/text
+print(text.is_blank(" \t"))
+print(text.is_blank(""))
+print(text.is_blank(" a"))
+try
+    text.is_blank(1)
+catch e
+    print(e.message)

@@ -9,17 +9,20 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | Module | For |
 |---|---|
 | [std/strings](#stdstrings) | searching, counting, splitting into pieces, words or lines, case, capitalizing and truncating, letters and digits, prefixes and suffixes, padding and centering, reversing |
-| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted |
-| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value |
-| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants |
+| [std/lists](#stdlists) | map, filter, reduce, scan, sum and product, find, any and all, min and max, count, unique, take and drop, take_while and drop_while, partition, group_by, count_by and unique_by, flatten, zip, union, intersect and difference, chunk, windows, last, mean and median, min_by and max_by, sum_by, rotate, sorting, bisect and insert_sorted, enumerate, concat, intersperse, compact, reject, find_last, count_if, without, dedupe, split_at, take_last, drop_last, flat_map |
+| [std/maps](#stdmaps) | values, items and back (from_items), get with a fallback, merge, drop, invert, map_values, filter, pick, find_key, has_value, with, without, omit, compact, map_keys, rename |
+| [std/math](#stdmath) | rounding and trunc, roots, trig, degrees and radians, hypot and dist, sign, gcd and lcm, even and odd, lerp, numbers as text with set decimals or in hex, constants, floor division, factorial, binomial coefficients, primes, log10, finite and nan checks, fractional part |
 | [std/files](#stdfiles) | text files and folders on the host disk |
-| [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another |
+| [std/paths](#stdpaths) | joining and splitting `/` paths, their parts, absolute or not, swapping the ext, the path from one folder to another, testing and swapping the extension, replacing the stem, joining a list of parts |
 | [std/vfs](#stdvfs) | an in-memory filesystem |
 | [std/json](#stdjson) | JSON in and out |
 | [std/csv](#stdcsv) | comma-separated tables in and out (RFC 4180) |
-| [std/os](#stdos) | args, environment, current folder, exit |
+| [std/os](#stdos) | args, environment, current folder, exit, a fallback for a missing variable |
 | [std/time](#stdtime) | clocks, sleep, a frame timer, UTC calendar dates |
-| [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling and sampling |
+| [std/random](#stdrandom) | seeded random numbers: floats, ints in a range, a chance, picking, shuffling, sampling, a fair coin flip and a weighted pick |
+| [std/text](#stdtext) | more text helpers on top of strings |
+| [std/io](#stdio) | small file helpers on top of files |
+| [std/result](#stdresult) | a success or a failure without try/catch |
 | [std/graphics](#stdgraphics) | a window, drawing, input, images, fonts (SDL builds) |
 
 ## std/strings
@@ -95,6 +98,19 @@ plain Relic in `std/`; the few `host_*` calls they make are the C++ host
 | `bisect(xs, item)` | int | for a sorted `xs`, the index of the first item that is not `<` `item` (before equal ones), or `len(xs)`; a binary search. `item` must be a number or a string (`lists.bisect(): item must be a number or a string, got none`), and comparing it with the items has the usual errors, such as `cannot compare an int and a string` |
 | `insert_sorted(xs, item)` | list | a new sorted list with `item` after any equal items, so building a list one item at a time gives what `sort` gives; `xs` is unchanged. Same `item` rules as `bisect` |
 | `sort_by(xs, less)` | list | `less(a, b)` is bool. `sort` and `sort_by` take a string's characters or a map's keys too (since 1.0.52; both failed on a map, and `sort_by` on a string) |
+| `enumerate(xs)` | list | `[index, item]` pairs from 0; a string gives its characters and a map its keys |
+| `concat(parts)` | list | one list from a list of lists, in order; an item that is not a list is an error |
+| `intersperse(xs, sep)` | list | `sep` between the items, not before the first or after the last; an empty list stays empty |
+| `compact(xs)` | list | the items that are not `none`, in order; `false`, `0` and `""` stay |
+| `reject(xs, test)` | list | the items `test(x)` is not true for, in order |
+| `find_last(xs, test)` | any | the last item `test(x)` is true for, or `none` |
+| `count_if(xs, test)` | int | how many items `test(x)` is true for; an empty list is 0 |
+| `without(xs, item)` | list | a new list without the items `==` `item` (`1` and `1.0` both go); `xs` is unchanged |
+| `dedupe(xs)` | list | consecutive duplicates removed; items match by `==`, and a later copy that is not adjacent stays |
+| `split_at(xs, n)` | list | `[the first n items, the rest]`; `n` past the end takes everything and leaves the rest empty |
+| `take_last(xs, n)` | list | the last `n` items, or all of them when there are fewer |
+| `drop_last(xs, n)` | list | the items with the last `n` dropped, or `[]` when `n` is at least the length |
+| `flat_map(xs, f)` | list | the lists `f(x)` returns, joined into one; `f` must give a list |
 
 `fun_add` and `natural` are also visible: they are the helpers behind `sum` and
 `sort`, not meant to be called.
@@ -123,6 +139,12 @@ got int` (since 1.0.52; it was `cannot call an int`), and `filter`, `any`,
 | `invert(m)` | map | each value to its key; every value must be a string (`maps.invert(): the value of k must be a string, got int`), and of two keys with one value the later wins (since 1.0.50) |
 | `from_items(pairs)` | map | new map from `[key, value]` pairs, the reverse of `items`; a later pair with the same key wins, and an item that is not a two-item list with a string key fails as `maps.from_items(): item 2 must be a [string key, value] pair, got a list of length 3` (or `got a key of type int`, `got string`), counting from 0 (since 1.0.49) |
 | `drop(m, k)` | bool | removes `k` in place if it is there (`true`), else `false`; for code where a function of its own named `remove` hides the built-in, like `std/vfs` (since 1.0.42) |
+| `with(m, k, v)` | map | a new map with `k` set to `v`; an existing key stays where it is and a new key goes at the end; `m` is unchanged |
+| `without(m, k)` | map | a new map without `k`; a missing key is not an error and `m` is unchanged |
+| `omit(m, keys)` | map | a new map without every key in the list; a missing key is skipped and the rest stay in order |
+| `compact(m)` | map | a new map without the keys whose value is `none`; `false`, `0` and `""` stay |
+| `map_keys(m, f)` | map | a new map with each key put through `f`; `f` must give a string, and two keys must not land on one |
+| `rename(m, old, new)` | map | a new map with `old` renamed to `new` in the same place; `old` must be there and `new` must not, unless the names are the same |
 
 Each one fails with its own name when given something that is not a map: `maps.values(): m must be a map, got int` (since 1.0.49). Before, most failed inside with `cannot loop over an int`, and `get` on a list quietly gave back the fallback.
 `map_values` and `filter` check their function the same way: `maps.filter(): keep must be a function, got int` (since 1.0.52; it was `cannot call an int`, and an empty map let it through).
@@ -147,6 +169,16 @@ Each one fails with its own name when given something that is not a map: `maps.v
 | `trunc(x)` | int: `x` with its fraction dropped, toward 0 (`trunc(-2.7)` is `-2`, `floor` gives `-3`), and `math.trunc(): number is out of the int range` for nan, an infinity or a float past the int range (since 1.0.50) |
 | `is_whole(x)` | bool: an int, or a float with nothing after the point (`2.0`, `1e300`); an infinity counts, since it equals its own floor, and nan does not; not a number is an error |
 | `pi` `e` | float constants |
+| `div_floor(a, b)` | int | `a / b` rounded down, for every int, including past 2^53 where `/` is not exact; `b` of 0 is an error, and `-2^63 / -1` does not fit |
+| `factorial(n)` | int | `n!` for an int from 0 to 20 (`0!` is 1); `21!` does not fit |
+| `comb(n, k)` | int | the binomial coefficient `C(n, k)`; `k` is from 0 to `n`, and a result past the int range is an error (`C(67, 33)` is the first that does not fit) |
+| `is_prime(n)` | bool | whether an int is prime, for every int (Miller-Rabin with a fixed set of bases that covers the whole range); negatives, 0 and 1 are not |
+| `log10(x)` | float | base-10 logarithm; outside the domain `nan` or `-inf`, as `log` |
+| `is_finite(x)` | bool | true for an int, or a float that is not `nan` and not an infinity |
+| `is_nan(x)` | bool | true only for `nan`; an infinity is not `nan` |
+| `is_inf(x)` | bool | true for `+inf` and `-inf`; `nan` is not an infinity |
+| `approx(a, b, eps)` | bool | whether `a` and `b` differ by at most `eps`; `eps` must be finite and 0 or more; `nan` and infinities are not close |
+| `fract(x)` | float | the fractional part in `[0, 1)`, `x - floor(x)`; an int is `0.0`, and so is a float at 2^53 or past |
 
 `abs`, `sign`, `floor`, `ceil` and `round` fail with `math.abs(): argument must be a number, got string` (since 1.0.28) when `x` is not a number, and `abs` of the int `-2^63`, which has no int on the plus side, is `math.abs(): the result, 2^63, is out of the int range` (since 1.0.52; it was `int overflow`). `min`, `max` and `clamp` compare with `<`, so they take anything that compares, and their errors are the language's (`cannot compare a string and an int`). `clamp(x, lo, hi)` is `min(max(x, lo), hi)`, so with `lo` above `hi` it gives `hi`.
 
@@ -186,6 +218,10 @@ Always `/`. A `\` in input is read as `/`.
 | `is_abs(p)` | bool | whether `p` starts with `/` (or `\`); `""` is not (since 1.0.50) |
 | `with_ext(p, e)` | string | `p` with its `ext` swapped for `e`: `with_ext("a/b.txt", ".md")` → `"a/b.md"`; `".hidden"` gets one added, and `""` takes it off (since 1.0.50); since 1.0.52 an `e` that is not `""` must start with a dot and hold no `/` or `\`: `with_ext("a.md", "txt")` is `paths.with_ext(): ext must be "" or start with a dot and hold no /, got "txt"` (it gave `"atxt"`) |
 | `relative(base, target)` | string | the path from the folder `base` to `target`, with `..` to go up: `relative("/a/b", "/a/c/d")` → `"../c/d"`, the same folder → `"."`; both absolute or both relative, else `paths.relative(): both paths must be absolute, or both relative, got /a and b`, and a `base` with `..` that climbs past its start is `paths.relative(): base must not go up past its start, got ../a` (since 1.0.50) |
+| `has_ext(p, e)` | bool | whether the extension is `e`, as `.txt` or `txt`; `""` means there is none |
+| `with_stem(p, stem)` | string | `p` with its stem replaced; the directory and the extension stay, and `stem` must not hold `/` |
+| `join_all(parts)` | string | `join` of every part, left to right; an absolute part replaces what came before it; an empty list is `""` |
+| `split_ext(p)` | list | `[p without its extension, the extension]`; the dot stays on the extension, and a dotfile stays in one piece |
 
 A path that is not a string fails with the function's name: `paths.base(): path must be a string, got int` (since 1.0.49; before, `cannot loop over an int` from inside).
 
@@ -214,6 +250,8 @@ A first argument that is not a vfs is `vfs.read(): fs must be a vfs from vfs.new
 | `remove_tree(fs, path)` | none | folder and contents, or one file; **missing path is a no-op** (except `/`) |
 | `rename(fs, from, to)` | none | `cannot rename {from}`, also when `to` exists or is inside `from` |
 | `size(fs, path)` | int | length of the file text; `cannot get the size of {path}` |
+| `is_file(fs, path)` | bool | true when `path` is a file; a missing path and a folder are false |
+| `copy(fs, from, to)` | none | copy the text of one file onto another; `from` must be a file and folders are not copied |
 
 ## std/json
 
@@ -224,6 +262,8 @@ Objects become maps (key order kept). Arrays become lists. `null` is `none`.
 | `encode(v)` | string | `json: cannot encode a {type}` for function/module, `json: cannot encode a list that holds itself` (or `map`) for a value inside itself (since 1.0.52; it went on to the recursion limit), `json: cannot encode inf or nan` for those floats; a float is written as `str()` writes it when that reads back as the same float, else (since 1.0.47) with 16 or 17 significant digits, the fewest that do (`0.1 + 0.2` is `0.30000000000000004`, `str()` says `0.3`) |
 | `pretty(v)` | string | same; 2-space indent |
 | `decode(text)` | value | `json: {what} at {N}` where `N` is a character index; since 1.0.47 a raw control character (U+0000 to U+001F, such as a tab or a newline) inside a string is `json: control character in string at N`, as JSON wants them escaped (`\t`, `\n`, `\u0000`; before, they were read as they were); numbers follow JSON's grammar (no leading zeros, no `+`, digits after `.` and `e`, no `NaN`, `Infinity` or hex); where no value can start (after a trailing comma, at a `+`, `NaN` or `Infinity`) it is `expected a value` (since 1.0.52; was `bad number`); since 1.0.36 a number too small for a normal float (one `encode` wrote for a subnormal, or `1e-400`) reads as that float or `0.0`, and one too large is still `bad number`; a value that is not a string is `json.decode(): text must be a string, got int` (since 1.0.37) |
+| `at(v, path)` | any | the value at the end of `path`, a list of string keys and int indexes; a missing key or a bad index is an error; an empty path gives `v` |
+| `kind(v)` | string | `"null"`, `"bool"`, `"number"`, `"string"`, `"array"` or `"object"`; a function or a module is an error |
 
 `catch err` after a bad `decode` gives `{message, line, col}`. The useful
 part is `err.message` (includes the `at N` index). `line` / `col` point at
@@ -256,6 +296,14 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 - Python's `csv` module reads what `write` writes and `parse` reads what Python
   writes, CRLF included (checked on 300 random tables).
 
+
+### Column and header
+
+| Call | Returns | Notes |
+|---|---|---|
+| `column(rows, index)` | list | the values in column `index` (from 0), top to bottom; a short row is an error |
+| `headers(text, sep)` | list | the first row, the names `records` keys by; an empty text is an error |
+
 ## std/os
 
 | Call | Returns | Notes |
@@ -268,6 +316,8 @@ are plain text. Lines end in LF or CRLF; a CR on its own is kept as text.
 | `run(argv, cwd, stdin, env)` | map | starts a program and waits; `argv` is the program and its arguments (a list of strings, not a shell command); `cwd` is the working folder or `""` for this one; `stdin` is the bytes on standard input (`""` is empty, not the terminal); `env` is extra variables, a map of strings. Returns `{code, out, err}`: the exit code and the bytes written. `code` is 0 to 255 on Linux and macOS. A bad argument is `os.run(): argv must be a list, got int` (and the same shape for `cwd`, `stdin`, `env`, and `argv item 0`). A program that cannot be started is `os.run(): cannot run PATH`; a missing folder is `os.run(): cannot use folder PATH` |
 | `read_line()` | string or `none` | the next line of standard input (see below) |
 | `prompt(text)` | string or `none` | `read_line()`, after showing `text` when stdin is a terminal |
+| `env_or(name, fallback)` | any | the value of `name`, or `fallback` when it is not set; an empty value is kept |
+| `has_env(name)` | bool | whether `name` is set, even when the value is empty |
 
 `os.args()` is the same list as the built-in `args()`. Prefer `os.args()` in
 modules; `args()` is also fine at the top level of a script.
@@ -341,6 +391,11 @@ dropped, rounding down.
 | `parse_iso(text)` | int | reads `"YYYY-MM-DDTHH:MM:SSZ"` or `"YYYY-MM-DD"` (midnight); anything else is `time.parse_iso(): expected YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ, got "..."`, and a date that does not exist gets the `from_date` error |
 | `is_leap(year)` | bool | Gregorian: `is_leap(1900)` → `false`, `is_leap(2000)` → `true` |
 | `days_in_month(year, month)` | int | 28 to 31; `days_in_month(2024, 2)` → `29` |
+| `add_days(secs, days)` | int | `secs` moved by whole UTC days; `days` may be negative; a result outside years 1 to 9999 is an error |
+| `days_between(a, b)` | int | whole UTC days from `a` to `b` (day numbers, so the time of day does not count); a later `a` is negative |
+| `start_of_day(secs)` | int | midnight UTC at the start of the day that holds `secs` |
+| `weekday_name(day)` | string | English name of a weekday from `date`; 1 is Monday and 7 is Sunday |
+| `month_name(month)` | string | English name of a month number from 1 to 12 |
 
 Outside the years 1 to 9999 is `time.date(): secs must be in the years 1 to 9999, got 253402300800`. Every number then stays below 2^53, so the arithmetic is exact on every engine. Local time zones are not covered.
 
@@ -362,6 +417,8 @@ be replayed. For numbers that differ each run, seed from the clock:
 | `pick(r, xs)` | any | one item of a list, each equally likely; `random.pick(): the list is empty` |
 | `shuffle(r, xs)` | list | a new list in a random order; `xs` is left as it is |
 | `sample(r, xs, k)` | list | `k` items from different places in `xs`, in the order drawn; `k` from 0 to `len(xs)` |
+| `boolean(r)` | bool | `true` or `false`, each half the time; fairer than `chance(r, 0.5)`, which goes through a float |
+| `weighted(r, items, weights)` | any | one item, with probability proportional to the matching weight; every weight is an int above 0, and the two lists are the same length |
 
 - The generator is L'Ecuyer's MRG32k3a, with a period of about 2^191. Its
   products stay below 2^53, so it is plain int arithmetic and needs no `host_*`
@@ -374,6 +431,40 @@ be replayed. For numbers that differ each run, seed from the clock:
   moduli (about 1.8e19). The first 16 numbers after seeding are dropped, so
   seeds next to each other do not start alike.
 
+## std/text
+
+More text helpers on top of `std/strings`. Case that looks at words, splitting once, and indent.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `is_blank(s)` | bool | true when `s` is empty or only space, tab, newline or CR |
+| `partition(s, sep)` | list | `[before, sep, after]` for the first `sep`, or `[s, "", ""]` when it is not there; an empty `sep` is an error |
+| `replace_first(s, old, new)` | string | `s` with the first `old` replaced by `new`; no match leaves `s` as it is; an empty `old` is an error |
+| `title(s)` | string | each word with an ASCII capital first letter and the rest lower case; spaces stay, including runs of them |
+| `indent(s, prefix)` | string | `prefix` at the start of every line; a final newline is kept and an empty text stays empty |
+
+## std/io
+
+Small file helpers on top of `std/files`. Paths are relative to where the program runs, the same as `files`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `is_file(path)` | bool | true when `path` is a file; a missing path and a folder are false |
+| `copy(from, to)` | none | copy the text of one file onto another; `from` must be a file and `to` is created or replaced |
+| `write_lines(path, lines)` | none | each string as its own line, with a newline after every one; an empty list writes an empty file |
+## std/result
+
+A value that is either a success or a failure, so a caller can pass the failure on without `try` / `catch`. `ok(value)` holds a value. `err(message)` holds a string. `kind` is `"ok"` or `"err"`.
+
+| Call | Returns | Notes |
+|---|---|---|
+| `ok(value)` | map | a success holding `value` |
+| `err(message)` | map | a failure; `message` must be a string |
+| `is_ok(r)` | bool | true for a result from `ok` |
+| `is_err(r)` | bool | true for a result from `err` |
+| `unwrap(r)` | any | the value of an ok result; an err result fails with its message |
+| `unwrap_or(r, fallback)` | any | the value of an ok result, or `fallback` when it is an err |
+| `try_call(f)` | map | `ok(f())` when `f` returns, or `err` of the message when `f` fails; `f` is called with no arguments |
 ## std/graphics
 
 Needs a host built with `-DRELIC_SDL=ON`, or for compiled programs a C

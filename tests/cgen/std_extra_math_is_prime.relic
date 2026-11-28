@@ -1,0 +1,17 @@
+use std/math
+print(math.is_prime(2))
+print(math.is_prime(1))
+print(math.is_prime(0))
+print(math.is_prime(-7))
+print(math.is_prime(9))
+print(math.is_prime(97))
+print(math.is_prime(2047))
+print(math.is_prime(1373653))
+print(math.is_prime(1000003))
+print(math.is_prime(2147483647))
+print(math.is_prime(3215031751))
+print(math.is_prime(9223372036854775783))
+try
+    math.is_prime(1.5)
+catch e
+    print(e.message)

@@ -298,3 +298,259 @@ fun hex(n)
     if n < 0
         return "-" + out
     return out
+
+# floor(num / b) for num >= 0 and b > 0, exact past 2^53. Doubling the
+# divisor, not multiplying, so a quotient near 2^63 does not overflow on the way.
+fun _quot(num, b)
+    if num < b
+        return 0
+    if num < 9007199254740992 and b < 9007199254740992
+        return int(num / b)
+    let q = 0
+    let rest = num
+    while rest >= b
+        let acc = b
+        let bit = 1
+        while rest - acc >= acc
+            acc = acc + acc
+            bit = bit + bit
+        rest = rest - acc
+        q = q + bit
+    return q
+
+# a / b rounded down, as an int, for every int (not the float / gives).
+# b of 0 is an error. floor of -2^63 / -1 does not fit in an int.
+fun div_floor(a, b)
+    _ints("div_floor", a, b)
+    if b == 0
+        fail("math.div_floor(): b must not be 0")
+    let min_int = -9223372036854775807 - 1
+    if b == min_int
+        if a == min_int
+            return 1
+        if a > 0
+            return -1
+        return 0
+    if a == min_int
+        if b == -1
+            fail("math.div_floor(): the result, 2^63, is out of the int range")
+        if b > 0
+            return div_floor(a + b, b) - 1
+        return div_floor(a - b, b) + 1
+    let r = a % b
+    let num = a - r
+    if num == 0
+        return 0
+    let neg = false
+    if num < 0
+        num = -num
+        neg = true
+    let db = b
+    if db < 0
+        db = -db
+        neg = not neg
+    let q = _quot(num, db)
+    if neg
+        return -q
+    return q
+
+# n! for an int n from 0 to 20 (21! does not fit in an int). 0! is 1.
+fun factorial(n)
+    if type(n) != "int"
+        fail("math.factorial(): n must be an int, got " + type(n))
+    if n < 0 or n > 20
+        fail("math.factorial(): n must be from 0 to 20, got " + str(n))
+    let r = 1
+    for i in 1..n + 1
+        r = r * i
+    return r
+
+# The binomial coefficient C(n, k), an int. n is 0 or more and k is from 0
+# to n. A result that does not fit is an error (C(67, 33) is the first that
+# does not). C(n, 0) and C(n, n) are 1.
+fun comb(n, k)
+    if type(n) != "int"
+        fail("math.comb(): n must be an int, got " + type(n))
+    if type(k) != "int"
+        fail("math.comb(): k must be an int, got " + type(k))
+    if n < 0
+        fail("math.comb(): n must be 0 or more, got " + str(n))
+    if k < 0 or k > n
+        fail("math.comb(): k must be from 0 to " + str(n) + ", got " + str(k))
+    if k > n - k
+        k = n - k
+    let r = 1
+    for i in 1..k + 1
+        let mul = n - k + i
+        let g = gcd(r, i)
+        r = _quot(r, g)
+        let i2 = _quot(i, g)
+        g = gcd(mul, i2)
+        mul = _quot(mul, g)
+        i2 = _quot(i2, g)
+        if i2 != 1
+            fail("math.comb(): the result is out of the int range")
+        try
+            r = r * mul
+        catch e
+            if e.message == "int overflow"
+                fail("math.comb(): the result is out of the int range")
+            fail(e.message)
+    return r
+
+# (a + b) mod n, with a and b already in 0 .. n - 1. The sum is taken apart
+# when it would pass n, so it never passes the int range either.
+fun _addmod(a, b, n)
+    if a >= n - b
+        return a - (n - b)
+    return a + b
+
+# floor(b / 2) for a non-negative int, exact past 2^53. The low bit is
+# dropped first so the value being halved is even and at most 2^63-2, and
+# the quotient is capped at 2^62-1 before it is doubled back, which would
+# not fit.
+fun _half(b)
+    let even = b - b % 2
+    if even < 9007199254740992
+        return int(even / 2)
+    let q = int(even / 2)
+    if q > 4611686018427387903
+        q = 4611686018427387903
+    while q * 2 > even
+        q = q - 1
+    while even - q * 2 >= 2
+        q = q + 1
+    return q
+
+# (a * b) mod n, by doubling, so the product never has to fit in an int.
+fun _modmul(a, b, n)
+    let r = 0
+    a = a % n
+    if a < 0
+        a = a + n
+    b = b % n
+    if b < 0
+        b = b + n
+    while b > 0
+        if b % 2 == 1
+            r = _addmod(r, a, n)
+        a = _addmod(a, a, n)
+        b = _half(b)
+    return r
+
+fun _modpow(base, exp, n)
+    let r = 1
+    base = base % n
+    while exp > 0
+        if exp % 2 == 1
+            r = _modmul(r, base, n)
+        base = _modmul(base, base, n)
+        exp = _half(exp)
+    return r
+
+# true when a is a Miller-Rabin witness that n is composite. d is odd and
+# n - 1 = d * 2^s.
+fun _mr_witness(n, a, d, s)
+    let x = _modpow(a, d, n)
+    if x == 1 or x == n - 1
+        return false
+    for r in 1..s
+        x = _modmul(x, x, n)
+        if x == n - 1
+            return false
+    return true
+
+# Whether n is a prime, for every int. Negative numbers, 0 and 1 are not.
+# The test is Miller-Rabin with a fixed set of bases that is known to be
+# enough below 2^64, so there is no chance and no slow search up to the root.
+fun is_prime(n)
+    if type(n) != "int"
+        fail("math.is_prime(): argument must be an int, got " + type(n))
+    if n < 2
+        return false
+    if n == 2 or n == 3
+        return true
+    if n % 2 == 0
+        return false
+    let d = n - 1
+    let s = 0
+    while d % 2 == 0
+        d = _half(d)
+        s = s + 1
+    let witnesses = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+    if n < 2047
+        witnesses = [2]
+    else if n < 1373653
+        witnesses = [2, 3]
+    else if n < 25326001
+        witnesses = [2, 3, 5]
+    else if n < 3215031751
+        witnesses = [2, 3, 5, 7]
+    else if n < 2152302898747
+        witnesses = [2, 3, 5, 7, 11]
+    else if n < 3474749660383
+        witnesses = [2, 3, 5, 7, 11, 13]
+    else if n < 341550071728321
+        witnesses = [2, 3, 5, 7, 11, 13, 17]
+    else if n < 3825123056546413051
+        witnesses = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+    for a in witnesses
+        if a >= n
+            next
+        if _mr_witness(n, a, d, s)
+            return false
+    return true
+
+# log base 10. Outside the domain it is nan or -inf, as log is, not an error.
+fun log10(x)
+    _number("log10", x)
+    return host_log(x) / host_log(10)
+
+# true for an int, or a float that is not nan and not an infinity.
+fun is_finite(x)
+    _number("is_finite", x)
+    if x != x
+        return false
+    if x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+        return false
+    return true
+
+# true only for nan. An infinity is not nan.
+fun is_nan(x)
+    _number("is_nan", x)
+    return x != x
+
+# true for +inf and -inf. nan is not an infinity.
+fun is_inf(x)
+    _number("is_inf", x)
+    if x != x
+        return false
+    return x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+
+# Whether a and b differ by at most eps. eps must be finite and 0 or more.
+# nan is never close, and neither is an infinity (inf - inf is nan).
+fun approx(a, b, eps)
+    _number("approx", a)
+    _number("approx", b)
+    _number("approx", eps)
+    if not (eps >= 0) or eps > 1.7976931348623157e308
+        fail("math.approx(): eps must be a finite number, 0 or more, got " + str(eps))
+    let d = a - b
+    if d < 0
+        d = 0.0 - d
+    return d <= eps
+
+# The fractional part of x in [0, 1): x - floor(x). An int is 0.0. A float
+# at 2^53 or past has no bits left for a fraction, so it is 0.0 too.
+fun fract(x)
+    _number("fract", x)
+    if type(x) == "int"
+        return 0.0
+    if x != x or x > 1.7976931348623157e308 or x < -1.7976931348623157e308
+        fail("math.fract(): argument must be finite, got " + str(x))
+    let ax = x
+    if ax < 0
+        ax = 0.0 - ax
+    if ax >= 9007199254740992.0
+        return 0.0
+    return x - floor(x)

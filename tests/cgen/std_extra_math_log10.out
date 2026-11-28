@@ -1,0 +1,4 @@
+0.0
+true
+true
+math.log10(): argument must be a number, got string

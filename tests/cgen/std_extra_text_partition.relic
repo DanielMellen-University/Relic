@@ -1,0 +1,7 @@
+use std/text
+print(text.partition("a=b=c", "="))
+print(text.partition("abc", "="))
+try
+    text.partition("a", "")
+catch e
+    print(e.message)

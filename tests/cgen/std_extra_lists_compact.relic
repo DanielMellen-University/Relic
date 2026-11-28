@@ -1,0 +1,3 @@
+use std/lists
+print(lists.compact([1, none, false, 0, "", none]))
+print(lists.compact([]))

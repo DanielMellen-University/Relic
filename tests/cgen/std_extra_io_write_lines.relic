@@ -1,0 +1,12 @@
+use std/io
+use std/files
+let p = "_io_lines.tmp"
+io.write_lines(p, ["one", "two"])
+print(files.read(p))
+io.write_lines(p, [])
+print(files.read(p) == "")
+files.remove(p)
+try
+    io.write_lines(p, [1])
+catch e
+    print(e.message)

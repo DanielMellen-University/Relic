@@ -1,0 +1,4 @@
+true
+false
+false
+io.is_file(): path must be a string, got int
