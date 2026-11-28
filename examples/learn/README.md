@@ -118,5 +118,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `word_search.relic` | words in a letter grid, in eight directions |
 | `prefix_sums.relic` | range sums from a running total |
 | `majority.relic` | the Boyer-Moore majority vote |
+| `dutch_flag.relic` | a three-way partition in one pass |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.

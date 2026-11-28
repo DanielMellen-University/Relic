@@ -1,0 +1,3 @@
+["blue", "white", "red", "white", "red", "blue", "red", "white"]
+["red", "red", "red", "white", "white", "white", "blue", "blue"] after 5 swaps
+["0", "0", "0", "1", "1", "2", "2"]

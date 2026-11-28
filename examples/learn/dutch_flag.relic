@@ -1,0 +1,37 @@
+# The Dutch national flag problem: sort a list of three kinds of item in one
+# pass with three pointers, swapping in place.
+#   relic examples/learn/dutch_flag.relic
+
+fun swap(xs, i, j)
+    let t = xs[i]
+    xs[i] = xs[j]
+    xs[j] = t
+
+fun three_way(xs, rank)
+    let lo = 0
+    let mid = 0
+    let hi = len(xs) - 1
+    let swaps = 0
+    while mid <= hi
+        let k = rank[xs[mid]]
+        if k == 0
+            swap(xs, lo, mid)
+            lo = lo + 1
+            mid = mid + 1
+            swaps = swaps + 1
+        else if k == 2
+            swap(xs, mid, hi)
+            hi = hi - 1
+            swaps = swaps + 1
+        else
+            mid = mid + 1
+    return swaps
+
+let rank = {red: 0, white: 1, blue: 2}
+let flag = ["blue", "white", "red", "white", "red", "blue", "red", "white"]
+print(flag)
+let n = three_way(flag, rank)
+print("{flag} after {n} swaps")
+let bits = ["2", "0", "1", "1", "0", "2", "0"]
+three_way(bits, {"0": 0, "1": 1, "2": 2})
+print(bits)
