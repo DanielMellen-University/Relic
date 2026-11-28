@@ -1,0 +1,15 @@
+# std/strings.is_alnum: ASCII letters and digits only.
+use std/strings
+
+print(strings.is_alnum("Relic2"))
+print(strings.is_alnum("abc"))
+print(strings.is_alnum("2048"))
+print(strings.is_alnum(""))
+print(strings.is_alnum("a b"))
+print(strings.is_alnum("a_b"))
+print(strings.is_alnum("café"))
+
+try
+    strings.is_alnum(42)
+catch e
+    print(e.message)

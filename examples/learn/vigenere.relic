@@ -1,0 +1,22 @@
+# A Vigenère cipher over capital letters. The key repeats.
+#   relic examples/learn/vigenere.relic
+
+fun shift_by(c, k, sign)
+    let n = (ord(c) - ord("A") + sign * (ord(k) - ord("A"))) % 26
+    return chr(ord("A") + n)
+
+fun apply(text, key, sign)
+    let out = ""
+    let ki = 0
+    for c in text
+        out = out + shift_by(c, key[ki], sign)
+        ki = ki + 1
+        if ki == len(key)
+            ki = 0
+    return out
+
+let plain = "ATTACKATDAWN"
+let key = "LEMON"
+let coded = apply(plain, key, 1)
+print(coded)
+print(apply(coded, key, -1))

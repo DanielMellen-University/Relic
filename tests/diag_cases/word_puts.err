@@ -1,0 +1,4 @@
+word_puts.relic:1:6: error: expected end of line, got a string
+    puts "hello"
+         ^^^^^
+hint: call it as print(...); Relic has no puts

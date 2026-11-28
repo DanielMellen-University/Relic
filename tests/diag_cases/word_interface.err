@@ -1,0 +1,4 @@
+word_interface.relic:1:11: error: expected end of line, got name 'Shape'
+    interface Shape
+              ^^^^^
+hint: Relic has no interfaces; use a map or a module

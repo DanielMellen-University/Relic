@@ -1,0 +1,14 @@
+# Eight rows of Pascal's triangle. Each entry is the sum of the two above it.
+#   relic examples/learn/pascal.relic
+
+fun next_row(prev)
+    let out = [1]
+    for i in 0..(len(prev) - 1)
+        append(out, prev[i] + prev[i + 1])
+    append(out, 1)
+    return out
+
+let row = [1]
+for i in 0..8
+    print(row)
+    row = next_row(row)

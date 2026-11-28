@@ -1,0 +1,3 @@
+name_open.relic:1:7: error: 'open' is not defined (read or write a file with std/files)
+    print(open)
+          ^

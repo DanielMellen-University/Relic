@@ -1,0 +1,47 @@
+# A binary search tree made of maps. Insert keeps smaller keys on the left,
+# an in-order walk gives them back sorted, and height counts the levels.
+#   relic examples/learn/bst.relic
+
+fun insert_key(node, key)
+    if node == none
+        return {key: key, left: none, right: none}
+    if key < node.key
+        node.left = insert_key(node.left, key)
+    else if key > node.key
+        node.right = insert_key(node.right, key)
+    return node
+
+fun walk(node, out)
+    if node == none
+        return out
+    walk(node.left, out)
+    append(out, node.key)
+    walk(node.right, out)
+    return out
+
+fun has(node, key)
+    while node != none
+        if key == node.key
+            return true
+        if key < node.key
+            node = node.left
+        else
+            node = node.right
+    return false
+
+fun height(node)
+    if node == none
+        return 0
+    let l = height(node.left)
+    let r = height(node.right)
+    if l > r
+        return l + 1
+    return r + 1
+
+let root = none
+for k in [50, 30, 70, 20, 40, 60, 80, 30, 65]
+    root = insert_key(root, k)
+print(walk(root, []))
+print("height {height(root)}")
+for k in [40, 45, 65]
+    print("{k} in tree: {has(root, k)}")

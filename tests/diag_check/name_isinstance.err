@@ -1,0 +1,3 @@
+name_isinstance.relic:1:7: warning: 'isinstance' is not defined (the type of a value is type(value))
+    print(isinstance(4, "int"))
+          ^

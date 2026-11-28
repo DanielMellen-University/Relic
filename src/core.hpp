@@ -25,6 +25,8 @@ public:
     ~Session();
     // echo: print the value of a final bare expression (REPL style).
     RunResult run(const std::string& path, const std::string& source, bool echo = false);
+    // Drops names defined so far. The next input starts clean. Built-ins stay.
+    void reset();
 
 private:
     std::ostream& out_;

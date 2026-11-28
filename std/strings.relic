@@ -121,6 +121,14 @@ fun _case_table(first, shift)
 let _to_upper = _case_table(97, -32)
 let _to_lower = _case_table(65, 32)
 
+fun _swap_table()
+    let t = _case_table(97, -32)
+    for k in 65..91
+        t[chr(k)] = chr(k + 32)
+    return t
+
+let _swap_case = _swap_table()
+
 fun _case(s, table)
     let out = ""
     for c in s
@@ -137,6 +145,11 @@ fun upper(s)
 fun lower(s)
     _text("lower", "argument", s)
     return _case(s, _to_lower)
+
+# ASCII letters swapped between upper and lower case; other characters stay as they are.
+fun swapcase(s)
+    _text("swapcase", "argument", s)
+    return _case(s, _swap_case)
 
 fun is_space(c) = c == " " or c == "\t" or c == "\n" or c == chr(13)
 
@@ -159,6 +172,16 @@ fun is_alpha(s)
         return false
     for c in s
         if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z"))
+            return false
+    return true
+
+# Whether s has at least one character and all are ASCII letters or digits.
+fun is_alnum(s)
+    _text("is_alnum", "argument", s)
+    if s == ""
+        return false
+    for c in s
+        if not ((c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or (c >= "0" and c <= "9"))
             return false
     return true
 
@@ -227,6 +250,23 @@ fun trim_end(s)
     while b > 0 and is_space(s[b - 1])
         b = b - 1
     return slice(s, 0, b)
+
+# Strip any character listed in chars from both ends of s.
+fun trim_chars(s, chars)
+    _text("trim_chars", "text", s)
+    _text("trim_chars", "chars", chars)
+    if s == "" or chars == ""
+        return s
+    let drop = {}
+    for c in chars
+        drop[c] = true
+    let a = 0
+    let b = len(s)
+    while a < b and s[a] in drop
+        a = a + 1
+    while b > a and s[b - 1] in drop
+        b = b - 1
+    return slice(s, a, b)
 
 fun split(s, sep)
     # split("a,b", ",") is ["a", "b"]; an empty sep splits into characters
@@ -437,3 +477,235 @@ fun _cased(name, s, lo, hi, other_lo, other_hi)
 
 fun is_upper(s) = _cased("is_upper", s, "A", "Z", "a", "z")
 fun is_lower(s) = _cased("is_lower", s, "a", "z", "A", "Z")
+
+# Split s around the first or last sep into [before, sep, after].
+# When sep is absent: partition returns [s, "", ""], rpartition ["", "", s].
+fun partition(s, sep)
+    _text("partition", "text", s)
+    _text("partition", "separator", sep)
+    if sep == ""
+        fail("strings.partition(): separator must not be empty")
+    let i = find(s, sep)
+    if i < 0
+        return [s, "", ""]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+fun rpartition(s, sep)
+    _text("rpartition", "text", s)
+    _text("rpartition", "separator", sep)
+    if sep == ""
+        fail("strings.rpartition(): separator must not be empty")
+    let i = find_last(s, sep)
+    if i < 0
+        return ["", "", s]
+    return [slice(s, 0, i), sep, slice(s, i + len(sep), len(s))]
+
+# Prefix every non-blank line with prefix; blank lines and line endings stay.
+fun indent(s, prefix)
+    _text("indent", "text", s)
+    _text("indent", "prefix", prefix)
+    if s == "" or prefix == ""
+        return s
+    let out = []
+    for line in split(s, "\n")
+        if trim(line) == ""
+            append(out, line)
+        else
+            append(out, prefix + line)
+    return join(out, "\n")
+
+# Remove common leading spaces or tabs from every non-blank line.
+fun dedent(s)
+    _text("dedent", "argument", s)
+    if s == ""
+        return s
+    let parts = split(s, "\n")
+    let margin = none
+    for line in parts
+        if trim(line) == ""
+            next
+        let i = 0
+        let n = len(line)
+        while i < n and (line[i] == " " or line[i] == "\t")
+            i = i + 1
+        let lead = slice(line, 0, i)
+        if margin == none
+            margin = lead
+        else
+            let k = 0
+            let lim = len(margin)
+            if len(lead) < lim
+                lim = len(lead)
+            while k < lim and margin[k] == lead[k]
+                k = k + 1
+            margin = slice(margin, 0, k)
+    if margin == none or margin == ""
+        return s
+    let m = len(margin)
+    let cr = chr(13)
+    let out = []
+    for line in parts
+        if starts_with(line, margin)
+            append(out, slice(line, m, len(line)))
+        else if trim(line) == ""
+            if ends_with(line, cr)
+                append(out, cr)
+            else
+                append(out, "")
+        else
+            append(out, line)
+    return join(out, "\n")
+
+# s with the first letter of each word in upper case and the other letters in
+# lower case, ASCII only. A word starts at a letter that does not follow a
+# letter, a digit or a character past ASCII: title("o'neil 2nd") is "O'Neil 2nd".
+fun title(s)
+    _text("title", "argument", s)
+    let out = []
+    let inside = false
+    for c in s
+        let letter = (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
+        if letter and not inside
+            append(out, upper(c))
+        else if letter
+            append(out, lower(c))
+        else
+            append(out, c)
+        inside = letter or (c >= "0" and c <= "9") or ord(c) > 127
+    return join(out, "")
+
+# s padded on the left with zeros to width characters, after a leading "+"
+# or "-": zfill("-42", 5) is "-0042". Text already that wide comes back as is.
+fun zfill(s, width)
+    _text("zfill", "text", s)
+    if type(width) != "int" or width < 0
+        let got = type(width)
+        if got == "float" or got == "int"
+            got = str(width)
+        fail("strings.zfill(): width must be a whole number, 0 or more, got " + got)
+    if len(s) >= width
+        return s
+    let zeros = repeat("0", width - len(s))
+    if s != "" and (s[0] == "-" or s[0] == "+")
+        return s[0] + zeros + slice(s, 1, len(s))
+    return zeros + s
+
+# Whether s is empty or holds only spaces, tabs, line feeds and carriage returns.
+fun is_blank(s)
+    _text("is_blank", "argument", s)
+    for c in s
+        if not is_space(c)
+            return false
+    return true
+
+# The longest text that every string in items starts with (common_prefix) or
+# ends with (common_suffix). An empty list gives "".
+fun _common(name, items, from_end)
+    if type(items) != "list"
+        fail("strings." + name + "(): argument must be a list, got " + type(items))
+    if len(items) == 0
+        return ""
+    for s in items
+        _text(name, "item", s)
+    let n = len(items[0])
+    for s in items
+        if len(s) < n
+            n = len(s)
+    let k = 0
+    while k < n
+        let i = k
+        if from_end
+            i = len(items[0]) - 1 - k
+        let c = items[0][i]
+        for s in items
+            let j = k
+            if from_end
+                j = len(s) - 1 - k
+            if s[j] != c
+                n = k
+        if k < n
+            k = k + 1
+    if from_end
+        return slice(items[0], len(items[0]) - k, len(items[0]))
+    return slice(items[0], 0, k)
+
+fun common_prefix(items) = _common("common_prefix", items, false)
+fun common_suffix(items) = _common("common_suffix", items, true)
+
+# s with each tab turned into the spaces that reach the next tab stop, one
+# every size columns. Columns start again after each line feed.
+fun expand_tabs(s, size)
+    _text("expand_tabs", "text", s)
+    if type(size) != "int" or size < 1
+        let got = type(size)
+        if got == "float" or got == "int"
+            got = str(size)
+        fail("strings.expand_tabs(): size must be a whole number, 1 or more, got " + got)
+    let out = []
+    let col = 0
+    for c in s
+        if c == "\t"
+            let n = size - col % size
+            append(out, repeat(" ", n))
+            col = col + n
+        else
+            append(out, c)
+            col = col + 1
+            if c == "\n"
+                col = 0
+    return join(out, "")
+
+# s with each run of the character c cut down to one: squeeze("a  b   c", " ")
+# is "a b c". c must be a single character.
+fun squeeze(s, c)
+    _text("squeeze", "text", s)
+    _text("squeeze", "character", c)
+    if len(c) != 1
+        fail("strings.squeeze(): character must be one character, got " + str(len(c)))
+    let out = []
+    let last = ""
+    for ch in s
+        if not (ch == c and last == c)
+            append(out, ch)
+        last = ch
+    return join(out, "")
+
+# s as a lower-case slug for a file name or URL: ASCII letters and digits are
+# kept, every other run of characters becomes one "-", and none is left at
+# either end. slug("Hello, World!") is "hello-world".
+fun slug(s)
+    _text("slug", "argument", s)
+    let out = []
+    let gap = false
+    for c in lower(s)
+        if (c >= "a" and c <= "z") or (c >= "0" and c <= "9")
+            if gap and len(out) > 0
+                append(out, "-")
+            append(out, c)
+            gap = false
+        else
+            gap = true
+    return join(out, "")
+
+# The words of s laid out in lines of at most width characters, as a list.
+# A word longer than width gets a line to itself. Words are split as words does.
+fun wrap(s, width)
+    _text("wrap", "text", s)
+    if type(width) != "int" or width < 1
+        let got = type(width)
+        if got == "float" or got == "int"
+            got = str(width)
+        fail("strings.wrap(): width must be a whole number, 1 or more, got " + got)
+    let lines_out = []
+    let line = ""
+    for w in words(s)
+        if line == ""
+            line = w
+        else if len(line) + 1 + len(w) <= width
+            line = line + " " + w
+        else
+            append(lines_out, line)
+            line = w
+    if line != ""
+        append(lines_out, line)
+    return lines_out

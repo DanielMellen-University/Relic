@@ -1,0 +1,32 @@
+# Gray code: each number differs from the one before in exactly one bit.
+# The n-bit list is the (n-1)-bit list, then the same reversed with a 1 in front.
+#   relic examples/learn/gray.relic
+
+fun gray(n)
+    if n == 0
+        return [""]
+    let shorter = gray(n - 1)
+    let out = []
+    for code in shorter
+        append(out, "0" + code)
+    let i = len(shorter) - 1
+    while i >= 0
+        append(out, "1" + shorter[i])
+        i = i - 1
+    return out
+
+fun differ(a, b)
+    let n = 0
+    for i in 0..len(a)
+        if a[i] != b[i]
+            n = n + 1
+    return n
+
+for n in 1..4
+    print("n = {n}: {gray(n)}")
+let codes = gray(4)
+let ok = true
+for i in 1..len(codes)
+    if differ(codes[i - 1], codes[i]) != 1
+        ok = false
+print("n = 4: {len(codes)} codes, one bit apart each step: {ok}")

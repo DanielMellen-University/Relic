@@ -1,0 +1,4 @@
+limit 5: value 80, ["stove", "book"]
+limit 8: value 120, ["stove", "camera"]
+limit 10: value 150, ["stove", "camera", "book"]
+limit 14: value 210, ["tent", "stove", "camera", "book"]

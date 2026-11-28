@@ -1,0 +1,3 @@
+name_upper.relic:1:7: warning: 'upper' is not defined (upper is strings.upper, from std/strings)
+    print(upper("hi"))
+          ^

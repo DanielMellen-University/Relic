@@ -1,0 +1,22 @@
+# Initials of a phrase. Spaces and hyphens start a new word.
+#   relic examples/learn/acronym.relic
+
+fun acronym(s)
+    let out = ""
+    let start = true
+    for c in s
+        if c == " " or c == "-"
+            start = true
+        else if start
+            if c >= "a" and c <= "z"
+                out = out + chr(ord(c) - 32)
+            else if c >= "A" and c <= "Z"
+                out = out + c
+            start = false
+    return out
+
+for s in ["Portable Network Graphics", "Complementary metal-oxide semiconductor", "GNU Image Manipulation Program", ""]
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print(label, acronym(s))

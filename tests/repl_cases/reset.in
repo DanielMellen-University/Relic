@@ -1,0 +1,9 @@
+let x = 4
+x
+:reset
+x
+print(1)
+use std/strings
+strings.upper("ab")
+:reset
+strings.upper("ab")

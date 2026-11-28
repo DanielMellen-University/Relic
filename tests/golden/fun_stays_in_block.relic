@@ -1,0 +1,11 @@
+# A fun declared inside a block exists only in that block.
+fun outer()
+    if true
+        fun greet(name)
+            return "hi " + name
+        print(greet("ada"))
+    try
+        print(greet("ada"))
+    catch e
+        print(e.message)
+outer()

@@ -50,7 +50,7 @@ Both take two strings, or two lists.
 
 `ends_with([1, 2, 3], [2, 3])` → `true`
 
-### upper, lower, capitalize
+### upper, lower, capitalize, swapcase, title, slug
 
 ASCII letters only. Other characters stay as they are. `capitalize` changes the first character and leaves the rest.
 
@@ -62,7 +62,27 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 
 `capitalize("relic lang")` → `"Relic lang"`
 
-### trim, trim_start, trim_end
+`swapcase` flips ASCII upper case to lower and lower to upper.
+
+`swapcase("Relic 2!")` → `"rELIC 2!"`
+
+`title` puts the first letter of each word in upper case and the rest in lower case. A word starts at a letter that does not follow a letter, a digit or a character past ASCII.
+
+`title("hello world")` → `"Hello World"`
+
+`title("o'neil 2nd")` → `"O'Neil 2nd"`
+
+Program: [title.relic](../../examples/ref/strings/title.relic).
+
+`slug` lowers the text and keeps ASCII letters and digits; each other run of characters becomes one `-`, with none at either end.
+
+`slug("Hello, World!")` → `"hello-world"`
+
+`slug("  Relic 1.0  ")` → `"relic-1-0"`
+
+Program: [slug.relic](../../examples/ref/strings/slug.relic).
+
+### trim, trim_start, trim_end, trim_chars, squeeze
 
 Space, tab, newline and carriage return. `trim` looks at both ends. The other two look at one end.
 
@@ -71,6 +91,20 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `trim_start("  hi  ")` → `"hi  "`
 
 `trim_end("  hi  ")` → `"  hi"`
+
+`trim_chars` removes any character in `chars` from both ends.
+
+`trim_chars("..hi..", ".")` → `"hi"`
+
+`trim_chars("/a/b/", "/")` → `"a/b"`
+
+`squeeze(s, c)` cuts each run of the one character `c` down to a single copy.
+
+`squeeze("a  b   c", " ")` → `"a b c"`
+
+`squeeze("mississippi", "s")` → `"misisippi"`
+
+Program: [squeeze.relic](../../examples/ref/strings/squeeze.relic).
 
 ### Tests on characters
 
@@ -88,6 +122,14 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `is_alpha("R2")` → `false`
 
+`is_alnum` is true for ASCII letters and digits.
+
+`is_alnum("Relic2")` → `true`
+
+`is_alnum("R-2")` → `false`
+
+`is_alnum("")` → `false`
+
 `is_upper` is true when there is at least one ASCII letter and none are lower case. Digits do not count against it. `is_lower` is the other way round.
 
 `is_upper("A1")` → `true`
@@ -103,6 +145,16 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `is_space(" ")` → `true`
 
 `is_space("a")` → `false`
+
+`is_blank` gives `true` for empty text, or text that holds only spaces, tabs, line feeds and carriage returns.
+
+`is_blank("")` → `true`
+
+`is_blank(" \t\n")` → `true`
+
+`is_blank(" x ")` → `false`
+
+Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 
 ### reverse, remove_prefix, remove_suffix
 
@@ -122,7 +174,7 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `remove_suffix("file.txt", ".md")` → `"file.txt"`
 
-### words, split, lines, join, replace, repeat
+### words, split, partition, rpartition, lines, join, replace, repeat, wrap
 
 `words` splits on runs of space and never returns an empty piece.
 
@@ -133,6 +185,16 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `split("a,,b", ",")` → `["a", "", "b"]`
 
 `split("ab", "")` → `["a", "b"]`
+
+`partition` splits around the first match of `sep` into `[before, sep, after]`, or `[s, "", ""]` when `sep` is not there. `rpartition` splits around the last match, or returns `["", "", s]`. An empty `sep` is an error.
+
+`partition("a=b=c", "=")` → `["a", "=", "b=c"]`
+
+`partition("abc", "=")` → `["abc", "", ""]`
+
+`rpartition("a=b=c", "=")` → `["a=b", "=", "c"]`
+
+`rpartition("abc", "=")` → `["", "", "abc"]`
 
 `lines` splits on newlines, drops a carriage return before a newline, and drops an empty last line when the text ends with a newline.
 
@@ -154,7 +216,15 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 
 `repeat("ab", 0)` → `""`
 
-### pad_left, pad_right, center, truncate
+`wrap(s, width)` lays the words of `s` out in lines of at most `width` characters and gives the lines as a list. A word longer than `width` gets a line of its own.
+
+`wrap("the quick brown fox", 10)` → `["the quick", "brown fox"]`
+
+`wrap("", 5)` → `[]`
+
+Program: [wrap.relic](../../examples/ref/strings/wrap.relic).
+
+### pad_left, pad_right, center, truncate, indent, dedent, zfill, expand_tabs
 
 `pad_left` and `pad_right` add copies of `fill` until the text is at least `width` long. `center` puts the spare copy on the right. `truncate` cuts to `width` and ends a cut string with `tail`.
 
@@ -171,3 +241,43 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `truncate("abcdef", 2, "...")` → `".."`
 
 `truncate("hi", 4, "...")` → `"hi"`
+
+`indent` adds `prefix` to every non-blank line and leaves blank lines as they are. `dedent` removes common leading spaces or tabs from every non-blank line.
+
+`indent("hi", "  ")` → `"  hi"`
+
+`indent("", "  ")` → `""`
+
+`dedent("  hi")` → `"hi"`
+
+`zfill` pads with zeros on the left, after a leading `+` or `-`.
+
+`zfill("42", 5)` → `"00042"`
+
+`zfill("-42", 5)` → `"-0042"`
+
+`zfill("12345", 3)` → `"12345"`
+
+Program: [zfill.relic](../../examples/ref/strings/zfill.relic).
+
+`expand_tabs(s, size)` turns each tab into the spaces that reach the next stop, one every `size` columns. Columns count again from 0 after a line feed.
+
+`expand_tabs("a\tb", 4)` → `"a   b"`
+
+`expand_tabs("abcd\te", 4)` → `"abcd    e"`
+
+Program: [expand_tabs.relic](../../examples/ref/strings/expand_tabs.relic).
+
+### common_prefix, common_suffix
+
+`common_prefix` gives the longest text that every string in the list starts with, and `common_suffix` does the same at the end. An empty list gives `""`.
+
+`common_prefix(["flower", "flow", "flight"])` → `"fl"`
+
+`common_prefix(["a", "b"])` → `""`
+
+`common_suffix(["running", "jumping", "sing"])` → `"ing"`
+
+`common_suffix([])` → `""`
+
+Program: [common_prefix.relic](../../examples/ref/strings/common_prefix.relic).

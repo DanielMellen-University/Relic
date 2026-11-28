@@ -336,6 +336,11 @@ private:
             if (s.fn_scope) cur().nslots = s.count;
         }
         emit(Op::Store, 0, slot, &at);
+        // A fun is bound in the scope table before its body is compiled, so a
+        // second declare stores the closure into a slot that an earlier
+        // sibling already reserved as late. The mark is what that sibling's
+        // load checks; without it the name stays "not defined".
+        if (lt != s.late.end() && lt->second == slot) emit(Op::Mark, slot + 1, 0, &at);
     }
 
     // Finds name in scopes below index `below` (all scopes by default).
@@ -438,11 +443,22 @@ private:
                 return;
             }
             case Node::Fun: {
-                // Declare first so the body can call itself.
-                emit(Op::None);
-                declare(n.text, n);
-                cur().code.pop_back();
-                cur().code.pop_back();
+                // Bind the name before the body so the function can call itself.
+                // Nothing is emitted yet: a placeholder store would be thrown
+                // away, and throwing it away also dropped the late-slot mark
+                // when an earlier sibling had already captured this name.
+                if (scopes_.empty()) {
+                    global(n.text);
+                } else {
+                    CScope& s = scopes_.back();
+                    s.pending.erase(n.text);
+                    if (!s.names.count(n.text)) {
+                        auto lt = s.late.find(n.text);
+                        int slot = lt != s.late.end() ? lt->second : s.count++;
+                        s.names[n.text] = slot;
+                        if (s.fn_scope) cur().nslots = s.count;
+                    }
+                }
                 int idx = function(n);
                 emit(Op::Closure, idx, 0, &n);
                 declare(n.text, n);

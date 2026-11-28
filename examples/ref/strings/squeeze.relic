@@ -1,0 +1,4 @@
+# strings.squeeze: collapses runs of one character, such as the spaces between words, into a single copy.
+use std/strings
+print(strings.squeeze("too    many    spaces", " "))
+print(strings.squeeze("a//b///c", "/"))

@@ -1,0 +1,19 @@
+# Selection sort: find the smallest item left and swap it to the front of the
+# unsorted part. Each step is printed.
+#   relic examples/learn/selection_sort.relic
+
+fun selection_sort(xs)
+    let n = len(xs)
+    for i in 0..n - 1
+        let small = i
+        for j in i + 1..n
+            if xs[j] < xs[small]
+                small = j
+        if small != i
+            let tmp = xs[i]
+            xs[i] = xs[small]
+            xs[small] = tmp
+        print("step {i + 1}: {xs}")
+    return xs
+
+selection_sort([29, 10, 14, 37, 13])

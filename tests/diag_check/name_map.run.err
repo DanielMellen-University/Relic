@@ -1,0 +1,3 @@
+name_map.relic:1:7: error: 'map' is not defined (map is lists.map, from std/lists)
+    print(map([1, 2], str))
+          ^

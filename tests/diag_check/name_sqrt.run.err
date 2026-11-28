@@ -1,0 +1,3 @@
+name_sqrt.relic:1:7: error: 'sqrt' is not defined (sqrt is math.sqrt, from std/math)
+    print(sqrt(16))
+          ^

@@ -1,0 +1,25 @@
+# Distances from one node on an unweighted graph, by breadth-first search.
+#   relic examples/learn/bfs.relic
+
+fun bfs(graph, start)
+    let dist = {}
+    dist[start] = 0
+    let q = [start]
+    while len(q) > 0
+        let cur = q[0]
+        remove(q, 0)
+        for nxt in graph[cur]
+            if not (nxt in dist)
+                dist[nxt] = dist[cur] + 1
+                append(q, nxt)
+    return dist
+
+let g = {
+    a: ["b", "c"],
+    b: ["a", "d"],
+    c: ["a", "d", "e"],
+    d: ["b", "c", "e"],
+    e: ["c", "d"]
+}
+print(bfs(g, "a"))
+print(bfs(g, "e"))

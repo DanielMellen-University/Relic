@@ -1,0 +1,3 @@
+name_size.relic:1:7: error: 'size' is not defined (the length of a value is len(value))
+    print(size)
+          ^

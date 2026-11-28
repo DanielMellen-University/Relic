@@ -1,0 +1,3 @@
+name_self.relic:1:7: warning: 'self' is not defined (Relic has no self; pass the value as a parameter)
+    print(self)
+          ^

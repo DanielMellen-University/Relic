@@ -1,0 +1,16 @@
+# std/strings.wrap: greedy word wrap into a list of lines no wider than a given width.
+use std/strings
+
+print(strings.wrap("the quick brown fox jumps over the lazy dog", 10))
+print(strings.wrap("a verylongword b", 4))
+print(strings.wrap("  spaces\tand\nlines  ", 20))
+print(strings.wrap("one", 1))
+print(strings.wrap("", 5))
+try
+    strings.wrap("a b", 0)
+catch e
+    print(e.message)
+try
+    strings.wrap(["a"], 3)
+catch e
+    print(e.message)

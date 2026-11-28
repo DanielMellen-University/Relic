@@ -1,0 +1,4 @@
+word_from.relic:1:6: error: expected end of line, got name 'os'
+    from os import path
+         ^^
+hint: modules are loaded with 'use', not 'from'

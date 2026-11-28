@@ -1,0 +1,3 @@
+name_join.relic:1:7: error: 'join' is not defined (join is strings.join, from std/strings)
+    print(join(["a", "b"], ","))
+          ^

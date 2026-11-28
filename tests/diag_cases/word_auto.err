@@ -1,0 +1,4 @@
+word_auto.relic:1:6: error: expected end of line, got name 'count'
+    auto count = 0
+         ^^^^^
+hint: bindings start with 'let', not 'auto'

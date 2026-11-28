@@ -1,0 +1,42 @@
+# A function can call another fun declared later in the same function.
+# The later fun has run before either of them is called.
+fun make()
+    fun even(n)
+        if n == 0
+            return true
+        return odd(n - 1)
+    fun odd(n)
+        if n == 0
+            return false
+        return even(n - 1)
+    return even
+
+let e = make()
+print(e(0), e(1), e(6), e(7))
+
+fun trio()
+    fun a(n)
+        if n <= 0
+            return "a"
+        return b(n - 1)
+    fun b(n)
+        if n <= 0
+            return "b"
+        return c(n - 1)
+    fun c(n)
+        if n <= 0
+            return "c"
+        return a(n - 1)
+    return a
+
+print(trio()(4))
+
+fun with_default()
+    fun take(n = later())
+        return n
+    fun later()
+        return 4
+    return take
+
+let take = with_default()
+print(take(), take(9))

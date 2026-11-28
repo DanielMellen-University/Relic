@@ -1,0 +1,8 @@
+# Setting a key that is already there changes the value and leaves the key
+# where it was. A new key goes at the end.
+let m = {a: 1, b: 2, c: 3}
+m.b = 9
+m.a = 8
+m.d = 4
+print(keys(m))
+print(m)

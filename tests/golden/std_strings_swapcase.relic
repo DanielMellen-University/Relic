@@ -1,0 +1,13 @@
+# std/strings.swapcase: swap ASCII letter cases, leave everything else.
+use std/strings
+
+print(strings.swapcase("Relic 2!"))
+print(strings.swapcase("ABCxyz"))
+print(strings.swapcase(""))
+print(strings.swapcase("123-_."))
+print(strings.swapcase("Café É"))
+
+try
+    strings.swapcase([1, 2])
+catch e
+    print(e.message)

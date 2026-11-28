@@ -502,9 +502,9 @@ static void test_builtins() {
 static void test_repl() {
     std::istringstream in("let x = 1\nx = x + 1\nnope\nx\nfun f()\n    return x * 10\n\nf()\n[1,\n2]\n");
     std::ostringstream out, err;
-    CHECK(relic::repl(in, out, err, false) == 0);
+    CHECK(relic::repl(in, out, err, false) == 1);
     CHECK(out.str() == "2\n20\n[1, 2]\n");
-    CHECK(err.str() == "<repl>:1:1: error: 'nope' is not defined\n");
+    CHECK(err.str() == "<repl>:1:1: error: 'nope' is not defined\n    nope\n    ^\n");
 
     // a session keeps globals across runs, like the REPL does
     std::ostringstream o2;
@@ -530,19 +530,34 @@ static void test_repl_details() {
     CHECK(repl("none\n1 + 1\n\"s\"\n[1, \"a\"]\n{a: 1}\n", out, err) == 0);
     CHECK(out == "2\n\"s\"\n[1, \"a\"]\n{a: 1}\n" && err.empty());
     // errors keep the session going; a block's error line counts inside the block
-    CHECK(repl("let a = 1\nlet b =\n\nfun g()\n    return nope\n\ng()\nlen(1, 2)\na\n", out, err) == 0);
+    CHECK(repl("let a = 1\nlet b =\n\nfun g()\n    return nope\n\ng()\nlen(1, 2)\na\n", out, err) == 1);
     CHECK(out == "1\n");
     CHECK(err == "<repl>:1:8: error: expected an expression, got end of line\n"
+                 "    let b =\n"
+                 "           ^\n"
                  "<repl>:2:12: error: 'nope' is not defined\n"
-                 "<repl>:1:4: error: len() takes 1 argument, got 2\n");
+                 "<repl>:1:4: error: len() takes 1 argument, got 2\n"
+                 "    len(1, 2)\n"
+                 "       ^\n");
     // :quit stops reading; blank lines and comments run nothing
+    CHECK(repl("let x = 4\nx\n:reset\nx\nprint(1)\n", out, err) == 1);
+    CHECK(out == "4\nnames cleared\n1\n");
+    CHECK(err == "<repl>:1:1: error: 'x' is not defined\n    x\n    ^\n");
+    CHECK(repl(":foo\n1\n", out, err) == 0);
+    CHECK(out == "1\n" && err == "unknown command ':foo'; type :help\n");
+    CHECK(repl(":help\n:quit\n", out, err) == 0);
+    CHECK(out == ":help   show this help\n"
+                 ":reset  clear the names defined here\n"
+                 ":quit   leave\n"
+                 "Blocks end with an empty line. A line stays open while (, [ or { is unclosed.\n" &&
+          err.empty());
     CHECK(repl("\n  \n# note\n5\n:quit\n6\n", out, err) == 0);
     CHECK(out == "5\n" && err.empty());
     // an open bracket keeps reading, a try block runs as one chunk
     CHECK(repl("[1,\n2]\ntry\n    fail(\"x\")\ncatch e\n    print(e.message)\n\n", out, err) == 0);
     CHECK(out == "[1, 2]\nx\n" && err.empty());
-    CHECK(repl("let l = [1]\nl[5]\nl\n", out, err) == 0);
-    CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n");
+    CHECK(repl("let l = [1]\nl[5]\nl\n", out, err) == 1);
+    CHECK(out == "[1]\n" && err == "<repl>:1:3: error: list index 5 is out of range (size 1)\n    l[5]\n      ^\n");
 }
 
 // String values share one buffer between copies and keep its character count.

@@ -1,0 +1,3 @@
+name_JSON.relic:1:7: error: 'JSON' is not defined (parse and write text with std/json)
+    print(JSON)
+          ^

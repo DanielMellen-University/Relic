@@ -1,0 +1,16 @@
+# The catch name exists only in the catch. It does not replace an outer
+# name, and a let inside the catch does not escape either.
+let err = "outer"
+try
+    fail("boom")
+catch err
+    print(err.message)
+    let err = "inside"
+    print(err)
+print(err)
+
+try
+    print(1 + "x")
+catch
+    print("unnamed")
+print(err)

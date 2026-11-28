@@ -1,0 +1,4 @@
+# strings.title: each word gets a capital first letter and lower-case letters after it, ASCII only like upper and lower.
+use std/strings
+print(strings.title("the old man and the sea"))
+print(strings.title("MIXED case"))

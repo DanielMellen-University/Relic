@@ -1,0 +1,3 @@
+name_raise.relic:1:7: warning: 'raise' is not defined (raise an error with fail(message))
+    print(raise)
+          ^

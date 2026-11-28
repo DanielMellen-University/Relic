@@ -1,0 +1,17 @@
+# The Atbash cipher swaps a for z, b for y, and so on. Doing it twice gives
+# the text back.
+#   relic examples/learn/atbash.relic
+use std/strings
+
+fun atbash(s)
+    let out = ""
+    for c in strings.lower(s)
+        if c >= "a" and c <= "z"
+            out = out + chr(ord("a") + ord("z") - ord(c))
+        else
+            out = out + c
+    return out
+
+for s in ["Hello, World", "abc xyz", "gsv jfrxp yildm ulc"]
+    let once = atbash(s)
+    print("{s} -> {once} -> {atbash(once)}")

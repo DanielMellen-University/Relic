@@ -1,0 +1,49 @@
+# American Soundex. Vowels separate consonants; H and W do not. The code is
+# the first letter and three digits.
+#   relic examples/learn/soundex.relic
+
+fun letter_code(c)
+    if c == "b" or c == "f" or c == "p" or c == "v"
+        return "1"
+    if c == "c" or c == "g" or c == "j" or c == "k" or c == "q" or c == "s" or c == "x" or c == "z"
+        return "2"
+    if c == "d" or c == "t"
+        return "3"
+    if c == "l"
+        return "4"
+    if c == "m" or c == "n"
+        return "5"
+    if c == "r"
+        return "6"
+    return ""
+
+fun is_vowel(c)
+    return c == "a" or c == "e" or c == "i" or c == "o" or c == "u" or c == "y"
+
+fun soundex(word)
+    let lower = ""
+    for c in word
+        if c >= "A" and c <= "Z"
+            lower = lower + chr(ord(c) + 32)
+        else
+            lower = lower + c
+    let first = lower[0]
+    let digits = ""
+    let prev = letter_code(first)
+    for c in slice(lower, 1, len(lower))
+        if is_vowel(c)
+            prev = ""
+        else if c != "h" and c != "w"
+            let d = letter_code(c)
+            if d != "" and d != prev
+                digits = digits + d
+            if d != ""
+                prev = d
+    while len(digits) < 3
+        digits = digits + "0"
+    if first >= "a" and first <= "z"
+        first = chr(ord(first) - 32)
+    return first + slice(digits, 0, 3)
+
+for w in ["Robert", "Rupert", "Rubin", "Ashcraft", "Ashcroft", "Tymczak", "Pfister", "Honeyman"]
+    print(w, soundex(w))

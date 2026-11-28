@@ -1,0 +1,25 @@
+# An integer written in another base, from 2 to 16.
+#   relic examples/learn/base_convert.relic
+
+fun convert(n, base)
+    let digits = "0123456789abcdef"
+    if n == 0
+        return "0"
+    let neg = false
+    if n < 0
+        neg = true
+        n = 0 - n
+    let s = ""
+    while n > 0
+        s = digits[n % base] + s
+        n = int(n / base)
+    if neg
+        return "-" + s
+    return s
+
+print(convert(0, 2))
+print(convert(42, 2))
+print(convert(255, 16))
+print(convert(255, 8))
+print(convert(-13, 10))
+print(convert(1000, 16))

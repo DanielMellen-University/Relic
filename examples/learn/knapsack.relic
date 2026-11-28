@@ -1,0 +1,29 @@
+# The 0/1 knapsack: which items to pack for the most value without going over
+# the weight limit. One row of best values per capacity, filled item by item.
+#   relic examples/learn/knapsack.relic
+
+fun knapsack(items, limit)
+    let best = []
+    let pick = []
+    for w in 0..limit + 1
+        append(best, 0)
+        append(pick, [])
+    for item in items
+        let w = limit
+        while w >= item.weight
+            let with = best[w - item.weight] + item.value
+            if with > best[w]
+                best[w] = with
+                pick[w] = pick[w - item.weight] + [item.name]
+            w = w - 1
+    return {value: best[limit], items: pick[limit]}
+
+let items = [
+    {name: "tent", weight: 5, value: 60},
+    {name: "stove", weight: 3, value: 50},
+    {name: "camera", weight: 4, value: 70},
+    {name: "book", weight: 2, value: 30}
+]
+for limit in [5, 8, 10, 14]
+    let r = knapsack(items, limit)
+    print("limit {limit}: value {r.value}, {r.items}")

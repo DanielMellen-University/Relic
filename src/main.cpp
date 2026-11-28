@@ -25,11 +25,40 @@ static bool is_folder(const std::string& path) {
     return std::filesystem::is_directory(path, ec);
 }
 
-static void usage() {
-    std::cerr << "usage: relic [--help | --version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
-                 "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
-                 "       relic fmt [--check | --write] file.relic...   (canonical format; --check exits 1 if a file would change)\n"
-                 "       relic                       (no file: starts the REPL)\n";
+static const char kCheckHelp[] =
+    "usage: relic check FILE...\n"
+    "       relic check -\n"
+    "\n"
+    "- reads the program from stdin and reports it as <stdin>.\n"
+    "\n"
+    "Finds mistakes without running: syntax errors, names that are never defined,\n"
+    "a top-level name used before its fun or let, and break, next or return in the wrong place.\n"
+    "\n"
+    "exit 0  every file is clean\n"
+    "exit 1  a file has a finding or a syntax error\n"
+    "exit 2  a file cannot be opened, or the command is misused\n";
+
+static const char kFmtHelp[] =
+    "usage: relic fmt [--check | --write] FILE...\n"
+    "       relic fmt -\n"
+    "\n"
+    "- reads source from stdin and writes the canonical text to stdout.\n"
+    "--check and --write do not read stdin.\n"
+    "\n"
+    "Writes each file in canonical form. --check prints paths that would change.\n"
+    "--write updates files in place. --check and --write do not combine.\n"
+    "\n"
+    "exit 0  stdout was written, --write finished, or --check found nothing to change\n"
+    "exit 1  a file does not parse, or --check found a file that would change\n"
+    "exit 2  bad usage, or a file could not be opened or written\n";
+
+static bool is_help_flag(const std::string& s) { return s == "--help" || s == "-h"; }
+
+static void usage(std::ostream& to) {
+    to << "usage: relic [-h | --help | help | -V | --version | version] [--tokens | --ast | --bytecode | --tree] [file.relic [args...]]\n"
+          "       relic check file.relic...   (finds mistakes without running, such as a name used before it is defined)\n"
+          "       relic fmt [--check | --write] file.relic...   (canonical format; --check exits 1 if a file would change)\n"
+          "       relic                       (no file: starts the REPL)\n";
 }
 
 // A sibling temp name that is unique per process and per call, so two
@@ -97,32 +126,59 @@ static int cmd_fmt(int argc, char** argv) {
     bool check = false;
     bool write = false;
     int i = 2;
+    if (i < argc && is_help_flag(argv[i])) {
+        if (argc != 3) {
+            usage(std::cerr);
+            return 2;
+        }
+        std::cout << kFmtHelp;
+        return 0;
+    }
     if (i < argc && (std::string(argv[i]) == "--check" || std::string(argv[i]) == "--write")) {
         check = std::string(argv[i]) == "--check";
         write = !check;
         ++i;
     }
-    if (i < argc && std::string(argv[i]).rfind("--", 0) == 0) {
-        usage();
-        return 2;
+    int dashes = 0;
+    for (int j = i; j < argc; ++j) {
+        std::string path = argv[j];
+        if (path == "-") {
+            ++dashes;
+            continue;
+        }
+        // Flags belong before the files. A later one is not a file named --bogus.
+        if (!path.empty() && path[0] == '-') {
+            usage(std::cerr);
+            return 2;
+        }
     }
-    if (i >= argc) {
-        usage();
+    if (i >= argc || dashes > 1 || (dashes > 0 && (check || write))) {
+        if (dashes > 0 && (check || write))
+            std::cerr << "relic: fmt " << (write ? "--write" : "--check") << " does not read stdin\n";
+        usage(std::cerr);
         return 2;
     }
     int code = 0;
     for (; i < argc; ++i) {
         std::string path = argv[i];
-        std::ifstream f(path, std::ios::binary);
-        if (!f || is_folder(path)) {
-            std::cerr << "relic: cannot open " << path << "\n";
-            code = 2;
-            continue;
+        std::string src;
+        if (path == "-") {
+            std::stringstream ss;
+            ss << std::cin.rdbuf();
+            src = ss.str();
+            path = "<stdin>";
+        } else {
+            std::ifstream f(path, std::ios::binary);
+            if (!f || is_folder(path)) {
+                std::cerr << "relic: cannot open " << path << "\n";
+                code = 2;
+                continue;
+            }
+            std::stringstream ss;
+            ss << f.rdbuf();
+            f.close();
+            src = ss.str();
         }
-        std::stringstream ss;
-        ss << f.rdbuf();
-        f.close();
-        std::string src = ss.str();
         relic::FmtResult r = relic::format_source(path, src);
         if (r.exit_code) {
             std::cerr << r.err;
@@ -147,31 +203,76 @@ static int cmd_fmt(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-    if (argc == 2 && std::string(argv[1]) == "--version") {
+    std::string arg1 = argc >= 2 ? argv[1] : "";
+    bool help_word = arg1 == "--help" || arg1 == "-h" || arg1 == "help";
+    bool version_word = arg1 == "--version" || arg1 == "-V" || arg1 == "version";
+    if (argc == 2 && version_word) {
         std::cout << relic::version_string() << "\n";
         return 0;
     }
-    if (argc == 2 && std::string(argv[1]) == "--help") {
-        usage();
+    if (argc == 2 && help_word) {
+        usage(std::cout);
         return 0;
     }
-    if (argc == 2 && std::string(argv[1]) == "check") {
-        usage();
+    if (argc > 2 && (help_word || version_word)) {
+        usage(std::cerr);
         return 2;
+    }
+    if (argc >= 2 && std::string(argv[1]) == "check") {
+        if (argc >= 3 && is_help_flag(argv[2])) {
+            if (argc != 3) {
+                usage(std::cerr);
+                return 2;
+            }
+            std::cout << kCheckHelp;
+            return 0;
+        }
+        if (argc == 2) {
+            usage(std::cerr);
+            return 2;
+        }
     }
     if (argc >= 2 && std::string(argv[1]) == "fmt") return cmd_fmt(argc, argv);
     if (argc >= 3 && std::string(argv[1]) == "check") {
-        int code = 0;
+        int dashes = 0;
         for (int i = 2; i < argc; ++i) {
-            std::ifstream f(argv[i], std::ios::binary);
-            if (!f || is_folder(argv[i])) {
-                std::cerr << "relic: cannot open " << argv[i] << "\n";
-                code = 2;
+            std::string path = argv[i];
+            if (path == "-") {
+                ++dashes;
                 continue;
             }
-            std::stringstream ss;
-            ss << f.rdbuf();
-            relic::RunResult r = relic::check_source(argv[i], ss.str());
+            // A flag here is a mistake, not a file named --bogus. Help was handled above.
+            if (!path.empty() && path[0] == '-') {
+                usage(std::cerr);
+                return 2;
+            }
+        }
+        if (dashes > 1) {
+            usage(std::cerr);
+            return 2;
+        }
+        int code = 0;
+        for (int i = 2; i < argc; ++i) {
+            std::string path = argv[i];
+            std::string shown = path;
+            std::string src;
+            if (path == "-") {
+                std::stringstream ss;
+                ss << std::cin.rdbuf();
+                src = ss.str();
+                shown = "<stdin>";
+            } else {
+                std::ifstream f(path, std::ios::binary);
+                if (!f || is_folder(path)) {
+                    std::cerr << "relic: cannot open " << path << "\n";
+                    code = 2;
+                    continue;
+                }
+                std::stringstream ss;
+                ss << f.rdbuf();
+                src = ss.str();
+            }
+            relic::RunResult r = relic::check_source(shown, src);
             std::cerr << r.err;
             if (r.exit_code && !code) code = r.exit_code;
         }
@@ -185,7 +286,7 @@ int main(int argc, char** argv) {
     bool bytecode = argc == 3 && std::string(argv[1]) == "--bytecode";
     if (argc == 1) return relic::repl(std::cin, std::cout, std::cerr, stdin_is_terminal());
     if (argc < 2 || (!tokens && !ast && !vm && !tree && !bytecode && std::string(argv[1]).rfind("--", 0) == 0)) {
-        usage();
+        usage(std::cerr);
         return 2;
     }
     bool flag = tokens || ast || vm || tree || bytecode;

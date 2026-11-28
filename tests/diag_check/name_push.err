@@ -1,0 +1,3 @@
+name_push.relic:1:7: warning: 'push' is not defined (add an item with append(list, item))
+    print(push)
+          ^

@@ -1,0 +1,18 @@
+# Factors become sounds: 3 is Pling, 5 is Plang, 7 is Plong. Anything else
+# is the number itself.
+#   relic examples/learn/raindrops.relic
+
+fun rain(n)
+    let s = ""
+    if n % 3 == 0
+        s = s + "Pling"
+    if n % 5 == 0
+        s = s + "Plang"
+    if n % 7 == 0
+        s = s + "Plong"
+    if s == ""
+        return str(n)
+    return s
+
+for n in [1, 3, 5, 7, 15, 21, 105, 8]
+    print(n, rain(n))

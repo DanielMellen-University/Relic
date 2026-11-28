@@ -1,0 +1,4 @@
+# strings.is_blank: true for empty text or text made only of the characters is_space accepts, so a reader can skip blank lines without trimming first.
+use std/strings
+for line in ["text", "", "   ", "\t"]
+    print(strings.is_blank(line))

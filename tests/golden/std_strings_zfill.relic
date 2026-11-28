@@ -1,0 +1,22 @@
+# std/strings.zfill: pads a number written as text with zeros, keeping a sign in front: zfill("-42", 5) is "-0042".
+use std/strings
+
+print(strings.zfill("7", 3))
+print(strings.zfill("-7", 3))
+print(strings.zfill("+15", 6))
+print(strings.zfill("123", 2))
+print(strings.zfill("", 2))
+print(strings.zfill("-", 3))
+print(strings.zfill("ab", 4))
+try
+    strings.zfill(42, 5)
+catch e
+    print(e.message)
+try
+    strings.zfill("42", -1)
+catch e
+    print(e.message)
+try
+    strings.zfill("42", 2.5)
+catch e
+    print(e.message)

@@ -1,0 +1,3 @@
+name_Nil.relic:1:7: error: 'Nil' is not defined (the empty value is 'none', not 'Nil')
+    print(Nil)
+          ^

@@ -1,0 +1,3 @@
+name_prompt.relic:1:7: warning: 'prompt' is not defined (read a line with os.prompt, from std/os)
+    print(prompt)
+          ^

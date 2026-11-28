@@ -1,0 +1,6 @@
+true
+true
+true
+false
+false
+strings.is_blank(): argument must be a string, got none

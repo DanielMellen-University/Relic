@@ -1,0 +1,25 @@
+# ISBN-10. The weighted sum of the ten digits, with X standing for 10, is a
+# multiple of 11.
+#   relic examples/learn/isbn.relic
+
+fun isbn_ok(s)
+    let digits = []
+    for c in s
+        if c >= "0" and c <= "9"
+            append(digits, ord(c) - ord("0"))
+        else if c == "X" or c == "x"
+            append(digits, 10)
+        else if c != "-" and c != " "
+            return false
+    if len(digits) != 10
+        return false
+    let sum = 0
+    for i in 0..10
+        sum = sum + digits[i] * (10 - i)
+    return sum % 11 == 0
+
+for s in ["0-306-40615-2", "0-306-40615-3", "043942089X", "0439420891", ""]
+    let label = s
+    if s == ""
+        label = "(empty)"
+    print(label, isbn_ok(s))
