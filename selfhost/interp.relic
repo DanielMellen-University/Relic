@@ -228,6 +228,8 @@ fun name_note(name)
         return "toUpperCase is strings.upper, from std/strings"
     if name == "toLowerCase"
         return "toLowerCase is strings.lower, from std/strings"
+    if name == "parseFloat"
+        return "turn text into a number with num(text) or float(text)"
     return ""
 
 fun edit_distance(a, b)

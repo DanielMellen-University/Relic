@@ -326,6 +326,7 @@ const Pair kNames[] = {
     {"endsWith", "endsWith is strings.ends_with, from std/strings"},
     {"toUpperCase", "toUpperCase is strings.upper, from std/strings"},
     {"toLowerCase", "toLowerCase is strings.lower, from std/strings"},
+    {"parseFloat", "turn text into a number with num(text) or float(text)"},
     {nullptr, nullptr},
 };
 
