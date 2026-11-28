@@ -1,0 +1,8 @@
+0 = 0: 0 ones, 0 by Kernighan
+1 = 1: 1 ones, 1 by Kernighan
+7 = 111: 3 ones, 3 by Kernighan
+8 = 1000: 1 ones, 1 by Kernighan
+255 = 11111111: 8 ones, 8 by Kernighan
+1023 = 1111111111: 10 ones, 10 by Kernighan
+12345 = 11000000111001: 6 ones, 6 by Kernighan
+65536 = 10000000000000000: 1 ones, 1 by Kernighan

@@ -1,0 +1,36 @@
+# Counting the 1 bits in a number two ways: one bit at a time, and by
+# clearing the lowest 1 bit each turn (Kernighan's trick), which loops once
+# per 1 bit instead of once per bit.
+#   relic examples/learn/popcount.relic
+
+fun binary(n)
+    if n == 0
+        return "0"
+    let s = ""
+    while n > 0
+        s = str(n % 2) + s
+        n = int(n / 2)
+    return s
+
+fun count_slow(n)
+    let c = 0
+    while n > 0
+        c = c + n % 2
+        n = int(n / 2)
+    return c
+
+fun lowest_bit(n)
+    let b = 1
+    while n % (b * 2) == 0
+        b = b * 2
+    return b
+
+fun count_kernighan(n)
+    let c = 0
+    while n > 0
+        n = n - lowest_bit(n)
+        c = c + 1
+    return c
+
+for n in [0, 1, 7, 8, 255, 1023, 12345, 65536]
+    print("{n} = {binary(n)}: {count_slow(n)} ones, {count_kernighan(n)} by Kernighan")
