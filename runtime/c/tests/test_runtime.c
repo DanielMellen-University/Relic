@@ -752,6 +752,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "parseFloat", 0, NULL, NULL), "'parseFloat' is not defined (turn text into a number with num(text) or float(text))");
     ERR(rl_fail_undefined(&cx, "Object", 0, NULL, NULL), "'Object' is not defined (a map is written with braces around key: value pairs)");
     ERR(rl_fail_undefined(&cx, "Array", 0, NULL, NULL), "'Array' is not defined (a list is written with square brackets around the items)");
+    ERR(rl_fail_undefined(&cx, "dict", 0, NULL, NULL), "'dict' is not defined (a map is written with braces around key: value pairs)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

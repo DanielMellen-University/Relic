@@ -234,6 +234,8 @@ fun name_note(name)
         return "a map is written with braces around key: value pairs"
     if name == "Array"
         return "a list is written with square brackets around the items"
+    if name == "dict"
+        return "a map is written with braces around key: value pairs"
     return ""
 
 fun edit_distance(a, b)

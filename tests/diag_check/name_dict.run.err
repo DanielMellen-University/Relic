@@ -1,0 +1,3 @@
+name_dict.relic:1:9: error: 'dict' is not defined (a map is written with braces around key: value pairs)
+    let m = dict()
+            ^
