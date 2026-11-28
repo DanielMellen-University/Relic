@@ -302,6 +302,7 @@ const Pair kNames[] = {
     {"isinstance", "the type of a value is type(value)"},
     {"min", "min is math.min for two numbers, or lists.min for a list"},
     {"max", "max is math.max for two numbers, or lists.max for a list"},
+    {"end", "blocks end where the indentation does; delete 'end'"},
     {nullptr, nullptr},
 };
 

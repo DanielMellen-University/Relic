@@ -200,6 +200,8 @@ fun name_note(name)
         return "min is math.min for two numbers, or lists.min for a list"
     if name == "max"
         return "max is math.max for two numbers, or lists.max for a list"
+    if name == "end"
+        return "blocks end where the indentation does; delete 'end'"
     return ""
 
 fun edit_distance(a, b)
