@@ -378,6 +378,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "map") == 0) return "map is lists.map, from std/lists";
     if (strcmp(name, "zip") == 0) return "zip is lists.zip, from std/lists";
     if (strcmp(name, "range") == 0) return "a range is written a..b, as in for i in 0..n";
+    if (strcmp(name, "Math") == 0) return "math functions are in std/math";
     return NULL;
 }
 

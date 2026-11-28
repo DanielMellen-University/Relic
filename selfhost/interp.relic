@@ -184,6 +184,8 @@ fun name_note(name)
         return "zip is lists.zip, from std/lists"
     if name == "range"
         return "a range is written a..b, as in for i in 0..n"
+    if name == "Math"
+        return "math functions are in std/math"
     return ""
 
 fun edit_distance(a, b)

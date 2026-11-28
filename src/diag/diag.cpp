@@ -294,6 +294,7 @@ const Pair kNames[] = {
     {"map", "map is lists.map, from std/lists"},
     {"zip", "zip is lists.zip, from std/lists"},
     {"range", "a range is written a..b, as in for i in 0..n"},
+    {"Math", "math functions are in std/math"},
     {nullptr, nullptr},
 };
 
