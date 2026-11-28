@@ -82,5 +82,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `union_find.relic` | groups of friends with union-find |
 | `bst.relic` | a binary search tree made of maps |
 | `trie.relic` | words by prefix in a trie |
+| `intervals.relic` | merging overlapping intervals |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
