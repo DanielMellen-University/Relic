@@ -1,0 +1,24 @@
+# Amicable numbers: two numbers where each is the sum of the other's proper
+# divisors, like 220 and 284. Divisors are found in pairs up to the square
+# root.
+#   relic examples/learn/amicable.relic
+
+fun divisor_sum(n)
+    if n < 2
+        return 0
+    let total = 1
+    let d = 2
+    while d * d <= n
+        if n % d == 0
+            total = total + d
+            if d * d != n
+                total = total + int(n / d)
+        d = d + 1
+    return total
+
+print("divisors of 220 add up to {divisor_sum(220)}")
+print("divisors of 284 add up to {divisor_sum(284)}")
+for a in 2..10000
+    let b = divisor_sum(a)
+    if b > a and divisor_sum(b) == a
+        print("{a} and {b}")
