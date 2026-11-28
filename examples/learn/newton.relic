@@ -1,0 +1,31 @@
+# Newton's method for square roots: guess, then average the guess with
+# n / guess until it stops changing. Each step about doubles the correct
+# digits.
+#   relic examples/learn/newton.relic
+
+fun root(n)
+    let guess = n / 2.0
+    let steps = 0
+    while true
+        let better = (guess + n / guess) / 2
+        steps = steps + 1
+        if better == guess or steps == 50
+            return [better, steps]
+        guess = better
+
+# Integer square root: the largest r with r * r <= n, using ints only.
+fun isqrt(n)
+    if n < 2
+        return n
+    let x = n
+    let y = int((x + 1) / 2)
+    while y < x
+        x = y
+        y = int((x + int(n / x)) / 2)
+    return x
+
+for n in [2, 9, 10, 1000, 0.25]
+    let r = root(n)
+    print("sqrt({n}) = {r[0]} after {r[1]} steps")
+for n in [15, 16, 17, 99999999, 1000000000000]
+    print("isqrt({n}) = {isqrt(n)}")

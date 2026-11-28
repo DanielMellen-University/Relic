@@ -1,0 +1,10 @@
+sqrt(2) = 1.41421356237309 after 6 steps
+sqrt(9) = 3.0 after 6 steps
+sqrt(10) = 3.16227766016838 after 6 steps
+sqrt(1000) = 31.6227766016838 after 10 steps
+sqrt(0.25) = 0.5 after 8 steps
+isqrt(15) = 3
+isqrt(16) = 4
+isqrt(17) = 4
+isqrt(99999999) = 9999
+isqrt(1000000000000) = 1000000
