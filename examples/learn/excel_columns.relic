@@ -1,0 +1,22 @@
+# Spreadsheet column names: 1 is A, 26 is Z, 27 is AA. It is base 26 with
+# no zero digit, so each step takes one off before dividing.
+#   relic examples/learn/excel_columns.relic
+
+fun name(n)
+    let s = ""
+    while n > 0
+        n = n - 1
+        s = chr(ord("A") + n % 26) + s
+        n = int(n / 26)
+    return s
+
+fun number(s)
+    let n = 0
+    for c in s
+        n = n * 26 + ord(c) - ord("A") + 1
+    return n
+
+for n in [1, 2, 26, 27, 52, 53, 702, 703, 16384]
+    print("{n} -> {name(n)} -> {number(name(n))}")
+for s in ["B", "AZ", "BA", "ZZ", "XFD"]
+    print("{s} is column {number(s)}")

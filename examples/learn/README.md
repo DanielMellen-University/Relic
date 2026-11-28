@@ -127,5 +127,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `lru.relic` | a least recently used cache |
 | `newton.relic` | square roots by Newton's method, and an int square root |
 | `rule30.relic` | rules 30 and 90, one-dimensional automata |
+| `excel_columns.relic` | spreadsheet column names and back |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
