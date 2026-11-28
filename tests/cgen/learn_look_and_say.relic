@@ -1,0 +1,2 @@
+# Compiled run of examples/learn/look_and_say.relic. Stdout must match that program.
+use ../../examples/learn/look_and_say

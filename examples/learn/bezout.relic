@@ -1,0 +1,27 @@
+# The extended Euclidean algorithm: gcd(a, b) along with x and y such that
+# a * x + b * y == gcd. Used here to find a modular inverse.
+#   relic examples/learn/bezout.relic
+
+fun egcd(a, b)
+    if b == 0
+        return [a, 1, 0]
+    let r = egcd(b, a % b)
+    return [r[0], r[2], r[1] - int(a / b) * r[2]]
+
+fun inverse(a, m)
+    let r = egcd(a, m)
+    if r[0] != 1
+        return none
+    return r[1] % m
+
+for pair in [[240, 46], [99, 78], [17, 5], [12, 18]]
+    let a = pair[0]
+    let b = pair[1]
+    let r = egcd(a, b)
+    print("gcd({a}, {b}) = {r[0]} = {a} * {r[1]} + {b} * {r[2]}")
+for pair in [[3, 11], [10, 17], [6, 9]]
+    let inv = inverse(pair[0], pair[1])
+    if inv == none
+        print("{pair[0]} has no inverse mod {pair[1]}")
+    else
+        print("{pair[0]} * {inv} = 1 mod {pair[1]}")

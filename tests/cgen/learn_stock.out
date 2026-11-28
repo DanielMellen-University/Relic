@@ -1,0 +1,5 @@
+[7, 1, 5, 3, 6, 4]: buy day 1 at 1, sell day 4 at 6, profit 5
+[7, 6, 4, 3, 1]: no trade makes money
+[2, 4, 1, 9, 3, 8]: buy day 2 at 1, sell day 3 at 9, profit 8
+[3, 3, 3]: no trade makes money
+[10, 12, 5, 11, 4, 6]: buy day 2 at 5, sell day 3 at 11, profit 6

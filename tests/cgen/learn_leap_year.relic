@@ -1,0 +1,2 @@
+# Compiled run of examples/learn/leap_year.relic. Stdout must match that program.
+use ../../examples/learn/leap_year

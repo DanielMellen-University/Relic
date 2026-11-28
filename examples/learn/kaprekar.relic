@@ -1,0 +1,31 @@
+# Kaprekar's routine: sort a four-digit number's digits high to low and low
+# to high, subtract, and repeat. Any number with two different digits
+# reaches 6174 within seven steps.
+#   relic examples/learn/kaprekar.relic
+use std/lists
+
+fun digits(n)
+    let ds = []
+    for i in 0..4
+        append(ds, n % 10)
+        n = int(n / 10)
+    return ds
+
+fun number(ds)
+    let n = 0
+    for d in ds
+        n = n * 10 + d
+    return n
+
+fun step(n)
+    let low = lists.sort(digits(n))
+    let high = lists.reverse(low)
+    return number(high) - number(low)
+
+for start in [3524, 2111, 9831, 1000, 6174]
+    let n = start
+    let path = [n]
+    while n != 6174
+        n = step(n)
+        append(path, n)
+    print("{start}: {len(path) - 1} steps, {path}")

@@ -1,0 +1,29 @@
+# Turning a grid a quarter turn clockwise: row r of the result is column r
+# of the original, read from the bottom up. Four turns give the grid back.
+#   relic examples/learn/rotate.relic
+
+fun rotate(grid)
+    let out = []
+    for c in 0..len(grid[0])
+        let row = []
+        let r = len(grid) - 1
+        while r >= 0
+            append(row, grid[r][c])
+            r = r - 1
+        append(out, row)
+    return out
+
+fun show(grid)
+    for row in grid
+        let line = ""
+        for x in row
+            line = line + x
+        print(line)
+    print("")
+
+let g = [["a", "b", "c", "d"], ["e", "f", "g", "h"], ["i", "j", "k", "l"]]
+show(g)
+let r = rotate(g)
+show(r)
+show(rotate(r))
+print(rotate(rotate(rotate(rotate(g)))) == g)

@@ -1,0 +1,29 @@
+# Pythagorean triples a^2 + b^2 = c^2 with c up to 30, and the primitive
+# ones (no common factor) made by Euclid's formula from m > n.
+#   relic examples/learn/pythagorean.relic
+
+fun gcd(a, b)
+    while b != 0
+        let t = b
+        b = a % b
+        a = t
+    return a
+
+let all = []
+for c in 1..31
+    for b in 1..c
+        for a in 1..b
+            if a * a + b * b == c * c
+                append(all, [a, b, c])
+print("{len(all)} triples with c up to 30:")
+for t in all
+    let tag = ""
+    if gcd(t[0], gcd(t[1], t[2])) == 1
+        tag = " primitive"
+    print("  {t[0]}, {t[1]}, {t[2]}{tag}")
+
+print("Euclid's formula:")
+for m in 2..5
+    for n in 1..m
+        if (m - n) % 2 == 1 and gcd(m, n) == 1
+            print("  m={m} n={n}: {m * m - n * n}, {2 * m * n}, {m * m + n * n}")

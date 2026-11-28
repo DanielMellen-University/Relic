@@ -1,0 +1,24 @@
+# The digital root: add up the digits, and again, until one digit is left.
+# Also shown: the shortcut 1 + (n - 1) % 9 gives the same answer.
+#   relic examples/learn/digital_root.relic
+
+fun digit_sum(n)
+    let total = 0
+    while n > 0
+        total = total + n % 10
+        n = int(n / 10)
+    return total
+
+fun digital_root(n)
+    let steps = [n]
+    while n > 9
+        n = digit_sum(n)
+        append(steps, n)
+    return steps
+
+for n in [0, 7, 38, 493193, 999999999, 1000000]
+    let steps = digital_root(n)
+    let quick = 0
+    if n > 0
+        quick = 1 + (n - 1) % 9
+    print("{n}: {steps}, shortcut {quick}")

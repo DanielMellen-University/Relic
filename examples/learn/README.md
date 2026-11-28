@@ -99,5 +99,35 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `flood_fill.relic` | the paint bucket on a grid |
 | `spiral.relic` | reading a grid in a spiral |
 | `rail_fence.relic` | the rail fence cipher |
+| `counting_sort.relic` | sorting small whole numbers by counting them |
+| `shell_sort.relic` | insertion sort over shrinking gaps |
+| `digital_root.relic` | adding digits until one is left |
+| `leap_year.relic` | Gregorian leap years and days in February |
+| `two_sum.relic` | two items that add up to a target, in one pass |
+| `kaprekar.relic` | Kaprekar's routine down to 6174 |
+| `look_and_say.relic` | the look-and-say sequence |
+| `floyd_cycle.relic` | the tortoise and the hare on a looping walk |
+| `bezout.relic` | the extended Euclidean algorithm and modular inverses |
+| `modpow.relic` | modular powers by repeated squaring |
+| `popcount.relic` | counting 1 bits, plain and with Kernighan's trick |
+| `affine.relic` | the affine cipher and its inverse key |
+| `rotate.relic` | a quarter turn of a grid |
+| `pythagorean.relic` | Pythagorean triples and Euclid's formula |
+| `amicable.relic` | amicable pairs below 10,000 |
+| `minesweeper.relic` | the numbers on a minesweeper board |
+| `word_search.relic` | words in a letter grid, in eight directions |
+| `prefix_sums.relic` | range sums from a running total |
+| `majority.relic` | the Boyer-Moore majority vote |
+| `dutch_flag.relic` | a three-way partition in one pass |
+| `stock.relic` | the best single buy and sell |
+| `paren_gen.relic` | every balanced bracket string, by backtracking |
+| `islands.relic` | counting islands on a map with a stack |
+| `staircase.relic` | ways to climb stairs, filled in from the bottom |
+| `catalan.relic` | Catalan numbers two ways |
+| `lru.relic` | a least recently used cache |
+| `newton.relic` | square roots by Newton's method, and an int square root |
+| `rule30.relic` | rules 30 and 90, one-dimensional automata |
+| `excel_columns.relic` | spreadsheet column names and back |
+| `goldbach.relic` | Goldbach pairs up to 100 |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.

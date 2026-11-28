@@ -1,0 +1,4 @@
+mod 10: [0, 1, 2, 5, 6, 7, 0, 1, 2]... starts looping after 0 steps, loop length 6
+mod 31: [0, 1, 2, 5, 26, 26, 26, 26, 26]... starts looping after 4 steps, loop length 1
+mod 255: [0, 1, 2, 5, 26, 167, 95, 101, 2]... starts looping after 2 steps, loop length 6
+mod 1000: [0, 1, 2, 5, 26, 677, 330, 901, 802]... starts looping after 4 steps, loop length 6

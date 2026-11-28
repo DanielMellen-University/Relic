@@ -1,0 +1,20 @@
+# Every balanced string of n pairs of brackets, built by backtracking: add
+# "(" while some are left, and ")" while it would still close one.
+#   relic examples/learn/paren_gen.relic
+
+fun build(open_left, close_left, prefix, out)
+    if open_left == 0 and close_left == 0
+        append(out, prefix)
+        return out
+    if open_left > 0
+        build(open_left - 1, close_left + 1, prefix + "(", out)
+    if close_left > 0
+        build(open_left, close_left - 1, prefix + ")", out)
+    return out
+
+fun balanced(n) = build(n, 0, "", [])
+
+for n in 1..4
+    print("{n}: {balanced(n)}")
+for n in 4..8
+    print("{n} pairs: {len(balanced(n))} strings")

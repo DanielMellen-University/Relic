@@ -1,0 +1,29 @@
+# The Boyer-Moore majority vote: one pass and one counter find the only
+# item that could be more than half the list. A second pass checks it.
+#   relic examples/learn/majority.relic
+
+fun candidate(xs)
+    let pick = none
+    let count = 0
+    for x in xs
+        if count == 0
+            pick = x
+        if x == pick
+            count = count + 1
+        else
+            count = count - 1
+    return pick
+
+fun majority(xs)
+    let pick = candidate(xs)
+    let n = 0
+    for x in xs
+        if x == pick
+            n = n + 1
+    if n * 2 > len(xs)
+        return pick
+    return none
+
+let votes = [["a", "b", "a", "c", "a", "a", "b"], [1, 2, 3, 2, 2], [1, 2, 3, 1, 2, 3], ["yes"], []]
+for v in votes
+    print("{v}: candidate {candidate(v)}, majority {majority(v)}")

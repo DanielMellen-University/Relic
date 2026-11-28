@@ -1,0 +1,23 @@
+# Fast modular powers by squaring: b^e mod m in about log2(e) steps, without
+# ever holding a number bigger than m * m.
+#   relic examples/learn/modpow.relic
+
+fun modpow(b, e, m)
+    let result = 1
+    b = b % m
+    let steps = 0
+    while e > 0
+        if e % 2 == 1
+            result = result * b % m
+        b = b * b % m
+        e = int(e / 2)
+        steps = steps + 1
+    return [result, steps]
+
+for c in [[2, 10, 1000], [3, 200, 13], [7, 1000000, 1000000007], [5, 0, 7], [123456789, 987654321, 1000003]]
+    let r = modpow(c[0], c[1], c[2])
+    print("{c[0]}^{c[1]} mod {c[2]} = {r[0]} in {r[1]} steps")
+
+# Fermat's little theorem: a^(p-1) is 1 mod a prime p.
+for p in [7, 13, 101]
+    print("2^{p - 1} mod {p} = {modpow(2, p - 1, p)[0]}")

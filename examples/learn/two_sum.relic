@@ -1,0 +1,20 @@
+# Two sum: find two items that add up to a target in one pass, using a map
+# from each value seen so far to its index.
+#   relic examples/learn/two_sum.relic
+
+fun two_sum(xs, target)
+    let seen = {}
+    for i in 0..len(xs)
+        let want = str(target - xs[i])
+        if want in seen
+            return [seen[want], i]
+        seen[str(xs[i])] = i
+    return none
+
+let cases = [[[2, 7, 11, 15], 9], [[3, 2, 4], 6], [[3, 3], 6], [[1, 5, 9], 4], [[-4, 10, 8, 1], 4]]
+for c in cases
+    let pair = two_sum(c[0], c[1])
+    if pair == none
+        print("{c[0]} to {c[1]}: no pair")
+    else
+        print("{c[0]} to {c[1]}: indexes {pair}, {c[0][pair[0]]} + {c[0][pair[1]]}")

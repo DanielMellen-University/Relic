@@ -1,0 +1,6 @@
+4 stairs, steps of 1 or 2: ["1111", "112", "121", "211", "22"]
+2 stairs: 2 ways with 1 or 2, 2 with 1, 2 or 3
+3 stairs: 3 ways with 1 or 2, 4 with 1, 2 or 3
+5 stairs: 8 ways with 1 or 2, 13 with 1, 2 or 3
+10 stairs: 89 ways with 1 or 2, 274 with 1, 2 or 3
+30 stairs: 1346269 ways with 1 or 2, 53798080 with 1, 2 or 3

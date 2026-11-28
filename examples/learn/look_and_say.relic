@@ -1,0 +1,20 @@
+# The look-and-say sequence: each term reads the one before out loud, so
+# "1211" is "one 1, one 2, two 1s" and the next term is "111221".
+#   relic examples/learn/look_and_say.relic
+
+fun next_term(s)
+    let out = ""
+    let i = 0
+    while i < len(s)
+        let j = i
+        while j < len(s) and s[j] == s[i]
+            j = j + 1
+        out = out + str(j - i) + s[i]
+        i = j
+    return out
+
+let term = "1"
+for n in 1..11
+    print("{n}: {term} ({len(term)} digits)")
+    term = next_term(term)
+print(next_term("3"), next_term("22"), next_term("111"))

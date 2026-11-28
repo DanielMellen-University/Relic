@@ -1,0 +1,11 @@
+put a: ["a"]
+put b: ["a", "b"]
+put c: ["a", "b", "c"]
+get a: 1, ["b", "c", "a"]
+  dropped b
+put d: ["c", "a", "d"]
+get b: none, ["c", "a", "d"]
+get c: 3, ["a", "d", "c"]
+  dropped a
+put e: ["d", "c", "e"]
+get a: none, ["d", "c", "e"]

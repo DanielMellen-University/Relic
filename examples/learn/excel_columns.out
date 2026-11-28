@@ -1,0 +1,14 @@
+1 -> A -> 1
+2 -> B -> 2
+26 -> Z -> 26
+27 -> AA -> 27
+52 -> AZ -> 52
+53 -> BA -> 53
+702 -> ZZ -> 702
+703 -> AAA -> 703
+16384 -> XFD -> 16384
+B is column 2
+AZ is column 52
+BA is column 53
+ZZ is column 702
+XFD is column 16384
