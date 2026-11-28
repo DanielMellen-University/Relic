@@ -1,0 +1,4 @@
+# strings.wrap: greedy word wrap into a list of lines no wider than a given width.
+use std/strings
+for line in strings.wrap("Relic is a small language for programs you can read top to bottom.", 24)
+    print(line)

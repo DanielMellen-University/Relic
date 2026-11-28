@@ -1,0 +1,4 @@
+# strings.common_prefix: the longest start or end shared by every string in a list, as for a folder that several paths share.
+use std/strings
+print(strings.common_prefix(["src/main.relic", "src/lib.relic", "src/util.relic"]))
+print(strings.common_suffix(["report.txt", "notes.txt"]))

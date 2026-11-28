@@ -1,0 +1,3 @@
+name_Math.relic:1:7: error: 'Math' is not defined (math functions are in std/math)
+    print(Math)
+          ^

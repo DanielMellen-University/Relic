@@ -1,0 +1,13 @@
+# std/strings.title: each word gets a capital first letter and lower-case letters after it, ASCII only like upper and lower.
+use std/strings
+
+print(strings.title("hello world"))
+print(strings.title("SHOUT it OUT"))
+print(strings.title("o'neil and the 2nd-hand shop"))
+print(strings.title("  spaced   out  "))
+print(strings.title("") == "")
+print(strings.title("élan vital"))
+try
+    strings.title(5)
+catch e
+    print(e.message)

@@ -717,6 +717,25 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "nullptr", 0, NULL, NULL), "'nullptr' is not defined (the empty value is 'none', not 'nullptr')");
     ERR(rl_fail_undefined(&cx, "Null", 0, NULL, NULL), "'Null' is not defined (the empty value is 'none', not 'Null')");
     ERR(rl_fail_undefined(&cx, "NULL", 0, NULL, NULL), "'NULL' is not defined (the empty value is 'none', not 'NULL')");
+    ERR(rl_fail_undefined(&cx, "sqrt", 0, NULL, NULL), "'sqrt' is not defined (sqrt is math.sqrt, from std/math)");
+    ERR(rl_fail_undefined(&cx, "abs", 0, NULL, NULL), "'abs' is not defined (abs is math.abs, from std/math)");
+    ERR(rl_fail_undefined(&cx, "round", 0, NULL, NULL), "'round' is not defined (round is math.round, from std/math)");
+    ERR(rl_fail_undefined(&cx, "upper", 0, NULL, NULL), "'upper' is not defined (upper is strings.upper, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "lower", 0, NULL, NULL), "'lower' is not defined (lower is strings.lower, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "split", 0, NULL, NULL), "'split' is not defined (split is strings.split, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "join", 0, NULL, NULL), "'join' is not defined (join is strings.join, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "map", 0, NULL, NULL), "'map' is not defined (map is lists.map, from std/lists)");
+    ERR(rl_fail_undefined(&cx, "zip", 0, NULL, NULL), "'zip' is not defined (zip is lists.zip, from std/lists)");
+    ERR(rl_fail_undefined(&cx, "range", 0, NULL, NULL), "'range' is not defined (a range is written a..b, as in for i in 0..n)");
+    ERR(rl_fail_undefined(&cx, "Math", 0, NULL, NULL), "'Math' is not defined (math functions are in std/math)");
+    ERR(rl_fail_undefined(&cx, "JSON", 0, NULL, NULL), "'JSON' is not defined (parse and write text with std/json)");
+    ERR(rl_fail_undefined(&cx, "parseInt", 0, NULL, NULL), "'parseInt' is not defined (turn text into a number with num(text))");
+    ERR(rl_fail_undefined(&cx, "toString", 0, NULL, NULL), "'toString' is not defined (turn a value into text with str(value))");
+    ERR(rl_fail_undefined(&cx, "String", 0, NULL, NULL), "'String' is not defined (turn a value into text with str(value))");
+    ERR(rl_fail_undefined(&cx, "isinstance", 0, NULL, NULL), "'isinstance' is not defined (the type of a value is type(value))");
+    ERR(rl_fail_undefined(&cx, "min", 0, NULL, NULL), "'min' is not defined (min is math.min for two numbers, or lists.min for a list)");
+    ERR(rl_fail_undefined(&cx, "max", 0, NULL, NULL), "'max' is not defined (max is math.max for two numbers, or lists.max for a list)");
+    ERR(rl_fail_undefined(&cx, "end", 0, NULL, NULL), "'end' is not defined (blocks end where the indentation does; delete 'end')");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

@@ -1,0 +1,4 @@
+# strings.expand_tabs: tabs become spaces up to the next tab stop, so tab-separated text lines up when printed.
+use std/strings
+print(strings.expand_tabs("name\tqty\tprice", 8))
+print(strings.expand_tabs("pen\t2\t1.50", 8))

@@ -1,0 +1,4 @@
+word_unless.relic:1:8: error: expected end of line, got name 'ready'
+    unless ready
+           ^^^^^
+hint: branch with 'if not (...)'; Relic has no unless

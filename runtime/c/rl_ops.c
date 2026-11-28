@@ -368,6 +368,25 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "nullptr") == 0) return "the empty value is 'none', not 'nullptr'";
     if (strcmp(name, "Null") == 0) return "the empty value is 'none', not 'Null'";
     if (strcmp(name, "NULL") == 0) return "the empty value is 'none', not 'NULL'";
+    if (strcmp(name, "sqrt") == 0) return "sqrt is math.sqrt, from std/math";
+    if (strcmp(name, "abs") == 0) return "abs is math.abs, from std/math";
+    if (strcmp(name, "round") == 0) return "round is math.round, from std/math";
+    if (strcmp(name, "upper") == 0) return "upper is strings.upper, from std/strings";
+    if (strcmp(name, "lower") == 0) return "lower is strings.lower, from std/strings";
+    if (strcmp(name, "split") == 0) return "split is strings.split, from std/strings";
+    if (strcmp(name, "join") == 0) return "join is strings.join, from std/strings";
+    if (strcmp(name, "map") == 0) return "map is lists.map, from std/lists";
+    if (strcmp(name, "zip") == 0) return "zip is lists.zip, from std/lists";
+    if (strcmp(name, "range") == 0) return "a range is written a..b, as in for i in 0..n";
+    if (strcmp(name, "Math") == 0) return "math functions are in std/math";
+    if (strcmp(name, "JSON") == 0) return "parse and write text with std/json";
+    if (strcmp(name, "parseInt") == 0) return "turn text into a number with num(text)";
+    if (strcmp(name, "toString") == 0) return "turn a value into text with str(value)";
+    if (strcmp(name, "String") == 0) return "turn a value into text with str(value)";
+    if (strcmp(name, "isinstance") == 0) return "the type of a value is type(value)";
+    if (strcmp(name, "min") == 0) return "min is math.min for two numbers, or lists.min for a list";
+    if (strcmp(name, "max") == 0) return "max is math.max for two numbers, or lists.max for a list";
+    if (strcmp(name, "end") == 0) return "blocks end where the indentation does; delete 'end'";
     return NULL;
 }
 

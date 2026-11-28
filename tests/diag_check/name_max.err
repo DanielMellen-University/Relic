@@ -1,0 +1,3 @@
+name_max.relic:1:7: warning: 'max' is not defined (max is math.max for two numbers, or lists.max for a list)
+    print(max(1, 2))
+          ^

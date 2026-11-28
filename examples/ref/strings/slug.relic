@@ -1,0 +1,4 @@
+# strings.slug: a lower-case name made of ASCII letters, digits and single dashes, for file names and URLs.
+use std/strings
+print(strings.slug("My First Post"))
+print(strings.slug("What's new in 2026?"))

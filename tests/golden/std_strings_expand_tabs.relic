@@ -1,0 +1,16 @@
+# std/strings.expand_tabs: tabs become spaces up to the next tab stop, so tab-separated text lines up when printed.
+use std/strings
+
+print(strings.expand_tabs("a\tb\tc", 4))
+print(strings.expand_tabs("abcd\te", 4))
+print(strings.expand_tabs("x\n\ty", 2) == "x\n  y")
+print(strings.expand_tabs("\t", 1) == " ")
+print(strings.expand_tabs("no tabs", 8))
+try
+    strings.expand_tabs("a\tb", 0)
+catch e
+    print(e.message)
+try
+    strings.expand_tabs(1, 4)
+catch e
+    print(e.message)

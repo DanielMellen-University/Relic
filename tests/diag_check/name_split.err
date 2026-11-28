@@ -1,0 +1,3 @@
+name_split.relic:1:7: warning: 'split' is not defined (split is strings.split, from std/strings)
+    print(split("a,b", ","))
+          ^

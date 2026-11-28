@@ -1,0 +1,3 @@
+name_zip.relic:1:7: warning: 'zip' is not defined (zip is lists.zip, from std/lists)
+    print(zip([1], [2]))
+          ^

@@ -1,0 +1,4 @@
+word_enum.relic:1:6: error: expected end of line, got name 'Color'
+    enum Color
+         ^^^^^
+hint: Relic has no enums; use strings, or a map of names

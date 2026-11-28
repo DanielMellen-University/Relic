@@ -1,0 +1,3 @@
+name_abs.relic:1:7: error: 'abs' is not defined (abs is math.abs, from std/math)
+    print(abs(-3))
+          ^

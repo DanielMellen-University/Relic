@@ -1,0 +1,12 @@
+# std/strings.slug: a lower-case name made of ASCII letters, digits and single dashes, for file names and URLs.
+use std/strings
+
+print(strings.slug("Hello, World!"))
+print(strings.slug("  Relic 1.0 -- release notes  "))
+print(strings.slug("already-a-slug"))
+print(strings.slug("Crème brûlée"))
+print(strings.slug("!!!") == "")
+try
+    strings.slug(1)
+catch e
+    print(e.message)

@@ -1,0 +1,10 @@
+inter
+same
+true
+true
+hél
+ked
+true
+x
+strings.common_prefix(): argument must be a list, got string
+strings.common_suffix(): item must be a string, got int

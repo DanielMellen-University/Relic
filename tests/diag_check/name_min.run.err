@@ -1,0 +1,3 @@
+name_min.relic:1:7: error: 'min' is not defined (min is math.min for two numbers, or lists.min for a list)
+    print(min(1, 2))
+          ^
