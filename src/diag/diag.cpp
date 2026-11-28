@@ -224,6 +224,7 @@ const Pair kWords[] = {
     {"except", "catch an error with try and catch"},
     {"struct", "Relic has no structs; use a map"},
     {"enum", "Relic has no enums; use strings, or a map of names"},
+    {"interface", "Relic has no interfaces; use a map or a module"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {

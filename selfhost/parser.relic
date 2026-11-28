@@ -210,6 +210,8 @@ fun word_extra(word)
         return "Relic has no structs; use a map"
     if word == "enum"
         return "Relic has no enums; use strings, or a map of names"
+    if word == "interface"
+        return "Relic has no interfaces; use a map or a module"
     return ""
 
 fun type_extra(name)
