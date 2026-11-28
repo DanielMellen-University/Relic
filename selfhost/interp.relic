@@ -236,6 +236,8 @@ fun name_note(name)
         return "a list is written with square brackets around the items"
     if name == "dict"
         return "a map is written with braces around key: value pairs"
+    if name == "random"
+        return "random numbers are in std/random; add 'use std/random' first"
     return ""
 
 fun edit_distance(a, b)

@@ -1,0 +1,3 @@
+name_random.relic:1:7: error: 'random' is not defined (random numbers are in std/random; add 'use std/random' first)
+    print(random.below(6))
+          ^
