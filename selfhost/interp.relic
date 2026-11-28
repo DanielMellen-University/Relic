@@ -214,6 +214,8 @@ fun name_note(name)
         return "trim is strings.trim, from std/strings"
     if name == "replace"
         return "replace is strings.replace, from std/strings"
+    if name == "contains"
+        return "test for an item or a part of text with 'x in value'"
     return ""
 
 fun edit_distance(a, b)

@@ -1,0 +1,3 @@
+name_contains.relic:1:7: warning: 'contains' is not defined (test for an item or a part of text with 'x in value')
+    print(contains([1, 2], 2))
+          ^

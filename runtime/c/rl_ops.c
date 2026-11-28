@@ -393,6 +393,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "ceil") == 0) return "ceil is math.ceil, from std/math";
     if (strcmp(name, "trim") == 0) return "trim is strings.trim, from std/strings";
     if (strcmp(name, "replace") == 0) return "replace is strings.replace, from std/strings";
+    if (strcmp(name, "contains") == 0) return "test for an item or a part of text with 'x in value'";
     return NULL;
 }
 

@@ -742,6 +742,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "ceil", 0, NULL, NULL), "'ceil' is not defined (ceil is math.ceil, from std/math)");
     ERR(rl_fail_undefined(&cx, "trim", 0, NULL, NULL), "'trim' is not defined (trim is strings.trim, from std/strings)");
     ERR(rl_fail_undefined(&cx, "replace", 0, NULL, NULL), "'replace' is not defined (replace is strings.replace, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "contains", 0, NULL, NULL), "'contains' is not defined (test for an item or a part of text with 'x in value')");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
