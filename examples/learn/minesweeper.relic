@@ -1,0 +1,31 @@
+# Minesweeper numbers: every empty square gets the count of mines among its
+# eight neighbours.
+#   relic examples/learn/minesweeper.relic
+
+fun annotate(board)
+    let out = []
+    for r in 0..len(board)
+        let line = ""
+        for c in 0..len(board[r])
+            if board[r][c] == "*"
+                line = line + "*"
+                next
+            let n = 0
+            for dr in -1..2
+                for dc in -1..2
+                    let rr = r + dr
+                    let cc = c + dc
+                    if rr >= 0 and rr < len(board) and cc >= 0 and cc < len(board[rr])
+                        if board[rr][cc] == "*"
+                            n = n + 1
+            if n == 0
+                line = line + "."
+            else
+                line = line + str(n)
+        append(out, line)
+    return out
+
+let board = ["*....*", "..*...", "......", "**..*.", "......"]
+for i in 0..len(board)
+    print("{board[i]}   {annotate(board)[i]}")
+print(annotate(["***", "*.*", "***"]))
