@@ -1,0 +1,21 @@
+# The best single buy and sell: walk the prices once, keeping the lowest
+# price so far and the best profit from selling today.
+#   relic examples/learn/stock.relic
+
+fun best_trade(prices)
+    let low = 0
+    let best = [0, 0, 0]
+    for day in 1..len(prices)
+        if prices[day] < prices[low]
+            low = day
+        else if prices[day] - prices[low] > best[2]
+            best = [low, day, prices[day] - prices[low]]
+    return best
+
+let weeks = [[7, 1, 5, 3, 6, 4], [7, 6, 4, 3, 1], [2, 4, 1, 9, 3, 8], [3, 3, 3], [10, 12, 5, 11, 4, 6]]
+for prices in weeks
+    let t = best_trade(prices)
+    if t[2] == 0
+        print("{prices}: no trade makes money")
+    else
+        print("{prices}: buy day {t[0]} at {prices[t[0]]}, sell day {t[1]} at {prices[t[1]]}, profit {t[2]}")
