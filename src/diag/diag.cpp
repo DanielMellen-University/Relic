@@ -331,6 +331,7 @@ const Pair kNames[] = {
     {"Array", "a list is written with square brackets around the items"},
     {"dict", "a map is written with braces around key: value pairs"},
     {"random", "random numbers are in std/random; add 'use std/random' first"},
+    {"strings", "text helpers are in std/strings; add 'use std/strings' first"},
     {nullptr, nullptr},
 };
 

@@ -1,0 +1,3 @@
+name_strings.relic:1:7: warning: 'strings' is not defined (text helpers are in std/strings; add 'use std/strings' first)
+    print(strings.upper("hi"))
+          ^

@@ -754,6 +754,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "Array", 0, NULL, NULL), "'Array' is not defined (a list is written with square brackets around the items)");
     ERR(rl_fail_undefined(&cx, "dict", 0, NULL, NULL), "'dict' is not defined (a map is written with braces around key: value pairs)");
     ERR(rl_fail_undefined(&cx, "random", 0, NULL, NULL), "'random' is not defined (random numbers are in std/random; add 'use std/random' first)");
+    ERR(rl_fail_undefined(&cx, "strings", 0, NULL, NULL), "'strings' is not defined (text helpers are in std/strings; add 'use std/strings' first)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

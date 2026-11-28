@@ -405,6 +405,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "Array") == 0) return "a list is written with square brackets around the items";
     if (strcmp(name, "dict") == 0) return "a map is written with braces around key: value pairs";
     if (strcmp(name, "random") == 0) return "random numbers are in std/random; add 'use std/random' first";
+    if (strcmp(name, "strings") == 0) return "text helpers are in std/strings; add 'use std/strings' first";
     return NULL;
 }
 
