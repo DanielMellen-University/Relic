@@ -1,0 +1,3 @@
+name_isdigit.relic:1:7: error: 'isdigit' is not defined (isdigit is strings.is_digits, from std/strings)
+    print(isdigit("12"))
+          ^

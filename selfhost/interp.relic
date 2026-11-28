@@ -254,6 +254,8 @@ fun name_note(name)
         return "items is maps.items, from std/maps"
     if name == "unshift"
         return "put an item at the front with insert(list, 0, item)"
+    if name == "isdigit"
+        return "isdigit is strings.is_digits, from std/strings"
     return ""
 
 fun edit_distance(a, b)

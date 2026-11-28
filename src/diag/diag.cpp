@@ -339,6 +339,7 @@ const Pair kNames[] = {
     {"values", "values is maps.values, from std/maps"},
     {"items", "items is maps.items, from std/maps"},
     {"unshift", "put an item at the front with insert(list, 0, item)"},
+    {"isdigit", "isdigit is strings.is_digits, from std/strings"},
     {nullptr, nullptr},
 };
 
