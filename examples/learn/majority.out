@@ -1,0 +1,5 @@
+["a", "b", "a", "c", "a", "a", "b"]: candidate a, majority a
+[1, 2, 3, 2, 2]: candidate 2, majority 2
+[1, 2, 3, 1, 2, 3]: candidate 2, majority none
+["yes"]: candidate yes, majority yes
+[]: candidate none, majority none
