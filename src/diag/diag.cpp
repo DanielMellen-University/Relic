@@ -325,6 +325,7 @@ const Pair kNames[] = {
     {"startsWith", "startsWith is strings.starts_with, from std/strings"},
     {"endsWith", "endsWith is strings.ends_with, from std/strings"},
     {"toUpperCase", "toUpperCase is strings.upper, from std/strings"},
+    {"toLowerCase", "toLowerCase is strings.lower, from std/strings"},
     {nullptr, nullptr},
 };
 

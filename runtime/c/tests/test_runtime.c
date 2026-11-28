@@ -748,6 +748,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "startsWith", 0, NULL, NULL), "'startsWith' is not defined (startsWith is strings.starts_with, from std/strings)");
     ERR(rl_fail_undefined(&cx, "endsWith", 0, NULL, NULL), "'endsWith' is not defined (endsWith is strings.ends_with, from std/strings)");
     ERR(rl_fail_undefined(&cx, "toUpperCase", 0, NULL, NULL), "'toUpperCase' is not defined (toUpperCase is strings.upper, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "toLowerCase", 0, NULL, NULL), "'toLowerCase' is not defined (toLowerCase is strings.lower, from std/strings)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

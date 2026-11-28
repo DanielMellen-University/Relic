@@ -226,6 +226,8 @@ fun name_note(name)
         return "endsWith is strings.ends_with, from std/strings"
     if name == "toUpperCase"
         return "toUpperCase is strings.upper, from std/strings"
+    if name == "toLowerCase"
+        return "toLowerCase is strings.lower, from std/strings"
     return ""
 
 fun edit_distance(a, b)

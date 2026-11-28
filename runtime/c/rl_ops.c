@@ -399,6 +399,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "startsWith") == 0) return "startsWith is strings.starts_with, from std/strings";
     if (strcmp(name, "endsWith") == 0) return "endsWith is strings.ends_with, from std/strings";
     if (strcmp(name, "toUpperCase") == 0) return "toUpperCase is strings.upper, from std/strings";
+    if (strcmp(name, "toLowerCase") == 0) return "toLowerCase is strings.lower, from std/strings";
     return NULL;
 }
 
