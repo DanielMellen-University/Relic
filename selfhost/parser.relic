@@ -224,6 +224,8 @@ fun word_extra(word)
         return "branch with 'if not (...)'; Relic has no unless"
     if word == "echo"
         return "call it as print(...); Relic has no echo"
+    if word == "puts"
+        return "call it as print(...); Relic has no puts"
     return ""
 
 fun type_extra(name)
