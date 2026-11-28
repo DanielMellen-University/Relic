@@ -396,6 +396,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "contains") == 0) return "test for an item or a part of text with 'x in value'";
     if (strcmp(name, "includes") == 0) return "test for an item or a part of text with 'x in value'";
     if (strcmp(name, "indexOf") == 0) return "indexOf is lists.index_of for a list, or strings.find for text";
+    if (strcmp(name, "startsWith") == 0) return "startsWith is strings.starts_with, from std/strings";
     return NULL;
 }
 

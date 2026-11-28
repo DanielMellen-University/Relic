@@ -1,0 +1,3 @@
+name_startsWith.relic:1:7: warning: 'startsWith' is not defined (startsWith is strings.starts_with, from std/strings)
+    print(startsWith("hello", "he"))
+          ^
