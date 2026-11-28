@@ -734,6 +734,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "String", 0, NULL, NULL), "'String' is not defined (turn a value into text with str(value))");
     ERR(rl_fail_undefined(&cx, "isinstance", 0, NULL, NULL), "'isinstance' is not defined (the type of a value is type(value))");
     ERR(rl_fail_undefined(&cx, "min", 0, NULL, NULL), "'min' is not defined (min is math.min for two numbers, or lists.min for a list)");
+    ERR(rl_fail_undefined(&cx, "max", 0, NULL, NULL), "'max' is not defined (max is math.max for two numbers, or lists.max for a list)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
