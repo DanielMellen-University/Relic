@@ -1,0 +1,22 @@
+# Prime factors by trial division. Divide out each factor as often as it goes,
+# and whatever is left above 1 at the end is prime.
+#   relic examples/learn/factors.relic
+use std/strings
+
+fun factors(n)
+    let out = []
+    let d = 2
+    while d * d <= n
+        while n % d == 0
+            append(out, d)
+            n = int(n / d)
+        d = d + 1
+    if n > 1
+        append(out, n)
+    return out
+
+for n in [2, 12, 97, 360, 1001, 65536, 999999]
+    let parts = []
+    for f in factors(n)
+        append(parts, str(f))
+    print("{n} = {strings.join(parts, " x ")}")
