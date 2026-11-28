@@ -729,6 +729,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "range", 0, NULL, NULL), "'range' is not defined (a range is written a..b, as in for i in 0..n)");
     ERR(rl_fail_undefined(&cx, "Math", 0, NULL, NULL), "'Math' is not defined (math functions are in std/math)");
     ERR(rl_fail_undefined(&cx, "JSON", 0, NULL, NULL), "'JSON' is not defined (parse and write text with std/json)");
+    ERR(rl_fail_undefined(&cx, "parseInt", 0, NULL, NULL), "'parseInt' is not defined (turn text into a number with num(text))");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

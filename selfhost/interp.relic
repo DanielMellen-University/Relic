@@ -188,6 +188,8 @@ fun name_note(name)
         return "math functions are in std/math"
     if name == "JSON"
         return "parse and write text with std/json"
+    if name == "parseInt"
+        return "turn text into a number with num(text)"
     return ""
 
 fun edit_distance(a, b)

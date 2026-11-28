@@ -1,0 +1,3 @@
+name_parseInt.relic:1:7: error: 'parseInt' is not defined (turn text into a number with num(text))
+    print(parseInt("4"))
+          ^

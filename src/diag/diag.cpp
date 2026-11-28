@@ -296,6 +296,7 @@ const Pair kNames[] = {
     {"range", "a range is written a..b, as in for i in 0..n"},
     {"Math", "math functions are in std/math"},
     {"JSON", "parse and write text with std/json"},
+    {"parseInt", "turn text into a number with num(text)"},
     {nullptr, nullptr},
 };
 

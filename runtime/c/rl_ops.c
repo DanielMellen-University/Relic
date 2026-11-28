@@ -380,6 +380,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "range") == 0) return "a range is written a..b, as in for i in 0..n";
     if (strcmp(name, "Math") == 0) return "math functions are in std/math";
     if (strcmp(name, "JSON") == 0) return "parse and write text with std/json";
+    if (strcmp(name, "parseInt") == 0) return "turn text into a number with num(text)";
     return NULL;
 }
 
