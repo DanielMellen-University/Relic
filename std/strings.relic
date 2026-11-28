@@ -597,3 +597,37 @@ fun is_blank(s)
         if not is_space(c)
             return false
     return true
+
+# The longest text that every string in items starts with (common_prefix) or
+# ends with (common_suffix). An empty list gives "".
+fun _common(name, items, from_end)
+    if type(items) != "list"
+        fail("strings." + name + "(): argument must be a list, got " + type(items))
+    if len(items) == 0
+        return ""
+    for s in items
+        _text(name, "item", s)
+    let n = len(items[0])
+    for s in items
+        if len(s) < n
+            n = len(s)
+    let k = 0
+    while k < n
+        let i = k
+        if from_end
+            i = len(items[0]) - 1 - k
+        let c = items[0][i]
+        for s in items
+            let j = k
+            if from_end
+                j = len(s) - 1 - k
+            if s[j] != c
+                n = k
+        if k < n
+            k = k + 1
+    if from_end
+        return slice(items[0], len(items[0]) - k, len(items[0]))
+    return slice(items[0], 0, k)
+
+fun common_prefix(items) = _common("common_prefix", items, false)
+fun common_suffix(items) = _common("common_suffix", items, true)

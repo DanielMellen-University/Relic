@@ -235,3 +235,17 @@ Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 `zfill("12345", 3)` → `"12345"`
 
 Program: [zfill.relic](../../examples/ref/strings/zfill.relic).
+
+### common_prefix, common_suffix
+
+`common_prefix` gives the longest text that every string in the list starts with, and `common_suffix` does the same at the end. An empty list gives `""`.
+
+`common_prefix(["flower", "flow", "flight"])` → `"fl"`
+
+`common_prefix(["a", "b"])` → `""`
+
+`common_suffix(["running", "jumping", "sing"])` → `"ing"`
+
+`common_suffix([])` → `""`
+
+Program: [common_prefix.relic](../../examples/ref/strings/common_prefix.relic).

@@ -1,0 +1,19 @@
+# std/strings.common_prefix: the longest start or end shared by every string in a list, as for a folder that several paths share.
+use std/strings
+
+print(strings.common_prefix(["interview", "internet", "interval"]))
+print(strings.common_prefix(["same"]))
+print(strings.common_prefix(["", "abc"]) == "")
+print(strings.common_prefix([]) == "")
+print(strings.common_prefix(["héllo", "hélp"]))
+print(strings.common_suffix(["walked", "talked", "baked"]))
+print(strings.common_suffix(["abc", "xyz"]) == "")
+print(strings.common_suffix(["x"]))
+try
+    strings.common_prefix("abc")
+catch e
+    print(e.message)
+try
+    strings.common_suffix(["a", 1])
+catch e
+    print(e.message)
