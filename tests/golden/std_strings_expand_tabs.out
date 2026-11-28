@@ -1,0 +1,7 @@
+a   b   c
+abcd    e
+true
+true
+no tabs
+strings.expand_tabs(): size must be a whole number, 1 or more, got 0
+strings.expand_tabs(): text must be a string, got int

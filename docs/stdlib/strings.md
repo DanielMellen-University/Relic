@@ -200,7 +200,7 @@ Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 
 `repeat("ab", 0)` → `""`
 
-### pad_left, pad_right, center, truncate, indent, dedent, zfill
+### pad_left, pad_right, center, truncate, indent, dedent, zfill, expand_tabs
 
 `pad_left` and `pad_right` add copies of `fill` until the text is at least `width` long. `center` puts the spare copy on the right. `truncate` cuts to `width` and ends a cut string with `tail`.
 
@@ -235,6 +235,14 @@ Program: [is_blank.relic](../../examples/ref/strings/is_blank.relic).
 `zfill("12345", 3)` → `"12345"`
 
 Program: [zfill.relic](../../examples/ref/strings/zfill.relic).
+
+`expand_tabs(s, size)` turns each tab into the spaces that reach the next stop, one every `size` columns. Columns count again from 0 after a line feed.
+
+`expand_tabs("a\tb", 4)` → `"a   b"`
+
+`expand_tabs("abcd\te", 4)` → `"abcd    e"`
+
+Program: [expand_tabs.relic](../../examples/ref/strings/expand_tabs.relic).
 
 ### common_prefix, common_suffix
 

@@ -631,3 +631,26 @@ fun _common(name, items, from_end)
 
 fun common_prefix(items) = _common("common_prefix", items, false)
 fun common_suffix(items) = _common("common_suffix", items, true)
+
+# s with each tab turned into the spaces that reach the next tab stop, one
+# every size columns. Columns start again after each line feed.
+fun expand_tabs(s, size)
+    _text("expand_tabs", "text", s)
+    if type(size) != "int" or size < 1
+        let got = type(size)
+        if got == "float" or got == "int"
+            got = str(size)
+        fail("strings.expand_tabs(): size must be a whole number, 1 or more, got " + got)
+    let out = []
+    let col = 0
+    for c in s
+        if c == "\t"
+            let n = size - col % size
+            append(out, repeat(" ", n))
+            col = col + n
+        else
+            append(out, c)
+            col = col + 1
+            if c == "\n"
+                col = 0
+    return join(out, "")
