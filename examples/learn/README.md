@@ -91,5 +91,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `scrabble.relic` | Scrabble word scores |
 | `atbash.relic` | the Atbash cipher |
 | `gray.relic` | Gray codes |
+| `bowling.relic` | ten-pin bowling scores |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
