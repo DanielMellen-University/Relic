@@ -335,6 +335,7 @@ const Pair kNames[] = {
     {"lists", "list helpers are in std/lists; add 'use std/lists' first"},
     {"time", "clocks and dates are in std/time; add 'use std/time' first"},
     {"substring", "part of a text is slice(text, start, end)"},
+    {"forEach", "loops are written 'for name in list'"},
     {nullptr, nullptr},
 };
 

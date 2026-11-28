@@ -758,6 +758,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "lists", 0, NULL, NULL), "'lists' is not defined (list helpers are in std/lists; add 'use std/lists' first)");
     ERR(rl_fail_undefined(&cx, "time", 0, NULL, NULL), "'time' is not defined (clocks and dates are in std/time; add 'use std/time' first)");
     ERR(rl_fail_undefined(&cx, "substring", 0, NULL, NULL), "'substring' is not defined (part of a text is slice(text, start, end))");
+    ERR(rl_fail_undefined(&cx, "forEach", 0, NULL, NULL), "'forEach' is not defined (loops are written 'for name in list')");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

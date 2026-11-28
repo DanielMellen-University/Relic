@@ -246,6 +246,8 @@ fun name_note(name)
         return "clocks and dates are in std/time; add 'use std/time' first"
     if name == "substring"
         return "part of a text is slice(text, start, end)"
+    if name == "forEach"
+        return "loops are written 'for name in list'"
     return ""
 
 fun edit_distance(a, b)
