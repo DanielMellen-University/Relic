@@ -244,6 +244,8 @@ fun name_note(name)
         return "list helpers are in std/lists; add 'use std/lists' first"
     if name == "time"
         return "clocks and dates are in std/time; add 'use std/time' first"
+    if name == "substring"
+        return "part of a text is slice(text, start, end)"
     return ""
 
 fun edit_distance(a, b)

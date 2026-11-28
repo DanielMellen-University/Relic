@@ -1,0 +1,3 @@
+name_substring.relic:1:7: error: 'substring' is not defined (part of a text is slice(text, start, end))
+    print(substring("hello", 1, 3))
+          ^
