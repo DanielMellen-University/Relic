@@ -1,0 +1,9 @@
+ana + ben: true
+ben + cy: true
+dee + eli: true
+fay + dee: true
+cy + ana: false
+3 groups
+["ana", "ben", "cy"]
+["dee", "eli", "fay"]
+["gus"]
