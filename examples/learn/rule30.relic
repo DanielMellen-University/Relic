@@ -1,0 +1,39 @@
+# Rule 30 and rule 90, one-dimensional cellular automata. Each cell's next
+# state comes from itself and its two neighbours read as a 3-bit number n:
+# the cell is alive when bit n of the rule number is 1.
+#   relic examples/learn/rule30.relic
+
+fun bit(rule, n)
+    for i in 0..n
+        rule = int(rule / 2)
+    return rule % 2
+
+fun step(cells, rule)
+    let out = ""
+    for i in 0..len(cells)
+        let n = 0
+        for j in [i - 1, i, i + 1]
+            n = n * 2
+            if j >= 0 and j < len(cells) and cells[j] == "#"
+                n = n + 1
+        if bit(rule, n) == 1
+            out = out + "#"
+        else
+            out = out + "."
+    return out
+
+fun run(rule, width, rows)
+    print("rule {rule}:")
+    let half = int(width / 2)
+    let cells = ""
+    for i in 0..width
+        if i == half
+            cells = cells + "#"
+        else
+            cells = cells + "."
+    for r in 0..rows
+        print(cells)
+        cells = step(cells, rule)
+
+run(30, 31, 12)
+run(90, 31, 8)
