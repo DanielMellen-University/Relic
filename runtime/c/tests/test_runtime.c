@@ -738,7 +738,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "end", 0, NULL, NULL), "'end' is not defined (blocks end where the indentation does; delete 'end')");
     ERR(rl_fail_undefined(&cx, "sorted", 0, NULL, NULL), "'sorted' is not defined (sorted is lists.sort, from std/lists, which gives a new list)");
     ERR(rl_fail_undefined(&cx, "reversed", 0, NULL, NULL), "'reversed' is not defined (reversed is lists.reverse for a list, or strings.reverse for text)");
-    ERR(rl_fail_undefined(&cx, "enumerate", 0, NULL, NULL), "'enumerate' is not defined (loop over indexes with 'for i in 0..len(items)')");
+    ERR(rl_fail_undefined(&cx, "enumerate", 0, NULL, NULL), "'enumerate' is not defined (enumerate is lists.enumerate, from std/lists)");
     ERR(rl_fail_undefined(&cx, "ceil", 0, NULL, NULL), "'ceil' is not defined (ceil is math.ceil, from std/math)");
     ERR(rl_fail_undefined(&cx, "trim", 0, NULL, NULL), "'trim' is not defined (trim is strings.trim, from std/strings)");
     ERR(rl_fail_undefined(&cx, "replace", 0, NULL, NULL), "'replace' is not defined (replace is strings.replace, from std/strings)");

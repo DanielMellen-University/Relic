@@ -315,7 +315,7 @@ const Pair kNames[] = {
     {"end", "blocks end where the indentation does; delete 'end'"},
     {"sorted", "sorted is lists.sort, from std/lists, which gives a new list"},
     {"reversed", "reversed is lists.reverse for a list, or strings.reverse for text"},
-    {"enumerate", "loop over indexes with 'for i in 0..len(items)'"},
+    {"enumerate", "enumerate is lists.enumerate, from std/lists"},
     {"ceil", "ceil is math.ceil, from std/math"},
     {"trim", "trim is strings.trim, from std/strings"},
     {"replace", "replace is strings.replace, from std/strings"},

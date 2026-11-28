@@ -207,7 +207,7 @@ fun name_note(name)
     if name == "reversed"
         return "reversed is lists.reverse for a list, or strings.reverse for text"
     if name == "enumerate"
-        return "loop over indexes with 'for i in 0..len(items)'"
+        return "enumerate is lists.enumerate, from std/lists"
     if name == "ceil"
         return "ceil is math.ceil, from std/math"
     if name == "trim"
