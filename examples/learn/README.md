@@ -75,5 +75,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `factorial.relic` | factorials, and the overflow past 20 |
 | `euclid.relic` | greatest common divisor and least common multiple |
 | `bubble_sort.relic` | bubble sort, stopping after a pass with no swaps |
+| `quicksort.relic` | quicksort with the Lomuto partition |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
