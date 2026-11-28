@@ -407,6 +407,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "random") == 0) return "random numbers are in std/random; add 'use std/random' first";
     if (strcmp(name, "strings") == 0) return "text helpers are in std/strings; add 'use std/strings' first";
     if (strcmp(name, "lists") == 0) return "list helpers are in std/lists; add 'use std/lists' first";
+    if (strcmp(name, "time") == 0) return "clocks and dates are in std/time; add 'use std/time' first";
     return NULL;
 }
 

@@ -333,6 +333,7 @@ const Pair kNames[] = {
     {"random", "random numbers are in std/random; add 'use std/random' first"},
     {"strings", "text helpers are in std/strings; add 'use std/strings' first"},
     {"lists", "list helpers are in std/lists; add 'use std/lists' first"},
+    {"time", "clocks and dates are in std/time; add 'use std/time' first"},
     {nullptr, nullptr},
 };
 
