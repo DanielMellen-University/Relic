@@ -1,0 +1,3 @@
+name_includes.relic:1:7: warning: 'includes' is not defined (test for an item or a part of text with 'x in value')
+    print(includes("hello", "ell"))
+          ^

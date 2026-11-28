@@ -320,6 +320,7 @@ const Pair kNames[] = {
     {"trim", "trim is strings.trim, from std/strings"},
     {"replace", "replace is strings.replace, from std/strings"},
     {"contains", "test for an item or a part of text with 'x in value'"},
+    {"includes", "test for an item or a part of text with 'x in value'"},
     {nullptr, nullptr},
 };
 
