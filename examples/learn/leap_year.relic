@@ -1,0 +1,26 @@
+# Leap years in the Gregorian calendar: every fourth year, except century
+# years, except every fourth century.
+#   relic examples/learn/leap_year.relic
+
+fun is_leap(y) = (y % 4 == 0 and y % 100 != 0) or y % 400 == 0
+
+fun days_in(month, y)
+    if month == 2
+        if is_leap(y)
+            return 29
+        return 28
+    if month == 4 or month == 6 or month == 9 or month == 11
+        return 30
+    return 31
+
+for y in [1900, 2000, 2023, 2024, 2100, 2400]
+    let word = "common"
+    if is_leap(y)
+        word = "leap"
+    print("{y}: {word}, February has {days_in(2, y)} days")
+
+let count = 0
+for y in 1901..2001
+    if is_leap(y)
+        count = count + 1
+print("leap years in the 20th century: {count}")

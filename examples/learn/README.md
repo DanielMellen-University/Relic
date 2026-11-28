@@ -102,5 +102,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `counting_sort.relic` | sorting small whole numbers by counting them |
 | `shell_sort.relic` | insertion sort over shrinking gaps |
 | `digital_root.relic` | adding digits until one is left |
+| `leap_year.relic` | Gregorian leap years and days in February |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
