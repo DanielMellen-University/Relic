@@ -222,6 +222,8 @@ fun word_extra(word)
         return "loop with 'while not (...)'; Relic has no until"
     if word == "unless"
         return "branch with 'if not (...)'; Relic has no unless"
+    if word == "echo"
+        return "call it as print(...); Relic has no echo"
     return ""
 
 fun type_extra(name)
