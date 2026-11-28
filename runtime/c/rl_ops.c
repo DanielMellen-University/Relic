@@ -389,6 +389,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "end") == 0) return "blocks end where the indentation does; delete 'end'";
     if (strcmp(name, "sorted") == 0) return "sorted is lists.sort, from std/lists, which gives a new list";
     if (strcmp(name, "reversed") == 0) return "reversed is lists.reverse for a list, or strings.reverse for text";
+    if (strcmp(name, "enumerate") == 0) return "loop over indexes with 'for i in 0..len(items)'";
     return NULL;
 }
 

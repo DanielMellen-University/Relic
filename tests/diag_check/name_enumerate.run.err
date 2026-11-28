@@ -1,0 +1,3 @@
+name_enumerate.relic:1:7: error: 'enumerate' is not defined (loop over indexes with 'for i in 0..len(items)')
+    print(enumerate(["a", "b"]))
+          ^

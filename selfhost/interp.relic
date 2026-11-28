@@ -206,6 +206,8 @@ fun name_note(name)
         return "sorted is lists.sort, from std/lists, which gives a new list"
     if name == "reversed"
         return "reversed is lists.reverse for a list, or strings.reverse for text"
+    if name == "enumerate"
+        return "loop over indexes with 'for i in 0..len(items)'"
     return ""
 
 fun edit_distance(a, b)
