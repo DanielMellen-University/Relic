@@ -50,7 +50,7 @@ Both take two strings, or two lists.
 
 `ends_with([1, 2, 3], [2, 3])` → `true`
 
-### upper, lower, capitalize, swapcase, title
+### upper, lower, capitalize, swapcase, title, slug
 
 ASCII letters only. Other characters stay as they are. `capitalize` changes the first character and leaves the rest.
 
@@ -73,6 +73,14 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 `title("o'neil 2nd")` → `"O'Neil 2nd"`
 
 Program: [title.relic](../../examples/ref/strings/title.relic).
+
+`slug` lowers the text and keeps ASCII letters and digits; each other run of characters becomes one `-`, with none at either end.
+
+`slug("Hello, World!")` → `"hello-world"`
+
+`slug("  Relic 1.0  ")` → `"relic-1-0"`
+
+Program: [slug.relic](../../examples/ref/strings/slug.relic).
 
 ### trim, trim_start, trim_end, trim_chars, squeeze
 

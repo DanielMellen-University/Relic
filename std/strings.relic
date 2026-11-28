@@ -669,3 +669,20 @@ fun squeeze(s, c)
             append(out, ch)
         last = ch
     return join(out, "")
+
+# s as a lower-case slug for a file name or URL: ASCII letters and digits are
+# kept, every other run of characters becomes one "-", and none is left at
+# either end. slug("Hello, World!") is "hello-world".
+fun slug(s)
+    _text("slug", "argument", s)
+    let out = []
+    let gap = false
+    for c in lower(s)
+        if (c >= "a" and c <= "z") or (c >= "0" and c <= "9")
+            if gap and len(out) > 0
+                append(out, "-")
+            append(out, c)
+            gap = false
+        else
+            gap = true
+    return join(out, "")
