@@ -1,0 +1,3 @@
+name_lower.relic:1:7: warning: 'lower' is not defined (lower is strings.lower, from std/strings)
+    print(lower("HI"))
+          ^

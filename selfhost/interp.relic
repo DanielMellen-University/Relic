@@ -172,6 +172,8 @@ fun name_note(name)
         return "round is math.round, from std/math"
     if name == "upper"
         return "upper is strings.upper, from std/strings"
+    if name == "lower"
+        return "lower is strings.lower, from std/strings"
     return ""
 
 fun edit_distance(a, b)

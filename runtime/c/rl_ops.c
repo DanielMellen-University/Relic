@@ -372,6 +372,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "abs") == 0) return "abs is math.abs, from std/math";
     if (strcmp(name, "round") == 0) return "round is math.round, from std/math";
     if (strcmp(name, "upper") == 0) return "upper is strings.upper, from std/strings";
+    if (strcmp(name, "lower") == 0) return "lower is strings.lower, from std/strings";
     return NULL;
 }
 
