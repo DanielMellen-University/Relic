@@ -1,0 +1,4 @@
+7
+true
+nope
+result.try_call(): f must be a function, got int

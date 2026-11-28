@@ -1,0 +1,4 @@
+true
+false
+false
+math.approx(): eps must be a finite number, 0 or more, got -1

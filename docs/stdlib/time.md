@@ -49,3 +49,45 @@ Calendar dates in UTC, for years 1 to 9999, with no leap seconds. `secs` counts 
 `is_leap(2024)` → `true`
 
 `days_in_month(2023, 2)` → `28`
+
+### add_days
+
+`add_days(secs, days)` moves a UTC timestamp by whole days. `days` may be negative. A result outside the years 1 to 9999 is an error.
+
+`add_days(0, 1)` → `86400`
+
+`add_days(86400, -1)` → `0`
+
+### days_between
+
+`days_between(a, b)` is the UTC day number of `b` minus the day number of `a`. A time of day does not count, and a later `a` gives a negative result.
+
+`days_between(0, 86400)` → `1`
+
+`days_between(3600, 86399)` → `0`
+
+`days_between(86400, 0)` → `-1`
+
+### start_of_day
+
+`start_of_day(secs)` is midnight at the start of the UTC day that holds `secs`.
+
+`start_of_day(86400 + 5)` → `86400`
+
+`start_of_day(100)` → `0`
+
+### weekday_name
+
+`weekday_name(day)` is the English name of a weekday number from `date`: 1 is Monday and 7 is Sunday.
+
+`weekday_name(1)` → `"Monday"`
+
+`weekday_name(7)` → `"Sunday"`
+
+### month_name
+
+`month_name(month)` is the English name of a month number from 1 to 12.
+
+`month_name(1)` → `"January"`
+
+`month_name(12)` → `"December"`

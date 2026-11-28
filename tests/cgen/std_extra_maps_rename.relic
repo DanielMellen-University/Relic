@@ -1,0 +1,11 @@
+use std/maps
+print(maps.rename({a: 1, b: 2}, "a", "z"))
+print(maps.rename({a: 1}, "a", "a"))
+try
+    maps.rename({a: 1}, "z", "b")
+catch e
+    print(e.message)
+try
+    maps.rename({a: 1, b: 2}, "a", "b")
+catch e
+    print(e.message)

@@ -1,0 +1,12 @@
+use std/result
+fun gives() = 7
+fun throws()
+    fail("nope")
+print(result.unwrap(result.try_call(gives)))
+let bad = result.try_call(throws)
+print(result.is_err(bad))
+print(bad.message)
+try
+    result.try_call(1)
+catch e
+    print(e.message)

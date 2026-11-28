@@ -1,0 +1,13 @@
+use std/json
+fun gives() = 1
+print(json.kind(none))
+print(json.kind(false))
+print(json.kind(1))
+print(json.kind(1.5))
+print(json.kind("x"))
+print(json.kind([1]))
+print(json.kind({a: 1}))
+try
+    json.kind(gives)
+catch e
+    print(e.message)

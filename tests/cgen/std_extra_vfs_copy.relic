@@ -1,0 +1,14 @@
+use std/vfs
+let fs = vfs.new()
+vfs.write(fs, "/tmp/a.txt", "hello")
+vfs.copy(fs, "/tmp/a.txt", "/tmp/b.txt")
+print(vfs.read(fs, "/tmp/b.txt"))
+print(vfs.read(fs, "/tmp/a.txt"))
+try
+    vfs.copy(fs, "/tmp", "/tmp/c")
+catch e
+    print(e.message)
+try
+    vfs.copy(fs, "/missing", "/tmp/c")
+catch e
+    print(e.message)

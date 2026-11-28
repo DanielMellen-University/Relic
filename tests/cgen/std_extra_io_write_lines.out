@@ -1,0 +1,5 @@
+one
+two
+
+true
+io.write_lines(): line 0 must be a string, got int

@@ -1,0 +1,5 @@
+use std/maps
+let box = {a: 1, b: 2, c: 3}
+print(maps.without(box, "b"))
+print(box)
+print(maps.without(box, "z"))

@@ -1,0 +1,9 @@
+use std/lists
+fun pairs(x) = [x, x]
+print(lists.flat_map([1, 2, 3], pairs))
+print(lists.flat_map([], pairs))
+fun bad(x) = x
+try
+    lists.flat_map([1], bad)
+catch e
+    print(e.message)

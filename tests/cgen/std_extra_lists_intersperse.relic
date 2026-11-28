@@ -1,0 +1,4 @@
+use std/lists
+print(lists.intersperse([1, 2, 3], 0))
+print(lists.intersperse([1], 0))
+print(lists.intersperse([], 0))

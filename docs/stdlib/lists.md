@@ -103,3 +103,89 @@ Programs: [sum.relic](../../examples/ref/lists/sum.relic), [mean.relic](../../ex
 [map.relic](../../examples/ref/lists/map.relic) prints `[2, 4, 6]`. [filter.relic](../../examples/ref/lists/filter.relic) prints `[2, 4]`. [reduce.relic](../../examples/ref/lists/reduce.relic) prints `10` and then `10` for an empty list started at 10. [partition.relic](../../examples/ref/lists/partition.relic) prints `[[2, 4], [1, 3, 5]]`. [group_by.relic](../../examples/ref/lists/group_by.relic) prints `{a: ["ant", "asp"], b: ["bee"], c: ["cow"]}`. [sort_by.relic](../../examples/ref/lists/sort_by.relic) prints `["a", "d", "cc", "bbb"]`.
 
 `fun_add` and `natural` are helpers behind `sum` and `sort`. They are not part of the call list above.
+
+### enumerate
+
+`enumerate(xs)` makes `[index, item]` pairs from 0. A string is its characters.
+
+`enumerate([10, 20])` → `[[0, 10], [1, 20]]`
+
+`enumerate([])` → `[]`
+
+### concat
+
+`concat(parts)` joins a list of lists into one, in order. An item that is not a list is an error.
+
+`concat([[1, 2], [], [3]])` → `[1, 2, 3]`
+
+`concat([])` → `[]`
+
+### intersperse
+
+`intersperse(xs, sep)` puts `sep` between the items, not before the first or after the last.
+
+`intersperse([1, 2, 3], 0)` → `[1, 0, 2, 0, 3]`
+
+`intersperse([1], 0)` → `[1]`
+
+### compact
+
+`compact(xs)` drops `none` and keeps `false`, `0` and `""`.
+
+`compact([1, none, false, 0, ""])` → `[1, false, 0, ""]`
+
+### reject
+
+`reject(xs, test)` is the items `test(x)` is not true for, in order. It is the opposite of `filter`.
+
+### find_last
+
+`find_last(xs, test)` is the last item `test(x)` is true for, or `none`. `test` is called on every item.
+
+### count_if
+
+`count_if(xs, test)` is how many items `test(x)` is true for. An empty list is 0.
+
+### without
+
+`without(xs, item)` is a new list with every item `==` `item` removed, so `1` and `1.0` both go. `xs` is unchanged.
+
+`without([1, 1.0, 2, 1], 1)` → `[2]`
+
+`without([1, 2], 9)` → `[1, 2]`
+
+### dedupe
+
+`dedupe(xs)` drops items that are `==` the one just before them. A later copy that is not next to the first stays.
+
+`dedupe([1, 1.0, 2, 2, 1])` → `[1, 2, 1]`
+
+`dedupe([])` → `[]`
+
+### split_at
+
+`split_at(xs, n)` returns `[the first n items, the rest]`. `n` past the end takes everything and leaves the rest empty.
+
+`split_at([1, 2, 3, 4], 2)` → `[[1, 2], [3, 4]]`
+
+`split_at([1], 5)` → `[[1], []]`
+
+### take_last
+
+`take_last(xs, n)` is the last `n` items, or all of them when there are fewer.
+
+`take_last([1, 2, 3, 4], 2)` → `[3, 4]`
+
+`take_last([1, 2], 9)` → `[1, 2]`
+
+### drop_last
+
+`drop_last(xs, n)` is the items with the last `n` dropped, or `[]` when `n` is at least the length.
+
+`drop_last([1, 2, 3, 4], 2)` → `[1, 2]`
+
+`drop_last([1], 3)` → `[]`
+
+### flat_map
+
+`flat_map(xs, f)` calls `f(x)` for each item and joins the lists it returns. `f` must give a list.

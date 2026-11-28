@@ -45,3 +45,41 @@ Look up, reshape and merge maps. `use std/maps`. Keys are strings. A value that 
 `map_values(m, f)` keeps the keys and sets each value to `f(value)`. [map_values.relic](../../examples/ref/maps/map_values.relic) prints `{a: 2, b: 4}`.
 
 `filter(m, keep)` keeps entries where `keep(key, value)` is true. [filter.relic](../../examples/ref/maps/filter.relic) prints `{b: 3, c: 2}`.
+
+### with
+
+`with(m, k, v)` is a new map with `k` set to `v`. An existing key stays where it is. `m` is unchanged.
+
+`with({a: 1, b: 2}, "b", 9)` → `{a: 1, b: 9}`
+
+`with({a: 1}, "c", 3)` → `{a: 1, c: 3}`
+
+### without
+
+`without(m, k)` is a new map without `k`. A missing key is not an error, and `m` is unchanged (`drop` removes the key from `m` itself).
+
+`without({a: 1, b: 2, c: 3}, "b")` → `{a: 1, c: 3}`
+
+`without({a: 1}, "z")` → `{a: 1}`
+
+### omit
+
+`omit(m, keys)` is a new map without every key in the list. A key that is not there is skipped.
+
+`omit({a: 1, b: 2, c: 3}, ["c", "a", "z"])` → `{b: 2}`
+
+### compact
+
+`compact(m)` is a new map without the keys whose value is `none`. `false`, `0` and `""` stay.
+
+`compact({a: 1, b: none, c: 0})` → `{a: 1, c: 0}`
+
+### map_keys
+
+`map_keys(m, f)` is a new map with each key put through `f`. `f` must give a string, and two keys must not land on one string.
+
+### rename
+
+`rename(m, old, new)` is a new map with `old` renamed to `new`, in the same place. `old` must be there, and `new` must not be, unless the two names are the same.
+
+`rename({a: 1, b: 2}, "a", "z")` → `{z: 1, b: 2}`

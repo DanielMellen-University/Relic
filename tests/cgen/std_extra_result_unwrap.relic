@@ -1,0 +1,6 @@
+use std/result
+print(result.unwrap(result.ok(3)))
+try
+    result.unwrap(result.err("boom"))
+catch e
+    print(e.message)

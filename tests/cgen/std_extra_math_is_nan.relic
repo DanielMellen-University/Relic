@@ -1,0 +1,4 @@
+use std/math
+print(math.is_nan(math.sqrt(-1)))
+print(math.is_nan(1))
+print(math.is_nan(math.log(0)))

@@ -255,3 +255,21 @@ fun size(fs, path)
     if n == none or n.dir
         fail("cannot get the size of " + _norm(path))
     return len(n.text)
+
+# true when path is a file. A missing path and a folder are false.
+fun is_file(fs, path)
+    _fs("is_file", fs)
+    _path("is_file", "path", path)
+    let n = _node(fs, path)
+    if n == none
+        return false
+    return not n.dir
+
+# Copy the text of one file onto another. from must be a file. to is created
+# or replaced, and must not be a folder. Folders are not copied.
+fun copy(fs, from, to)
+    _fs("copy", fs)
+    _path("copy", "from", from)
+    _path("copy", "to", to)
+    let text = read(fs, from)
+    write(fs, to, text)

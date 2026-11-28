@@ -1,0 +1,4 @@
+use std/lists
+print(lists.take_last([1, 2, 3, 4], 2))
+print(lists.take_last([1, 2], 9))
+print(lists.take_last([1, 2], 0))

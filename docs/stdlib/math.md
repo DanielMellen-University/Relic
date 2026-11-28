@@ -147,3 +147,91 @@ Rounding, roots, angles and whole-number helpers. `use std/math`.
 `dist(0, 0, 3, 4)` → `5.0`
 
 `dist(1, 1, 1, 1)` → `0.0`
+
+### div_floor
+
+`div_floor(a, b)` is `a / b` rounded down, as an int, for every int. `/` gives a float, and past 2^53 that float is not exact.
+
+`div_floor(7, 3)` → `2`
+
+`div_floor(-7, 3)` → `-3`
+
+`div_floor(7, -3)` → `-3`
+
+`div_floor(-7, -3)` → `2`
+
+### factorial
+
+`factorial(n)` is `n!` for an int `n` from 0 to 20. `0!` is 1. `21!` does not fit in an int.
+
+`factorial(0)` → `1`
+
+`factorial(5)` → `120`
+
+`factorial(20)` → `2432902008176640000`
+
+### comb
+
+`comb(n, k)` is the binomial coefficient `C(n, k)`. `n` is 0 or more and `k` is from 0 to `n`. A result that does not fit is an error.
+
+`comb(10, 3)` → `120`
+
+`comb(5, 0)` → `1`
+
+`comb(66, 33)` → `7219428434016265740`
+
+### is_prime
+
+`is_prime(n)` is whether an int is prime. Negative numbers, 0 and 1 are not. The test is Miller-Rabin with a fixed set of bases that is enough for every int, so it does not search up to the square root.
+
+`is_prime(2)` → `true`
+
+`is_prime(97)` → `true`
+
+`is_prime(9)` → `false`
+
+`is_prime(1)` → `false`
+
+### log10
+
+`log10(x)` is the base-10 logarithm. Outside the domain it is `nan` or `-inf`, as `log` is, not an error.
+
+`log10(1)` → `0.0`
+
+### is_finite
+
+`is_finite(x)` is true for an int, or a float that is not `nan` and not an infinity.
+
+`is_finite(1)` → `true`
+
+`is_finite(1.5)` → `true`
+
+### is_nan
+
+`is_nan(x)` is true only for `nan`. An infinity is not `nan`.
+
+`is_nan(1)` → `false`
+
+### is_inf
+
+`is_inf(x)` is true for `+inf` and `-inf`. `nan` is not an infinity.
+
+`is_inf(1)` → `false`
+
+### approx
+
+`approx(a, b, eps)` is whether `a` and `b` differ by at most `eps`. `eps` must be finite and 0 or more. `nan` is never close, and neither is an infinity.
+
+`approx(1, 1, 0)` → `true`
+
+`approx(1, 2, 0.5)` → `false`
+
+### fract
+
+`fract(x)` is the fractional part of `x` in the range from 0 up to but not including 1, `x - floor(x)`. An int is `0.0`. A float at 2^53 or past has no bits left for a fraction, so it is `0.0` too.
+
+`fract(2.75)` → `0.75`
+
+`fract(-1.25)` → `0.75`
+
+`fract(4)` → `0.0`

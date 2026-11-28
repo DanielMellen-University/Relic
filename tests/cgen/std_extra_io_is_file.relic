@@ -1,0 +1,14 @@
+use std/io
+use std/files
+let p = "_io_is_file.tmp"
+files.write(p, "hi")
+print(io.is_file(p))
+files.make_dir("_io_is_file_dir.tmp")
+print(io.is_file("_io_is_file_dir.tmp"))
+files.remove(p)
+files.remove("_io_is_file_dir.tmp")
+print(io.is_file(p))
+try
+    io.is_file(1)
+catch e
+    print(e.message)

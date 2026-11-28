@@ -1,0 +1,8 @@
+use std/time
+print(time.weekday_name(1))
+print(time.weekday_name(7))
+print(time.weekday_name(time.date(0).weekday))
+try
+    time.weekday_name(0)
+catch e
+    print(e.message)

@@ -1,0 +1,7 @@
+use std/csv
+print(csv.headers("name,age\nAda,36\n"))
+print(csv.headers("a;b\n1;2\n", ";"))
+try
+    csv.headers("")
+catch e
+    print(e.message)

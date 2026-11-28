@@ -1,0 +1,13 @@
+2
+-3
+-3
+2
+0
+3074457345618258602
+-4611686018427387904
+4611686018427387904
+-1
+1
+math.div_floor(): b must not be 0
+math.div_floor(): the result, 2^63, is out of the int range
+math.div_floor(): a must be an int, got float

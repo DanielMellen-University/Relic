@@ -1,0 +1,3 @@
+11111000
+true
+random.boolean(): r must be a generator from random.new(), got int

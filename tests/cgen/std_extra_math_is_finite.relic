@@ -1,0 +1,9 @@
+use std/math
+print(math.is_finite(1))
+print(math.is_finite(1.5))
+print(math.is_finite(math.log(0)))
+print(math.is_finite(math.sqrt(-1)))
+try
+    math.is_finite("a")
+catch e
+    print(e.message)

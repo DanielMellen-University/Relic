@@ -1,0 +1,4 @@
+use std/paths
+print(paths.split_ext("a/b.tar.gz"))
+print(paths.split_ext(".bashrc"))
+print(paths.split_ext("a/b"))

@@ -1,0 +1,5 @@
+["b", "b", "b", "b", "a", "b"]
+true
+random.weighted(): the list is empty
+random.weighted(): weight 0 must be an int above 0, got 0
+random.weighted(): weights must have 2 items, got 1
