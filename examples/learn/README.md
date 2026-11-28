@@ -89,5 +89,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `pangram.relic` | pangrams and the letters they miss |
 | `isogram.relic` | words with no repeated letter |
 | `scrabble.relic` | Scrabble word scores |
+| `atbash.relic` | the Atbash cipher |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
