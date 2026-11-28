@@ -1,0 +1,42 @@
+# Topological sort with Kahn's algorithm: tasks with no unmet prerequisites
+# go first. A cycle leaves tasks behind, and that is reported.
+#   relic examples/learn/topo_sort.relic
+
+fun topo_sort(deps)
+    let waiting = {}
+    let users = {}
+    for task in deps
+        waiting[task] = len(deps[task])
+        if not (task in users)
+            users[task] = []
+        for before in deps[task]
+            if not (before in users)
+                users[before] = []
+            append(users[before], task)
+            if not (before in waiting)
+                waiting[before] = 0
+    let ready = []
+    for task in waiting
+        if waiting[task] == 0
+            append(ready, task)
+    let order = []
+    while len(ready) > 0
+        let task = remove(ready, 0)
+        append(order, task)
+        for u in users[task]
+            waiting[u] = waiting[u] - 1
+            if waiting[u] == 0
+                append(ready, u)
+    if len(order) < len(waiting)
+        return none
+    return order
+
+let build = {
+    link: ["compile", "assets"],
+    compile: ["fetch"],
+    assets: ["fetch"],
+    test: ["link"],
+    fetch: []
+}
+print(topo_sort(build))
+print(topo_sort({a: ["b"], b: ["c"], c: ["a"]}))

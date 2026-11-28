@@ -78,5 +78,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `quicksort.relic` | quicksort with the Lomuto partition |
 | `selection_sort.relic` | selection sort, one step at a time |
 | `dijkstra.relic` | shortest paths on a weighted graph |
+| `topo_sort.relic` | an order for tasks with prerequisites |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
