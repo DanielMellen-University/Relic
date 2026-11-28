@@ -321,6 +321,7 @@ const Pair kNames[] = {
     {"replace", "replace is strings.replace, from std/strings"},
     {"contains", "test for an item or a part of text with 'x in value'"},
     {"includes", "test for an item or a part of text with 'x in value'"},
+    {"indexOf", "indexOf is lists.index_of for a list, or strings.find for text"},
     {nullptr, nullptr},
 };
 

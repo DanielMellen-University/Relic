@@ -744,6 +744,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "replace", 0, NULL, NULL), "'replace' is not defined (replace is strings.replace, from std/strings)");
     ERR(rl_fail_undefined(&cx, "contains", 0, NULL, NULL), "'contains' is not defined (test for an item or a part of text with 'x in value')");
     ERR(rl_fail_undefined(&cx, "includes", 0, NULL, NULL), "'includes' is not defined (test for an item or a part of text with 'x in value')");
+    ERR(rl_fail_undefined(&cx, "indexOf", 0, NULL, NULL), "'indexOf' is not defined (indexOf is lists.index_of for a list, or strings.find for text)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

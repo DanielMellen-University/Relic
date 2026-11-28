@@ -218,6 +218,8 @@ fun name_note(name)
         return "test for an item or a part of text with 'x in value'"
     if name == "includes"
         return "test for an item or a part of text with 'x in value'"
+    if name == "indexOf"
+        return "indexOf is lists.index_of for a list, or strings.find for text"
     return ""
 
 fun edit_distance(a, b)
