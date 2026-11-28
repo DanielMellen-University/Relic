@@ -208,6 +208,8 @@ fun word_extra(word)
         return "catch an error with try and catch"
     if word == "struct"
         return "Relic has no structs; use a map"
+    if word == "enum"
+        return "Relic has no enums; use strings, or a map of names"
     return ""
 
 fun type_extra(name)
