@@ -292,6 +292,7 @@ const Pair kNames[] = {
     {"split", "split is strings.split, from std/strings"},
     {"join", "join is strings.join, from std/strings"},
     {"map", "map is lists.map, from std/lists"},
+    {"zip", "zip is lists.zip, from std/lists"},
     {nullptr, nullptr},
 };
 

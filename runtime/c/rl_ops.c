@@ -376,6 +376,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "split") == 0) return "split is strings.split, from std/strings";
     if (strcmp(name, "join") == 0) return "join is strings.join, from std/strings";
     if (strcmp(name, "map") == 0) return "map is lists.map, from std/lists";
+    if (strcmp(name, "zip") == 0) return "zip is lists.zip, from std/lists";
     return NULL;
 }
 
