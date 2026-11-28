@@ -210,6 +210,8 @@ fun name_note(name)
         return "loop over indexes with 'for i in 0..len(items)'"
     if name == "ceil"
         return "ceil is math.ceil, from std/math"
+    if name == "trim"
+        return "trim is strings.trim, from std/strings"
     return ""
 
 fun edit_distance(a, b)

@@ -317,6 +317,7 @@ const Pair kNames[] = {
     {"reversed", "reversed is lists.reverse for a list, or strings.reverse for text"},
     {"enumerate", "loop over indexes with 'for i in 0..len(items)'"},
     {"ceil", "ceil is math.ceil, from std/math"},
+    {"trim", "trim is strings.trim, from std/strings"},
     {nullptr, nullptr},
 };
 
