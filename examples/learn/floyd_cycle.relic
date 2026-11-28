@@ -1,0 +1,31 @@
+# Floyd's cycle finding, the tortoise and the hare. A slow pointer moves one
+# step and a fast one moves two; if they meet, the walk loops. Shown on
+# x -> x * x + 1 mod m, where every walk ends in a cycle.
+#   relic examples/learn/floyd_cycle.relic
+
+fun cycle(f, start)
+    let slow = f(start)
+    let fast = f(f(start))
+    while slow != fast
+        slow = f(slow)
+        fast = f(f(fast))
+    let mu = 0
+    slow = start
+    while slow != fast
+        slow = f(slow)
+        fast = f(fast)
+        mu = mu + 1
+    let lam = 1
+    fast = f(slow)
+    while slow != fast
+        fast = f(fast)
+        lam = lam + 1
+    return [mu, lam]
+
+for m in [10, 31, 255, 1000]
+    fun step(x) = (x * x + 1) % m
+    let walk = [0]
+    for i in 0..8
+        append(walk, step(walk[len(walk) - 1]))
+    let r = cycle(step, 0)
+    print("mod {m}: {walk}... starts looping after {r[0]} steps, loop length {r[1]}")
