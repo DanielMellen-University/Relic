@@ -737,6 +737,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "max", 0, NULL, NULL), "'max' is not defined (max is math.max for two numbers, or lists.max for a list)");
     ERR(rl_fail_undefined(&cx, "end", 0, NULL, NULL), "'end' is not defined (blocks end where the indentation does; delete 'end')");
     ERR(rl_fail_undefined(&cx, "sorted", 0, NULL, NULL), "'sorted' is not defined (sorted is lists.sort, from std/lists, which gives a new list)");
+    ERR(rl_fail_undefined(&cx, "reversed", 0, NULL, NULL), "'reversed' is not defined (reversed is lists.reverse for a list, or strings.reverse for text)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

@@ -388,6 +388,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "max") == 0) return "max is math.max for two numbers, or lists.max for a list";
     if (strcmp(name, "end") == 0) return "blocks end where the indentation does; delete 'end'";
     if (strcmp(name, "sorted") == 0) return "sorted is lists.sort, from std/lists, which gives a new list";
+    if (strcmp(name, "reversed") == 0) return "reversed is lists.reverse for a list, or strings.reverse for text";
     return NULL;
 }
 

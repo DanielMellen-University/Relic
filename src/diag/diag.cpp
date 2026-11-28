@@ -314,6 +314,7 @@ const Pair kNames[] = {
     {"max", "max is math.max for two numbers, or lists.max for a list"},
     {"end", "blocks end where the indentation does; delete 'end'"},
     {"sorted", "sorted is lists.sort, from std/lists, which gives a new list"},
+    {"reversed", "reversed is lists.reverse for a list, or strings.reverse for text"},
     {nullptr, nullptr},
 };
 

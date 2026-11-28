@@ -204,6 +204,8 @@ fun name_note(name)
         return "blocks end where the indentation does; delete 'end'"
     if name == "sorted"
         return "sorted is lists.sort, from std/lists, which gives a new list"
+    if name == "reversed"
+        return "reversed is lists.reverse for a list, or strings.reverse for text"
     return ""
 
 fun edit_distance(a, b)
