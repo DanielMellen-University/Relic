@@ -240,6 +240,8 @@ fun name_note(name)
         return "random numbers are in std/random; add 'use std/random' first"
     if name == "strings"
         return "text helpers are in std/strings; add 'use std/strings' first"
+    if name == "lists"
+        return "list helpers are in std/lists; add 'use std/lists' first"
     return ""
 
 fun edit_distance(a, b)
