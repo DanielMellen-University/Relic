@@ -287,6 +287,7 @@ const Pair kNames[] = {
     {"sqrt", "sqrt is math.sqrt, from std/math"},
     {"abs", "abs is math.abs, from std/math"},
     {"round", "round is math.round, from std/math"},
+    {"upper", "upper is strings.upper, from std/strings"},
     {nullptr, nullptr},
 };
 

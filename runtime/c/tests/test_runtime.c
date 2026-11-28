@@ -720,6 +720,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "sqrt", 0, NULL, NULL), "'sqrt' is not defined (sqrt is math.sqrt, from std/math)");
     ERR(rl_fail_undefined(&cx, "abs", 0, NULL, NULL), "'abs' is not defined (abs is math.abs, from std/math)");
     ERR(rl_fail_undefined(&cx, "round", 0, NULL, NULL), "'round' is not defined (round is math.round, from std/math)");
+    ERR(rl_fail_undefined(&cx, "upper", 0, NULL, NULL), "'upper' is not defined (upper is strings.upper, from std/strings)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
