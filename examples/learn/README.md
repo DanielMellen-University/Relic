@@ -43,8 +43,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `piglatin.relic` | Pig Latin |
 | `brackets.relic` | balanced brackets |
 | `rationals.relic` | fractions reduced with `math.gcd` |
-
-One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
 | `fib.relic` | the first Fibonacci numbers |
 | `pascal.relic` | rows of Pascal's triangle |
 | `insertion_sort.relic` | insertion sort |
@@ -76,3 +74,5 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `hamming.relic` | how many characters differ |
 | `factorial.relic` | factorials, and the overflow past 20 |
 | `euclid.relic` | greatest common divisor and least common multiple |
+
+One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
