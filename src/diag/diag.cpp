@@ -323,6 +323,7 @@ const Pair kNames[] = {
     {"includes", "test for an item or a part of text with 'x in value'"},
     {"indexOf", "indexOf is lists.index_of for a list, or strings.find for text"},
     {"startsWith", "startsWith is strings.starts_with, from std/strings"},
+    {"endsWith", "endsWith is strings.ends_with, from std/strings"},
     {nullptr, nullptr},
 };
 

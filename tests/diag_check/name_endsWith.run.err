@@ -1,0 +1,3 @@
+name_endsWith.relic:1:7: error: 'endsWith' is not defined (endsWith is strings.ends_with, from std/strings)
+    print(endsWith("hello", "lo"))
+          ^
