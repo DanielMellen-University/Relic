@@ -1,0 +1,22 @@
+# Shell sort: insertion sort over items a gap apart, with the gap halved
+# each round until it is 1. Prints the list after each gap.
+#   relic examples/learn/shell_sort.relic
+
+fun shell_sort(xs)
+    let gap = int(len(xs) / 2)
+    while gap > 0
+        for i in gap..len(xs)
+            let item = xs[i]
+            let j = i
+            while j >= gap and xs[j - gap] > item
+                xs[j] = xs[j - gap]
+                j = j - gap
+            xs[j] = item
+        print("gap {gap}: {xs}")
+        gap = int(gap / 2)
+    return xs
+
+let xs = [23, 4, 42, 15, 8, 16, 1, 37, 9]
+print("start: {xs}")
+shell_sort(xs)
+print(shell_sort(["pear", "fig", "apple", "kiwi"]))
