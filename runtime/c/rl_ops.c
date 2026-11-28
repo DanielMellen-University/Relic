@@ -415,6 +415,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "unshift") == 0) return "put an item at the front with insert(list, 0, item)";
     if (strcmp(name, "isdigit") == 0) return "isdigit is strings.is_digits, from std/strings";
     if (strcmp(name, "hasOwnProperty") == 0) return "test for a key with 'key in map'";
+    if (strcmp(name, "shift") == 0) return "take the first item with remove(list, 0)";
     return NULL;
 }
 

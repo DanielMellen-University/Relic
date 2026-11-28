@@ -341,6 +341,7 @@ const Pair kNames[] = {
     {"unshift", "put an item at the front with insert(list, 0, item)"},
     {"isdigit", "isdigit is strings.is_digits, from std/strings"},
     {"hasOwnProperty", "test for a key with 'key in map'"},
+    {"shift", "take the first item with remove(list, 0)"},
     {nullptr, nullptr},
 };
 

@@ -258,6 +258,8 @@ fun name_note(name)
         return "isdigit is strings.is_digits, from std/strings"
     if name == "hasOwnProperty"
         return "test for a key with 'key in map'"
+    if name == "shift"
+        return "take the first item with remove(list, 0)"
     return ""
 
 fun edit_distance(a, b)
