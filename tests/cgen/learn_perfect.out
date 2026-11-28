@@ -1,0 +1,9 @@
+1: deficient (divisors add to 0)
+6: perfect (divisors add to 6)
+12: abundant (divisors add to 16)
+28: perfect (divisors add to 28)
+35: deficient (divisors add to 13)
+496: perfect (divisors add to 496)
+945: abundant (divisors add to 975)
+8128: perfect (divisors add to 8128)
+perfect below 10000: [6, 28, 496, 8128]

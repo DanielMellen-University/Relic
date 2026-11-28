@@ -1,0 +1,44 @@
+# Tic-tac-toe: play a scripted game on a 3 by 3 board and check after each
+# move for three in a row, or a full board.
+#   relic examples/learn/tictactoe.relic
+
+let lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+
+fun winner(board)
+    for l in lines
+        let a = board[l[0]]
+        if a != "." and a == board[l[1]] and a == board[l[2]]
+            return a
+    return none
+
+fun show(board)
+    for row in 0..3
+        print(board[row * 3] + board[row * 3 + 1] + board[row * 3 + 2])
+
+fun play(moves)
+    let board = [".", ".", ".", ".", ".", ".", ".", ".", "."]
+    let player = "X"
+    let turn = 0
+    for m in moves
+        board[m] = player
+        turn = turn + 1
+        let w = winner(board)
+        if w != none
+            show(board)
+            print("{w} wins on move {turn}")
+            return
+        if player == "X"
+            player = "O"
+        else
+            player = "X"
+    show(board)
+    if turn == 9
+        print("draw")
+    else
+        print("unfinished")
+
+play([4, 0, 2, 6, 3, 5, 1, 7, 8])
+print("")
+play([0, 4, 8, 2, 1, 6])
+print("")
+play([0, 3, 1, 4, 2])

@@ -1,0 +1,31 @@
+# Scrabble scores: each letter has a value, and a word scores the sum.
+#   relic examples/learn/scrabble.relic
+use std/strings
+
+let groups = {
+    "aeioulnrst": 1,
+    "dg": 2,
+    "bcmp": 3,
+    "fhvwy": 4,
+    "k": 5,
+    "jx": 8,
+    "qz": 10
+}
+let value = {}
+for letters in groups
+    for c in letters
+        value[c] = groups[letters]
+
+fun score(word)
+    let total = 0
+    for c in strings.lower(word)
+        if c in value
+            total = total + value[c]
+    return total
+
+let best = ""
+for w in ["cabbage", "quiz", "Relic", "oxyphenbutazone", "a"]
+    print("{w}: {score(w)}")
+    if score(w) > score(best)
+        best = w
+print("best: {best}")

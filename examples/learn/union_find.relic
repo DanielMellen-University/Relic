@@ -1,0 +1,45 @@
+# Union-find (disjoint sets) with path halving and union by size, used to
+# count the groups of friends in a small network.
+#   relic examples/learn/union_find.relic
+
+fun make(n)
+    let parent = []
+    let size = []
+    for i in 0..n
+        append(parent, i)
+        append(size, 1)
+    return {parent: parent, size: size}
+
+fun find(s, x)
+    while s.parent[x] != x
+        s.parent[x] = s.parent[s.parent[x]]
+        x = s.parent[x]
+    return x
+
+fun union(s, a, b)
+    let ra = find(s, a)
+    let rb = find(s, b)
+    if ra == rb
+        return false
+    if s.size[ra] < s.size[rb]
+        let tmp = ra
+        ra = rb
+        rb = tmp
+    s.parent[rb] = ra
+    s.size[ra] = s.size[ra] + s.size[rb]
+    return true
+
+let names = ["ana", "ben", "cy", "dee", "eli", "fay", "gus"]
+let s = make(len(names))
+for pair in [[0, 1], [1, 2], [3, 4], [5, 3], [2, 0]]
+    let joined = union(s, pair[0], pair[1])
+    print("{names[pair[0]]} + {names[pair[1]]}: {joined}")
+let groups = {}
+for i in 0..len(names)
+    let root = names[find(s, i)]
+    if not (root in groups)
+        groups[root] = []
+    append(groups[root], names[i])
+print("{len(groups)} groups")
+for root in groups
+    print(groups[root])

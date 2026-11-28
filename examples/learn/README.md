@@ -43,8 +43,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `piglatin.relic` | Pig Latin |
 | `brackets.relic` | balanced brackets |
 | `rationals.relic` | fractions reduced with `math.gcd` |
-
-One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
 | `fib.relic` | the first Fibonacci numbers |
 | `pascal.relic` | rows of Pascal's triangle |
 | `insertion_sort.relic` | insertion sort |
@@ -76,3 +74,30 @@ One call at a time, with the same kind of expected output, is under `examples/re
 | `hamming.relic` | how many characters differ |
 | `factorial.relic` | factorials, and the overflow past 20 |
 | `euclid.relic` | greatest common divisor and least common multiple |
+| `bubble_sort.relic` | bubble sort, stopping after a pass with no swaps |
+| `quicksort.relic` | quicksort with the Lomuto partition |
+| `selection_sort.relic` | selection sort, one step at a time |
+| `dijkstra.relic` | shortest paths on a weighted graph |
+| `topo_sort.relic` | an order for tasks with prerequisites |
+| `union_find.relic` | groups of friends with union-find |
+| `bst.relic` | a binary search tree made of maps |
+| `trie.relic` | words by prefix in a trie |
+| `intervals.relic` | merging overlapping intervals |
+| `knapsack.relic` | the 0/1 knapsack |
+| `lis.relic` | longest increasing subsequence |
+| `factors.relic` | prime factors by trial division |
+| `pangram.relic` | pangrams and the letters they miss |
+| `isogram.relic` | words with no repeated letter |
+| `scrabble.relic` | Scrabble word scores |
+| `atbash.relic` | the Atbash cipher |
+| `gray.relic` | Gray codes |
+| `bowling.relic` | ten-pin bowling scores |
+| `triangle.relic` | naming a triangle from its sides |
+| `perfect.relic` | perfect, abundant and deficient numbers |
+| `tictactoe.relic` | a scripted game of tic-tac-toe |
+| `sudoku.relic` | checking a filled sudoku grid |
+| `flood_fill.relic` | the paint bucket on a grid |
+| `spiral.relic` | reading a grid in a spiral |
+| `rail_fence.relic` | the rail fence cipher |
+
+One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.

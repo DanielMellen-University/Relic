@@ -1,0 +1,51 @@
+# Check a filled sudoku grid: every row, column and 3 by 3 box must hold the
+# digits 1 to 9 once each. The first broken group is named.
+#   relic examples/learn/sudoku.relic
+
+fun group_ok(cells)
+    let seen = {}
+    for c in cells
+        if c < "1" or c > "9" or c in seen
+            return false
+        seen[c] = true
+    return true
+
+fun check(rows)
+    for r in 0..9
+        if not group_ok(rows[r])
+            return "row {r + 1}"
+    for c in 0..9
+        let col = ""
+        for r in 0..9
+            col = col + rows[r][c]
+        if not group_ok(col)
+            return "column {c + 1}"
+    for b in 0..9
+        let box = ""
+        let top = int(b / 3) * 3
+        let left = (b % 3) * 3
+        for r in top..top + 3
+            box = box + slice(rows[r], left, left + 3)
+        if not group_ok(box)
+            return "box {b + 1}"
+    return "valid"
+
+let good = [
+    "534678912", "672195348", "198342567",
+    "859761423", "426853791", "713924856",
+    "961537284", "287419635", "345286179"
+]
+print(check(good))
+let bad = []
+for row in good
+    append(bad, row)
+bad[4] = "426853719"
+print(check(bad))
+# Swapping two rows from different bands keeps every row and column whole,
+# but the boxes break.
+let swapped = []
+for row in good
+    append(swapped, row)
+swapped[0] = good[3]
+swapped[3] = good[0]
+print(check(swapped))

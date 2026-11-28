@@ -1,0 +1,5 @@
+"ca": ["car", "cart", "care", "cat"]
+"car": ["car", "cart", "care"]
+"do": ["do", "dog", "dot"]
+"z": []
+"": ["car", "cart", "care", "cat", "do", "dog", "dot"]

@@ -1,0 +1,5 @@
+[20, 30, 40, 50, 60, 65, 70, 80]
+height 4
+40 in tree: true
+45 in tree: false
+65 in tree: true

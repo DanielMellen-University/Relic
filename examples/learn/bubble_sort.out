@@ -1,0 +1,4 @@
+[5, 1, 4, 2, 8] -> [1, 2, 4, 5, 8] in 3 passes
+[1, 2, 3, 4] -> [1, 2, 3, 4] in 1 pass
+["pear", "fig", "apple"] -> ["apple", "fig", "pear"] in 3 passes
+[] -> [] in 1 pass
