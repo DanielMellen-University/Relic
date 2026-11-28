@@ -111,5 +111,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `modpow.relic` | modular powers by repeated squaring |
 | `popcount.relic` | counting 1 bits, plain and with Kernighan's trick |
 | `affine.relic` | the affine cipher and its inverse key |
+| `rotate.relic` | a quarter turn of a grid |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
