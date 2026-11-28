@@ -192,6 +192,8 @@ fun name_note(name)
         return "turn text into a number with num(text)"
     if name == "toString"
         return "turn a value into text with str(value)"
+    if name == "String"
+        return "turn a value into text with str(value)"
     return ""
 
 fun edit_distance(a, b)

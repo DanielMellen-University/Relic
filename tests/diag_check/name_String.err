@@ -1,0 +1,3 @@
+name_String.relic:1:7: warning: 'String' is not defined (turn a value into text with str(value))
+    print(String(4))
+          ^

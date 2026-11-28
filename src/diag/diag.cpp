@@ -298,6 +298,7 @@ const Pair kNames[] = {
     {"JSON", "parse and write text with std/json"},
     {"parseInt", "turn text into a number with num(text)"},
     {"toString", "turn a value into text with str(value)"},
+    {"String", "turn a value into text with str(value)"},
     {nullptr, nullptr},
 };
 

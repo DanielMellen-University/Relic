@@ -731,6 +731,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "JSON", 0, NULL, NULL), "'JSON' is not defined (parse and write text with std/json)");
     ERR(rl_fail_undefined(&cx, "parseInt", 0, NULL, NULL), "'parseInt' is not defined (turn text into a number with num(text))");
     ERR(rl_fail_undefined(&cx, "toString", 0, NULL, NULL), "'toString' is not defined (turn a value into text with str(value))");
+    ERR(rl_fail_undefined(&cx, "String", 0, NULL, NULL), "'String' is not defined (turn a value into text with str(value))");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
