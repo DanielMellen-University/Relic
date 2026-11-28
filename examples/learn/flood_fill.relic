@@ -1,0 +1,42 @@
+# Flood fill, the paint bucket: change one region of the same character,
+# spreading up, down, left and right with a stack.
+#   relic examples/learn/flood_fill.relic
+
+fun fill(grid, row, col, paint)
+    let old = grid[row][col]
+    if old == paint
+        return 0
+    let count = 0
+    let todo = [[row, col]]
+    while len(todo) > 0
+        let p = pop(todo)
+        let r = p[0]
+        let c = p[1]
+        if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[r]) or grid[r][c] != old
+            next
+        grid[r][c] = paint
+        count = count + 1
+        append(todo, [r + 1, c])
+        append(todo, [r - 1, c])
+        append(todo, [r, c + 1])
+        append(todo, [r, c - 1])
+    return count
+
+fun show(grid)
+    for row in grid
+        let line = ""
+        for ch in row
+            line = line + ch
+        print(line)
+
+let picture = ["..##....", ".#..#...", ".#...#..", "..#..#..", "...##..."]
+let grid = []
+for line in picture
+    let row = []
+    for ch in line
+        append(row, ch)
+    append(grid, row)
+print("{fill(grid, 2, 3, "o")} cells inside")
+show(grid)
+print("{fill(grid, 0, 0, "~")} cells from the corner")
+show(grid)

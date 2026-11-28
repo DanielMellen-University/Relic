@@ -96,5 +96,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `perfect.relic` | perfect, abundant and deficient numbers |
 | `tictactoe.relic` | a scripted game of tic-tac-toe |
 | `sudoku.relic` | checking a filled sudoku grid |
+| `flood_fill.relic` | the paint bucket on a grid |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.
