@@ -176,6 +176,8 @@ fun name_note(name)
         return "lower is strings.lower, from std/strings"
     if name == "split"
         return "split is strings.split, from std/strings"
+    if name == "join"
+        return "join is strings.join, from std/strings"
     return ""
 
 fun edit_distance(a, b)

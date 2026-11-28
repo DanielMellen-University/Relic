@@ -374,6 +374,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "upper") == 0) return "upper is strings.upper, from std/strings";
     if (strcmp(name, "lower") == 0) return "lower is strings.lower, from std/strings";
     if (strcmp(name, "split") == 0) return "split is strings.split, from std/strings";
+    if (strcmp(name, "join") == 0) return "join is strings.join, from std/strings";
     return NULL;
 }
 

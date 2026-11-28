@@ -723,6 +723,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "upper", 0, NULL, NULL), "'upper' is not defined (upper is strings.upper, from std/strings)");
     ERR(rl_fail_undefined(&cx, "lower", 0, NULL, NULL), "'lower' is not defined (lower is strings.lower, from std/strings)");
     ERR(rl_fail_undefined(&cx, "split", 0, NULL, NULL), "'split' is not defined (split is strings.split, from std/strings)");
+    ERR(rl_fail_undefined(&cx, "join", 0, NULL, NULL), "'join' is not defined (join is strings.join, from std/strings)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);

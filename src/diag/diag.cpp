@@ -290,6 +290,7 @@ const Pair kNames[] = {
     {"upper", "upper is strings.upper, from std/strings"},
     {"lower", "lower is strings.lower, from std/strings"},
     {"split", "split is strings.split, from std/strings"},
+    {"join", "join is strings.join, from std/strings"},
     {nullptr, nullptr},
 };
 
