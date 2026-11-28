@@ -1,0 +1,35 @@
+# Goldbach's conjecture: every even number above 2 is the sum of two primes.
+# Checked here up to 100 with a sieve, printing the pair with the smallest
+# prime and how many pairs there are.
+#   relic examples/learn/goldbach.relic
+
+fun sieve(n)
+    let is_prime = [false, false]
+    for i in 2..(n + 1)
+        append(is_prime, true)
+    let p = 2
+    while p * p <= n
+        if is_prime[p]
+            let k = p * p
+            while k <= n
+                is_prime[k] = false
+                k = k + p
+        p = p + 1
+    return is_prime
+
+let prime = sieve(100)
+let n = 4
+while n <= 100
+    let first = none
+    let count = 0
+    for p in 2..(int(n / 2) + 1)
+        if prime[p] and prime[n - p]
+            count = count + 1
+            if first == none
+                first = p
+    if n <= 30 or n % 20 == 0
+        let word = "ways"
+        if count == 1
+            word = "way"
+        print("{n} = {first} + {n - first} ({count} {word})")
+    n = n + 2
