@@ -1,0 +1,62 @@
+# Read a grid in a clockwise spiral from the top left, peeling off one ring
+# at a time, and build a numbered spiral the same way.
+#   relic examples/learn/spiral.relic
+use std/strings
+
+fun spiral(m)
+    let out = []
+    if len(m) == 0
+        return out
+    let top = 0
+    let bottom = len(m) - 1
+    let left = 0
+    let right = len(m[0]) - 1
+    while top <= bottom and left <= right
+        for c in left..right + 1
+            append(out, m[top][c])
+        for r in top + 1..bottom + 1
+            append(out, m[r][right])
+        if top < bottom and left < right
+            let c = right - 1
+            while c >= left
+                append(out, m[bottom][c])
+                c = c - 1
+            let r = bottom - 1
+            while r > top
+                append(out, m[r][left])
+                r = r - 1
+        top = top + 1
+        bottom = bottom - 1
+        left = left + 1
+        right = right - 1
+    return out
+
+fun lists_of(xs, width)
+    let rows = []
+    for i in 0..int(len(xs) / width)
+        append(rows, slice(xs, i * width, i * width + width))
+    return rows
+
+print(spiral([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+print(spiral([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]))
+print(spiral([[1], [2], [3]]))
+
+let n = 4
+let grid = []
+let cells = []
+for r in 0..n
+    let row = []
+    for c in 0..n
+        append(row, 0)
+        append(cells, [r, c])
+    append(grid, row)
+let order = spiral(lists_of(cells, n))
+let k = 1
+for p in order
+    grid[p[0]][p[1]] = k
+    k = k + 1
+for row in grid
+    let parts = []
+    for v in row
+        append(parts, strings.pad_left(str(v), 2, " "))
+    print(strings.join(parts, " "))
