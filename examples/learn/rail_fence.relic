@@ -1,0 +1,46 @@
+# The rail fence cipher writes the text in a zigzag over a few rails and
+# reads it off rail by rail. Decoding walks the same zigzag back.
+#   relic examples/learn/rail_fence.relic
+
+fun zigzag(n, rails)
+    let out = []
+    let rail = 0
+    let step = 1
+    for i in 0..n
+        append(out, rail)
+        if rails > 1
+            if rail == 0
+                step = 1
+            else if rail == rails - 1
+                step = -1
+            rail = rail + step
+    return out
+
+fun encode(s, rails)
+    let path = zigzag(len(s), rails)
+    let out = ""
+    for r in 0..rails
+        for i in 0..len(s)
+            if path[i] == r
+                out = out + s[i]
+    return out
+
+fun decode(s, rails)
+    let path = zigzag(len(s), rails)
+    let slots = []
+    for i in 0..len(s)
+        append(slots, "")
+    let k = 0
+    for r in 0..rails
+        for i in 0..len(s)
+            if path[i] == r
+                slots[i] = s[k]
+                k = k + 1
+    let out = ""
+    for ch in slots
+        out = out + ch
+    return out
+
+for rails in [2, 3, 4]
+    let secret = encode("WEAREDISCOVEREDFLEEATONCE", rails)
+    print("{rails} rails: {secret} -> {decode(secret, rails)}")
