@@ -1,0 +1,17 @@
+# An isogram has no repeated letter. Spaces and hyphens may repeat, and case
+# does not matter.
+#   relic examples/learn/isogram.relic
+use std/strings
+
+fun isogram(word)
+    let seen = {}
+    for c in strings.lower(word)
+        if c == " " or c == "-"
+            next
+        if c in seen
+            return false
+        seen[c] = true
+    return true
+
+for w in ["lumberjacks", "background", "six-year-old", "Alphabet", "isograms", ""]
+    print("\"{w}\" isogram {isogram(w)}")
