@@ -299,6 +299,7 @@ const Pair kNames[] = {
     {"parseInt", "turn text into a number with num(text)"},
     {"toString", "turn a value into text with str(value)"},
     {"String", "turn a value into text with str(value)"},
+    {"isinstance", "the type of a value is type(value)"},
     {nullptr, nullptr},
 };
 

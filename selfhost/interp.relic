@@ -194,6 +194,8 @@ fun name_note(name)
         return "turn a value into text with str(value)"
     if name == "String"
         return "turn a value into text with str(value)"
+    if name == "isinstance"
+        return "the type of a value is type(value)"
     return ""
 
 fun edit_distance(a, b)

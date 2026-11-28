@@ -383,6 +383,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "parseInt") == 0) return "turn text into a number with num(text)";
     if (strcmp(name, "toString") == 0) return "turn a value into text with str(value)";
     if (strcmp(name, "String") == 0) return "turn a value into text with str(value)";
+    if (strcmp(name, "isinstance") == 0) return "the type of a value is type(value)";
     return NULL;
 }
 
