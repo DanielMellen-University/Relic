@@ -1,0 +1,25 @@
+# Catalan numbers count balanced bracket strings, binary tree shapes and
+# more. Built two ways: from the sum over splits, and from the closed form
+# C(n + 1) = C(n) * 2 * (2n + 1) / (n + 2).
+#   relic examples/learn/catalan.relic
+
+fun by_sum(n)
+    let c = [1]
+    for k in 1..(n + 1)
+        let total = 0
+        for i in 0..k
+            total = total + c[i] * c[k - 1 - i]
+        append(c, total)
+    return c
+
+fun by_ratio(n)
+    let c = [1]
+    for k in 0..n
+        append(c, int(c[k] * 2 * (2 * k + 1) / (k + 2)))
+    return c
+
+let a = by_sum(15)
+let b = by_ratio(15)
+print(a)
+print("same both ways: {a == b}")
+print("ways to split a hexagon into triangles: {a[4]}")
