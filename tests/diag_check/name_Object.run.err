@@ -1,0 +1,3 @@
+name_Object.relic:1:9: error: 'Object' is not defined (a map is written with braces around key: value pairs)
+    let m = Object()
+            ^

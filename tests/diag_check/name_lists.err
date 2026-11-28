@@ -1,0 +1,3 @@
+name_lists.relic:1:7: warning: 'lists' is not defined (list helpers are in std/lists; add 'use std/lists' first)
+    print(lists.sum([1, 2]))
+          ^

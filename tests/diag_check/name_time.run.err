@@ -1,0 +1,3 @@
+name_time.relic:1:7: error: 'time' is not defined (clocks and dates are in std/time; add 'use std/time' first)
+    print(time.now())
+          ^

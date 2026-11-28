@@ -1,0 +1,3 @@
+name_reversed.relic:1:7: error: 'reversed' is not defined (reversed is lists.reverse for a list, or strings.reverse for text)
+    print(reversed([1, 2, 3]))
+          ^

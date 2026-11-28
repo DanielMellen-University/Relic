@@ -1,0 +1,3 @@
+name_unshift.relic:1:1: error: 'unshift' is not defined (put an item at the front with insert(list, 0, item))
+    unshift([1], 0)
+    ^

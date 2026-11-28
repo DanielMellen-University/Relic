@@ -1,0 +1,3 @@
+name_parseFloat.relic:1:7: error: 'parseFloat' is not defined (turn text into a number with num(text) or float(text))
+    print(parseFloat("2.5"))
+          ^

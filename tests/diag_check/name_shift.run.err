@@ -1,0 +1,3 @@
+name_shift.relic:1:7: error: 'shift' is not defined (take the first item with remove(list, 0))
+    print(shift([1, 2]))
+          ^

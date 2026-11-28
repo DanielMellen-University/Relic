@@ -1,0 +1,3 @@
+name_ceil.relic:1:7: error: 'ceil' is not defined (ceil is math.ceil, from std/math)
+    print(ceil(2.5))
+          ^

@@ -1,0 +1,3 @@
+name_hasOwnProperty.relic:1:7: error: 'hasOwnProperty' is not defined (test for a key with 'key in map')
+    print(hasOwnProperty("a"))
+          ^

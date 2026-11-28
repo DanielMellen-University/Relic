@@ -1,0 +1,3 @@
+name_toLowerCase.relic:1:7: warning: 'toLowerCase' is not defined (toLowerCase is strings.lower, from std/strings)
+    print(toLowerCase("HI"))
+          ^

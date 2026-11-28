@@ -387,6 +387,35 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "min") == 0) return "min is math.min for two numbers, or lists.min for a list";
     if (strcmp(name, "max") == 0) return "max is math.max for two numbers, or lists.max for a list";
     if (strcmp(name, "end") == 0) return "blocks end where the indentation does; delete 'end'";
+    if (strcmp(name, "sorted") == 0) return "sorted is lists.sort, from std/lists, which gives a new list";
+    if (strcmp(name, "reversed") == 0) return "reversed is lists.reverse for a list, or strings.reverse for text";
+    if (strcmp(name, "enumerate") == 0) return "enumerate is lists.enumerate, from std/lists";
+    if (strcmp(name, "ceil") == 0) return "ceil is math.ceil, from std/math";
+    if (strcmp(name, "trim") == 0) return "trim is strings.trim, from std/strings";
+    if (strcmp(name, "replace") == 0) return "replace is strings.replace, from std/strings";
+    if (strcmp(name, "contains") == 0) return "test for an item or a part of text with 'x in value'";
+    if (strcmp(name, "includes") == 0) return "test for an item or a part of text with 'x in value'";
+    if (strcmp(name, "indexOf") == 0) return "indexOf is lists.index_of for a list, or strings.find for text";
+    if (strcmp(name, "startsWith") == 0) return "startsWith is strings.starts_with, from std/strings";
+    if (strcmp(name, "endsWith") == 0) return "endsWith is strings.ends_with, from std/strings";
+    if (strcmp(name, "toUpperCase") == 0) return "toUpperCase is strings.upper, from std/strings";
+    if (strcmp(name, "toLowerCase") == 0) return "toLowerCase is strings.lower, from std/strings";
+    if (strcmp(name, "parseFloat") == 0) return "turn text into a number with num(text) or float(text)";
+    if (strcmp(name, "Object") == 0) return "a map is written with braces around key: value pairs";
+    if (strcmp(name, "Array") == 0) return "a list is written with square brackets around the items";
+    if (strcmp(name, "dict") == 0) return "a map is written with braces around key: value pairs";
+    if (strcmp(name, "random") == 0) return "random numbers are in std/random; add 'use std/random' first";
+    if (strcmp(name, "strings") == 0) return "text helpers are in std/strings; add 'use std/strings' first";
+    if (strcmp(name, "lists") == 0) return "list helpers are in std/lists; add 'use std/lists' first";
+    if (strcmp(name, "time") == 0) return "clocks and dates are in std/time; add 'use std/time' first";
+    if (strcmp(name, "substring") == 0) return "part of a text is slice(text, start, end)";
+    if (strcmp(name, "forEach") == 0) return "loops are written 'for name in list'";
+    if (strcmp(name, "values") == 0) return "values is maps.values, from std/maps";
+    if (strcmp(name, "items") == 0) return "items is maps.items, from std/maps";
+    if (strcmp(name, "unshift") == 0) return "put an item at the front with insert(list, 0, item)";
+    if (strcmp(name, "isdigit") == 0) return "isdigit is strings.is_digits, from std/strings";
+    if (strcmp(name, "hasOwnProperty") == 0) return "test for a key with 'key in map'";
+    if (strcmp(name, "shift") == 0) return "take the first item with remove(list, 0)";
     return NULL;
 }
 

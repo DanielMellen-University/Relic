@@ -1,0 +1,3 @@
+name_enumerate.relic:1:7: error: 'enumerate' is not defined (enumerate is lists.enumerate, from std/lists)
+    print(enumerate(["a", "b"]))
+          ^

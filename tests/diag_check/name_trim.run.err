@@ -1,0 +1,3 @@
+name_trim.relic:1:7: error: 'trim' is not defined (trim is strings.trim, from std/strings)
+    print(trim("  hi  "))
+          ^
