@@ -226,6 +226,7 @@ const Pair kWords[] = {
     {"enum", "Relic has no enums; use strings, or a map of names"},
     {"interface", "Relic has no interfaces; use a map or a module"},
     {"from", "modules are loaded with 'use', not 'from'"},
+    {"local", "bindings start with 'let', not 'local'"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {

@@ -1,0 +1,4 @@
+word_local.relic:1:7: error: expected end of line, got name 'count'
+    local count = 0
+          ^^^^^
+hint: bindings start with 'let', not 'local'

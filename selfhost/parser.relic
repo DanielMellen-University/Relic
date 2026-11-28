@@ -214,6 +214,8 @@ fun word_extra(word)
         return "Relic has no interfaces; use a map or a module"
     if word == "from"
         return "modules are loaded with 'use', not 'from'"
+    if word == "local"
+        return "bindings start with 'let', not 'local'"
     return ""
 
 fun type_extra(name)
