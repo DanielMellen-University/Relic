@@ -555,3 +555,21 @@ fun dedent(s)
         else
             append(out, line)
     return join(out, "\n")
+
+# s with the first letter of each word in upper case and the other letters in
+# lower case, ASCII only. A word starts at a letter that does not follow a
+# letter, a digit or a character past ASCII: title("o'neil 2nd") is "O'Neil 2nd".
+fun title(s)
+    _text("title", "argument", s)
+    let out = []
+    let inside = false
+    for c in s
+        let letter = (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
+        if letter and not inside
+            append(out, upper(c))
+        else if letter
+            append(out, lower(c))
+        else
+            append(out, c)
+        inside = letter or (c >= "0" and c <= "9") or ord(c) > 127
+    return join(out, "")

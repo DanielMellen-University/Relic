@@ -50,7 +50,7 @@ Both take two strings, or two lists.
 
 `ends_with([1, 2, 3], [2, 3])` → `true`
 
-### upper, lower, capitalize, swapcase
+### upper, lower, capitalize, swapcase, title
 
 ASCII letters only. Other characters stay as they are. `capitalize` changes the first character and leaves the rest.
 
@@ -65,6 +65,14 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 `swapcase` flips ASCII upper case to lower and lower to upper.
 
 `swapcase("Relic 2!")` → `"rELIC 2!"`
+
+`title` puts the first letter of each word in upper case and the rest in lower case. A word starts at a letter that does not follow a letter, a digit or a character past ASCII.
+
+`title("hello world")` → `"Hello World"`
+
+`title("o'neil 2nd")` → `"O'Neil 2nd"`
+
+Program: [title.relic](../../examples/ref/strings/title.relic).
 
 ### trim, trim_start, trim_end, trim_chars
 
