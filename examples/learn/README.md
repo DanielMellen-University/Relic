@@ -122,5 +122,6 @@ Every program has a sibling `.out` file. `stdlib_examples` runs the program and 
 | `stock.relic` | the best single buy and sell |
 | `paren_gen.relic` | every balanced bracket string, by backtracking |
 | `islands.relic` | counting islands on a map with a stack |
+| `staircase.relic` | ways to climb stairs, filled in from the bottom |
 
 One call at a time, with the same kind of expected output, is under `examples/ref/`. The pages in [docs/stdlib](../../docs/stdlib/README.md) point at those files.

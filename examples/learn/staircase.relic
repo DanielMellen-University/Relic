@@ -1,0 +1,25 @@
+# Ways to climb n stairs taking 1 or 2 steps at a time, and then 1, 2 or 3,
+# filled in from the bottom so each count is worked out once.
+#   relic examples/learn/staircase.relic
+
+fun ways(n, steps)
+    let w = [1]
+    for i in 1..(n + 1)
+        let total = 0
+        for s in steps
+            if i - s >= 0
+                total = total + w[i - s]
+        append(w, total)
+    return w[n]
+
+fun spell(n, steps, prefix, out)
+    if n == 0
+        append(out, prefix)
+    for s in steps
+        if s <= n
+            spell(n - s, steps, prefix + str(s), out)
+    return out
+
+print("4 stairs, steps of 1 or 2: {spell(4, [1, 2], "", [])}")
+for n in [2, 3, 5, 10, 30]
+    print("{n} stairs: {ways(n, [1, 2])} ways with 1 or 2, {ways(n, [1, 2, 3])} with 1, 2 or 3")
