@@ -1,0 +1,3 @@
+name_range.relic:1:7: error: 'range' is not defined (a range is written a..b, as in for i in 0..n)
+    print(range(3))
+          ^

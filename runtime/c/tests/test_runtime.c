@@ -726,6 +726,7 @@ static void test_codegen_support(void) {
     ERR(rl_fail_undefined(&cx, "join", 0, NULL, NULL), "'join' is not defined (join is strings.join, from std/strings)");
     ERR(rl_fail_undefined(&cx, "map", 0, NULL, NULL), "'map' is not defined (map is lists.map, from std/lists)");
     ERR(rl_fail_undefined(&cx, "zip", 0, NULL, NULL), "'zip' is not defined (zip is lists.zip, from std/lists)");
+    ERR(rl_fail_undefined(&cx, "range", 0, NULL, NULL), "'range' is not defined (a range is written a..b, as in for i in 0..n)");
     /* string interpolation joins shown values */
     parts[0] = T("n=");
     parts[1] = rl_int(3);
