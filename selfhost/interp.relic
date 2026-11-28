@@ -190,6 +190,8 @@ fun name_note(name)
         return "parse and write text with std/json"
     if name == "parseInt"
         return "turn text into a number with num(text)"
+    if name == "toString"
+        return "turn a value into text with str(value)"
     return ""
 
 fun edit_distance(a, b)
