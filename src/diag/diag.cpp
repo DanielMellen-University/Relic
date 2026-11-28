@@ -324,6 +324,7 @@ const Pair kNames[] = {
     {"indexOf", "indexOf is lists.index_of for a list, or strings.find for text"},
     {"startsWith", "startsWith is strings.starts_with, from std/strings"},
     {"endsWith", "endsWith is strings.ends_with, from std/strings"},
+    {"toUpperCase", "toUpperCase is strings.upper, from std/strings"},
     {nullptr, nullptr},
 };
 

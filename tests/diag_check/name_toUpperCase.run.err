@@ -1,0 +1,3 @@
+name_toUpperCase.relic:1:7: error: 'toUpperCase' is not defined (toUpperCase is strings.upper, from std/strings)
+    print(toUpperCase("hi"))
+          ^
