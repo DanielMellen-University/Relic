@@ -186,6 +186,8 @@ fun name_note(name)
         return "a range is written a..b, as in for i in 0..n"
     if name == "Math"
         return "math functions are in std/math"
+    if name == "JSON"
+        return "parse and write text with std/json"
     return ""
 
 fun edit_distance(a, b)
