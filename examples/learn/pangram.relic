@@ -1,0 +1,21 @@
+# A pangram uses every letter of the alphabet at least once. The letters a
+# sentence is missing are listed too.
+#   relic examples/learn/pangram.relic
+use std/strings
+
+fun missing(s)
+    let seen = {}
+    for c in strings.lower(s)
+        seen[c] = true
+    let out = ""
+    for code in ord("a")..ord("z") + 1
+        if not (chr(code) in seen)
+            out = out + chr(code)
+    return out
+
+for s in ["The quick brown fox jumps over the lazy dog", "Pack my box with five dozen liquor jugs", "Hello, world"]
+    let m = missing(s)
+    if m == ""
+        print("pangram: {s}")
+    else
+        print("missing {m}: {s}")
