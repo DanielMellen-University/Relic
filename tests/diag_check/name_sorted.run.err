@@ -1,0 +1,3 @@
+name_sorted.relic:1:7: error: 'sorted' is not defined (sorted is lists.sort, from std/lists, which gives a new list)
+    print(sorted([3, 1, 2]))
+          ^

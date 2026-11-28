@@ -202,6 +202,8 @@ fun name_note(name)
         return "max is math.max for two numbers, or lists.max for a list"
     if name == "end"
         return "blocks end where the indentation does; delete 'end'"
+    if name == "sorted"
+        return "sorted is lists.sort, from std/lists, which gives a new list"
     return ""
 
 fun edit_distance(a, b)
