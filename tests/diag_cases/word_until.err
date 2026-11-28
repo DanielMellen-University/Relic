@@ -1,0 +1,4 @@
+word_until.relic:1:7: error: expected end of line, got name 'done'
+    until done
+          ^^^^
+hint: loop with 'while not (...)'; Relic has no until

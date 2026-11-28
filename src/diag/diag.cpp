@@ -228,6 +228,7 @@ const Pair kWords[] = {
     {"from", "modules are loaded with 'use', not 'from'"},
     {"local", "bindings start with 'let', not 'local'"},
     {"auto", "bindings start with 'let', not 'auto'"},
+    {"until", "loop with 'while not (...)'; Relic has no until"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {

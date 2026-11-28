@@ -218,6 +218,8 @@ fun word_extra(word)
         return "bindings start with 'let', not 'local'"
     if word == "auto"
         return "bindings start with 'let', not 'auto'"
+    if word == "until"
+        return "loop with 'while not (...)'; Relic has no until"
     return ""
 
 fun type_extra(name)
