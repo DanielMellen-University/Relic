@@ -654,3 +654,18 @@ fun expand_tabs(s, size)
             if c == "\n"
                 col = 0
     return join(out, "")
+
+# s with each run of the character c cut down to one: squeeze("a  b   c", " ")
+# is "a b c". c must be a single character.
+fun squeeze(s, c)
+    _text("squeeze", "text", s)
+    _text("squeeze", "character", c)
+    if len(c) != 1
+        fail("strings.squeeze(): character must be one character, got " + str(len(c)))
+    let out = []
+    let last = ""
+    for ch in s
+        if not (ch == c and last == c)
+            append(out, ch)
+        last = ch
+    return join(out, "")

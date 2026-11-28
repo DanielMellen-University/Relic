@@ -74,7 +74,7 @@ ASCII letters only. Other characters stay as they are. `capitalize` changes the 
 
 Program: [title.relic](../../examples/ref/strings/title.relic).
 
-### trim, trim_start, trim_end, trim_chars
+### trim, trim_start, trim_end, trim_chars, squeeze
 
 Space, tab, newline and carriage return. `trim` looks at both ends. The other two look at one end.
 
@@ -89,6 +89,14 @@ Space, tab, newline and carriage return. `trim` looks at both ends. The other tw
 `trim_chars("..hi..", ".")` → `"hi"`
 
 `trim_chars("/a/b/", "/")` → `"a/b"`
+
+`squeeze(s, c)` cuts each run of the one character `c` down to a single copy.
+
+`squeeze("a  b   c", " ")` → `"a b c"`
+
+`squeeze("mississippi", "s")` → `"misisippi"`
+
+Program: [squeeze.relic](../../examples/ref/strings/squeeze.relic).
 
 ### Tests on characters
 

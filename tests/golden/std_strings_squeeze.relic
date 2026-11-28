@@ -1,0 +1,16 @@
+# std/strings.squeeze: collapses runs of one character, such as the spaces between words, into a single copy.
+use std/strings
+
+print(strings.squeeze("a  b   c", " "))
+print(strings.squeeze("--x---y-", "-"))
+print(strings.squeeze("aaa", "a"))
+print(strings.squeeze("", "a") == "")
+print(strings.squeeze("ééé", "é"))
+try
+    strings.squeeze("abc", "")
+catch e
+    print(e.message)
+try
+    strings.squeeze("abc", "ab")
+catch e
+    print(e.message)

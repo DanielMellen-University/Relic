@@ -1,0 +1,7 @@
+a b c
+-x-y-
+a
+true
+é
+strings.squeeze(): character must be one character, got 0
+strings.squeeze(): character must be one character, got 2
