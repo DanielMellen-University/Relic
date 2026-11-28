@@ -1,0 +1,18 @@
+# Prefix sums: one pass builds a running total, and then the sum of any
+# range is one subtraction instead of a loop.
+#   relic examples/learn/prefix_sums.relic
+
+fun prefix(xs)
+    let p = [0]
+    for x in xs
+        append(p, p[len(p) - 1] + x)
+    return p
+
+fun range_sum(p, a, b) = p[b] - p[a]
+
+let rain = [3, 0, 12, 5, 0, 0, 7, 21, 4, 9, 0, 2]
+let p = prefix(rain)
+print("rain by month: {rain}")
+print("running total: {p}")
+for q in [[0, 3], [3, 6], [6, 9], [9, 12], [0, 12], [4, 8]]
+    print("months {q[0]} to {q[1] - 1}: {range_sum(p, q[0], q[1])}")
