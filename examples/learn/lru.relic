@@ -1,0 +1,36 @@
+# A least recently used cache of fixed size. A map holds the values and a
+# list keeps the keys from oldest to newest use; a full cache drops the
+# oldest.
+#   relic examples/learn/lru.relic
+
+fun make(size) = {size: size, values: {}, order: []}
+
+fun touch(cache, key)
+    let order = cache.order
+    for i in 0..len(order)
+        if order[i] == key
+            remove(order, i)
+            break
+    append(order, key)
+
+fun get(cache, key)
+    if not (key in cache.values)
+        return none
+    touch(cache, key)
+    return cache.values[key]
+
+fun put(cache, key, value)
+    if not (key in cache.values) and len(cache.order) == cache.size
+        let old = remove(cache.order, 0)
+        remove(cache.values, old)
+        print("  dropped {old}")
+    cache.values[key] = value
+    touch(cache, key)
+
+let c = make(3)
+for step in [["put", "a", 1], ["put", "b", 2], ["put", "c", 3], ["get", "a"], ["put", "d", 4], ["get", "b"], ["get", "c"], ["put", "e", 5], ["get", "a"]]
+    if step[0] == "put"
+        put(c, step[1], step[2])
+        print("put {step[1]}: {c.order}")
+    else
+        print("get {step[1]}: {get(c, step[1])}, {c.order}")
