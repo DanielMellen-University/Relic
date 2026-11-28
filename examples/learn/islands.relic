@@ -1,0 +1,34 @@
+# Counting islands on a map: each unvisited bit of land starts a new island,
+# and a search with a stack marks all the land joined to it up, down, left
+# or right.
+#   relic examples/learn/islands.relic
+
+fun islands(rows)
+    let seen = {}
+    let sizes = []
+    for r in 0..len(rows)
+        for c in 0..len(rows[r])
+            if rows[r][c] != "#" or "{r},{c}" in seen
+                next
+            let size = 0
+            let stack = [[r, c]]
+            seen["{r},{c}"] = true
+            while len(stack) > 0
+                let p = pop(stack)
+                size = size + 1
+                for d in [[1, 0], [-1, 0], [0, 1], [0, -1]]
+                    let rr = p[0] + d[0]
+                    let cc = p[1] + d[1]
+                    if rr >= 0 and rr < len(rows) and cc >= 0 and cc < len(rows[rr])
+                        if rows[rr][cc] == "#" and not ("{rr},{cc}" in seen)
+                            seen["{rr},{cc}"] = true
+                            append(stack, [rr, cc])
+            append(sizes, size)
+    return sizes
+
+let sea = ["##...#..", "#...###.", "........", ".##..#.#", ".#...#.#", "....##.."]
+for row in sea
+    print(row)
+let sizes = islands(sea)
+print("{len(sizes)} islands, sizes {sizes}")
+print("diagonal land does not join: {islands(["#.", ".#"])}")
