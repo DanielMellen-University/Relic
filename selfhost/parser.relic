@@ -216,6 +216,8 @@ fun word_extra(word)
         return "modules are loaded with 'use', not 'from'"
     if word == "local"
         return "bindings start with 'let', not 'local'"
+    if word == "auto"
+        return "bindings start with 'let', not 'auto'"
     return ""
 
 fun type_extra(name)

@@ -227,6 +227,7 @@ const Pair kWords[] = {
     {"interface", "Relic has no interfaces; use a map or a module"},
     {"from", "modules are loaded with 'use', not 'from'"},
     {"local", "bindings start with 'let', not 'local'"},
+    {"auto", "bindings start with 'let', not 'auto'"},
     {nullptr, nullptr},
 };
 const Pair kTypes[] = {
