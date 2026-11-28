@@ -1,0 +1,33 @@
+# A trie (prefix tree) built from nested maps. Each node maps a letter to the
+# next node, and "$" marks the end of a word.
+#   relic examples/learn/trie.relic
+
+fun add(root, word)
+    let node = root
+    for c in word
+        if not (c in node)
+            node[c] = {}
+        node = node[c]
+    node["$"] = true
+
+fun collect(node, prefix, out)
+    if "$" in node
+        append(out, prefix)
+    for c in node
+        if c != "$"
+            collect(node[c], prefix + c, out)
+    return out
+
+fun starting(root, prefix)
+    let node = root
+    for c in prefix
+        if not (c in node)
+            return []
+        node = node[c]
+    return collect(node, prefix, [])
+
+let t = {}
+for w in ["car", "cart", "care", "cat", "dog", "do", "dot"]
+    add(t, w)
+for p in ["ca", "car", "do", "z", ""]
+    print("\"{p}\": {starting(t, p)}")
