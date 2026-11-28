@@ -1,0 +1,27 @@
+# Bubble sort: walk the list, swap neighbours that are out of order, and stop
+# after a pass with no swaps.
+#   relic examples/learn/bubble_sort.relic
+
+fun bubble_sort(xs)
+    let n = len(xs)
+    let passes = 0
+    let swapped = true
+    while swapped
+        swapped = false
+        passes = passes + 1
+        for i in 1..n
+            if xs[i - 1] > xs[i]
+                let tmp = xs[i - 1]
+                xs[i - 1] = xs[i]
+                xs[i] = tmp
+                swapped = true
+        n = n - 1
+    return passes
+
+for xs in [[5, 1, 4, 2, 8], [1, 2, 3, 4], ["pear", "fig", "apple"], []]
+    let before = str(xs)
+    let passes = bubble_sort(xs)
+    let word = "passes"
+    if passes == 1
+        word = "pass"
+    print("{before} -> {xs} in {passes} {word}")
