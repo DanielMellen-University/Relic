@@ -411,6 +411,7 @@ static const char *name_note(const char *name) {
     if (strcmp(name, "substring") == 0) return "part of a text is slice(text, start, end)";
     if (strcmp(name, "forEach") == 0) return "loops are written 'for name in list'";
     if (strcmp(name, "values") == 0) return "values is maps.values, from std/maps";
+    if (strcmp(name, "items") == 0) return "items is maps.items, from std/maps";
     return NULL;
 }
 

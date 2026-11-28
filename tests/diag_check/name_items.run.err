@@ -1,0 +1,3 @@
+name_items.relic:1:7: error: 'items' is not defined (items is maps.items, from std/maps)
+    print(items({a: 1}))
+          ^

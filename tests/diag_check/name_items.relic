@@ -1,0 +1,1 @@
+print(items({a: 1}))

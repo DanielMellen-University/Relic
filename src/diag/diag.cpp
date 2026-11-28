@@ -337,6 +337,7 @@ const Pair kNames[] = {
     {"substring", "part of a text is slice(text, start, end)"},
     {"forEach", "loops are written 'for name in list'"},
     {"values", "values is maps.values, from std/maps"},
+    {"items", "items is maps.items, from std/maps"},
     {nullptr, nullptr},
 };
 
